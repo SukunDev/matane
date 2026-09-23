@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "dev": "pnpm --filter @manga-reader/desktop dev",
+    "dev": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint . --cache",

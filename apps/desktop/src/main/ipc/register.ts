@@ -8,6 +8,7 @@ import {
   type InvokeOutput,
   invokeContract,
 } from '@manga-reader/shared';
+import { encodeIpcError } from '@manga-reader/shared/errors';
 import { BrowserWindow, type IpcMainInvokeEvent, ipcMain } from 'electron';
 import { z } from 'zod';
 
@@ -34,7 +35,12 @@ export function registerIpcHandlers(handlers: IpcHandlers): void {
       if (!isTrustedSender(event)) throw new Error(`Rejected IPC call to ${channel} from untrusted sender`);
       const parsed = schema.safeParse(raw);
       if (!parsed.success) throw new Error(`Invalid input for ${channel}: ${z.prettifyError(parsed.error)}`);
-      return handler(parsed.data, event);
+      try {
+        return await handler(parsed.data, event);
+      } catch (error) {
+        // Electron only transfers the message; encode the typed error into it (decodeIpcError).
+        throw encodeIpcError(error);
+      }
     });
   }
 }

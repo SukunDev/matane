@@ -7,5 +7,11 @@
     "outDir": "node_modules/.cache/tsc-node",
     "types": ["node", "electron-vite/node"]
   },
-  "include": ["electron.vite.config.ts", "drizzle.config.ts", "src/main/**/*", "src/preload/**/*"]
+  "include": [
+    "electron.vite.config.ts",
+    "drizzle.config.ts",
+    "src/main/**/*",
+    "src/preload/**/*",
+    "src/extension-host/**/*"
+  ]
 }

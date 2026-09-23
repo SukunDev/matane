@@ -7,13 +7,15 @@
   "exports": {
     ".": "./src/index.ts",
     "./theme": "./src/theme.ts",
-    "./ipc/channels": "./src/ipc/channels.ts"
+    "./ipc/channels": "./src/ipc/channels.ts",
+    "./errors": "./src/errors.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@manga-reader/extension-sdk": "workspace:*"
   }
 }

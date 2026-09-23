@@ -2,12 +2,19 @@
   "name": "@manga-reader/extension-runtime",
   "version": "0.0.0",
   "private": true,
-  "license": "GPL-3.0-only",
+  "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./http-bridge": "./src/http-bridge.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@manga-reader/extension-sdk": "workspace:*",
+    "cheerio": "1.2.0",
+    "quickjs-emscripten": "0.32.0"
   }
 }

@@ -9,3 +9,6 @@ docs/ui/html
 LICENSE
 BRAINSTORM.md
 docs
+
+# Recorded HTTP responses, kept compact
+**/test/fixtures/

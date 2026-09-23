@@ -12,3 +12,6 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# mr-ext test scratch dirs
+packages/extension-cli/.test-*/

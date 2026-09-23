@@ -1,0 +1,19 @@
+{
+  "name": "mangadex",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "mr-ext build --minify",
+    "mr-ext": "mr-ext",
+    "smoke": "mr-ext test",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"
+  },
+  "devDependencies": {
+    "@manga-reader/extension-cli": "workspace:*",
+    "@manga-reader/extension-runtime": "workspace:*",
+    "@manga-reader/extension-sdk": "workspace:*"
+  }
+}

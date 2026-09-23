@@ -5,11 +5,20 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
 
 // Workspace packages ship TypeScript sources, so they must be bundled instead of externalized.
-const bundledWorkspaceDeps = ['@manga-reader/shared'];
+const bundledWorkspaceDeps = ['@manga-reader/shared', '@manga-reader/extension-runtime', '@manga-reader/extension-sdk'];
 
 export default defineConfig({
   main: {
-    build: { externalizeDeps: { exclude: bundledWorkspaceDeps } },
+    build: {
+      externalizeDeps: { exclude: bundledWorkspaceDeps },
+      rollupOptions: {
+        // The extension host runs as a utilityProcess forked from main (ADR 0003).
+        input: {
+          index: resolve(__dirname, 'src/main/index.ts'),
+          'extension-host': resolve(__dirname, 'src/extension-host/index.ts'),
+        },
+      },
+    },
   },
   preload: {
     // Sandboxed preloads cannot require node_modules, so bundle everything. There is a single

@@ -46,10 +46,14 @@
     "zustand": "5.0.15"
   },
   "dependencies": {
+    "@manga-reader/extension-runtime": "workspace:*",
+    "@manga-reader/extension-sdk": "workspace:*",
     "@manga-reader/shared": "workspace:*",
     "better-sqlite3": "13.0.3",
+    "cheerio": "1.2.0",
     "drizzle-orm": "0.45.3",
     "electron-log": "5.4.4",
+    "quickjs-emscripten": "0.32.0",
     "zod": "4.6.5"
   }
 }

@@ -1,0 +1,25 @@
+{
+  "name": "@manga-reader/extension-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "mr-ext: create, build and test Manga Reader extensions",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mr-ext": "bin/mr-ext.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@manga-reader/extension-runtime": "workspace:*",
+    "@manga-reader/extension-sdk": "workspace:*",
+    "commander": "15.0.0",
+    "esbuild": "0.28.2",
+    "tsx": "4.23.15"
+  }
+}
