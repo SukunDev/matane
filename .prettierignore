@@ -12,3 +12,5 @@ docs
 
 # Recorded HTTP responses, kept compact
 **/test/fixtures/
+test-results
+playwright-report

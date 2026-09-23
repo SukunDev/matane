@@ -88,6 +88,8 @@ export const validate = {
   pages: (value: unknown): Page[] => parse(z.array(pageSchema).max(5000), value, 'page list'),
   filters: (value: unknown): Filter[] => parse(z.array(filterSchema).max(500), value, 'filter list'),
   summaryOrNull: (value: unknown) => (value === null ? null : parse(summary, value, 'manga')),
+  headers: (value: unknown): Record<string, string> =>
+    parse(z.record(z.string().max(200), z.string().max(4096)), value ?? {}, 'header map'),
   capabilities: (value: unknown) =>
     parse(z.object({ baseUrl: z.string(), capabilities: z.array(z.string()) }), value, 'source info'),
 };

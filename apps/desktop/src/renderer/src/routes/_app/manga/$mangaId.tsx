@@ -1,8 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { BookOpen } from 'lucide-react';
-import { PlaceholderPage } from '../../../components/PlaceholderPage';
+import { createFileRoute, notFound } from '@tanstack/react-router';
+import { MangaDetailPage } from '../../../features/manga/MangaDetailPage';
 
 export const Route = createFileRoute('/_app/manga/$mangaId')({
-  staticData: { crumbs: ['library', 'manga'] },
-  component: () => <PlaceholderPage titleKey="manga" emptyKey="manga" icon={BookOpen} />,
+  params: {
+    parse: ({ mangaId }) => {
+      const id = Number(mangaId);
+      if (!Number.isInteger(id) || id <= 0) throw notFound();
+      return { mangaId: String(id) };
+    },
+  },
+  component: MangaRoute,
 });
+
+function MangaRoute() {
+  const { mangaId } = Route.useParams();
+  return <MangaDetailPage key={mangaId} mangaId={Number(mangaId)} />;
+}

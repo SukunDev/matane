@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Puzzle } from 'lucide-react';
-import { PlaceholderPage } from '../../../components/PlaceholderPage';
+import { ExtensionsPage } from '../../../features/extensions/ExtensionsPage';
 
 export const Route = createFileRoute('/_app/browse/extensions')({
   staticData: { crumbs: ['browse', 'extensions'] },
-  component: () => <PlaceholderPage titleKey="extensions" emptyKey="extensions" icon={Puzzle} />,
+  component: ExtensionsPage,
 });

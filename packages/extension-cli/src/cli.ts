@@ -1,4 +1,5 @@
 import { Command, InvalidArgumentError } from 'commander';
+import { runBenchmark } from './bench';
 import { buildExtension } from './build';
 import { createExtension } from './create';
 import { CLI_NAME, CLI_VERSION } from './node-host';
@@ -91,6 +92,31 @@ program
         verbose: opts.verbose,
       });
       process.exitCode = ok ? 0 : 1;
+    },
+  );
+
+program
+  .command('bench')
+  .description('measure call time (sandbox vs network) and QuickJS heap, plus synthetic worst cases')
+  .argument('[dir]', 'extension directory', '.')
+  .option('-r, --runs <n>', 'runs per case', (v) => Number.parseInt(v, 10), 5)
+  .option('--fixtures <dir>', 'replay recorded responses (see createFixtureHost) instead of the network')
+  .option('-s, --source <key>', 'source key (default: first)')
+  .option('--manga <url>', 'manga url to open instead of the first popular one')
+  .option('--no-synthetic', 'skip the synthetic stress cases')
+  .action(
+    async (
+      dir: string,
+      opts: { runs: number; fixtures?: string; source?: string; manga?: string; synthetic: boolean },
+    ) => {
+      await runBenchmark({
+        dir,
+        runs: opts.runs,
+        fixtures: opts.fixtures,
+        source: opts.source,
+        manga: opts.manga,
+        skipSynthetic: !opts.synthetic,
+      });
     },
   );
 

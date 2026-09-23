@@ -20,9 +20,10 @@ import { Route as AppUpdatesRouteImport } from './routes/_app/updates'
 import { Route as ReaderChapterIdRouteImport } from './routes/reader/$chapterId'
 import { Route as AppBrowseExtensionsRouteImport } from './routes/_app/browse/extensions'
 import { Route as AppBrowseGlobalSearchRouteImport } from './routes/_app/browse/global-search'
-import { Route as AppBrowseSourcesRouteImport } from './routes/_app/browse/sources'
 import { Route as AppMangaMangaIdRouteImport } from './routes/_app/manga/$mangaId'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings/$section'
+import { Route as AppBrowseSourcesIndexRouteImport } from './routes/_app/browse/sources.index'
+import { Route as AppBrowseSourcesExtensionIdSourceKeyRouteImport } from './routes/_app/browse/sources.$extensionId.$sourceKey'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -78,11 +79,6 @@ const AppBrowseGlobalSearchRoute = AppBrowseGlobalSearchRouteImport.update({
   path: '/browse/global-search',
   getParentRoute: () => AppRoute,
 } as any)
-const AppBrowseSourcesRoute = AppBrowseSourcesRouteImport.update({
-  id: '/browse/sources',
-  path: '/browse/sources',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppMangaMangaIdRoute = AppMangaMangaIdRouteImport.update({
   id: '/manga/$mangaId',
   path: '/manga/$mangaId',
@@ -93,6 +89,17 @@ const AppSettingsSectionRoute = AppSettingsSectionRouteImport.update({
   path: '/settings/$section',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBrowseSourcesIndexRoute = AppBrowseSourcesIndexRouteImport.update({
+  id: '/browse/sources/',
+  path: '/browse/sources/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBrowseSourcesExtensionIdSourceKeyRoute =
+  AppBrowseSourcesExtensionIdSourceKeyRouteImport.update({
+    id: '/browse/sources/$extensionId/$sourceKey',
+    path: '/browse/sources/$extensionId/$sourceKey',
+    getParentRoute: () => AppRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -105,9 +112,10 @@ export interface FileRoutesByFullPath {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/browse/extensions': typeof AppBrowseExtensionsRoute
   '/browse/global-search': typeof AppBrowseGlobalSearchRoute
-  '/browse/sources': typeof AppBrowseSourcesRoute
   '/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/browse/sources/': typeof AppBrowseSourcesIndexRoute
+  '/browse/sources/$extensionId/$sourceKey': typeof AppBrowseSourcesExtensionIdSourceKeyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -120,9 +128,10 @@ export interface FileRoutesByTo {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/browse/extensions': typeof AppBrowseExtensionsRoute
   '/browse/global-search': typeof AppBrowseGlobalSearchRoute
-  '/browse/sources': typeof AppBrowseSourcesRoute
   '/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
+  '/browse/sources': typeof AppBrowseSourcesIndexRoute
+  '/browse/sources/$extensionId/$sourceKey': typeof AppBrowseSourcesExtensionIdSourceKeyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -137,9 +146,10 @@ export interface FileRoutesById {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/_app/browse/extensions': typeof AppBrowseExtensionsRoute
   '/_app/browse/global-search': typeof AppBrowseGlobalSearchRoute
-  '/_app/browse/sources': typeof AppBrowseSourcesRoute
   '/_app/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
+  '/_app/browse/sources/': typeof AppBrowseSourcesIndexRoute
+  '/_app/browse/sources/$extensionId/$sourceKey': typeof AppBrowseSourcesExtensionIdSourceKeyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -154,9 +164,10 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/browse/extensions'
     | '/browse/global-search'
-    | '/browse/sources'
     | '/manga/$mangaId'
     | '/settings/$section'
+    | '/browse/sources/'
+    | '/browse/sources/$extensionId/$sourceKey'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -169,9 +180,10 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/browse/extensions'
     | '/browse/global-search'
-    | '/browse/sources'
     | '/manga/$mangaId'
     | '/settings/$section'
+    | '/browse/sources'
+    | '/browse/sources/$extensionId/$sourceKey'
   id:
     | '__root__'
     | '/'
@@ -185,9 +197,10 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/_app/browse/extensions'
     | '/_app/browse/global-search'
-    | '/_app/browse/sources'
     | '/_app/manga/$mangaId'
     | '/_app/settings/$section'
+    | '/_app/browse/sources/'
+    | '/_app/browse/sources/$extensionId/$sourceKey'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -275,13 +288,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBrowseGlobalSearchRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/browse/sources': {
-      id: '/_app/browse/sources'
-      path: '/browse/sources'
-      fullPath: '/browse/sources'
-      preLoaderRoute: typeof AppBrowseSourcesRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/manga/$mangaId': {
       id: '/_app/manga/$mangaId'
       path: '/manga/$mangaId'
@@ -296,6 +302,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsSectionRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/browse/sources/': {
+      id: '/_app/browse/sources/'
+      path: '/browse/sources'
+      fullPath: '/browse/sources/'
+      preLoaderRoute: typeof AppBrowseSourcesIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/browse/sources/$extensionId/$sourceKey': {
+      id: '/_app/browse/sources/$extensionId/$sourceKey'
+      path: '/browse/sources/$extensionId/$sourceKey'
+      fullPath: '/browse/sources/$extensionId/$sourceKey'
+      preLoaderRoute: typeof AppBrowseSourcesExtensionIdSourceKeyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
@@ -308,9 +328,10 @@ interface AppRouteChildren {
   AppUpdatesRoute: typeof AppUpdatesRoute
   AppBrowseExtensionsRoute: typeof AppBrowseExtensionsRoute
   AppBrowseGlobalSearchRoute: typeof AppBrowseGlobalSearchRoute
-  AppBrowseSourcesRoute: typeof AppBrowseSourcesRoute
   AppMangaMangaIdRoute: typeof AppMangaMangaIdRoute
   AppSettingsSectionRoute: typeof AppSettingsSectionRoute
+  AppBrowseSourcesIndexRoute: typeof AppBrowseSourcesIndexRoute
+  AppBrowseSourcesExtensionIdSourceKeyRoute: typeof AppBrowseSourcesExtensionIdSourceKeyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -322,9 +343,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppUpdatesRoute: AppUpdatesRoute,
   AppBrowseExtensionsRoute: AppBrowseExtensionsRoute,
   AppBrowseGlobalSearchRoute: AppBrowseGlobalSearchRoute,
-  AppBrowseSourcesRoute: AppBrowseSourcesRoute,
   AppMangaMangaIdRoute: AppMangaMangaIdRoute,
   AppSettingsSectionRoute: AppSettingsSectionRoute,
+  AppBrowseSourcesIndexRoute: AppBrowseSourcesIndexRoute,
+  AppBrowseSourcesExtensionIdSourceKeyRoute:
+    AppBrowseSourcesExtensionIdSourceKeyRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

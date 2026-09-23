@@ -1,8 +1,9 @@
-import type { AppSettings } from '@manga-reader/shared';
+import type { AppSettings, EventPayload } from '@manga-reader/shared';
 import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
 import { useCallback } from 'react';
 import { settingsQuery, useIpcEvent } from '../lib/ipc';
+import { invalidateTags } from '../lib/sources';
 import { LanguageSync } from '../i18n/LanguageSync';
 import { ThemeSync } from '../theme/ThemeSync';
 
@@ -16,6 +17,11 @@ function RootComponent() {
   useIpcEvent(
     'settings.changed',
     useCallback((settings: AppSettings) => queryClient.setQueryData(settingsQuery.queryKey, settings), [queryClient]),
+  );
+  // Main owns the database and says which entities changed (ADR 0010).
+  useIpcEvent(
+    'db.changed',
+    useCallback((payload: EventPayload<'db.changed'>) => invalidateTags(queryClient, payload.tags), [queryClient]),
   );
   return (
     <>

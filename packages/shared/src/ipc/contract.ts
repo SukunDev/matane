@@ -45,6 +45,8 @@ export const invokeContract = {
   'window.toggleMaximize': invoke(z.void(), z.boolean()),
   'window.close': invoke(z.void(), z.void()),
   'window.isMaximized': invoke(z.void(), z.boolean()),
+  /** Returns the new state. */
+  'window.toggleFullScreen': invoke(z.object({ value: z.boolean().optional() }).optional(), z.boolean()),
   'settings.get': invoke(z.void(), appSettingsSchema),
   'settings.set': invoke(appSettingsSchema.partial(), appSettingsSchema),
 
@@ -86,6 +88,7 @@ export const invokeContract = {
   ),
   /** Opens the Cloudflare challenge for a source in a visible window. */
   'sources.solveChallenge': invoke(z.object({ sourceId: sourceIdSchema }), z.boolean()),
+  'sources.setPinned': invoke(z.object({ sourceId: sourceIdSchema, pinned: z.boolean() }), z.void()),
 
   'manga.get': invoke(z.object({ mangaId: idSchema }), mangaInfoSchema),
   /** Fetches details + chapters from the source and syncs them into the DB. */
@@ -93,7 +96,11 @@ export const invokeContract = {
     z.object({ mangaId: idSchema, requestId: requestIdSchema }),
     z.object({ manga: mangaInfoSchema, newChapterIds: z.array(z.number()) }),
   ),
+  /** Opens the manga's page on the source website in the system browser. */
+  'manga.openInBrowser': invoke(z.object({ mangaId: idSchema }), z.void()),
   'chapters.list': invoke(z.object({ mangaId: idSchema }), z.array(chapterInfoSchema)),
+  'chapter.get': invoke(z.object({ chapterId: idSchema }), chapterInfoSchema),
+  /** Page list (cached ~1 h; falls back to a stale copy when the source is unreachable). */
   'chapter.pages': invoke(
     z.object({ chapterId: idSchema, requestId: requestIdSchema }),
     z.object({ pages: pagesSchema, fromCache: z.boolean() }),
@@ -107,6 +114,7 @@ export const eventContract = {
   'settings.changed': appSettingsSchema,
   'db.changed': z.object({ tags: z.array(z.custom<DbChangeTag>()) }),
   'cloudflare.status': cloudflareStatusSchema,
+  'window.fullScreenChanged': z.boolean(),
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

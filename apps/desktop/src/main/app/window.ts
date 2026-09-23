@@ -57,6 +57,8 @@ export function createMainWindow(settings: SettingsRepository): BrowserWindow {
 
   window.on('maximize', () => broadcast('window.maximizeChanged', true));
   window.on('unmaximize', () => broadcast('window.maximizeChanged', false));
+  window.on('enter-full-screen', () => broadcast('window.fullScreenChanged', true));
+  window.on('leave-full-screen', () => broadcast('window.fullScreenChanged', false));
 
   // The renderer never navigates away or opens windows; external links go to the system browser.
   window.webContents.setWindowOpenHandler(({ url }) => {

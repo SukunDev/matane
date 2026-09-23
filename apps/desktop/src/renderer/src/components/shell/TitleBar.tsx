@@ -4,7 +4,9 @@ import { ChevronLeft, ChevronRight, Search, WifiOff } from 'lucide-react';
 import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appInfoQuery } from '../../lib/ipc';
+import { useCrumbStore } from '../../stores/crumbs';
 import { useUiStore } from '../../stores/ui';
+import { cn } from '../../lib/utils';
 import { Button } from '../ui/button';
 import { WindowControls } from './WindowControls';
 
@@ -12,7 +14,11 @@ export function TitleBar() {
   const { t } = useTranslation();
   const router = useRouter();
   const canGoBack = useCanGoBack();
-  const crumbs = useMatches({ select: (matches) => matches.flatMap((match) => match.staticData.crumbs ?? []) });
+  const staticCrumbs = useMatches({
+    select: (matches) => matches.flatMap((match) => match.staticData.crumbs ?? []),
+  });
+  const dynamicCrumbs = useCrumbStore((state) => state.labels);
+  const crumbs = [...staticCrumbs.map((key) => t(`nav.${key}`)), ...dynamicCrumbs];
   const { data: info } = useQuery(appInfoQuery);
   const online = useUiStore((state) => state.online);
   const isMac = info?.platform === 'darwin';
@@ -37,12 +43,16 @@ export function TitleBar() {
         </Button>
       </div>
 
-      <nav aria-label="Breadcrumb" className="ml-2 flex min-w-0 items-center gap-1.5 text-[13px] text-muted-foreground">
-        <span className="font-semibold text-foreground">{t('app.name')}</span>
-        {crumbs.map((key, index) => (
-          <Fragment key={key}>
+      {/* Stops before the centered search box (w-80), whatever the window width. */}
+      <nav
+        aria-label="Breadcrumb"
+        className="ml-2 flex max-w-[calc(50%-14rem)] min-w-0 items-center gap-1.5 text-[13px] text-muted-foreground"
+      >
+        <span className="shrink-0 font-semibold text-foreground">{t('app.name')}</span>
+        {crumbs.map((label, index) => (
+          <Fragment key={`${index}-${label}`}>
             <span>/</span>
-            <span className={index === crumbs.length - 1 ? 'text-foreground' : undefined}>{t(`nav.${key}`)}</span>
+            <span className={cn('truncate', index === crumbs.length - 1 && 'text-foreground')}>{label}</span>
           </Fragment>
         ))}
       </nav>

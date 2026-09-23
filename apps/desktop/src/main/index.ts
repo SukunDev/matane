@@ -17,12 +17,18 @@ import { SourceService } from './extensions/sources';
 import { createIpcHandlers } from './ipc/handlers';
 import { broadcast, registerIpcHandlers } from './ipc/register';
 import { RequestRegistry } from './ipc/requests';
+import { ImageCache } from './images/cache';
+import { handleMangaProtocol, registerMangaScheme } from './images/protocol';
+import { ImageService } from './images/service';
 import { CloudflareSolver } from './network/cloudflare';
 import { NetworkManager } from './network/manager';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
+/** BRAINSTORM.md §6.5; becomes a setting with the Data & storage section. */
+const IMAGE_CACHE_BYTES = 1024 * 1024 * 1024;
 
 initLogging();
+registerMangaScheme();
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -102,6 +108,25 @@ async function bootstrap(): Promise<void> {
   extLog.info(
     'Extensions',
     installed.map((e) => `${e.id}@${e.version} (${e.origin}${e.error ? `, error: ${e.error}` : ''})`),
+  );
+
+  const images = new ImageService({
+    cache: new ImageCache(connection.db, join(userData, 'cache', 'images'), IMAGE_CACHE_BYTES),
+    manga: mangaRepo,
+    chapters: chaptersRepo,
+    sources,
+    fetcher: {
+      fetchImage: (extensionId, url, headers) => {
+        const manifest = extensions.get(extensionId)?.manifest;
+        if (!manifest) return Promise.reject(new Error(`Extension ${extensionId} is not loaded`));
+        return network.fetchImage(manifest, url, headers);
+      },
+    },
+  });
+  const imageLog = log.scope('images');
+  handleMangaProtocol(
+    { cover: (mangaId) => images.cover(mangaId), page: (chapterId, index) => images.page(chapterId, index) },
+    (message) => imageLog.warn(message),
   );
 
   registerIpcHandlers(

@@ -223,6 +223,33 @@ describe('ExtensionRuntime', () => {
     ]);
   });
 
+  it('reports heap usage and still disposes cleanly afterwards', async () => {
+    const runtime = await load(
+      bundle(`async getPopular() { globalThis.big = new Array(200000).fill(1); return null; }`),
+    );
+    const before = runtime.memoryUsage();
+    await runtime.call('en', 'getPopular', [1]);
+    expect(runtime.memoryUsage()).toBeGreaterThan(before + 1_000_000);
+    runtime.dispose();
+    runtimes.splice(runtimes.indexOf(runtime), 1);
+  });
+
+  it('survives large allocations after an await (WASM memory growth during pending jobs)', async () => {
+    const runtime = await load(
+      bundle(`async getPopular() {
+        await timers.sleep(1);
+        const items = [];
+        for (let i = 0; i < 200000; i++) items.push({ url: '/' + i, title: 'Title ' + i });
+        return { items: items.slice(0, 2), hasNextPage: items.length > 2 };
+      }`),
+      undefined,
+      { memoryBytes: 256 * 1024 * 1024, syncMs: 30_000 },
+    );
+    await expect(runtime.call('en', 'getPopular', [1])).resolves.toMatchObject({ hasNextPage: true });
+    runtime.dispose();
+    runtimes.splice(runtimes.indexOf(runtime), 1);
+  }, 30_000);
+
   it('rejects bundles that do not register an extension', async () => {
     await expect(load('globalThis.nothing = 1;')).rejects.toThrow(/did not register/);
   });

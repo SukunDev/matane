@@ -14,3 +14,7 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0008](0008-ui-mockups-source-of-truth.md) | `docs/ui/` is the design source of truth |
 | [0009](0009-toolchain-pins.md) | Toolchain versions pinned for compatibility |
 | [0010](0010-renderer-data-flow.md) | Renderer data flow: TanStack Query for remote and local reads, Zustand for live state |
+| [0011](0011-extension-tooling-mit.md) | Extension runtime and CLI are MIT too |
+| [0012](0012-html-parsing-in-extension-host.md) | HTML parsing runs in the extension host; network stays in main |
+| [0013](0013-built-in-and-dev-extensions.md) | Built-in extensions and extensions loaded from a folder |
+| [0014](0014-image-protocol-and-cache.md) | Images are served through `manga://` from a disk cache |

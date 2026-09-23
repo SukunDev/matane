@@ -65,6 +65,11 @@ export class ExtensionsRepository {
     return this.db.select().from(sources).where(eq(sources.id, id)).get();
   }
 
+  setSourcePinned(id: string, pinned: boolean): void {
+    this.db.update(sources).set({ pinned }).where(eq(sources.id, id)).run();
+    this.changes.mark('sources');
+  }
+
   touchSource(id: string, now = Date.now()): void {
     this.db.update(sources).set({ lastUsedAt: now }).where(eq(sources.id, id)).run();
     this.changes.mark('sources');

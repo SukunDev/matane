@@ -11,7 +11,7 @@ TanStack Query is built for data owned by someone else: slow, may fail, may chan
 
 ## Decision
 - **Remote data** uses TanStack Query with the global defaults from `createQueryClient()` in `apps/desktop/src/renderer/src/lib/query.ts` (`retry: 2`, no refetch on window focus).
-- **Local data** uses TanStack Query as a read cache controlled by main: every such query spreads `localQueryDefaults` (`staleTime: Infinity`, `retry: false`) and is defined next to the others in `lib/ipc.ts`. It never refetches by itself. Main pushes changes over IPC events and the renderer either writes the payload into the cache (`settings.changed`, `window.maximizeChanged`) or invalidates matching keys. From Phase 2, a generic `db.changed` event carries entity tags (for example `{ manga: [12] }`, `{ library: true }`); the tag → query-key mapping lives in one renderer module so invalidation is never scattered.
+- **Local data** uses TanStack Query as a read cache controlled by main: every such query spreads `localQueryDefaults` (`staleTime: Infinity`, `retry: false`) and is defined next to the others in `lib/ipc.ts`. It never refetches by itself. Main pushes changes over IPC events and the renderer either writes the payload into the cache (`settings.changed`, `window.maximizeChanged`) or invalidates matching keys. A generic `db.changed` event (implemented in Phase 1) carries entity tags (`extensions`, `sources`, `manga:<id>`, `chapters:<mangaId>`), coalesced once per tick; the tag → query-key mapping lives in one renderer module (`lib/sources.ts`, `keysForTag`) so invalidation is never scattered.
 - **Transient state** lives in Zustand stores fed by IPC events and never enters the TanStack Query cache.
 
 ## Consequences

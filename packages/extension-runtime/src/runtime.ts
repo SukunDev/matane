@@ -156,10 +156,10 @@ export class ExtensionRuntime {
 
   /** Current QuickJS heap usage in bytes (for the benchmark and diagnostics). */
   memoryUsage(): number {
-    const handle = this.runtime.computeMemoryUsage();
-    const usage = this.context.dump(handle) as { memory_used_size?: number };
-    handle.dispose();
-    return usage.memory_used_size ?? 0;
+    // Parsed from the text dump on purpose: computeMemoryUsage() allocates in a hidden "system
+    // context" of quickjs-emscripten that outlives our context and makes runtime disposal abort.
+    const match = /^memory used\s+\d+\s+(\d+)/m.exec(this.runtime.dumpMemoryUsage());
+    return match ? Number(match[1]) : 0;
   }
 
   dispose(): void {
@@ -220,6 +220,21 @@ export class ExtensionRuntime {
     const result = this.runtime.executePendingJobs();
     if (result.error) result.error.dispose();
     this.runtime.removeInterruptHandler();
+    this.disposeStrayContexts();
+  }
+
+  /**
+   * Works around quickjs-emscripten 0.32: `executePendingJobs` reads the job's context pointer
+   * through a typed-array view; when a job grows the WASM memory, that view is detached, the pointer
+   * reads as undefined and the library wraps a brand-new context that nothing disposes, so freeing
+   * the runtime aborts ("list_empty(&rt->gc_obj_list)"). We only ever use one context.
+   */
+  private disposeStrayContexts(): void {
+    const contexts = (this.runtime as unknown as { contextMap?: Map<number, QuickJSContext> }).contextMap;
+    if (!contexts || contexts.size <= 1) return;
+    for (const context of [...contexts.values()]) {
+      if (context !== this.context && context.alive) context.dispose();
+    }
   }
 
   /** Evaluates code under the CPU budget; throws a runtime error if it fails. */

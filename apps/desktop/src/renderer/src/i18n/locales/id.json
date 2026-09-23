@@ -48,8 +48,8 @@
       "description": "Pasang ekstensi untuk mulai menjelajah manga."
     },
     "extensions": {
-      "title": "Belum ada ekstensi",
-      "description": "Repositori ekstensi hadir di versi berikutnya."
+      "title": "Belum ada extension",
+      "description": "Muat extension dari folder, atau tunggu repository extension di versi berikutnya."
     },
     "globalSearch": {
       "title": "Cari di semua sumber sekaligus",
@@ -69,11 +69,7 @@
     },
     "manga": {
       "title": "Manga tidak ditemukan",
-      "description": "Detail manga hadir bersama sumber pertama."
-    },
-    "reader": {
-      "title": "Pembaca belum siap",
-      "description": "Pembaca hadir di fase berikutnya."
+      "description": "Mungkin sudah dihapus. Kembali dan buka lagi dari source."
     }
   },
   "settings": {
@@ -130,6 +126,222 @@
     "about": {
       "version": "Versi {{version}}",
       "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+    },
+    "advanced": {
+      "devTitle": "Pengembangan extension",
+      "devDescription": "Muat extension dari folder (proyeknya atau hasil build). Otomatis dimuat ulang saat `mr-ext build` memperbaruinya.",
+      "noFolders": "Belum ada folder yang dimuat."
+    }
+  },
+  "common": {
+    "retry": "Coba lagi",
+    "close": "Tutup"
+  },
+  "errors": {
+    "network": "Tidak bisa menghubungi source",
+    "http": "Source mengembalikan error",
+    "httpStatus": "Source mengembalikan HTTP {{status}}",
+    "cloudflare": "Perlu verifikasi Cloudflare",
+    "rate_limited": "Terlalu banyak permintaan, tunggu sebentar",
+    "not_found": "Tidak ditemukan di source",
+    "parse": "Source mengembalikan data yang tidak terduga",
+    "extension": "Extension gagal",
+    "not_implemented": "Source ini tidak mendukung fitur itu",
+    "timeout": "Source terlalu lama merespons",
+    "interrupted": "Extension macet dan dihentikan",
+    "memory": "Memori extension habis",
+    "host_crashed": "Host extension dimulai ulang, coba lagi",
+    "cancelled": "Dibatalkan",
+    "not_installed": "Extension untuk source ini tidak terpasang",
+    "unknown": "Terjadi kesalahan",
+    "verify": "Verifikasi",
+    "verifying": "Menunggu verifikasi…"
+  },
+  "browse": {
+    "inLibrary": "Di library",
+    "notInstalled": "Tidak terpasang",
+    "refresh": "Muat ulang daftar",
+    "searchPlaceholder": "Cari di {{source}}…",
+    "loadingMore": "Memuat judul lain dari {{source}}…",
+    "tabs": {
+      "popular": "Populer",
+      "latest": "Terbaru",
+      "search": "Cari"
+    },
+    "noResults": {
+      "title": "Tidak ada hasil",
+      "description": "Coba kata kunci lain atau longgarkan filter."
+    },
+    "filters": {
+      "button": "Filter",
+      "title": "Filter",
+      "active_other": "{{count}} aktif",
+      "reset": "Reset",
+      "apply": "Terapkan",
+      "tristateHint": "Klik: sertakan / kecualikan / abaikan",
+      "ascending": "Naik",
+      "descending": "Turun",
+      "included": "{{name}} (disertakan)",
+      "excluded": "{{name}} (dikecualikan)"
+    },
+    "sources": {
+      "subtitle_other": "{{count}} source terpasang",
+      "pinned": "Disematkan",
+      "lastUsed": "dipakai {{when}}",
+      "pin": "Sematkan di atas",
+      "unpin": "Lepas sematan"
+    },
+    "openUrl": {
+      "label": "Buka manga dari link web",
+      "placeholder": "Tempel link manga, mis. https://mangadex.org/title/…",
+      "open": "Buka",
+      "noMatch": "Tidak ada source terpasang yang mengenali link ini."
+    }
+  },
+  "extensions": {
+    "subtitle_other": "{{count}} terpasang",
+    "dev": "Dev",
+    "builtin": "Bawaan",
+    "devLoaded": "Mode dev · dimuat dari folder",
+    "loadFolder": "Muat dari folder",
+    "reloadAll": "Muat ulang semua",
+    "reload": "Muat ulang",
+    "removeFolder": "Hapus folder ini",
+    "reposSoon": "Repository extension (pasang dan update) hadir di versi berikutnya.",
+    "preferences": {
+      "open": "Pengaturan extension",
+      "title": "Pengaturan {{name}}",
+      "description": "Pengaturan yang disediakan extension.",
+      "none": "Extension ini tidak punya pengaturan."
+    },
+    "version": "v{{version}}"
+  },
+  "manga": {
+    "author": "Penulis: {{name}}",
+    "artist": "Ilustrator: {{name}}",
+    "untitled": "Tanpa judul",
+    "status": {
+      "ongoing": "Berjalan",
+      "completed": "Tamat",
+      "hiatus": "Hiatus",
+      "cancelled": "Dibatalkan",
+      "unknown": "Status tidak diketahui"
+    },
+    "type": {
+      "manga": "Manga",
+      "manhwa": "Manhwa",
+      "manhua": "Manhua",
+      "comic": "Komik"
+    },
+    "chapterCount_other": "{{count}} chapter",
+    "lastUpdate": "update terakhir {{when}}",
+    "showMore": "Selengkapnya",
+    "showLess": "Ringkas",
+    "start": "Mulai baca",
+    "continue": "Lanjut · {{chapter}}",
+    "openInBrowser": "Buka di browser",
+    "refresh": "Perbarui dari source",
+    "chapters": "Chapter",
+    "filters": {
+      "unread": "Belum dibaca",
+      "bookmarked": "Ditandai",
+      "scanlator": "Scanlator",
+      "allScanlators": "Scanlator: semua",
+      "noScanlator": "(tanpa grup)"
+    },
+    "sort": {
+      "newest": "Terbaru dulu",
+      "oldest": "Terlama dulu"
+    },
+    "jump": "Lompat ke ch…",
+    "noChapters": "Source ini tidak punya chapter manga ini dalam bahasanya.",
+    "noMatchingChapters": "Tidak ada chapter yang cocok dengan filter.",
+    "showing": "Menampilkan {{shown}} dari {{total}} chapter",
+    "read": "Sudah dibaca",
+    "unread": "Belum dibaca",
+    "new": "Baru",
+    "sourceMissing": "Dihapus dari source",
+    "sourceMissingHint": "Source tidak lagi mencantumkan chapter ini; tetap disimpan demi progres bacamu.",
+    "pageProgress": "Hal. {{page}} / {{total}}"
+  },
+  "reader": {
+    "back": "Kembali ke manga",
+    "backToManga": "Kembali ke manga",
+    "nextChapter": "Chapter berikutnya",
+    "prevChapter": "Chapter sebelumnya",
+    "fullScreen": "Layar penuh (F)",
+    "exitFullScreen": "Keluar layar penuh (F)",
+    "pageSlider": "Halaman",
+    "pageOf": "{{page}} / {{total}}",
+    "toggleDirection": "Ganti arah baca",
+    "pageAlt": "Halaman {{page}} dari {{total}}",
+    "loadingPage": "Memuat halaman {{page}}",
+    "pageFailed": "Halaman {{page}} gagal dimuat",
+    "loadingNext": "Memuat chapter berikutnya…",
+    "notFound": {
+      "title": "Chapter tidak ditemukan",
+      "description": "Mungkin sudah dihapus dari source. Kembali dan perbarui manga-nya."
+    },
+    "transition": {
+      "finished": "Selesai {{chapter}}",
+      "start": "Awal {{chapter}}",
+      "upNext": "Berikutnya",
+      "previous": "Sebelumnya",
+      "missing_other": "{{count}} chapter mungkin hilang sebelum chapter ini",
+      "continues": "Berlanjut di bawah",
+      "noNext": "Kamu sudah mengejar semuanya. Belum ada chapter berikutnya.",
+      "noPrev": "Ini chapter pertama."
+    },
+    "settings": {
+      "title": "Pengaturan reader",
+      "mode": "Mode baca",
+      "direction": "Arah baca",
+      "fit": "Ukuran halaman",
+      "modes": {
+        "auto": "Otomatis",
+        "single": "Satu",
+        "double": "Dua",
+        "webtoon": "Webtoon",
+        "vertical": "Vertikal"
+      },
+      "directions": {
+        "auto": "Otomatis",
+        "ltr": "Kiri ke kanan",
+        "rtl": "Kanan ke kiri"
+      },
+      "fits": {
+        "width": "Lebar",
+        "height": "Tinggi",
+        "screen": "Layar",
+        "original": "Asli"
+      },
+      "shift": "Geser halaman satu",
+      "shiftHint": "Tampilkan halaman pertama sendiri agar spread pas",
+      "width": "Lebar strip",
+      "gap": "Jarak antar halaman",
+      "tapZones": "Zona ketuk",
+      "zones": {
+        "l": "Bentuk L",
+        "kindle": "Kindle",
+        "edges": "Tepi",
+        "lr": "Kiri/kanan",
+        "off": "Mati"
+      },
+      "background": "Latar",
+      "backgrounds": {
+        "black": "Hitam",
+        "gray": "Abu-abu",
+        "white": "Putih"
+      },
+      "globalHint": "Berlaku untuk semua manga. Pengaturan per manga hadir di versi berikutnya."
+    },
+    "tapZones": {
+      "title": "Zona ketuk: {{preset}}",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "menu": "Menu",
+      "scrollUp": "Gulir ke atas",
+      "scrollDown": "Gulir ke bawah"
     }
   }
 }

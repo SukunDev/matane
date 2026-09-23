@@ -3,6 +3,7 @@ import { Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../../components/EmptyState';
 import { AboutSettings } from '../../../features/settings/AboutSettings';
+import { AdvancedSettings } from '../../../features/settings/AdvancedSettings';
 import { GeneralSettings } from '../../../features/settings/GeneralSettings';
 import { READY_SECTIONS, SETTINGS_SECTIONS, isSettingsSection } from '../../../features/settings/sections';
 import { cn } from '../../../lib/utils';
@@ -47,6 +48,7 @@ function SettingsPage() {
         <div className="mx-auto max-w-4xl p-8">
           <h1 className="mb-6 text-xl font-semibold">{t(`settings.sections.${current}`)}</h1>
           {current === 'general' && <GeneralSettings />}
+          {current === 'advanced' && <AdvancedSettings />}
           {current === 'about' && <AboutSettings />}
           {!READY_SECTIONS.includes(current) && (
             <div className={cn('rounded-xl border')}>

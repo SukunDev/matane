@@ -48,8 +48,8 @@
       "description": "Install an extension to start browsing manga."
     },
     "extensions": {
-      "title": "No extensions yet",
-      "description": "Extension repositories arrive in a later version."
+      "title": "No extensions installed",
+      "description": "Load an extension from a folder, or wait for extension repositories in a later version."
     },
     "globalSearch": {
       "title": "Search every source at once",
@@ -69,11 +69,7 @@
     },
     "manga": {
       "title": "Manga not found",
-      "description": "Manga details arrive with the first source."
-    },
-    "reader": {
-      "title": "Reader is not ready yet",
-      "description": "The reader arrives in the next phase."
+      "description": "It may have been removed. Go back and open it from a source again."
     }
   },
   "settings": {
@@ -130,6 +126,227 @@
     "about": {
       "version": "Version {{version}}",
       "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+    },
+    "advanced": {
+      "devTitle": "Extension development",
+      "devDescription": "Load an extension from a folder (its project or a built bundle). It reloads automatically when `mr-ext build` updates it.",
+      "noFolders": "No folders loaded."
+    }
+  },
+  "common": {
+    "retry": "Try again",
+    "close": "Close"
+  },
+  "errors": {
+    "network": "Could not reach the source",
+    "http": "The source returned an error",
+    "httpStatus": "The source returned HTTP {{status}}",
+    "cloudflare": "Cloudflare check required",
+    "rate_limited": "Too many requests, slow down a little",
+    "not_found": "Not found on the source",
+    "parse": "The source returned something unexpected",
+    "extension": "The extension failed",
+    "not_implemented": "This source does not support that",
+    "timeout": "The source took too long",
+    "interrupted": "The extension got stuck and was stopped",
+    "memory": "The extension ran out of memory",
+    "host_crashed": "The extension host restarted, try again",
+    "cancelled": "Cancelled",
+    "not_installed": "The extension for this source is not installed",
+    "unknown": "Something went wrong",
+    "verify": "Verify",
+    "verifying": "Waiting for the check…"
+  },
+  "browse": {
+    "inLibrary": "In library",
+    "notInstalled": "Not installed",
+    "refresh": "Refresh list",
+    "searchPlaceholder": "Search {{source}}…",
+    "loadingMore": "Loading more titles from {{source}}…",
+    "tabs": {
+      "popular": "Popular",
+      "latest": "Latest",
+      "search": "Search"
+    },
+    "noResults": {
+      "title": "No results",
+      "description": "Try another search or loosen the filters."
+    },
+    "filters": {
+      "button": "Filters",
+      "title": "Filters",
+      "active_one": "{{count}} active",
+      "active_other": "{{count}} active",
+      "reset": "Reset",
+      "apply": "Apply",
+      "tristateHint": "Click: include / exclude / off",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "included": "{{name}} (included)",
+      "excluded": "{{name}} (excluded)"
+    },
+    "sources": {
+      "subtitle_one": "{{count}} source installed",
+      "subtitle_other": "{{count}} sources installed",
+      "pinned": "Pinned",
+      "lastUsed": "used {{when}}",
+      "pin": "Pin to top",
+      "unpin": "Unpin"
+    },
+    "openUrl": {
+      "label": "Open a manga from its web link",
+      "placeholder": "Paste a manga link, e.g. https://mangadex.org/title/…",
+      "open": "Open",
+      "noMatch": "No installed source recognises this link."
+    }
+  },
+  "extensions": {
+    "subtitle_one": "{{count}} installed",
+    "subtitle_other": "{{count}} installed",
+    "dev": "Dev",
+    "builtin": "Built-in",
+    "devLoaded": "Dev mode · loaded from folder",
+    "loadFolder": "Load from folder",
+    "reloadAll": "Reload all",
+    "reload": "Reload",
+    "removeFolder": "Remove this folder",
+    "reposSoon": "Extension repositories (install and update) arrive in a later version.",
+    "preferences": {
+      "open": "Extension settings",
+      "title": "{{name}} settings",
+      "description": "Settings provided by the extension.",
+      "none": "This extension has no settings."
+    },
+    "version": "v{{version}}"
+  },
+  "manga": {
+    "author": "Author: {{name}}",
+    "artist": "Artist: {{name}}",
+    "untitled": "Untitled",
+    "status": {
+      "ongoing": "Ongoing",
+      "completed": "Completed",
+      "hiatus": "Hiatus",
+      "cancelled": "Cancelled",
+      "unknown": "Unknown status"
+    },
+    "type": {
+      "manga": "Manga",
+      "manhwa": "Manhwa",
+      "manhua": "Manhua",
+      "comic": "Comic"
+    },
+    "chapterCount_one": "{{count}} chapter",
+    "chapterCount_other": "{{count}} chapters",
+    "lastUpdate": "last update {{when}}",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "start": "Start reading",
+    "continue": "Continue · {{chapter}}",
+    "openInBrowser": "Open in browser",
+    "refresh": "Refresh from source",
+    "chapters": "Chapters",
+    "filters": {
+      "unread": "Unread",
+      "bookmarked": "Bookmarked",
+      "scanlator": "Scanlator",
+      "allScanlators": "Scanlator: all",
+      "noScanlator": "(no group)"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first"
+    },
+    "jump": "Jump to ch…",
+    "noChapters": "This source has no chapters for this manga in its language.",
+    "noMatchingChapters": "No chapters match these filters.",
+    "showing": "Showing {{shown}} of {{total}} chapters",
+    "read": "Read",
+    "unread": "Unread",
+    "new": "New",
+    "sourceMissing": "Removed from source",
+    "sourceMissingHint": "The source no longer lists this chapter; it is kept for your progress.",
+    "pageProgress": "Page {{page}} / {{total}}"
+  },
+  "reader": {
+    "back": "Back to manga",
+    "backToManga": "Back to manga",
+    "nextChapter": "Next chapter",
+    "prevChapter": "Previous chapter",
+    "fullScreen": "Full screen (F)",
+    "exitFullScreen": "Exit full screen (F)",
+    "pageSlider": "Page",
+    "pageOf": "{{page}} / {{total}}",
+    "toggleDirection": "Switch reading direction",
+    "pageAlt": "Page {{page}} of {{total}}",
+    "loadingPage": "Loading page {{page}}",
+    "pageFailed": "Page {{page}} could not be loaded",
+    "loadingNext": "Loading the next chapter…",
+    "notFound": {
+      "title": "Chapter not found",
+      "description": "It may have been removed from the source. Go back and refresh the manga."
+    },
+    "transition": {
+      "finished": "Finished {{chapter}}",
+      "start": "Start of {{chapter}}",
+      "upNext": "Up next",
+      "previous": "Previous",
+      "missing_one": "{{count}} chapter may be missing before this one",
+      "missing_other": "{{count}} chapters may be missing before this one",
+      "continues": "Continues below",
+      "noNext": "You are all caught up. There is no next chapter yet.",
+      "noPrev": "This is the first chapter."
+    },
+    "settings": {
+      "title": "Reader settings",
+      "mode": "Reading mode",
+      "direction": "Reading direction",
+      "fit": "Page fit",
+      "modes": {
+        "auto": "Auto",
+        "single": "Single",
+        "double": "Double",
+        "webtoon": "Webtoon",
+        "vertical": "Vertical"
+      },
+      "directions": {
+        "auto": "Auto",
+        "ltr": "Left to right",
+        "rtl": "Right to left"
+      },
+      "fits": {
+        "width": "Width",
+        "height": "Height",
+        "screen": "Screen",
+        "original": "Original"
+      },
+      "shift": "Shift pages by one",
+      "shiftHint": "Show the first page alone so spreads line up",
+      "width": "Strip width",
+      "gap": "Gap between pages",
+      "tapZones": "Tap zones",
+      "zones": {
+        "l": "L-shape",
+        "kindle": "Kindle",
+        "edges": "Edges",
+        "lr": "Left/right",
+        "off": "Off"
+      },
+      "background": "Background",
+      "backgrounds": {
+        "black": "Black",
+        "gray": "Gray",
+        "white": "White"
+      },
+      "globalHint": "Applies to every manga. Per-manga settings arrive in a later version."
+    },
+    "tapZones": {
+      "title": "Tap zones: {{preset}}",
+      "prev": "Previous",
+      "next": "Next",
+      "menu": "Menu",
+      "scrollUp": "Scroll up",
+      "scrollDown": "Scroll down"
     }
   }
 }

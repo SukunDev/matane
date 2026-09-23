@@ -1,4 +1,4 @@
-import type { Chapter, FilterState, MangaSummary, Page } from '@manga-reader/extension-sdk';
+import type { Chapter, FilterState, ImageFetchResult, MangaSummary, Page } from '@manga-reader/extension-sdk';
 import type { BrowseResult, MangaInfo, SourceCapabilities, SourceEntry } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';
@@ -23,6 +23,7 @@ export interface SourceServiceDeps {
 /** Source-level operations: talk to the sandbox, validate the answer, sync it into SQLite. */
 export class SourceService {
   private readonly infoCache = new Map<string, SourceCapabilities>();
+  private readonly headersCache = new Map<string, Record<string, string>>();
 
   constructor(private readonly deps: SourceServiceDeps) {}
 
@@ -49,6 +50,9 @@ export class SourceService {
   clearCache(extensionId?: string): void {
     for (const key of this.infoCache.keys()) {
       if (!extensionId || key.startsWith(`${extensionId}/`)) this.infoCache.delete(key);
+    }
+    for (const key of this.headersCache.keys()) {
+      if (!extensionId || key.startsWith(`${extensionId}/`)) this.headersCache.delete(key);
     }
   }
 
@@ -103,6 +107,50 @@ export class SourceService {
     return null;
   }
 
+  /** Extra request headers for this source's images (e.g. Referer, or MangaDex's own User-Agent). */
+  async imageHeaders(sourceId: string): Promise<Record<string, string>> {
+    const cached = this.headersCache.get(sourceId);
+    if (cached) return cached;
+    const { capabilities } = await this.info(sourceId);
+    let headers: Record<string, string> = {};
+    if (capabilities.includes('imageHeaders')) {
+      const source = this.source(sourceId);
+      const value = await this.deps.extensions.call(source.extensionId, source.key, 'imageHeaders');
+      headers = validate.headers(value);
+    }
+    this.headersCache.set(sourceId, headers);
+    return headers;
+  }
+
+  /** Fire-and-forget `reportImage` (MangaDex@Home asks for one per image). Never blocks images. */
+  reportImage(sourceId: string, result: ImageFetchResult): void {
+    const capabilities = this.infoCache.get(sourceId)?.capabilities;
+    if (!capabilities?.includes('reportImage')) return;
+    const source = this.deps.extensionsRepo.getSource(sourceId);
+    if (!source) return;
+    void this.deps.extensions.call(source.extensionId, source.key, 'reportImage', [result]).catch(() => undefined);
+  }
+
+  /** "Open in browser" target: the extension's `getWebUrl`, else `baseUrl + url`. */
+  async webUrl(mangaId: number): Promise<string> {
+    const row = this.mangaRow(mangaId);
+    const source = this.source(row.sourceId);
+    const { baseUrl, capabilities } = await this.info(row.sourceId);
+    const url = capabilities.includes('getWebUrl')
+      ? await this.deps.extensions.call(source.extensionId, source.key, 'getWebUrl', [
+          { url: row.url, title: row.title },
+        ])
+      : new URL(row.url, baseUrl).toString();
+    if (typeof url !== 'string' || !/^https?:\/\//.test(url)) {
+      throw new AppError('parse', 'Extension returned an invalid web URL');
+    }
+    return url;
+  }
+
+  setPinned(sourceId: string, pinned: boolean): void {
+    this.deps.extensionsRepo.setSourcePinned(sourceId, pinned);
+  }
+
   getManga(mangaId: number): MangaInfo {
     return toMangaInfo(this.mangaRow(mangaId));
   }
@@ -124,9 +172,24 @@ export class SourceService {
     return { manga: toMangaInfo(updated), newChapterIds: sync.added };
   }
 
+  /**
+   * Page list of a chapter: fresh cache first, then the source. When the source is unreachable a
+   * stale copy is used, so chapters whose images are cached still open offline.
+   */
   async pages(chapterId: number, signal?: AbortSignal): Promise<{ pages: Page[]; fromCache: boolean }> {
     const cached = this.deps.chapters.getCachedPages(chapterId, PAGE_LIST_TTL_MS, this.now());
     if (cached) return { pages: cached, fromCache: true };
+    try {
+      return { pages: await this.fetchPages(chapterId, signal), fromCache: false };
+    } catch (error) {
+      const stale = this.deps.chapters.getCachedPages(chapterId, Number.POSITIVE_INFINITY, this.now());
+      if (stale && !(error instanceof AppError && error.code === 'cancelled')) return { pages: stale, fromCache: true };
+      throw error;
+    }
+  }
+
+  /** Always asks the source (e.g. image URLs expired); refreshes the cache. */
+  async fetchPages(chapterId: number, signal?: AbortSignal): Promise<Page[]> {
     const chapter = this.deps.chapters.get(chapterId);
     if (!chapter) throw new AppError('not_found', `Chapter ${chapterId} not found`);
     const manga = this.mangaRow(chapter.mangaId);
@@ -142,7 +205,22 @@ export class SourceService {
       await this.deps.extensions.call(source.extensionId, source.key, 'getPages', [arg], signal),
     );
     this.deps.chapters.cachePages(chapterId, pages, this.now());
-    return { pages, fromCache: false };
+    return pages;
+  }
+
+  /** Image URL of a page: its own `imageUrl`, else the extension's `getImageUrl`. */
+  async imageUrl(sourceId: string, page: Page): Promise<string> {
+    if (page.imageUrl) return page.imageUrl;
+    const source = this.source(sourceId);
+    const { capabilities } = await this.info(sourceId);
+    if (!capabilities.includes('getImageUrl')) {
+      throw new AppError('parse', `Page ${page.index} has no image URL and the source has no getImageUrl`);
+    }
+    const url = await this.deps.extensions.call(source.extensionId, source.key, 'getImageUrl', [page]);
+    if (typeof url !== 'string' || !/^https?:\/\//.test(url)) {
+      throw new AppError('parse', 'Extension returned an invalid image URL');
+    }
+    return url;
   }
 
   source(sourceId: string): SourceRow {

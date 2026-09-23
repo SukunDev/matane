@@ -10,11 +10,14 @@ import { browserUserAgent } from './user-agent';
 
 /** Used when a manifest declares no rate limit. */
 const DEFAULT_RATE = { requests: 10, perMs: 1000 };
+/** Images come from CDNs, not the rate-limited API; they get their own, looser bucket. */
+const IMAGE_RATE = { requests: 20, perMs: 1000 };
 
 interface NetworkEntry {
   version: string;
   session: Session;
   fetcher: ExtensionFetcher;
+  images: ExtensionFetcher;
 }
 
 /**
@@ -29,6 +32,12 @@ export class NetworkManager implements ExtensionNetwork {
 
   request(manifest: ExtensionManifest, request: HttpRequest): Promise<HttpResponse> {
     return this.entry(manifest).fetcher.request(request);
+  }
+
+  /** Image fetch through the extension's session and allowlist, with its own rate bucket. */
+  async fetchImage(manifest: ExtensionManifest, url: string, headers: Record<string, string>): Promise<Response> {
+    const { response } = await this.entry(manifest).images.fetchRaw({ url, headers });
+    return response;
   }
 
   sessionFor(extensionId: string): Session {
@@ -55,14 +64,23 @@ export class NetworkManager implements ExtensionNetwork {
     if (existing && existing.version === manifest.version) return existing;
     const ses = this.sessionFor(manifest.id);
     const rate = manifest.rateLimit ?? DEFAULT_RATE;
+    const solveChallenge = (url: string) => this.solver.solve(manifest.id, { session: ses, url });
     const fetcher = new ExtensionFetcher({
       fetch: sessionFetch(ses),
       domains: manifest.domains,
       limiter: new TokenBucket(rate.requests, rate.perMs),
       userAgent: this.userAgent,
-      solveChallenge: (url) => this.solver.solve(manifest.id, { session: ses, url }),
+      solveChallenge,
     });
-    const entry = { version: manifest.version, session: ses, fetcher };
+    const images = new ExtensionFetcher({
+      fetch: sessionFetch(ses),
+      domains: manifest.domains,
+      limiter: new TokenBucket(IMAGE_RATE.requests, IMAGE_RATE.perMs),
+      userAgent: this.userAgent,
+      solveChallenge,
+      timeoutMs: 30_000,
+    });
+    const entry = { version: manifest.version, session: ses, fetcher, images };
     this.entries.set(manifest.id, entry);
     return entry;
   }

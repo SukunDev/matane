@@ -16,6 +16,9 @@ describe('i18n', () => {
   });
 
   it('keeps English and Indonesian translations in sync', () => {
-    expect(keys(id).sort()).toEqual(keys(en).sort());
+    // Plural forms differ per language (English: _one/_other, Indonesian: _other only).
+    const bases = (value: unknown) =>
+      [...new Set(keys(value).map((key) => key.replace(/_(zero|one|two|few|many|other)$/, '')))].sort();
+    expect(bases(id)).toEqual(bases(en));
   });
 });

@@ -15,3 +15,10 @@ coverage/
 
 # mr-ext test scratch dirs
 packages/extension-cli/.test-*/
+
+# Playwright output
+test-results/
+playwright-report/
+
+# Recorded HTTP fixtures of extension tests (record with `MR_RECORD=1 pnpm test`)
+extensions/*/test/fixtures/

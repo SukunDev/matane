@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./theme": "./src/theme.ts",
     "./ipc/channels": "./src/ipc/channels.ts",
-    "./errors": "./src/errors.ts"
+    "./errors": "./src/errors.ts",
+    "./reader": "./src/reader.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

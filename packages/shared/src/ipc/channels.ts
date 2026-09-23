@@ -6,6 +6,7 @@ export const INVOKE_CHANNELS = [
   'window.toggleMaximize',
   'window.close',
   'window.isMaximized',
+  'window.toggleFullScreen',
   'settings.get',
   'settings.set',
   'extensions.list',
@@ -20,9 +21,12 @@ export const INVOKE_CHANNELS = [
   'sources.browse',
   'sources.resolveUrl',
   'sources.solveChallenge',
+  'sources.setPinned',
   'manga.get',
   'manga.refresh',
+  'manga.openInBrowser',
   'chapters.list',
+  'chapter.get',
   'chapter.pages',
   'requests.cancel',
 ] as const;
@@ -33,5 +37,6 @@ export const EVENT_CHANNELS = [
   'settings.changed',
   'db.changed',
   'cloudflare.status',
+  'window.fullScreenChanged',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

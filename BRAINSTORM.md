@@ -27,7 +27,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 | Frontend | React + Vite |
 | Fitur prioritas | Mode baca, library, progress & riwayat, download & update |
 | Nama | Belum ditentukan. Nama kerja `manga-reader`, ditentukan sebelum rilis (cek dulu ketersediaan di GitHub/npm/Flathub) |
-| Lisensi | **App: GPL-3.0**, **SDK (`extension-sdk`): MIT**, supaya pembuat extension bebas memilih lisensi |
+| Lisensi | **App: GPL-3.0**, **SDK, runtime, dan CLI extension (`extension-sdk`, `extension-runtime`, `extension-cli`): MIT**, supaya pembuat extension bebas memilih lisensi (ADR 0002, 0011) |
 | Struktur repo | Monorepo **pnpm workspaces** (Turborepo nanti kalau perlu) |
 | Router | **TanStack Router** (hash/memory history), search params typed untuk filter |
 | IPC | **Kontrak typed buatan sendiri** di `packages/shared` + validasi zod di main. Ada request/response dan event push (progress download, update chapter) |
@@ -49,7 +49,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 - Gambar dari MangaDex@Home: disarankan mengirim laporan (endpoint `report`) untuk berhasil/gagal memuat gambar.
 - Sebelum implementasi: cek ulang dokumentasi resmi, karena aturannya bisa berubah.
 
-**Lisensi**: App **GPL-3.0** (seperti Mihon), supaya fork tetap open source. `extension-sdk` **MIT**, supaya extension pihak ketiga tidak ikut terikat GPL.
+**Lisensi**: App **GPL-3.0** (seperti Mihon), supaya fork tetap open source. `extension-sdk`, `extension-runtime`, dan CLI `mr-ext` **MIT**, supaya extension pihak ketiga tidak ikut terikat GPL (diperluas di Fase 1, ADR 0011).
 
 ---
 
@@ -104,12 +104,13 @@ Renderer ──IPC──▶ Main ──MessagePort──▶ Extension Host (util
                    │   host call: http / html / storage / prefs
                    └────────────────────────┘
         Main mengerjakan: network layer (rate limit, cookie, Cloudflare),
-        parsing HTML (cheerio), penyimpanan storage/prefs
+        penyimpanan storage/prefs, log
+        Extension host mengerjakan: QuickJS + parsing HTML (cheerio), ADR 0012
 ```
 
 - **Satu utilityProcess** untuk semua extension, dan **satu QuickJS runtime per extension** (memorinya terpisah dan bisa di-dispose sendiri-sendiri).
 - Runtime di-load secara **lazy**, yaitu saat extension pertama kali dipakai, lalu dibongkar setelah idle beberapa menit.
-- Batasan awal per runtime (angka final ditentukan setelah benchmark di Fase 1, dan bisa diubah di mode dev):
+- Batasan per runtime (**final**, dikonfirmasi benchmark `mr-ext bench` di Fase 1; hasilnya di ADR 0003):
   - **Memori**: 64 MB (`setMemoryLimit`).
   - **CPU**: kode sinkron maksimal 2 detik tanpa jeda. Lebih dari itu dihentikan oleh interrupt handler.
   - **Timeout per panggilan**: 30 detik, termasuk menunggu jaringan. Khusus `getChapters` 60 detik, karena manga dengan ratusan chapter butuh banyak request.
@@ -216,10 +217,14 @@ interface Source {
   getImageUrl?(page: Page): Promise<string>;             // untuk situs 2 langkah
 
   imageHeaders?(): Record<string, string>;               // mis. Referer untuk request gambar
-  getPreferences?(): Preference[];                       // setting per extension
+  // Preferensi dideklarasikan sekali per extension: defineExtension({ preferences: () => [...] })
   resolveUrl?(url: string): MangaSummary | null;         // "buka dari URL" / deep link
   getWebUrl?(item: MangaSummary | Chapter): string;       // URL lengkap untuk "buka di browser"
                                                          // default: baseUrl + url
+
+  // Dipanggil host setelah setiap fetch gambar, fire-and-forget (mis. laporan MangaDex@Home).
+  // Ditambahkan di Fase 1, termasuk apiVersion 1.
+  reportImage?(result: ImageFetchResult): Promise<void> | void; // { url, success, bytes, durationMs, cached }
 
   // Didesain di apiVersion 1, diimplementasikan di Fase 4 (lihat §5.6)
   transformImage?(page: Page, bytes: Uint8Array): Promise<ImageTransform>;
@@ -253,7 +258,7 @@ timers.sleep(ms)
 
 - **Selector cukup CSS** (cheerio/css-select mendukung `:has()`, `:not()`, `:contains()`). Tidak ada XPath. `RegExp` dan `JSON` sudah tersedia di QuickJS, jadi tidak perlu helper tambahan.
 - **`eval` tetap diizinkan** di dalam sandbox, untuk situs yang menyembunyikan daftar gambar di JS ter-obfuscate (packer `eval(function(p,a,c,k,e,d)…)`). Aman, karena tetap berjalan di QuickJS.
-- **Parsing HTML di host**: QuickJS jauh lebih lambat dari V8, jadi parsing HTML besar sebaiknya tidak dilakukan di dalam sandbox. Hasil `html.load` berupa *handle*. Objek DOM-nya tetap di host dan dihapus otomatis setelah panggilan extension selesai.
+- **Parsing HTML di host**: QuickJS jauh lebih lambat dari V8 (±50× untuk loop ketat, hasil benchmark Fase 1), jadi parsing HTML besar tidak dilakukan di dalam sandbox. Parsing berjalan di **extension host (utilityProcess)**, bukan di main, karena setiap `select`/`text()`/`attr()` adalah panggilan host sinkron (ADR 0012). Hasil `html.load` berupa *handle*. Objek DOM-nya tetap di host dan dihapus otomatis setelah panggilan extension selesai.
 - **Network layer** menangani: rate limit per extension, retry dengan backoff, cookie jar, `User-Agent` default, dan deteksi Cloudflare. Kalau halaman challenge terdeteksi, challenge diselesaikan lewat BrowserWindow (tersembunyi dulu, tampil kalau perlu), lalu request diulang. Detailnya di §6.5.
 - **Error bertipe** yang bisa dilempar extension atau host: `NetworkError`, `HttpError(status)`, `CloudflareError`, `RateLimitedError`, `NotFoundError`, `ParseError`. UI menampilkan pesan yang sesuai.
 
@@ -358,18 +363,22 @@ repo/
   - `mr-ext create`: scaffold extension baru.
   - `mr-ext build`: bundle dengan esbuild ke ES2020 lalu validasi (tidak boleh ada `import` yang tersisa, manifest harus valid).
   - `mr-ext test <id>`: menjalankan extension di **runtime QuickJS yang sama** dengan app, lalu memanggil `getPopular` → `getMangaDetails` → `getChapters` → `getPages` dan mencetak hasilnya. Cocok untuk CI repo extension (smoke test harian untuk mendeteksi situs yang rusak).
+  - `mr-ext bench`: mengukur waktu panggilan (sandbox vs jaringan), heap QuickJS, dan kasus terburuk sintetis (Fase 1).
   - `mr-ext repo`: membuat `index.json`, hash, dan tanda tangan.
 - **Mode dev di app**: "Load extension dari folder", dengan watch + hot reload, dan panel log extension.
-- Runtime QuickJS dijadikan **package tersendiri** (`packages/extension-runtime`) supaya bisa dipakai bersama oleh app dan CLI.
+- Runtime QuickJS dijadikan **package tersendiri** (`packages/extension-runtime`) supaya bisa dipakai bersama oleh app dan CLI; CLI di `packages/extension-cli`.
+- **Test extension dengan fixture**: `createFixtureHost` merekam respons HTTP sekali (`MR_RECORD=1`) lalu memutarnya ulang tanpa jaringan di CI.
+- Panduan lengkap: [`docs/extensions.md`](docs/extensions.md).
 
 ### 5.10 Keputusan detail & yang masih terbuka
 
 **Sudah diputuskan:**
-- [x] Batas awal: memori 64 MB, CPU sinkron 2 detik, timeout 30 detik (60 detik untuk `getChapters`). Angka final ditentukan lewat benchmark di Fase 1 (§5.1).
+- [x] Batas: memori 64 MB, CPU sinkron 2 detik, timeout 30 detik (60 detik untuk `getChapters`). **Dikonfirmasi benchmark Fase 1**: kasus terburuk realistis memakai ±6 % heap dan ±40 % budget CPU (ADR 0003).
 - [x] `html` API: CSS selector saja + mode XML. `RegExp`/`JSON` bawaan QuickJS, `eval` diizinkan (§5.5).
 - [x] Identitas: extension id tanpa bahasa, source id = `extensionId/key`, field tetap bernama `url` (identitas stabil, tidak harus berupa URL), plus `getWebUrl()` (§5.2, §5.3).
 - [x] Gambar diacak/dienkripsi: hook `transformImage` berbasis instruksi, didesain sekarang, implementasi Fase 4 (§5.6).
 - [x] Cookie: session partition terpisah per extension (§5.1).
+- [x] Extension **bawaan** (`extensions/*`, dibundel di app) + **load dari folder** untuk mode dev, sebelum repo tersedia di Fase 4 (ADR 0013).
 - [x] Login per source: **ditunda setelah v1**. Kalau nanti dibuat, arahnya login lewat BrowserWindow di partition milik extension tersebut, jadi password tidak melewati extension.
 
 - [x] Hook opsional `migrateUrl(oldUrl, fromVersion)` di apiVersion 1. Dipanggil host setelah extension diperbarui, untuk memperbarui `url` manga/chapter di DB.
@@ -595,8 +604,8 @@ repo/
 | Cloudflare | **Tersembunyi dulu**, tampilkan jendela kalau ±10 detik belum selesai |
 
 **Network layer (main process)**
-- Semua request lewat **`net.fetch` Electron** dengan session partition milik extension (`persist:ext-<id>`). Keuntungannya: memakai network stack Chromium (HTTP/2, sertifikat sistem, proxy, cookie otomatis).
-- **Rate limit**: token bucket per extension (nilai dari manifest).
+- Semua request lewat **network stack Electron** (`net.request`) dengan session partition milik extension (`persist:ext-<id>`). Keuntungannya: memakai network stack Chromium (HTTP/2, sertifikat sistem, proxy, cookie otomatis). Bukan `net.fetch`, karena `net.fetch` menolak `redirect: 'manual'` sehingga redirect tidak bisa dicek satu per satu (ADR 0012).
+- **Rate limit**: token bucket per extension (nilai dari manifest, default 10/detik). Gambar memakai bucket terpisah yang lebih longgar (20/detik).
 - Timeout per request 20 detik. Retry dengan backoff hanya untuk error jaringan dan 5xx/429 (hormati header `Retry-After`).
 - **User-Agent**: default UA Chrome milik Electron **tanpa token "Electron"**. Urutan prioritas: UA kustom dari extension → UA kustom global (setting) → default.
 - Validasi **allowlist domain** extension (§5.2) dilakukan di sini, termasuk untuk setiap redirect.
@@ -625,10 +634,11 @@ repo/
 - Beberapa request untuk gambar yang sama pada saat bersamaan (mis. preload + tampil) digabung jadi satu fetch.
 
 **Cache**
-- **Halaman**: `userData/cache/pages`, key `sha256(sourceId + url)`. Metadata: content-type, dimensi, varian yang sudah diproses (crop/split). **LRU** berdasarkan waktu akses terakhir, batas default **1 GB**.
+- **Halaman**: `userData/cache/images`, key dari source + **URL chapter** + index halaman, bukan URL gambar, karena sebagian source (MangaDex@Home) memberi server gambar baru setiap kali; dengan begitu halaman yang sudah di-cache terbuka tanpa jaringan. Metadata di tabel `image_cache`: content-type, ukuran, (nanti) dimensi dan varian crop/split. **LRU** berdasarkan waktu akses terakhir, batas default **1 GB** (ADR 0014).
 - **Cover library**: disimpan **permanen** di `userData/covers` (tidak kena LRU), diperbarui saat metadata di-refresh.
 - **Cover browse**: cache biasa (ikut LRU).
-- **Daftar halaman chapter** (`getPages`) di-cache di DB ±1 jam.
+- **Daftar halaman chapter** (`getPages`) di-cache di DB ±1 jam. Kalau source tidak bisa dihubungi, salinan lama tetap dipakai. Kalau URL gambar dari daftar cache sudah kedaluwarsa (403/404/410), daftar diambil ulang sekali.
+- Setiap fetch gambar diikuti `reportImage` extension (fire-and-forget).
 - Setting: ukuran cache, penggunaan saat ini, tombol "hapus cache halaman" dan "hapus cache cover browse".
 
 **Offline**
@@ -911,8 +921,9 @@ manga-reader/
 │     ├─ src/renderer/      # React app (routes, components, i18n, tema)
 │     └─ e2e/               # Playwright + extension tiruan + server fixture
 ├─ packages/
-│  ├─ extension-sdk/        # MIT: tipe, defineExtension, helper, deklarasi global, CLI mr-ext
-│  ├─ extension-runtime/    # QuickJS host (dipakai bersama oleh app dan CLI)
+│  ├─ extension-sdk/        # MIT: tipe, defineExtension, helper, deklarasi global
+│  ├─ extension-runtime/    # MIT: QuickJS host (dipakai bersama oleh app dan CLI)
+│  ├─ extension-cli/        # MIT: CLI mr-ext (create, build, test, bench) + fixture host
 │  └─ shared/               # tipe domain & kontrak IPC
 ├─ extensions/
 │  └─ mangadex/             # extension bawaan (legal)
@@ -984,14 +995,15 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Shell UI: title bar kustom, sidebar, sistem tema (terang/gelap/sistem).
 - Tulis ADR awal dari dokumen ini.
 
-**Fase 1: Extension & membaca**
+**Fase 1: Extension & membaca** ✅ selesai 23 Sep 2026 (rincian dan penyesuaian: `docs/plans/fase-1-extension-membaca.md`)
 - `extension-runtime` (QuickJS) + batas memori/CPU/timeout + **test sandbox**. Benchmark untuk menentukan batas final.
 - Extension host di utilityProcess, host API (`http`, `html`, `storage`, `prefs`, `crypto`, …).
-- Network layer: `net.fetch`, partition per extension, rate limit, allowlist, UA, Cloudflare (tersembunyi → tampil).
-- SDK minimal + `mr-ext create/build/test` + extension **MangaDex**.
+- Network layer: `net.request` (bukan `net.fetch`, lihat §6.5), partition per extension, rate limit, allowlist, UA, Cloudflare (tersembunyi → tampil).
+- SDK minimal + `mr-ext create/build/test/bench` + extension **MangaDex** (bawaan) + load extension dari folder.
 - Browse (daftar source, popular/latest/search, filter, buka dari URL), halaman detail + daftar chapter.
 - Reader: single, double, webtoon (tersambung antar chapter), LTR/RTL, fit, lebar maksimum, keyboard, preset tap zone, overlay, halaman transisi + peringatan chapter hilang.
-- `manga://` protocol + cache LRU + dimensi halaman.
+- `manga://` protocol + cache LRU + dimensi halaman (diukur di renderer setelah decode).
+- Penutup: benchmark runtime (ADR 0003), E2E dengan extension tiruan + server fixture di CI, `docs/extensions.md`, ADR 0011–0014.
 
 **Fase 2: Library & progress**
 - Library: tampilan, kategori (multi), sort/filter, pencarian FTS5, multi-select, cover kustom.
@@ -1056,7 +1068,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 | **Pemblokiran ISP (mis. Internet Positif)** | DNS-over-HTTPS dan proxy di setting |
 | **Legal/DMCA** | Repo app hanya berisi extension legal (MangaDex); extension lain di repo terpisah; disclaimer |
 | **Keamanan extension** | QuickJS sandbox, allowlist domain, signing repo, `SECURITY.md`, test sandbox di CI |
-| **Performa QuickJS** | Parsing HTML dan pengolahan gambar di host; benchmark di Fase 1 |
+| **Performa QuickJS** | Parsing HTML dan pengolahan gambar di host. Benchmark Fase 1: batas aman dengan ruang besar (ADR 0003) |
 | **Performa gambar besar/webtoon panjang** | Virtualisasi, split gambar tinggi, cache disk, `img.decode()` |
 | **Modul native (`better-sqlite3`, `sharp`)** | Build matrix per OS/arsitektur di CI; tidak ada cross-compile |
 | **App tanpa signing** | Panduan melewati SmartScreen/Gatekeeper; macOS tanpa auto-update; pertimbangkan signing nanti |

@@ -74,6 +74,12 @@ export class ExtensionFetcher {
   }
 
   async request(request: HttpRequest, signal?: AbortSignal): Promise<HttpResponse> {
+    const { response, url } = await this.fetchRaw(request, signal);
+    return fromFetchResponse(response, request.responseType, url);
+  }
+
+  /** Like `request`, but hands back the streaming Response (images, downloads). */
+  async fetchRaw(request: HttpRequest, signal?: AbortSignal): Promise<{ response: Response; url: string }> {
     const method = (request.method ?? 'GET').toUpperCase();
     let challengeSolved = false;
     for (let attempt = 0; ; attempt++) {
@@ -97,7 +103,7 @@ export class ExtensionFetcher {
           continue;
         }
       }
-      return fromFetchResponse(response, request.responseType, url);
+      return { response, url };
     }
   }
 

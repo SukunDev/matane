@@ -1,5 +1,6 @@
+import { AppError } from '@manga-reader/shared/errors';
 import { toChapterInfo } from '../db/repositories/chapters';
-import { BrowserWindow, app, dialog } from 'electron';
+import { BrowserWindow, app, dialog, shell } from 'electron';
 import type { SettingsRepository } from '../db/repositories/settings';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { ExtensionService } from '../extensions/service';
@@ -53,6 +54,12 @@ export function createIpcHandlers({
       windowOf(event)?.close();
     },
     'window.isMaximized': (_input, event) => windowOf(event)?.isMaximized() ?? false,
+    'window.toggleFullScreen': (input, event) => {
+      const window = windowOf(event);
+      if (!window) return false;
+      window.setFullScreen(input?.value ?? !window.isFullScreen());
+      return window.isFullScreen();
+    },
 
     'settings.get': () => settings.getAppSettings(),
     'settings.set': (patch) => {
@@ -82,6 +89,7 @@ export function createIpcHandlers({
     'sources.info': ({ sourceId }) => sources.info(sourceId),
     'sources.filters': ({ sourceId }) => sources.filters(sourceId),
     'sources.browse': ({ requestId, ...input }) => requests.run(requestId, (signal) => sources.browse(input, signal)),
+    'sources.setPinned': ({ sourceId, pinned }) => sources.setPinned(sourceId, pinned),
     'sources.resolveUrl': ({ url }) => sources.resolveUrl(url),
     'sources.solveChallenge': async ({ sourceId }) => {
       const source = sources.source(sourceId);
@@ -93,7 +101,15 @@ export function createIpcHandlers({
     'manga.get': ({ mangaId }) => sources.getManga(mangaId),
     'manga.refresh': ({ mangaId, requestId }) =>
       requests.run(requestId, (signal) => sources.refreshManga(mangaId, signal)),
+    'manga.openInBrowser': async ({ mangaId }) => {
+      await shell.openExternal(await sources.webUrl(mangaId));
+    },
     'chapters.list': ({ mangaId }) => chapters.list(mangaId).map(toChapterInfo),
+    'chapter.get': ({ chapterId }) => {
+      const chapter = chapters.get(chapterId);
+      if (!chapter) throw new AppError('not_found', `Chapter ${chapterId} not found`);
+      return toChapterInfo(chapter);
+    },
     'chapter.pages': ({ chapterId, requestId }) =>
       requests.run(requestId, (signal) => sources.pages(chapterId, signal)),
     'requests.cancel': ({ requestId }) => requests.cancel(requestId),

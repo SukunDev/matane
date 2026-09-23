@@ -245,3 +245,90 @@ Belum dikerjakan / catatan:
 - **Konfigurasi electron-builder `extraResources` belum ada**, karena packaging belum disiapkan. Path `resources/extensions` sudah ditangani di kode.
 - **Solver Cloudflare belum diuji ke situs asli yang memakai challenge.** MangaDex tidak memakainya. Logikanya (single-flight, tampil setelah 10 detik, batas 2 menit) baru diuji lewat fetcher dengan fake. Perlu dicoba di 1c dengan source yang memakai Cloudflare.
 - Event `db.changed` tidak dipancarkan untuk baris manga baru dari browse, karena hasil browse langsung dikembalikan ke pemanggil. Tag dipancarkan untuk perubahan baris yang sudah ada, chapter, sources, dan extensions.
+
+### Milestone 1c: selesai (23 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 1 warning yang diketahui: `useVirtualizer` tidak bisa di-memo oleh React Compiler), `format:check`, `typecheck`, dan `test` hijau: 116 test, desktop 59.
+- Diverifikasi lewat driver Playwright di app hasil build, terhadap MangaDex asli (jendela ±980 px CSS karena skala layar), tanpa error console:
+  - daftar source dikelompokkan per bahasa, dengan pin dan "dipakai …";
+  - browse Popular/Latest dengan cover lewat `manga://` dan infinite scroll (24 → 72 kartu);
+  - panel filter: tag tri-state, status, content rating, dan sort; filter tersimpan di URL, jadi tombol Back memulihkan listing;
+  - detail manga dengan header, badge, dan genre, dan chapter list virtual (99 chapter, 23 baris dirender), filter Belum dibaca/Ditandai, scanlator, urutan, dan lompat ke chapter;
+  - "Buka dari URL", halaman Extensions, dialog preferensi (data saver), serta UI bahasa Indonesia + tema Latte.
+- Screenshot dibandingkan dengan mockup `02-detail` dan `05-browse`: tata letak, tab, panel filter, dan chip tri-state sudah sesuai.
+  - Elemen mockup yang datanya belum ada (subtitle "Ch. 128 · 15m ago" di kartu browse, "In library", Migrate, Downloaded) menunggu Fase 2/3.
+
+Penyesuaian terhadap rencana:
+- **Bagian cover dari protokol `manga://` ditarik maju dari 1d**, karena renderer tidak boleh hotlink gambar (§6.5, juga aturan MangaDex).
+  - Sudah ada `ImageCache` (disk + tabel `image_cache`, LRU 1 GB) dan `ImageService` (dedupe request, cek content-type, `reportImage`, header dari `imageHeaders()`). Bagian halaman (`manga://page/...`) tetap di 1d.
+  - Gambar memakai bucket rate limit terpisah (20/detik), dan domain gambar juga harus ada di allowlist manifest.
+- **URL cover memakai `?v=<hash thumbnailUrl>`**, supaya cover yang diganti source tidak tampil basi dari cache Chromium.
+- Channel baru: `sources.setPinned` dan `manga.openInBrowser`. Tombol "Buka di browser" memakai `getWebUrl` extension, dengan `baseUrl + url` sebagai cadangan.
+- **Breadcrumb dinamis** (nama source, judul manga) lewat store `crumbs`.
+- Settings → Advanced sekarang berisi daftar folder extension dev, "Muat dari folder", dan "Muat ulang semua".
+
+Bug yang ditemukan saat verifikasi dan sudah diperbaiki:
+- `useEffect(() => el.scrollTo(...))` membuat app crash. Di Chromium 152, `scrollTo()` mengembalikan Promise, lalu React menganggapnya fungsi cleanup ("destroy_ is not a function").
+- Baris tab/search/filter meluap di jendela sempit. Sekarang baris itu wrap.
+- Breadcrumb tertimpa kotak search di title bar. Sekarang dipotong sebelum kotak search.
+- Cover tidak muncul setelah detail mengisi `thumbnailUrl` (misalnya manga yang dibuka dari URL).
+
+Catatan:
+- Fixture MangaDex (`extensions/mangadex/test/fixtures/`) sempat hilang dari disk dan tidak ikut di commit terakhir, sehingga test MangaDex gagal. Sudah direkam ulang (364 KB). Perlu diputuskan apakah fixture ini ikut di-commit; test dan CI membutuhkannya.
+- Mengklik chapter membuka `/reader/$chapterId` yang masih placeholder, karena reader dikerjakan di 1d.
+
+### Milestone 1d: selesai (23 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 2 warning `useVirtualizer` yang sudah diketahui), `format:check`, `typecheck`, dan `test` hijau: 127 test, desktop 70.
+  - Test baru mencakup halaman dari cache tanpa memanggil source, refresh daftar halaman saat URL gambar kedaluwarsa (403), dan logika reader (mode/arah otomatis, chapter berikut/sebelumnya dengan preferensi scanlator, deteksi chapter hilang, pasangan halaman double, dan zona ketuk).
+- Diverifikasi lewat driver Playwright di app hasil build, terhadap MangaDex asli, tanpa error console:
+  - **Single RTL** (mode otomatis untuk manga): ←/→ terbalik sesuai RTL, dan slider dibalik.
+  - **Double**: halaman 1 di kanan, halaman 2 di kiri.
+  - End → layar transisi "Selesai Ch. 1 / Berikutnya Ch. 2" → Ch. 2.
+  - **Webtoon**: berlanjut ke Ch. 2 tanpa sesi baru, dan URL serta header ikut. Mode vertical dengan jarak antar halaman juga jalan.
+  - Drawer pengaturan jalan.
+- **Offline:** proxy session extension dimatikan dan `page_list_cache` dibuat kedaluwarsa (3 jam). Chapter tetap terbuka dari daftar halaman lama + cache gambar, dan halaman bisa dibalik.
+
+Implementasi:
+- `manga://page/<chapterId>/<index>`:
+  - kunci cache = source + URL chapter + index, tidak bergantung pada URL gambar yang berganti-ganti, jadi halaman yang sudah di-cache terbuka tanpa jaringan;
+  - pada 403/404/410 dengan daftar halaman dari cache, daftar diambil ulang sekali;
+  - `getImageUrl` didukung, dan `reportImage` dipanggil untuk setiap gambar.
+- `chapter.pages` jatuh ke salinan lama kalau source tidak bisa dihubungi. Channel baru: `chapter.get`, `window.toggleFullScreen`, dan event `window.fullScreenChanged`.
+- Pengaturan reader global ada di `settings.reader`: mode, arah, fit, zona ketuk, geser halaman double, lebar webtoon, jarak vertical, dan latar.
+  - Mode dan arah "otomatis": manhwa/manhua jadi webtoon, manga jadi RTL.
+  - Setiap field punya fallback sendiri, jadi nilai lama tidak mereset semuanya.
+- Konstanta reader ada di subpath zod-free `@manga-reader/shared/reader`, supaya zod tidak masuk bundle renderer.
+- **Keyboard:** panah/A/D, Spasi/Shift+Spasi, PgUp/PgDn, Home/End, `[` `]`, F (layar penuh), M (menu), dan Esc (tutup panel → keluar layar penuh → kembali ke manga).
+  - Scroll wheel menggulir halaman tinggi dulu, baru membalik halaman.
+- **Preload:** 4 halaman ke depan (`img.decode()`), serta daftar halaman dan 2 halaman pertama chapter berikutnya saat mendekati akhir. Webtoon juga memuat 3 halaman di bawah layar.
+- **Navigasi chapter** memakai `replace`, jadi Back keluar dari reader.
+
+Catatan:
+- Progres baca (halaman terakhir, tandai sudah dibaca) belum disimpan, karena itu Fase 2 sesuai rencana.
+- Crop, split, filter warna, zoom, dan remap keyboard ada di Fase 5. Bookmark, incognito, dan auto-scroll dari mockup menunggu Fase 2/5.
+- Bar atas dan bawah menutupi tepi halaman saat terlihat, lalu hilang otomatis setelah 3 detik (seperti Mihon).
+
+### Penutup Fase 1: selesai (23 Sep 2026)
+
+- **Benchmark runtime** (`mr-ext bench`, dengan fixture + live):
+  - panggilan MangaDex ≤ 11 ms di sandbox, dan sisanya jaringan;
+  - kasus terburuk sintetis: JSON 2,9 MB/10k chapter 0,24 s dan ≤ 4 MB, HTML 1 MB dengan 9k panggilan bridge 0,6–0,8 s, loop CPU 5 juta iterasi 0,33 s.
+  - **Batas final tetap** (64 MB, 2 detik, 30/60 detik). Angkanya ada di ADR 0003.
+- **Bug quickjs-emscripten 0.32 ditemukan lewat benchmark.** Job promise yang memperbesar memori WASM membuat context liar, sehingga `dispose()` abort. Sudah ada workaround di `runtime.ts` dan test regresi.
+  - Satu kebocoran lain juga diperbaiki: `computeMemoryUsage()` diganti dengan parsing `dumpMemoryUsage()`.
+- **E2E** (`pnpm e2e`, Playwright `_electron`, 9 test, ±10 detik):
+  - memakai extension tiruan + situs palsu di `e2e.localhost` (PNG dibuat di test, tanpa jaringan luar);
+  - alurnya: install dari folder → browse + cover + infinite scroll → filter tri-state → error + Coba lagi → detail → baca RTL → double (spread sendirian) → peringatan chapter hilang (3 → 5) → kembali ke daftar chapter (regresi bug virtualizer, terbukti gagal kalau bug dimunculkan lagi) → webtoon bersambung → buka ulang chapter saat situs mati.
+  - Sudah masuk CI lewat `xvfb-run -a pnpm e2e` (dengan `--no-sandbox` di CI, dan laporan Playwright diunggah kalau gagal).
+- **Dokumentasi:**
+  - `docs/extensions.md` (panduan membuat extension);
+  - ADR 0011 (runtime + CLI MIT), 0012 (parsing HTML di extension host, `net.request`), 0013 (extension bawaan + folder dev), dan 0014 (`manga://` + cache gambar);
+  - ADR 0002, 0003, dan 0010 diperbarui;
+  - `BRAINSTORM.md` (§2, §5.1, §5.4, §5.5, §5.9, §5.10, §6.5, §9, §11, §13) dan `README.md` diperbarui.
+
+Belum dijalankan / catatan:
+- Job E2E di GitHub Actions belum pernah jalan, karena repo belum punya remote. Langkahnya sudah diuji secara lokal (tanpa xvfb, jendela tampil di layar).
+- Konfigurasi electron-builder (packaging + `extraResources` untuk extension bawaan) belum ada. Ini masuk persiapan rilis.
+
+**Keputusan fixture (23 Sep 2026):** fixture HTTP semua extension (`extensions/*/test/fixtures/`) **tidak di-commit** dan sudah masuk `.gitignore`. Kalau fixture belum direkam, test fixture dilewati secara otomatis (`hasFixtures()` dari `@manga-reader/extension-cli`). Artinya clone baru dan CI tidak menjalankan test MangaDex. Untuk menjalankannya secara lokal, rekam dulu dengan `MR_RECORD=1 pnpm test` di folder extension.

@@ -24,7 +24,8 @@
     "lint": "eslint . --cache",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "e2e": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop e2e"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
