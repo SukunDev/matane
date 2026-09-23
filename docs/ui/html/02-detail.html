@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Blade of the Ashen Sky - MangaReader</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {primary: "#e2c7ff", "secondary-container": "#3b457c", secondary: "#bac3ff", "tertiary-fixed-dim": "#feb78a", "secondary-fixed": "#dee0ff", "surface-container-highest": "#333344", "on-tertiary": "#4f2504", "on-error": "#690005", "surface-bright": "#383849", "on-surface-variant": "#cdc3d1", "on-secondary": "#212c62", "inverse-surface": "#e3e0f7", "on-tertiary-fixed-variant": "#6b3a18", "on-secondary-container": "#abb5f4", "on-surface": "#e3e0f7", "on-background": "#e3e0f7", "surface-container": "#1e1e2e", "on-primary-container": "#57377f", "on-primary-fixed": "#290350", "on-tertiary-fixed": "#311300", "surface-container-high": "#292839", "on-error-container": "#ffdad6", "outline-variant": "#4a444f", "inverse-on-surface": "#2f2f40", "secondary-fixed-dim": "#bac3ff", outline: "#968e9a", "error-container": "#93000a", tertiary: "#ffc6a4", "surface-variant": "#333344", "surface-container-low": "#1a1a2a", "on-tertiary-container": "#6c3b19", "primary-container": "#cba6f7", "primary-fixed": "#eedbff", "on-secondary-fixed-variant": "#38437a", "inverse-primary": "#704f98", "tertiary-container": "#eca77c", "surface-dim": "#121221", error: "#ffb4ab", surface: "#121221", "tertiary-fixed": "#ffdbc8", "primary-fixed-dim": "#d9b9ff", "on-secondary-fixed": "#09154c", background: "#121221", "surface-container-lowest": "#0d0d1c", "on-primary-fixed-variant": "#57377f", "on-primary": "#3f1e66", "surface-tint": "#d9b9ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"space-xl": "1.5rem", margin: "1rem", "space-md": "0.75rem", "space-sm": "0.5rem", gutter: "1rem", "space-xs": "0.25rem", "space-lg": "1rem"}, fontFamily: {"label-sm": ["Inter"], "body-md": ["Inter"], "headline-sm": ["Inter"], "headline-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-sm": ["12px", {lineHeight: "16px", fontWeight: "400"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-sm": ["14px", {lineHeight: "20px", fontWeight: "600"}], "headline-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}]}}}};</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #121317;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #292a2e;
+      border-radius: 3px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #343439;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden select-none font-body-md text-body-md h-screen w-screen flex flex-col">
+<!-- ================= TOP NAV BAR (Shared Component) ================= -->
+<header class="flex justify-between items-center w-full h-10 px-3 z-50 fixed top-0 left-0 right-0 bg-surface-container-low dark:bg-surface-container-low border-b border-outline-variant select-none">
+<!-- Left: Navigation Arrows & Breadcrumbs -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-container-highest hover:text-on-surface transition-colors active:scale-95" title="Back">
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center rounded hover:bg-surface-container-highest hover:text-on-surface transition-colors active:scale-95" title="Forward">
+<span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
+</button>
+</div>
+<div class="h-3.5 w-px bg-outline-variant mx-1"></div>
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface-variant">
+<span class="font-headline font-semibold text-sm tracking-tight text-on-surface">MangaReader</span>
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">chevron_right</span>
+<span class="hover:text-on-surface cursor-pointer transition-colors">Library</span>
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">chevron_right</span>
+<span class="text-on-surface font-medium truncate max-w-[200px]">Blade of the Ashen Sky</span>
+</nav>
+</div>
+<!-- Center: Quick Search Trigger -->
+<div class="flex items-center">
+<div class="w-64 h-6 px-2.5 rounded bg-surface-container border border-outline-variant/60 flex items-center justify-between text-on-surface-variant hover:border-outline transition-colors cursor-pointer group">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline group-hover:text-on-surface" style="font-size: 15px;">search</span>
+<span class="font-label-sm text-label-sm text-outline group-hover:text-on-surface-variant">Search…</span>
+</div>
+<kbd class="font-label-sm text-[10px] bg-surface-container-highest px-1 py-0.5 rounded text-on-surface-variant/80 border border-outline-variant">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right: Trailing Actions & OS Controls (JSON exact order) -->
+<div class="flex items-center gap-1">
+<div class="flex items-center gap-0.5 pr-2 mr-2 border-r border-outline-variant text-on-surface-variant">
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Incognito Mode">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Offline Mode">
+<span class="material-symbols-outlined">cloud_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Sync Library">
+<span class="material-symbols-outlined">sync</span>
+</button>
+</div>
+<!-- Window OS Controls -->
+<div class="flex items-center gap-0.5 text-on-surface-variant">
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors" title="Minimize">
+<span class="material-symbols-outlined" style="font-size: 15px;">minimize</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors" title="Maximize">
+<span class="material-symbols-outlined" style="font-size: 15px;">crop_square</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center hover:bg-error-container hover:text-on-error-container rounded transition-colors" title="Close">
+<span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ================= MAIN LAYOUT WRAPPER ================= -->
+<div class="flex w-full h-[calc(100vh-2.5rem)] mt-10 overflow-hidden">
+<!-- ================= SIDE NAV BAR (Shared Component) ================= -->
+<aside class="w-[220px] shrink-0 h-full flex flex-col justify-between p-3 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant z-40 select-none">
+<!-- Top Section: App Identity & Primary Tabs -->
+<div class="flex flex-col gap-3">
+<!-- Brand/Status Header -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-7 h-7 rounded-lg bg-primary-container/30 border border-primary/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 18px;">auto_stories</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline font-bold text-base text-on-surface leading-tight">MangaReader</span>
+</div>
+</div>
+<div class="h-px w-full bg-outline-variant/40 my-0.5"></div>
+<!-- Tab Items (7 tabs as per JSON) -->
+<nav class="flex flex-col gap-1 font-label-sm text-xs font-medium">
+<!-- Library (Active with indicator) -->
+<a class="bg-primary-container/30 dark:bg-primary-container/30 text-on-surface dark:text-on-surface font-semibold rounded-lg px-3 py-2 flex items-center gap-3 border-l-2 border-primary transition-all duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-primary" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_library</span>
+<span>Library</span>
+</a>
+<!-- Updates -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">update</span>
+<span>Updates</span>
+</a>
+<!-- History -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>History</span>
+</a>
+<!-- Browse (with nested tree) -->
+<div class="flex flex-col">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center justify-between transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">explore</span>
+<span>Browse</span>
+</div>
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">expand_more</span>
+</a>
+<!-- Sub-tree items -->
+<div class="ml-7 pl-2 border-l border-outline-variant/50 flex flex-col gap-0.5 mt-0.5">
+<a class="px-2 py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-[11px]" href="#">Sources</a>
+<a class="px-2 py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-[11px]" href="#">Extensions</a>
+<a class="px-2 py-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors font-label-sm text-[11px]" href="#">Global search</a>
+</div>
+</div>
+<!-- Downloads -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center justify-between transition-colors active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">download</span>
+<span>Downloads</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-container-highest text-[10px] text-primary">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span>Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-colors active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span>Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Pinned Tab: Settings (JSON footer) -->
+<div class="pt-2 border-t border-outline-variant/40">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high dark:hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-colors active:scale-[0.98] font-label-sm text-xs font-medium" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT CANVAS (Manga Detail) ================= -->
+<main class="flex-1 h-full overflow-y-auto custom-scroll bg-surface relative flex flex-col">
+<!-- HERO HEADER SECTION -->
+<section class="relative w-full border-b border-outline-variant bg-gradient-to-b from-[#251515] via-[#1a151b] to-surface p-6">
+<!-- Subtle Glow Overlay -->
+<div class="absolute inset-0 bg-gradient-to-r from-orange-950/20 via-transparent to-primary-container/10 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row gap-6 items-start max-w-7xl mx-auto">
+<!-- Manga Cover Art Card (2:3 aspect ratio) -->
+<div class="relative shrink-0 w-52 rounded-lg overflow-hidden border border-outline-variant/80 shadow-2xl bg-surface-container group">
+<img alt="Blade of the Ashen Sky Vol. 1 cover" class="w-full aspect-[2/3] object-cover block group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB048r6PL4ebQmmXyzDaEwj8IpSmY-j5JAeG3wuMCaVIlcrT5GNw2vMwNDCyxig6E8zRVBpZnoBvUQa6y8qVpHnmjcToztYQoTiTVn9o_c2BrQ6aIjJM2sjpcHlC-iCc7bXXJrE2_cuOZAIFbbElJCKWyd5o_HRGyqx7HfvNakJwJ5JF72_4_T7K2Yw38qOJpMzUn6Ds10k93zGZOgVkSA_l_kXwhGpx3h6E9cOJlFsn_xcpHKlLPYaca8bWhLsc2ZL49w-5brRl3x7"/>
+<!-- Vol. 1 Badge Pill -->
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded bg-surface-container-lowest/90 backdrop-blur border border-outline-variant/60 font-label-sm text-[11px] font-semibold text-white">
+              Vol. 1
+            </div>
+<!-- Quick Cover Zoom Indicator -->
+<div class="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-highest/80 backdrop-blur rounded p-1 text-white">
+<span class="material-symbols-outlined" style="font-size: 16px;">zoom_in</span>
+</div>
+</div>
+<!-- Manga Information Metadata Column -->
+<div class="flex-1 flex flex-col justify-between self-stretch">
+<div>
+<!-- Metadata Pill Row -->
+<div class="flex flex-wrap items-center gap-2 mb-2 font-label-sm text-xs">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Ongoing
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant font-medium">
+                  Manga
+                </span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant font-medium hover:border-outline cursor-pointer">
+<span class="material-symbols-outlined text-outline" style="font-size: 13px;">public</span>
+                  MangaDex
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high border border-outline-variant text-on-surface-variant font-medium">
+                  JP · EN Trans.
+                </span>
+</div>
+<!-- Title & Kanji subtitle -->
+<div class="flex items-baseline gap-3 mb-1">
+<h1 class="text-3xl lg:text-4xl font-headline font-bold text-white tracking-tight">Blade of the Ashen Sky</h1>
+<span class="px-2 py-0.5 rounded bg-surface-container-highest/80 border border-outline-variant text-xs text-tertiary-fixed-dim font-medium tracking-wider">灰天の刃</span>
+</div>
+<!-- Author / Artist line -->
+<p class="font-body-md text-body-md text-on-surface-variant mb-3">
+                Author: <span class="text-on-surface font-medium hover:underline cursor-pointer">Ren Kaito</span> · Artist: <span class="text-on-surface font-medium hover:underline cursor-pointer">Ren Kaito</span>
+</p>
+<!-- Genre Chips -->
+<div class="flex flex-wrap gap-1.5 mb-3 font-label-sm text-xs">
+<span class="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:border-primary/50 cursor-pointer transition-colors">Action</span>
+<span class="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:border-primary/50 cursor-pointer transition-colors">Fantasy</span>
+<span class="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:border-primary/50 cursor-pointer transition-colors">Drama</span>
+<span class="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:border-primary/50 cursor-pointer transition-colors">Adventure</span>
+<span class="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant/60 text-on-surface-variant hover:text-on-surface hover:border-primary/50 cursor-pointer transition-colors">Supernatural</span>
+</div>
+<!-- Quick Stats Line -->
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant mb-3.5"><span class="text-on-surface font-medium">128 Chapters</span><div class="w-1 h-1 rounded-full bg-outline"></div><span>Last update 2 hours ago</span></div>
+<!-- Synopsis -->
+<div class="text-sm text-on-surface-variant leading-relaxed max-w-3xl">
+<p class="line-clamp-3">
+                  In a shattered realm where the heavens rain cinder and ash, Keith wanders the obsidian crags wielding an ember-forged blade bound to his own lifeforce. As ancient leviathans awaken from the planetary mantle, he must pierce the veil of the forgotten dynasty before the cinder sky collapses forever.
+                  <button class="text-primary hover:text-primary-fixed ml-1 font-medium focus:outline-none">Show more ▾</button>
+</p>
+</div>
+</div>
+<!-- Action Buttons Row -->
+<div class="flex flex-wrap items-center gap-2.5 mt-5 pt-3 border-t border-outline-variant/40">
+<!-- Primary Trigger -->
+<button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-container text-on-primary-container font-headline font-semibold text-sm hover:brightness-110 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Continue · Ch. 42</span>
+</button>
+<!-- Secondary Actions -->
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-container-highest active:scale-95 transition-all font-label-sm text-xs font-medium">
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">check</span>
+<span>In library ▾</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-container-highest active:scale-95 transition-all font-label-sm text-xs font-medium" title="Open source page">
+<span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span>
+<span>Open in browser</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-surface-container-high border border-outline-variant text-on-surface hover:bg-surface-container-highest active:scale-95 transition-all font-label-sm text-xs font-medium" title="Migrate source">
+<span class="material-symbols-outlined" style="font-size: 16px;">swap_horiz</span>
+<span>Migrate</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-high border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest active:scale-95 transition-all" title="Refresh metadata">
+<span class="material-symbols-outlined" style="font-size: 16px;">sync</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- CHAPTER TABS BAR -->
+<div class="px-6 border-b border-outline-variant bg-surface-container-low flex justify-between items-center select-none sticky top-0 z-30">
+<div class="flex items-center gap-6">
+<!-- Chapters tab (Active) -->
+<button class="relative py-3 flex items-center gap-2 text-on-surface font-headline font-semibold text-sm">
+<span>Chapters</span>
+<span class="px-1.5 py-0.5 rounded-full bg-primary-container/20 text-primary text-xs font-medium">128</span>
+<!-- Violet Indicator line -->
+<div class="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>
+</button>
+<!-- Bookmarks tab -->
+<button class="relative py-3 flex items-center gap-2 text-on-surface-variant hover:text-on-surface font-headline font-medium text-sm transition-colors">
+<span>Bookmarks</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-xs">4</span>
+</button>
+</div>
+<div class="text-xs font-label-sm text-on-surface-variant">
+<span class="text-primary font-medium">86</span> unread chapters remaining
+        </div>
+</div>
+<!-- CHAPTER LIST TOOLBAR -->
+<div class="px-6 py-2.5 bg-surface-container-lowest border-b border-outline-variant/60 flex flex-wrap justify-between items-center gap-3 select-none">
+<!-- Left: Quick filter chips -->
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded bg-primary-container/30 border border-primary/50 text-primary text-xs font-medium flex items-center gap-1">
+<span>Unread</span>
+<span class="text-[10px] bg-primary/20 rounded px-1">86</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface-container border border-outline-variant/70 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high text-xs font-medium transition-colors">
+            Downloaded
+          </button>
+<button class="px-2.5 py-1 rounded bg-surface-container border border-outline-variant/70 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high text-xs font-medium transition-colors">
+            Bookmarked
+          </button>
+</div>
+<!-- Right: Scanlator filter, sorting, chapter quick search -->
+<div class="flex items-center gap-2">
+<!-- Scanlator dropdown -->
+<button class="h-7 px-2.5 rounded bg-surface-container border border-outline-variant/80 text-xs font-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors">
+<span>Scanlator: All</span>
+<span class="material-symbols-outlined" style="font-size: 14px;">arrow_drop_down</span>
+</button>
+<!-- Sort button -->
+<button class="h-7 px-2.5 rounded bg-surface-container border border-outline-variant/80 text-xs font-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-1 transition-colors">
+<span>Number</span>
+<span class="material-symbols-outlined text-primary" style="font-size: 14px;">south</span>
+</button>
+<!-- Quick number search filter -->
+<div class="relative w-36 h-7">
+<input class="w-full h-full bg-surface-container rounded border border-outline-variant/80 px-2 pl-6 font-label-sm text-xs text-on-surface placeholder:text-outline focus:outline-none focus:border-primary" placeholder="Jump to ch…" type="text"/>
+<span class="material-symbols-outlined absolute left-1.5 top-1.5 text-outline pointer-events-none" style="font-size: 13px;">search</span>
+</div>
+<!-- Overflow menu -->
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- DENSE CHAPTER ROWS SECTION -->
+<div class="flex-1 px-6 py-2 flex flex-col divide-y divide-outline-variant/30">
+<!-- ROW 1: Ch. 128 (Latest Unread with NEW badge) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/60 rounded transition-colors group cursor-pointer">
+<div class="flex items-center gap-3 min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0" title="Unread"></span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-semibold text-sm text-on-surface">Ch. 128 — The Last Ember</span>
+<span class="px-1.5 py-0.2 rounded bg-primary/20 text-primary font-label-sm text-[10px] font-bold tracking-wider">NEW</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<span>2 hours ago</span>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 2: Ch. 127 Version 1 -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/60 rounded transition-colors group cursor-pointer">
+<div class="flex items-center gap-3 min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0" title="Unread"></span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-semibold text-sm text-on-surface">Ch. 127 — Ashborn Awakening</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Nightowl Scans (Ver. 1)</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<span>3 days ago</span>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 3: Ch. 127 Version 2 (HQ Color Pages - Grouped) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/60 rounded transition-colors group cursor-pointer bg-surface-container/20">
+<div class="flex items-center gap-3 min-w-0 pl-3 border-l-2 border-outline-variant/60">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0" title="Unread"></span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-medium text-sm text-on-surface">Ch. 127 — Ashborn Awakening</span>
+<span class="px-1.5 py-0.2 rounded bg-tertiary-container/30 border border-tertiary/40 text-tertiary font-label-sm text-[10px] font-semibold">HQ Color Pages</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Crimson Quill</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<span>2 days ago</span>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 4: Ch. 126 (Downloaded) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/60 rounded transition-colors group cursor-pointer">
+<div class="flex items-center gap-3 min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0" title="Unread"></span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-semibold text-sm text-on-surface">Ch. 126 — The Obsidian Citadel</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<span>Oct 14, 2024</span>
+<div class="flex items-center gap-1">
+<span class="w-7 h-7 flex items-center justify-center text-primary" title="Downloaded">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 5: Ch. 125 (Downloading 60% & Bookmarked) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/60 rounded transition-colors group cursor-pointer">
+<div class="flex items-center gap-3 min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0" title="Unread"></span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-semibold text-sm text-on-surface">Ch. 125 — Cinder Rain</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<span>Sep 30, 2024</span>
+<div class="flex items-center gap-2">
+<!-- Download 60% progress indicator -->
+<div class="flex items-center gap-1.5 text-primary text-[11px] font-medium" title="Downloading: 60%">
+<span class="material-symbols-outlined animate-spin" style="font-size: 15px;">progress_activity</span>
+<span>60%</span>
+</div>
+<!-- Bookmarked (Filled Gold/Primary) -->
+<button class="w-7 h-7 flex items-center justify-center rounded text-tertiary hover:brightness-110 transition-colors" title="Bookmarked">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">bookmark</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 6: Ch. 42 (IN-PROGRESS READING) -->
+<div class="h-11 flex items-center justify-between px-2 bg-primary-container/10 border-l-2 border-primary rounded transition-colors group cursor-pointer">
+<div class="flex items-center gap-3 min-w-0">
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">auto_stories</span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-semibold text-sm text-primary">Ch. 42 — Ash and Origin</span>
+<span class="px-1.5 py-0.2 rounded bg-primary/20 border border-primary/40 text-primary font-label-sm text-[10px] font-semibold">Reading Now</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-on-surface-variant truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-on-surface-variant shrink-0">
+<!-- Progress Bar Page Indicator -->
+<div class="flex items-center gap-2">
+<span class="text-on-surface font-medium">Page 12 / 38</span>
+<div class="w-16 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 32%"></div>
+</div>
+</div>
+<!-- Mini Resume Button -->
+<button class="px-2.5 py-1 rounded bg-primary-container text-on-primary-container font-semibold text-xs flex items-center gap-1 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-size: 14px;">play_arrow</span>
+<span>Resume</span>
+</button>
+<!-- Read State / Mark unread action -->
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark Read">
+<span class="material-symbols-outlined">done</span>
+</button>
+</div>
+</div>
+<!-- ROW 7: Ch. 41 (Read chapter in muted text) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/40 rounded transition-colors group cursor-pointer opacity-75">
+<div class="flex items-center gap-3 min-w-0">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">done_all</span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-medium text-sm text-on-surface-variant">Ch. 41 — Hollow Bones</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-outline truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-outline shrink-0">
+<span>Read 2 days ago</span>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ROW 8: Ch. 40 (Read chapter in muted text) -->
+<div class="h-11 flex items-center justify-between px-2 hover:bg-surface-container-high/40 rounded transition-colors group cursor-pointer opacity-75">
+<div class="flex items-center gap-3 min-w-0">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">done_all</span>
+<div class="flex items-center gap-2 truncate">
+<span class="font-headline font-medium text-sm text-on-surface-variant">Ch. 40 — The Caldera Gate</span>
+</div>
+<span class="text-outline text-xs hidden sm:inline">·</span>
+<span class="font-label-sm text-xs text-outline truncate">Nightowl Scans</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-sm text-outline shrink-0">
+<span>Read 3 days ago</span>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download">
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Bookmark">
+<span class="material-symbols-outlined">bookmark_border</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- LIST FOOTER & PAGINATION -->
+<footer class="mt-auto px-6 py-4 border-t border-outline-variant/40 bg-surface-container-lowest/60 flex items-center justify-between text-xs font-label-sm text-on-surface-variant select-none">
+<span>Showing 8 of 128 chapters</span>
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high hover:border-outline transition-all active:scale-95 font-medium flex items-center gap-1.5">
+<span class="material-symbols-outlined" style="font-size: 15px;">expand_more</span>
+<span>Load previous 40 chapters</span>
+</button>
+</footer>
+</main>
+</div>
+</body></html>

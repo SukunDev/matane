@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader — Browse / Extensions</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          // Official Catppuccin Mocha colors
+          rosewater: "#f5e0dc",
+          flamingo: "#f2cdcd",
+          pink: "#f5c2e7",
+          mauve: "#cba6f7",
+          red: "#f38ba8",
+          maroon: "#eba0ac",
+          peach: "#fab387",
+          yellow: "#f9e2af",
+          green: "#a6e3a1",
+          teal: "#94e2d5",
+          sky: "#89dceb",
+          sapphire: "#74c7ec",
+          blue: "#89b4fa",
+          lavender: "#b4befe",
+          text: "#cdd6f4",
+          subtext1: "#bac2de",
+          subtext0: "#a6adc8",
+          overlay2: "#9399b2",
+          overlay1: "#7f849c",
+          overlay0: "#6c7086",
+          surface2: "#585b70",
+          surface1: "#45475a",
+          surface0: "#313244",
+          base: "#1e1e2e",
+          mantle: "#181825",
+          crust: "#11111b",
+        },
+        fontFamily: {
+          sans: ["Inter", "sans-serif"],
+          headline: ["Inter"],
+          display: ["Inter"],
+          body: ["Inter"],
+          label: ["Inter"],
+        },
+        borderRadius: {
+          DEFAULT: "0.25rem",
+          lg: "0.5rem",
+          xl: "0.75rem",
+          full: "9999px"
+        }
+      }
+    }
+  };
+</script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #11111b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #313244;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #45475a;
+    }
+  </style>
+</head>
+<body class="bg-base text-text antialiased select-none overflow-hidden h-screen w-screen flex flex-col font-sans text-sm relative">
+<!-- ================= TOP TITLEBAR ================= -->
+<header class="flex justify-between items-center w-full h-10 px-3 z-30 fixed top-0 left-0 right-0 bg-mantle border-b border-surface1 select-none">
+<!-- Window Breadcrumb -->
+<div class="flex items-center gap-2 text-xs font-medium">
+<div class="flex items-center gap-1.5 text-text">
+<span class="w-2.5 h-2.5 rounded-full bg-mauve inline-block shadow-sm"></span>
+<span class="font-semibold text-sm tracking-tight text-text">MangaReader</span>
+</div>
+<span class="text-overlay0">/</span>
+<span class="text-overlay0">Browse</span>
+<span class="text-overlay0">/</span>
+<span class="text-text font-semibold">Extensions</span>
+</div>
+<!-- Centered Quick Search Input -->
+<div class="flex-1 max-w-md mx-4">
+<div class="relative flex items-center h-7 bg-surface0 rounded-lg border border-surface1 px-2.5 focus-within:border-mauve transition-colors">
+<span class="material-symbols-outlined text-overlay0 text-[16px] mr-2">search</span>
+<input class="w-full bg-transparent border-none p-0 text-xs text-text placeholder-overlay0 focus:outline-none focus:ring-0" placeholder="Search…" type="text"/>
+<kbd class="hidden sm:inline-block whitespace-nowrap px-1.5 py-0.5 text-[10px] font-medium text-overlay0 bg-surface1 rounded border border-surface2">Ctrl K</kbd>
+</div>
+</div>
+<!-- Right Trailing Window Actions -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface0 hover:text-text transition-colors" title="Incognito Mode">
+<span class="material-symbols-outlined text-[16px]">visibility_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface0 hover:text-text transition-colors" title="Offline State">
+<span class="material-symbols-outlined text-[16px]">cloud_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface0 hover:text-text transition-colors" title="Sync Queue">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+<div class="h-4 w-[1px] bg-surface1 mx-1"></div>
+<!-- Desktop Window Controls -->
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface0 hover:text-text transition-colors">
+<span class="material-symbols-outlined text-[16px]">minimize</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface0 hover:text-text transition-colors">
+<span class="material-symbols-outlined text-[16px]">crop_square</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-subtext0 hover:bg-red/20 hover:text-red transition-colors">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</header>
+<!-- ================= APP SHELL WRAPPER ================= -->
+<div class="flex h-[calc(100vh-2.5rem)] mt-10 w-full overflow-hidden">
+<!-- ================= LEFT SIDEBAR ================= -->
+<aside class="w-[220px] shrink-0 h-full bg-mantle border-r border-surface1 flex flex-col justify-between p-3 select-none">
+<div class="flex flex-col gap-4">
+<!-- Sidebar Brand Header -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-6 h-6 rounded-lg bg-mauve flex items-center justify-center text-crust font-bold text-xs shadow-sm">
+            M
+          </div>
+<span class="text-sm font-bold tracking-tight text-text">MangaReader</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1 text-xs">
+<!-- Library -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span class="font-medium">Library</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-surface0 text-overlay1 text-[11px] font-medium">148</span>
+</a>
+<!-- Updates -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">update</span>
+<span class="font-medium">Updates</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-mauve/15 text-mauve text-[11px] font-semibold">12</span>
+</a>
+<!-- History -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span class="font-medium">History</span>
+</a>
+<!-- Browse (Expanded) -->
+<div class="flex flex-col">
+<a class="text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-mauve">explore</span>
+<span class="font-semibold text-text">Browse</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-overlay0">expand_less</span>
+</a>
+<!-- Submenu Items -->
+<div class="pl-7 pr-1 py-1 flex flex-col gap-1">
+<a class="text-subtext0 hover:text-text text-[12px] py-1.5 px-2.5 rounded-lg hover:bg-surface0 transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[16px] text-overlay0">public</span>
+<span>Sources</span>
+</a>
+<!-- Extensions: ACTIVE with mauve tint -->
+<a class="bg-mauve/15 text-mauve font-semibold text-[12px] py-1.5 px-2.5 rounded-lg border-l-2 border-mauve flex items-center justify-between" href="#">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-mauve">extension</span>
+<span>Extensions</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-mauve"></span>
+</a>
+<a class="text-subtext0 hover:text-text text-[12px] py-1.5 px-2.5 rounded-lg hover:bg-surface0 transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[16px] text-overlay0">manage_search</span>
+<span>Global search</span>
+</a>
+</div>
+</div>
+<!-- Downloads -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center justify-between" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="font-medium">Downloads</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-surface0 text-overlay1 text-[11px] font-medium">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span class="font-medium">Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span class="font-medium">Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom Settings Pin -->
+<div class="pt-2 border-t border-surface1">
+<a class="text-subtext0 hover:text-text hover:bg-surface0 transition-colors rounded-lg px-3 py-2 flex items-center gap-3 text-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</div>
+</aside>
+<!-- ================= MAIN CONTENT AREA ================= -->
+<main class="flex-1 flex flex-col h-full bg-base overflow-hidden relative">
+<!-- Scrollable Main View -->
+<div class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+<!-- 1. Header Section -->
+<section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-surface1">
+<div class="flex items-center gap-3">
+<h1 class="text-xl font-bold tracking-tight text-text">Extensions</h1>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-mauve/15 text-mauve border border-mauve/30">
+              Updates available: 2
+            </span>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="inline-flex items-center gap-2 px-3 py-1.5 bg-surface0 hover:bg-surface1 border border-surface1 text-text rounded-lg text-xs font-medium transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[16px] text-overlay1">dns</span>
+<span>Repositories</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-mauve hover:bg-mauve/90 text-crust rounded-lg text-xs font-semibold shadow-sm transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[16px] text-crust">system_update_alt</span>
+<span>Update all</span>
+</button>
+</div>
+</section>
+<!-- 2. Tabs Row -->
+<div class="flex items-center gap-6 border-b border-surface1 text-sm">
+<button class="pb-2.5 font-semibold text-mauve border-b-2 border-mauve flex items-center gap-2">
+<span>Installed</span>
+<span class="px-1.5 py-0.2 rounded-full bg-mauve/20 text-mauve text-[11px] font-bold">4</span>
+</button>
+<button class="pb-2.5 font-medium text-subtext0 hover:text-text flex items-center gap-2 transition-colors">
+<span>Available</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface0 text-overlay1 text-[11px] font-semibold">37</span>
+</button>
+<button class="pb-2.5 font-medium text-subtext0 hover:text-text flex items-center gap-2 transition-colors">
+<span>Updates</span>
+<span class="px-1.5 py-0.2 rounded-full bg-mauve/20 text-mauve text-[11px] font-semibold">2</span>
+</button>
+</div>
+<!-- 3. Filter Row -->
+<div class="flex flex-wrap items-center justify-between gap-3 bg-mantle p-2.5 rounded-xl border border-surface1">
+<div class="flex items-center gap-3 flex-1 min-w-[240px]">
+<!-- Extension Search Input -->
+<div class="relative flex items-center h-8 flex-1 max-w-sm bg-surface0 rounded-lg border border-surface1 px-2.5 focus-within:border-mauve transition-colors">
+<span class="material-symbols-outlined text-overlay0 text-[16px] mr-2">search</span>
+<input class="w-full bg-transparent border-none p-0 text-xs text-text placeholder-overlay0 focus:outline-none focus:ring-0" placeholder="Search extensions…" type="text"/>
+</div>
+<!-- Languages Dropdown -->
+<div class="relative">
+<button class="h-8 inline-flex items-center gap-2 px-3 bg-surface0 hover:bg-surface1 border border-surface1 rounded-lg text-xs font-medium text-text transition-colors">
+<span class="material-symbols-outlined text-[16px] text-overlay1">translate</span>
+<span>Languages: EN, ID</span>
+<span class="material-symbols-outlined text-[14px] text-overlay1">arrow_drop_down</span>
+</button>
+</div>
+</div>
+<!-- Toggle Show NSFW -->
+<div class="flex items-center gap-2.5 px-2">
+<span class="text-xs text-subtext0 font-medium">Show NSFW</span>
+<button aria-label="Toggle NSFW" class="w-9 h-5 bg-surface1 rounded-full p-0.5 transition-colors relative flex items-center">
+<div class="w-4 h-4 bg-overlay0 rounded-full shadow transition-transform"></div>
+</button>
+</div>
+</div>
+<!-- 4. Installed List Rows (64px per row standard) -->
+<div class="space-y-2 pb-16">
+<!-- ROW 1: MangaDex (Official · Verified, Has Update to v1.3.0) -->
+<div class="h-16 px-4 bg-surface0 rounded-xl border border-surface1 flex items-center justify-between gap-4 hover:border-surface2 transition-colors">
+<!-- Left Info -->
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Icon -->
+<div class="w-10 h-10 rounded-lg bg-peach/15 border border-peach/30 flex items-center justify-center shrink-0">
+<span class="font-bold text-sm text-peach">MD</span>
+</div>
+<!-- Metadata -->
+<div class="min-w-0">
+<div class="flex items-center gap-2.5">
+<h3 class="font-semibold text-sm text-text tracking-tight truncate">MangaDex</h3>
+<span class="text-xs text-overlay0 font-mono">v1.2.0</span>
+<!-- Languages pills -->
+<div class="hidden sm:flex items-center gap-1">
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">EN</span>
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">ID</span>
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">JA</span>
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-overlay0">+12</span>
+</div>
+</div>
+<!-- Repo Badge -->
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-green">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span>Official · Verified</span>
+</span>
+<span class="text-overlay0 text-xs">·</span>
+<span class="text-[11px] text-overlay0">Multi-source repository</span>
+</div>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-2 shrink-0">
+<!-- Mauve Update Button -->
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-mauve hover:bg-mauve/90 text-crust rounded-lg text-xs font-semibold shadow-sm transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[15px] text-crust">arrow_circle_up</span>
+<span>Update to v1.3.0</span>
+</button>
+<!-- Settings Gear -->
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+<!-- Overflow (Uninstall) -->
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="More Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- ROW 2: Aurora Source (Community repo · Unverified, Has Update to v2.0.4) -->
+<div class="h-16 px-4 bg-surface0 rounded-xl border border-surface1 flex items-center justify-between gap-4 hover:border-surface2 transition-colors">
+<!-- Left Info -->
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Icon -->
+<div class="w-10 h-10 rounded-lg bg-green/15 border border-green/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-green text-[20px]">flare</span>
+</div>
+<!-- Metadata -->
+<div class="min-w-0">
+<div class="flex items-center gap-2.5">
+<h3 class="font-semibold text-sm text-text tracking-tight truncate">Aurora Source</h3>
+<span class="text-xs text-overlay0 font-mono">v2.0.1</span>
+<!-- Languages pills -->
+<div class="hidden sm:flex items-center gap-1">
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">EN</span>
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">KO</span>
+</div>
+</div>
+<!-- Repo Badge: Yellow Shield -->
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-yellow">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>Community repo · Unverified</span>
+</span>
+<span class="text-overlay0 text-xs">·</span>
+<span class="text-[11px] text-overlay0">Webtoon &amp; Manhwa focus</span>
+</div>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-mauve hover:bg-mauve/90 text-crust rounded-lg text-xs font-semibold shadow-sm transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[15px] text-crust">arrow_circle_up</span>
+<span>Update to v2.0.4</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="More Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- ROW 3: Local Demo (Dev mode · loaded from folder, Reload button) -->
+<div class="h-16 px-4 bg-surface0 rounded-xl border border-surface1 flex items-center justify-between gap-4 hover:border-surface2 transition-colors">
+<!-- Left Info -->
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Icon -->
+<div class="w-10 h-10 rounded-lg bg-blue/15 border border-blue/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-blue text-[20px]">terminal</span>
+</div>
+<!-- Metadata -->
+<div class="min-w-0">
+<div class="flex items-center gap-2.5">
+<h3 class="font-semibold text-sm text-text tracking-tight truncate">Local Demo</h3>
+<span class="text-xs text-overlay0 font-mono">v0.1.0-dev</span>
+<!-- Languages pills -->
+<div class="hidden sm:flex items-center gap-1">
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">ALL</span>
+</div>
+</div>
+<!-- Repo Badge: Dev Mode (Blue) -->
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-blue bg-blue/10 px-2 py-0.2 rounded border border-blue/20">
+<span class="material-symbols-outlined text-[13px]">folder_open</span>
+<span>Dev mode · loaded from folder</span>
+</span>
+<span class="text-overlay0 text-xs">·</span>
+<span class="text-[11px] text-overlay0 font-mono">/home/user/.mangareader/ext/local-demo</span>
+</div>
+</div>
+</div>
+<!-- Right Actions: Reload Button -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface1 hover:bg-surface2 border border-surface2 text-text rounded-lg text-xs font-medium transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[15px] text-mauve">replay</span>
+<span>Reload</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="More Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- ROW 4: Starry Archive (Up to date community extension) -->
+<div class="h-16 px-4 bg-surface0 rounded-xl border border-surface1 flex items-center justify-between gap-4 hover:border-surface2 transition-colors">
+<!-- Left Info -->
+<div class="flex items-center gap-3.5 min-w-0">
+<!-- Icon -->
+<div class="w-10 h-10 rounded-lg bg-lavender/15 border border-lavender/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-lavender text-[20px]">auto_stories</span>
+</div>
+<!-- Metadata -->
+<div class="min-w-0">
+<div class="flex items-center gap-2.5">
+<h3 class="font-semibold text-sm text-text tracking-tight truncate">Starry Archive</h3>
+<span class="text-xs text-overlay0 font-mono">v1.0.8</span>
+<!-- Languages pills -->
+<div class="hidden sm:flex items-center gap-1">
+<span class="px-1.5 py-0.5 rounded bg-surface1 text-[10px] font-medium text-subtext1">EN</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-surface1 text-[10px] font-medium text-green">Up to date</span>
+</div>
+<!-- Repo Badge -->
+<div class="flex items-center gap-2 mt-0.5">
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-green">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span>Official · Verified</span>
+</span>
+<span class="text-overlay0 text-xs">·</span>
+<span class="text-[11px] text-overlay0">Classic archive source</span>
+</div>
+</div>
+</div>
+<!-- Right Actions -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="Settings">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-subtext0 hover:bg-surface1 hover:text-text transition-colors" title="More Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= MODAL DIALOG OVERLAY ================= -->
+<!-- Semi-transparent backdrop with blur -->
+<div class="absolute inset-0 bg-crust/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+<!-- Modal Card: Install Confirmation for Nebula Source v0.9.1 -->
+<div class="w-full max-w-md bg-mantle border border-surface1 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="p-5 pb-4 flex items-start justify-between border-b border-surface1">
+<div class="flex items-center gap-3">
+<div class="w-11 h-11 rounded-xl bg-mauve/15 border border-mauve/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-mauve text-[24px]">cyclone</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="text-base font-bold text-text tracking-tight">Nebula Source</h2>
+<span class="text-xs font-mono px-1.5 py-0.5 rounded bg-surface0 text-subtext0">v0.9.1</span>
+</div>
+<p class="text-xs text-yellow font-medium flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>Community repo (unverified)</span>
+</p>
+</div>
+</div>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-overlay0 hover:bg-surface0 hover:text-text transition-colors" title="Close dialog">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<!-- Modal Body Content -->
+<div class="p-5 space-y-4 text-xs bg-base">
+<!-- Warning Banner (Yellow/Amber) -->
+<div class="p-3 bg-yellow/10 border border-yellow/30 rounded-xl flex items-start gap-2.5 text-yellow">
+<span class="material-symbols-outlined text-yellow text-[18px] shrink-0 mt-0.5">warning</span>
+<p class="leading-relaxed font-medium">
+                This repository is not verified. Only install extensions you trust.
+              </p>
+</div>
+<!-- Permission / Domain Access Section -->
+<div class="space-y-2">
+<span class="text-subtext0 font-semibold tracking-wide uppercase text-[11px] block">
+                This extension can access:
+              </span>
+<div class="space-y-1.5">
+<div class="flex items-center gap-2 px-3 py-2 bg-surface0 rounded-lg border border-surface1 text-text">
+<span class="material-symbols-outlined text-[16px] text-mauve">link</span>
+<span class="font-mono text-[12px] text-text select-text">nebula-source.example</span>
+</div>
+<div class="flex items-center gap-2 px-3 py-2 bg-surface0 rounded-lg border border-surface1 text-text">
+<span class="material-symbols-outlined text-[16px] text-mauve">cloud_download</span>
+<span class="font-mono text-[12px] text-text select-text">cdn.nebula-source.example</span>
+</div>
+</div>
+</div>
+<!-- Extension Technical Details -->
+<div class="p-3 bg-surface0/60 rounded-xl border border-surface1 flex items-center justify-between text-subtext0 text-[11px]">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px] text-overlay1">info</span>
+<span>API version 1</span>
+</div>
+<span>·</span>
+<span>212 KB</span>
+<span>·</span>
+<div class="flex items-center gap-1 text-green font-medium">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>SHA-256 verified</span>
+</div>
+</div>
+</div>
+<!-- Modal Action Footer -->
+<div class="p-4 bg-mantle border-t border-surface1 flex items-center justify-end gap-2.5">
+<button class="px-4 py-2 bg-surface0 hover:bg-surface1 border border-surface1 text-text rounded-xl text-xs font-medium transition-all duration-150 active:scale-95">
+              Cancel
+            </button>
+<button class="inline-flex items-center gap-1.5 px-5 py-2 bg-mauve hover:bg-mauve/90 text-crust rounded-xl text-xs font-semibold shadow-md transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[16px] text-crust">download</span>
+<span>Install</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

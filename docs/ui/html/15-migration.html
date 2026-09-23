@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader Desktop - Source Migration</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "secondary-container": "#3b457c",
+            "primary-container": "#cba6f7",
+            "surface-bright": "#383849",
+            "outline-variant": "#4a444f",
+            "on-background": "#e3e0f7",
+            "tertiary-fixed": "#ffdbc8",
+            "surface-container-low": "#1a1a2a",
+            "on-tertiary-fixed": "#311300",
+            "on-primary-fixed": "#290350",
+            "on-secondary-fixed": "#09154c",
+            "inverse-surface": "#e3e0f7",
+            "surface-container-high": "#292839",
+            "surface": "#121221",
+            "primary": "#e2c7ff",
+            "on-surface": "#e3e0f7",
+            "primary-fixed": "#eedbff",
+            "outline": "#968e9a",
+            "background": "#121221",
+            "inverse-on-surface": "#2f2f40",
+            "error-container": "#93000a",
+            "tertiary-fixed-dim": "#feb78a",
+            "on-tertiary-fixed-variant": "#6b3a18",
+            "on-primary-container": "#57377f",
+            "secondary-fixed-dim": "#bac3ff",
+            "surface-container-highest": "#333344",
+            "surface-container-lowest": "#0d0d1c",
+            "surface-variant": "#333344",
+            "surface-tint": "#d9b9ff",
+            "on-secondary-fixed-variant": "#38437a",
+            "tertiary": "#ffc6a4",
+            "secondary-fixed": "#dee0ff",
+            "secondary": "#bac3ff",
+            "on-tertiary": "#4f2504",
+            "on-primary": "#3f1e66",
+            "surface-dim": "#121221",
+            "on-surface-variant": "#cdc3d1",
+            "on-error-container": "#ffdad6",
+            "surface-container": "#1e1e2e",
+            "inverse-primary": "#704f98",
+            "tertiary-container": "#eca77c",
+            "on-secondary": "#212c62",
+            "on-primary-fixed-variant": "#57377f",
+            "error": "#ffb4ab",
+            "on-tertiary-container": "#6c3b19",
+            "on-error": "#690005",
+            "primary-fixed-dim": "#d9b9ff",
+            "on-secondary-container": "#abb5f4",
+            /* Strict Catppuccin Mocha Named Tokens */
+            ctp: {
+              base: "#1e1e2e",
+              mantle: "#181825",
+              crust: "#11111b",
+              surface0: "#313244",
+              surface1: "#45475a",
+              surface2: "#585b70",
+              overlay0: "#6c7086",
+              overlay1: "#7f849c",
+              subtext0: "#a6adc8",
+              subtext1: "#bac2de",
+              text: "#cdd6f4",
+              mauve: "#cba6f7",
+              green: "#a6e3a1",
+              yellow: "#f9e2af",
+              peach: "#fab387",
+              red: "#f38ba8",
+              blue: "#89b4fa",
+              lavender: "#b4befe"
+            }
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    /* Custom Scrollbar for dense desktop feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #181825;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #45475a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #585b70;
+    }
+  </style>
+</head>
+<body class="bg-[#1e1e2e] text-[#cdd6f4] font-body h-screen w-screen overflow-hidden select-none flex flex-col antialiased">
+<!-- TOP APP BAR / TITLE BAR (Shared Component Exact Spec) -->
+<header class="bg-[#181825] border-b border-[#45475a] flex items-center justify-between px-3 w-full h-10 select-none z-30 shrink-0">
+<!-- Left: Navigation History & Breadcrumbs -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-0.5 text-[#a6adc8]">
+<button class="p-1 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Back">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</button>
+<button class="p-1 rounded hover:bg-[#313244] hover:text-[#cdd6f4] opacity-40 cursor-not-allowed" disabled="" title="Forward">
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="h-3.5 w-[1px] bg-[#45475a] mx-1"></div>
+<!-- Breadcrumb -->
+<nav class="flex items-center gap-1.5 text-xs">
+<span class="text-xs font-semibold text-[#cdd6f4] tracking-wide">MangaReader</span>
+<span class="text-[#6c7086]">/</span>
+<span class="text-[#a6adc8] hover:text-[#cdd6f4] cursor-pointer transition-colors">Library</span>
+<span class="text-[#6c7086]">/</span>
+<span class="text-[#cba6f7] font-medium">Migrate</span>
+</nav>
+</div>
+<!-- Center: Quick Search Input Ctrl+K -->
+<div class="w-80 max-w-sm">
+<div class="flex items-center gap-2 bg-[#313244] border border-[#45475a] px-2.5 py-1 rounded-md text-xs text-[#a6adc8] hover:border-[#6c7086] transition-colors cursor-text">
+<span class="material-symbols-outlined text-[15px] text-[#a6adc8]">search</span>
+<span class="flex-1 text-left truncate text-[#a6adc8]">Search manga or author...</span>
+<kbd class="text-[10px] bg-[#181825] text-[#a6adc8] px-1.5 py-0.5 rounded border border-[#45475a] font-mono">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right: Status, Notifications & Window Controls -->
+<div class="flex items-center gap-1">
+<div class="flex items-center gap-1 mr-2 text-[#a6adc8]">
+<button class="p-1 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Sync Status">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+<button class="p-1 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors relative" title="Notifications">
+<span class="material-symbols-outlined text-[16px]">notifications</span>
+<span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-[#cba6f7]"></span>
+</button>
+</div>
+<div class="h-3.5 w-[1px] bg-[#45475a] mr-1"></div>
+<!-- Frameless Window Action Buttons -->
+<div class="flex items-center">
+<button class="w-8 h-8 flex items-center justify-center text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Minimize">
+<span class="material-symbols-outlined text-[15px]">minimize</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Maximize">
+<span class="material-symbols-outlined text-[14px]">check_box_outline_blank</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center text-[#a6adc8] hover:bg-[#f38ba8] hover:text-[#11111b] transition-colors" title="Close">
+<span class="material-symbols-outlined text-[15px]">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- BODY LAYOUT (SIDEBAR + MAIN CANVAS) -->
+<div class="flex flex-1 overflow-hidden">
+<!-- SIDEBAR (Shared Component Exact Structure, Library Active) -->
+<aside class="flex flex-col justify-between p-3 w-56 select-none shrink-0 bg-[#181825] border-r border-[#45475a] h-[calc(100vh-2.5rem)]">
+<div class="flex flex-col gap-1">
+<!-- Top App Branding / Identity -->
+<div class="flex items-center gap-2.5 px-3 py-2 mb-2">
+<div class="w-7 h-7 rounded-md bg-[#cba6f7] flex items-center justify-center text-[#11111b] font-bold text-xs shadow-sm">
+            MR
+          </div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-[#cdd6f4] leading-tight">MangaReader</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<!-- Tab 1: Library (ACTIVE) -->
+<a class="flex items-center justify-between px-3 py-2 text-[#cba6f7] bg-[#cba6f7]/15 border-l-2 border-[#cba6f7] font-medium text-sm rounded-r-lg transition-all duration-150" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span>Library</span>
+</div>
+<span class="text-xs font-semibold px-1.5 py-0.2 rounded-full bg-[#313244] text-[#cdd6f4]">148</span>
+</a>
+<!-- Tab 2: Updates -->
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">update</span>
+<span>Updates</span>
+</div>
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#cba6f7] text-[#11111b]">12</span>
+</a>
+<!-- Tab 3: History -->
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>History</span>
+</a>
+<!-- Tab 4: Browse -->
+<div class="flex flex-col">
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+<span>Browse</span>
+</div>
+<span class="material-symbols-outlined text-[15px] text-[#6c7086]">expand_more</span>
+</a>
+<!-- Browse Sub-items -->
+<div class="pl-9 pr-2 py-0.5 flex flex-col gap-0.5 text-xs text-[#a6adc8]">
+<a class="py-1 px-2 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" href="#">Sources</a>
+<a class="py-1 px-2 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" href="#">Extensions</a>
+<a class="py-1 px-2 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" href="#">Global search</a>
+</div>
+</div>
+<!-- Tab 5: Downloads -->
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Downloads</span>
+</div>
+<span class="text-xs font-medium text-[#a6e3a1]">3</span>
+</a>
+<!-- Tab 6: Bookmarks -->
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span>Bookmarks</span>
+</a>
+<!-- Tab 7: Statistics -->
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span>Statistics</span>
+</a>
+</div>
+<!-- Footer: Settings & Source Health Pill -->
+<div class="flex flex-col gap-2 pt-2 border-t border-[#45475a]">
+<div class="bg-[#313244] rounded-lg p-2.5 flex items-center justify-between text-xs">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#f9e2af]"></span>
+<span class="text-[#bac2de] text-[11px] font-medium">1 Source Broken</span>
+</div>
+<span class="text-[10px] text-[#cba6f7] hover:underline cursor-pointer">Review</span>
+</div>
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- MAIN CANVAS (1440px target layout, scrollable body) -->
+<main class="flex-1 flex flex-col h-[calc(100vh-2.5rem)] overflow-hidden bg-[#1e1e2e]">
+<!-- SCROLLABLE CONTENT AREA -->
+<div class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+<!-- 1. HEADER SECTION -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#45475a]/70">
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-xl font-bold text-[#cdd6f4] font-headline tracking-tight">Migrate 3 manga</h1>
+<span class="px-2 py-0.5 rounded text-xs font-semibold bg-[#f9e2af]/15 text-[#f9e2af] border border-[#f9e2af]/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                Offline Source
+              </span>
+</div>
+<p class="text-xs text-[#a6adc8] mt-1 flex items-center gap-1.5">
+<span>From: <strong class="text-[#cdd6f4] font-medium">Nebula Source (EN)</strong></span>
+<span class="text-[#6c7086]">•</span>
+<span class="text-[#f38ba8]">source no longer available (HTTP 410 Gone)</span>
+</p>
+</div>
+<!-- Target Sources Priority Chips -->
+<div class="flex items-center gap-2">
+<span class="text-xs text-[#a6adc8] font-medium">Target order:</span>
+<div class="flex items-center gap-1.5">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#313244] text-[#cdd6f4] text-xs border border-[#45475a]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#a6e3a1]"></span>
+                1. MangaDex (EN)
+              </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#313244] text-[#cdd6f4] text-xs border border-[#45475a]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#89b4fa]"></span>
+                2. Aurora Source (EN)
+              </span>
+</div>
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-xs text-[#cba6f7] hover:bg-[#313244] rounded border border-[#45475a] transition-colors" title="Change target sources priority">
+<span class="material-symbols-outlined text-[14px]">tune</span>
+<span>Edit order</span>
+</button>
+</div>
+</div>
+<!-- 2. OPTIONS CARD (Collapsible & Functional Appearance) -->
+<div class="bg-[#313244] border border-[#45475a] rounded-xl p-4 shadow-sm">
+<div class="flex items-center justify-between cursor-pointer select-none mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[#cba6f7]">tune</span>
+<span class="text-sm font-semibold text-[#cdd6f4]">Migration Settings &amp; Options</span>
+</div>
+<div class="flex items-center gap-1 text-xs text-[#a6adc8]">
+<span>Collapse</span>
+<span class="material-symbols-outlined text-[16px]">expand_less</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-2 border-t border-[#45475a]/60">
+<!-- Left 7 cols: Transfer flags -->
+<div class="lg:col-span-7 flex flex-col gap-2.5">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-[#a6adc8]">Data to transfer</span>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs text-[#cdd6f4]">
+<label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+<input checked="" class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" type="checkbox"/>
+<span>Read status &amp; progress</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+<input checked="" class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" type="checkbox"/>
+<span>Categories &amp; tags</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+<input checked="" class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" type="checkbox"/>
+<span>Reader settings</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+<input checked="" class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" type="checkbox"/>
+<span>Custom cover art</span>
+</label>
+<div class="flex flex-col col-span-2 sm:col-span-2">
+<label class="flex items-center gap-2 cursor-pointer text-[#a6adc8]">
+<input class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" type="checkbox"/>
+<span class="text-[#cdd6f4]">Downloads</span>
+<span class="text-[11px] text-[#f38ba8] italic">(Old downloaded files will be wiped)</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Right 5 cols: Library entry handling -->
+<div class="lg:col-span-5 flex flex-col gap-2.5 lg:border-l lg:border-[#45475a]/60 lg:pl-5">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-[#a6adc8]">Post-migration library action</span>
+<div class="flex flex-col gap-2 text-xs text-[#cdd6f4]">
+<label class="flex items-center gap-2 cursor-pointer">
+<input checked="" class="border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" name="library_action" type="radio"/>
+<span>Remove old entry from library <span class="text-[#a6adc8]">(Recommended)</span></span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer">
+<input class="border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3.5 h-3.5" name="library_action" type="radio"/>
+<span class="text-[#a6adc8]">Keep both sources (Creates duplicate library card)</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. MIGRATION COMPARISON LIST (3 ROWS) -->
+<div class="space-y-3 pb-8">
+<div class="flex items-center justify-between text-xs font-semibold text-[#a6adc8] px-1">
+<span>Manga comparison queue (3 items)</span>
+<div class="flex items-center gap-3">
+<button class="text-[#cba6f7] hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+                Re-scan all targets
+              </button>
+</div>
+</div>
+<!-- ROW 1: Exact Match (Green) -->
+<div class="bg-[#313244] border border-[#45475a] hover:border-[#585b70] rounded-xl p-4 transition-all duration-150">
+<div class="grid grid-cols-1 md:grid-cols-12 items-center gap-4">
+<!-- Source (Left 5 Cols) -->
+<div class="md:col-span-5 flex items-center gap-3.5">
+<div class="relative w-14 h-20 rounded-md overflow-hidden bg-[#181825] shrink-0 border border-[#45475a]">
+<img class="w-full h-full object-cover" data-alt="Digital anime manga cover showing a shadowy warrior with a glowing silver katana standing beneath an ashen cloudy sky with subtle purple highlights and dark moody atmospheric tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDB6mHgnLR7SSp0SFR_79z01TyjIE9VBe_qHHOcxbPMJi5bta_BTcBfrooCGLDdgiKgbsMOe64-0Qu5Jss2D1sfuHuk5CU6bs6NnP-42HpFgc2hgHzLkuuD13z9xvlLasm6i7et5ZVNfLavRfPtvZA7xjD6k--ba7VC92wgYMK1_Hqj6Jr3eTB7J6Uv4LzfYGOQhFV277MQO8veYf_qH1NfGdxkllElBI6oVT7u1Zfv6mxuNFwJvwyM7I3hpCcLbQzZefh_iuRMi7N6"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#11111b]/80 text-[9px] text-center font-mono py-0.5 text-[#a6adc8]">OLD</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-[#cdd6f4] truncate" title="Blade of the Ashen Sky">Blade of the Ashen Sky</span>
+<span class="text-xs text-[#a6adc8] mt-0.5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-[#f38ba8]">cloud_off</span>
+<span>Nebula Source (EN)</span>
+</span>
+<div class="flex items-center gap-2 mt-1.5 text-[11px] text-[#bac2de]">
+<span class="px-1.5 py-0.5 rounded bg-[#181825] border border-[#45475a]">64 ch.</span>
+<span class="text-[#a6e3a1] font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">done_all</span>
+                      Read: Ch. 58
+                    </span>
+</div>
+</div>
+</div>
+<!-- Central Transfer Glyph (2 Cols) -->
+<div class="md:col-span-2 flex flex-col items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-[#181825] border border-[#45475a] flex items-center justify-center text-[#cba6f7] shadow-sm">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</div>
+<span class="text-[10px] text-[#a6adc8] font-mono mt-1">match 100%</span>
+</div>
+<!-- Target Match (Right 5 Cols) -->
+<div class="md:col-span-5 flex items-center justify-between gap-3 bg-[#1e1e2e] p-2.5 rounded-lg border border-[#45475a]/70">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative w-12 h-16 rounded overflow-hidden bg-[#181825] shrink-0 border border-[#45475a]">
+<img class="w-full h-full object-cover" data-alt="Manga volume cover art featuring the identical sword protagonist Blade of the Ashen Sky in high resolution colored ink style with dark violet and silver contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtZ0JuWQa23dy0Y3GePH9g9ixrybZfLBIYL8kltUU0eVkk-gDErvQ7LHsib5EI7P4Yr5xDSd126SBY6ehZ9ngZzwtPPS5t5rlIjeZ9rkPQe6EhpvRH-rQxA2vtShEiRDuO-kyzNQ957yaT7bwcf-rT9uhW6shKAgWzl58nhAKC_-CBb6SJmKxGUdGneTj69QAumiXGrz3hOM_3a1kQj3JgSI9LEWx8BG135dZT4CECyaneVm-vZKHk86Oz_x0jWmwD7kCNLvCyuWzF"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-[#cdd6f4] truncate">Blade of the Ashen Sky</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#a6e3a1] text-[#11111b] shrink-0">Exact</span>
+</div>
+<span class="text-[11px] text-[#a6adc8] mt-0.5">MangaDex (EN) · 71 chapters</span>
+<span class="text-[10px] text-[#a6e3a1] mt-0.5">Ch. 59-71 new unread</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-1 shrink-0">
+<button class="px-2 py-1 text-xs rounded hover:bg-[#313244] text-[#bac2de] hover:text-[#cdd6f4] transition-colors border border-transparent hover:border-[#45475a]">
+                    Change
+                  </button>
+<button class="p-1 rounded hover:bg-[#313244] text-[#a6adc8] hover:text-[#cdd6f4] transition-colors" title="Manual Search">
+<span class="material-symbols-outlined text-[16px]">search</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ROW 2: Similar Match (Yellow/Peach Warning) -->
+<div class="bg-[#313244] border border-[#45475a] hover:border-[#585b70] rounded-xl p-4 transition-all duration-150">
+<div class="grid grid-cols-1 md:grid-cols-12 items-center gap-4">
+<!-- Source (Left 5 Cols) -->
+<div class="md:col-span-5 flex items-center gap-3.5">
+<div class="relative w-14 h-20 rounded-md overflow-hidden bg-[#181825] shrink-0 border border-[#45475a]">
+<img class="w-full h-full object-cover" data-alt="Manga illustration of a gothic girl surrounded by flying crimson flower petals in an ancient cobblestone European courtyard under twilight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC_d_VjPCuCV0C3sK0dyiIaUs9zIWyz_wgqjXpT4H8h3Koc44yvlaXFgmYOoiVV1EsN3nvCsE1PUj5ERvE5iYeZ-ZlAMePTxkpKIMPjdU00SiZ0XuskEADoR3b6RuugPQsYI5xxpKLs5bnKuo5eDYHd1e_JpN3YxG1YFx4RekwIfnA3HOy4NEgb5dQPC3FegoJDL81Je7kKXEKbAm1B_PHfbq4m7bySL83iVtyycYhTS2c3Ei2FSixaTvGXeyP1uP1202xc-Fa37hz0"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#11111b]/80 text-[9px] text-center font-mono py-0.5 text-[#a6adc8]">OLD</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-[#cdd6f4] truncate" title="Echoes in Crimson">Echoes in Crimson</span>
+<span class="text-xs text-[#a6adc8] mt-0.5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-[#f38ba8]">cloud_off</span>
+<span>Nebula Source (EN)</span>
+</span>
+<div class="flex items-center gap-2 mt-1.5 text-[11px] text-[#bac2de]">
+<span class="px-1.5 py-0.5 rounded bg-[#181825] border border-[#45475a]">92 ch.</span>
+<span class="text-[#a6e3a1] font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">done_all</span>
+                      Read: Ch. 85
+                    </span>
+</div>
+</div>
+</div>
+<!-- Central Transfer Glyph (2 Cols) -->
+<div class="md:col-span-2 flex flex-col items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-[#181825] border border-[#45475a] flex items-center justify-center text-[#f9e2af] shadow-sm">
+<span class="material-symbols-outlined text-[18px]">sync_alt</span>
+</div>
+<span class="text-[10px] text-[#f9e2af] font-mono mt-1">verify match</span>
+</div>
+<!-- Target Match (Right 5 Cols) -->
+<div class="md:col-span-5 flex items-center justify-between gap-3 bg-[#1e1e2e] p-2.5 rounded-lg border border-[#f9e2af]/40">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative w-12 h-16 rounded overflow-hidden bg-[#181825] shrink-0 border border-[#45475a]">
+<img class="w-full h-full object-cover" data-alt="Alternate release manga cover of Echoes of Crimson Sun featuring identical character design with updated vibrant Japanese graphic lettering." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3947O3FoLob363pLT0YvWudjLVFC6oqKMEAjDB7am_kE0X5ic8UV8MB-03ecrqmxJLHO5MsXiWKHRMrl_4sRgwX55f6GXeORfbDw849ua1TuGnRhn6qh36uIJ1f14QHpaBI4SqYKlCjA11WXr4xClJd6WdTgMxTTz1Hfa6vyhAD15eJc9DRiep-rrhESN-PxnU87X2G1q6a5H47CLnwRnaaQ6Prq8dYI05pJcNskXesihkDTP9HRmPEq2nSn6EbClF7cGDZ6T1GiV"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-[#cdd6f4] truncate">Echoes of Crimson Sun</span>
+<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#f9e2af] text-[#11111b] shrink-0">Similar (87%)</span>
+</div>
+<span class="text-[11px] text-[#a6adc8] mt-0.5">MangaDex (EN) · 95 chapters</span>
+<span class="text-[10px] text-[#fab387] mt-0.5">Title variant detected</span>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-1 shrink-0">
+<button class="px-2 py-1 text-xs rounded hover:bg-[#313244] text-[#bac2de] hover:text-[#cdd6f4] transition-colors border border-transparent hover:border-[#45475a]">
+                    Change
+                  </button>
+<button class="p-1 rounded hover:bg-[#313244] text-[#a6adc8] hover:text-[#cdd6f4] transition-colors" title="Manual Search">
+<span class="material-symbols-outlined text-[16px]">search</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- ROW 3: No Match Found / Needs Attention (Red) -->
+<div class="bg-[#313244] border border-[#f38ba8]/30 hover:border-[#f38ba8]/50 rounded-xl p-4 transition-all duration-150">
+<div class="grid grid-cols-1 md:grid-cols-12 items-center gap-4">
+<!-- Source (Left 5 Cols) -->
+<div class="md:col-span-5 flex items-center gap-3.5">
+<div class="relative w-14 h-20 rounded-md overflow-hidden bg-[#181825] shrink-0 border border-[#45475a]">
+<img class="w-full h-full object-cover" data-alt="Atmospheric manga cover showing a retro Japanese detective in a trench coat holding a glowing paper lantern in a misty neon Tokyo alleyway." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQLo4odTRxjTmOchN_B_vDdTva_gbnZRGC7us_J8WaB1FmFY1UsulHt8dEtQspk-Z9U0W5HJge45fPU19NxLi8AD74J_zaspaO8CSqcI9d9GBMpop0jNnG87MjaIcT2v9sOrV8pYcAYpBUslB2kibciRy3EPMP6ZlmIPZjZc6tAccQrdxEmMLufa2SMtcWxFNhJGPwCYIiYhEokhhyTU3Sr_5DTgHDU7FL7GNP2TSNfnOMfLAWTglAf5Lz5RoTG2J8sedvu9rwE4uS"/>
+<span class="absolute bottom-0 inset-x-0 bg-[#11111b]/80 text-[9px] text-center font-mono py-0.5 text-[#a6adc8]">OLD</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-sm font-semibold text-[#cdd6f4] truncate" title="Paper Lantern Detective">Paper Lantern Detective</span>
+<span class="text-xs text-[#a6adc8] mt-0.5 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-[#f38ba8]">cloud_off</span>
+<span>Nebula Source (EN)</span>
+</span>
+<div class="flex items-center gap-2 mt-1.5 text-[11px] text-[#bac2de]">
+<span class="px-1.5 py-0.5 rounded bg-[#181825] border border-[#45475a]">42 ch.</span>
+<span class="text-[#a6e3a1] font-medium flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px]">done_all</span>
+                      Read: Ch. 16
+                    </span>
+</div>
+</div>
+</div>
+<!-- Central Transfer Glyph (2 Cols) -->
+<div class="md:col-span-2 flex flex-col items-center justify-center">
+<div class="w-8 h-8 rounded-full bg-[#181825] border border-[#f38ba8]/40 flex items-center justify-center text-[#f38ba8] shadow-sm">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+<span class="text-[10px] text-[#f38ba8] font-mono mt-1">no match</span>
+</div>
+<!-- Target Match: Empty State / Manual Search (Right 5 Cols) -->
+<div class="md:col-span-5 flex items-center justify-between gap-3 bg-[#181825]/60 border border-dashed border-[#585b70] p-2.5 rounded-lg">
+<div class="flex items-center gap-3 min-w-0">
+<div class="w-12 h-16 rounded border border-dashed border-[#45475a] flex items-center justify-center bg-[#181825] text-[#6c7086] shrink-0">
+<span class="material-symbols-outlined text-[20px]">image_not_supported</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#f38ba8] text-[#11111b] shrink-0">No match found</span>
+</div>
+<span class="text-[11px] text-[#a6adc8] mt-1">Searched MangaDex &amp; Aurora</span>
+<label class="flex items-center gap-1.5 text-[11px] text-[#a6adc8] mt-1 cursor-pointer">
+<input class="rounded border-[#585b70] bg-[#1e1e2e] text-[#cba6f7] focus:ring-0 focus:ring-offset-0 w-3 h-3" type="checkbox"/>
+<span>Skip this title for now</span>
+</label>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col gap-1.5 shrink-0">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded bg-[#313244] hover:bg-[#45475a] text-[#cdd6f4] transition-colors font-medium border border-[#45475a]">
+<span class="material-symbols-outlined text-[14px]">search</span>
+<span>Search manually</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 4. BOTTOM STICKY ACTION BAR -->
+<footer class="bg-[#181825] border-t border-[#45475a] px-6 py-3 flex items-center justify-between select-none z-20 shrink-0">
+<!-- Left: Status Summary -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 text-xs text-[#cdd6f4]">
+<span class="w-2 h-2 rounded-full bg-[#a6e3a1]"></span>
+<span class="font-medium">2 of 3 ready to migrate</span>
+</div>
+<span class="text-[#6c7086]">|</span>
+<div class="flex items-center gap-1.5 text-xs text-[#fab387]">
+<span class="w-2 h-2 rounded-full bg-[#f38ba8]"></span>
+<span>1 requires manual selection</span>
+</div>
+</div>
+<!-- Right: Action Buttons -->
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-xs font-medium text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#313244] rounded-lg transition-colors">
+            Cancel
+          </button>
+<button class="flex items-center gap-2 bg-[#cba6f7] text-[#11111b] font-bold text-xs px-5 py-2.5 rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[16px] text-[#11111b]">drive_file_move</span>
+<span>Migrate 2 manga</span>
+</button>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

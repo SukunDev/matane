@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader — Downloads</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-fixed-dim": "#d9b9ff", error: "#ffb4ab", "secondary-container": "#3b457c", "surface-container-lowest": "#0d0d1c", primary: "#e2c7ff", "surface-container": "#1e1e2e", "surface-tint": "#d9b9ff", "inverse-primary": "#704f98", "inverse-on-surface": "#2f2f40", outline: "#968e9a", "error-container": "#93000a", "surface-variant": "#333344", "on-primary-fixed": "#290350", "on-background": "#e3e0f7", "surface-container-low": "#1a1a2a", "on-primary-fixed-variant": "#57377f", "on-tertiary": "#4f2504", "surface-container-high": "#292839", surface: "#121221", "secondary-fixed-dim": "#bac3ff", "on-secondary-fixed": "#09154c", "on-secondary-container": "#abb5f4", tertiary: "#ffc6a4", "on-primary": "#3f1e66", "on-error": "#690005", "secondary-fixed": "#dee0ff", "on-secondary-fixed-variant": "#38437a", background: "#121221", "tertiary-container": "#eca77c", "on-tertiary-container": "#6c3b19", "inverse-surface": "#e3e0f7", "on-tertiary-fixed-variant": "#6b3a18", "tertiary-fixed": "#ffdbc8", "on-tertiary-fixed": "#311300", "tertiary-fixed-dim": "#feb78a", "on-secondary": "#212c62", "surface-container-highest": "#333344", "surface-bright": "#383849", secondary: "#bac3ff", "on-surface": "#e3e0f7", "primary-fixed": "#eedbff", "on-surface-variant": "#cdc3d1", "surface-dim": "#121221", "outline-variant": "#4a444f", "on-primary-container": "#57377f", "on-error-container": "#ffdad6", "primary-container": "#cba6f7"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"space-xl": "1.5rem", "space-sm": "0.5rem", gutter: "1rem", "space-lg": "1rem", "space-md": "0.75rem", "space-xs": "0.25rem", margin: "1rem"}, fontFamily: {"label-sm": ["Inter"], "headline-sm": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-sm": ["12px", {lineHeight: "16px", fontWeight: "400"}], "headline-sm": ["14px", {lineHeight: "20px", fontWeight: "600"}], "headline-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121317;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #343439;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #474554;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface antialiased select-none overflow-hidden h-screen w-screen flex flex-col font-body-md text-body-md">
+<!-- ================= TOP TITLEBAR ================= -->
+<header class="flex justify-between items-center w-full h-10 px-3 z-50 fixed top-0 left-0 right-0 bg-surface-container-low border-b border-outline-variant select-none">
+<!-- Window Breadcrumb -->
+<div class="flex items-center gap-2 text-label-sm font-label-sm">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container inline-block"></span>
+<span class="font-headline-sm text-headline-sm text-on-surface">MangaReader</span>
+</div>
+<span class="text-outline">›</span>
+<span class="text-on-surface-variant font-medium">Downloads</span>
+</div>
+<!-- Centered Quick Search Input -->
+<div class="flex-1 max-w-md mx-4">
+<div class="relative flex items-center h-7 bg-surface-container rounded-lg border border-outline-variant/60 px-2.5 focus-within:border-primary transition-colors">
+<span class="material-symbols-outlined text-outline text-[16px] mr-2">search</span>
+<input class="w-full bg-transparent border-none p-0 text-label-sm font-label-sm text-on-surface placeholder-outline focus:outline-none focus:ring-0" placeholder="Search…" type="text"/>
+<kbd class="hidden sm:inline-block whitespace-nowrap px-1.5 py-0.5 text-[10px] font-medium text-outline bg-surface-container-high rounded border border-outline-variant/50">Ctrl K</kbd>
+</div>
+</div>
+<!-- Right Trailing Window Actions -->
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" title="Incognito Mode">
+<span class="material-symbols-outlined text-[16px]">visibility_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" title="Network Offline/Cloud">
+<span class="material-symbols-outlined text-[16px]">cloud_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" title="Sync Queue">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+<div class="h-4 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Desktop Window Controls -->
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">minimize</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">crop_square</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error-container hover:text-error transition-colors">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</header>
+<!-- ================= SHELL BODY WRAPPER ================= -->
+<div class="flex h-[calc(100vh-2.5rem)] mt-10 w-full overflow-hidden">
+<!-- ================= LEFT SIDEBAR ================= -->
+<aside class="w-[220px] shrink-0 h-full bg-surface-container-low border-r border-outline-variant flex flex-col justify-between p-3 select-none">
+<div class="flex flex-col gap-4">
+<!-- Sidebar Brand Header -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-6 h-6 rounded-lg bg-primary flex items-center justify-center text-on-primary font-bold text-xs shadow-sm">
+            M
+          </div>
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">MangaReader</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-1">
+<!-- Library -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between text-label-sm font-label-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span>Library</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-highest text-outline text-[11px] font-medium">148</span>
+</a>
+<!-- Updates -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between text-label-sm font-label-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">update</span>
+<span>Updates</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-primary-container text-on-primary-container text-[11px] font-semibold">12</span>
+</a>
+<!-- History -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 text-label-sm font-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>History</span>
+</a>
+<!-- Browse (with expandable subitems) -->
+<div class="flex flex-col">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between text-label-sm font-label-sm" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+<span>Browse</span>
+</div>
+<span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+</a>
+<div class="pl-8 pr-2 py-1 flex flex-col gap-1">
+<a class="text-outline hover:text-on-surface text-[12px] py-1 px-2 rounded hover:bg-surface-container-high transition-colors" href="#">Sources</a>
+<a class="text-outline hover:text-on-surface text-[12px] py-1 px-2 rounded hover:bg-surface-container-high transition-colors" href="#">Extensions</a>
+<a class="text-outline hover:text-on-surface text-[12px] py-1 px-2 rounded hover:bg-surface-container-high transition-colors" href="#">Global search</a>
+</div>
+</div>
+<!-- Downloads (ACTIVE) -->
+<a class="bg-primary-container/30 text-on-surface font-semibold rounded-lg px-3 py-2 flex items-center justify-between text-label-sm font-label-sm border-l-2 border-primary" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[18px]">download</span>
+<span class="text-on-surface font-semibold">Downloads</span>
+</div>
+<span class="px-1.5 py-0.2 rounded bg-primary text-on-primary text-[11px] font-bold">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 text-label-sm font-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span>Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 text-label-sm font-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span>Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Bottom Settings Pin -->
+<div class="pt-2 border-t border-outline-variant/60">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 text-label-sm font-label-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- ================= MAIN DOWNLOADS AREA ================= -->
+<main class="flex-1 flex flex-col h-full bg-surface overflow-hidden">
+<!-- Top Scrollable Content Container -->
+<div class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+<!-- 1. Header Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-outline-variant/40">
+<div class="space-y-2">
+<div class="flex items-baseline gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">Downloads</h1>
+<span class="text-label-sm font-label-sm text-outline">Queue Management</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">
+              6 in queue · 2 active · 18.4 GB used of 20 GB limit
+            </p>
+<!-- Storage Usage Indicator Bar -->
+<div class="flex items-center gap-3 pt-1 max-w-sm">
+<div class="flex-1 h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-tertiary rounded-full transition-all duration-300" style="width: 92%;"></div>
+</div>
+<span class="text-label-sm font-label-sm font-semibold text-tertiary whitespace-nowrap">92% (18.4 / 20 GB)</span>
+</div>
+</div>
+<!-- Top Right Action Controls -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/70 text-on-surface rounded-lg text-label-sm font-label-sm transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+<span>Pause all</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/70 text-on-surface rounded-lg text-label-sm font-label-sm transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+<span>Clear completed</span>
+</button>
+<div class="relative">
+<button class="w-8 h-8 flex items-center justify-center bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/70 text-on-surface rounded-lg transition-all duration-150 active:scale-95" title="More Options">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 2. Status / Category Tabs -->
+<div class="flex items-center justify-between border-b border-outline-variant/50">
+<div class="flex items-center gap-6">
+<button class="pb-2.5 font-headline-sm text-headline-sm font-semibold text-primary border-b-2 border-primary flex items-center gap-2">
+<span>Queue</span>
+<span class="px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[11px] font-bold">6</span>
+</button>
+<button class="pb-2.5 font-headline-sm text-headline-sm font-medium text-on-surface-variant hover:text-on-surface flex items-center gap-2 transition-colors">
+<span>Completed</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-outline text-[11px] font-semibold">214</span>
+</button>
+<button class="pb-2.5 font-headline-sm text-headline-sm font-medium text-on-surface-variant hover:text-on-surface flex items-center gap-2 transition-colors">
+<span>Errors</span>
+<span class="px-1.5 py-0.5 rounded-full bg-error-container/40 text-error text-[11px] font-semibold">1</span>
+</button>
+</div>
+<div class="flex items-center gap-2 pb-2 text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]">swap_vert</span>
+<span>Drag handle to reorder</span>
+</div>
+</div>
+<!-- 3. Downloads Queue List (Bento-style Collapsible Groups) -->
+<div class="space-y-4 pb-12">
+<!-- GROUP 1: Blade of the Ashen Sky -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/60 overflow-hidden shadow-sm">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-4 py-3 bg-surface-container/60 border-b border-outline-variant/40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-11 rounded bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant/40">
+<img alt="Blade of the Ashen Sky Cover" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XeZgJ6YlLkplzC1Do0-bzuURVP0WHFqK9tvI8nkfjzRE0XPVob--L9G157RsBkgXrdG4AvKU3mipbQ1p8j93QIzQ9Ho47ntYbdwYIGxDZsucd-b6pfVYd1k5HUFevg2dzjjMYRsoIJ22SBP0LSCVzAdwOLdho_xPtpn3HGd3BV0BQeMZnZ3yxtAxeVZ3GVTQ9iRvWhXIjhCltJ1abx6YTLc-RpEH9PJ8uA5NHGGUW2cfPpfdroX4a7iTGk"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Blade of the Ashen Sky</h2>
+<span class="px-2 py-0.5 bg-surface-container-highest text-primary-fixed-dim text-[11px] font-medium rounded-md border border-outline-variant/40">MangaDex</span>
+</div>
+<p class="text-label-sm font-label-sm text-outline">3 chapters in queue</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">expand_less</span>
+</button>
+</div>
+</div>
+<!-- Row 1: Active 1 -->
+<div class="group flex items-center justify-between p-3.5 hover:bg-surface-container-high/40 border-b border-outline-variant/30 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Ch. 128 — The Last Ember</span>
+<span class="text-label-sm font-label-sm text-primary font-medium">Downloading (56%)</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline mb-2">
+<span>Nightowl Scans</span>
+<span>·</span>
+<span class="text-on-surface-variant font-medium">Page 23 / 41</span>
+<span>·</span>
+<span>1.2 MB/s</span>
+<span>·</span>
+<span>ETA 14s</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full transition-all duration-150" style="width: 56%;"></div>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium w-16 text-right">38.4 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Pause">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Row 2: Active 2 -->
+<div class="group flex items-center justify-between p-3.5 hover:bg-surface-container-high/40 border-b border-outline-variant/30 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Ch. 127 — Ashborn Awakening</span>
+<span class="text-label-sm font-label-sm text-primary font-medium">Downloading (12%)</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline mb-2">
+<span>Crimson Quill</span>
+<span>·</span>
+<span class="text-on-surface-variant font-medium">Page 5 / 42</span>
+<span>·</span>
+<span>640 KB/s</span>
+<span>·</span>
+<span>ETA 48s</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full transition-all duration-150" style="width: 12%;"></div>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant font-medium w-16 text-right">41.2 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Pause">
+<span class="material-symbols-outlined text-[16px]">pause</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Row 3: Paused -->
+<div class="group flex items-center justify-between p-3.5 hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant truncate">Ch. 126 — The Obsidian Citadel</span>
+<span class="text-label-sm font-label-sm text-outline">Paused</span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline mb-2">
+<span>Nightowl Scans</span>
+<span>·</span>
+<span>Page 18 / 40</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-outline font-medium w-16 text-right">36.0 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-primary hover:bg-surface-container-highest transition-colors" title="Resume">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- GROUP 2: Spirit Garden Academy -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/60 overflow-hidden shadow-sm">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-4 py-3 bg-surface-container/60 border-b border-outline-variant/40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-11 rounded bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant/40 flex items-center justify-center bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Manga cover artwork of Spirit Garden Academy depicting a magical botanical greenhouse courtyard filled with glowing enchanted flora and a female student in academy robes looking upwards into celestial light. High contrast dark anime illustration style with emerald green and lilac tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAylUakM0fLsV6eDOSeM3NS08npbTtm8DXj8S84PP34pnSkwhP1dhxrxtNknAqbD53sXABY84xTYvpsmW_1ZhEg-8iE7n_xSX8-oEaZBgCxL-hQ98MwynrhLloY1adv6WrCvaebFd50wuRhn-DfIFnJJaUI4elwGjuvX3h3eU7LffI-PU8kfS8jqXgeLQ0Aq5Hx_z4A9b4KXhmRfZM0c-jm4_9pgVbZKOM9nZHaQhlnpAE3AiWAP9R80_eYV1OB5IyuwathEXpmyELA"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Spirit Garden Academy</h2>
+<span class="px-2 py-0.5 bg-surface-container-highest text-secondary-fixed-dim text-[11px] font-medium rounded-md border border-outline-variant/40">Aurora Source</span>
+</div>
+<p class="text-label-sm font-label-sm text-outline">2 chapters in queue</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">expand_less</span>
+</button>
+</div>
+</div>
+<!-- Row 4: Queued 1 -->
+<div class="group flex items-center justify-between p-3.5 hover:bg-surface-container-high/40 border-b border-outline-variant/30 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant truncate">Ch. 15 — The Ethereal Conservatory</span>
+<span class="text-label-sm font-label-sm text-outline flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-outline inline-block"></span>
+                      Queued
+                    </span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline">
+<span>Aurora Scans</span>
+<span>·</span>
+<span>Webtoon Format</span>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-outline font-medium w-16 text-right">52.8 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Row 5: Queued 2 -->
+<div class="group flex items-center justify-between p-3.5 hover:bg-surface-container-high/40 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant truncate">Ch. 14 — The Silver Gate</span>
+<span class="text-label-sm font-label-sm text-outline flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-outline inline-block"></span>
+                      Queued
+                    </span>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline">
+<span>Aurora Scans</span>
+<span>·</span>
+<span>Webtoon Format</span>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-outline font-medium w-16 text-right">49.1 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- GROUP 3: Tokyo Circuit Rebels -->
+<div class="bg-surface-container-low rounded-xl border border-outline-variant/60 overflow-hidden shadow-sm">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-4 py-3 bg-surface-container/60 border-b border-outline-variant/40">
+<div class="flex items-center gap-3">
+<div class="w-8 h-11 rounded bg-surface-container-high overflow-hidden shrink-0 border border-outline-variant/40 flex items-center justify-center bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Cyberpunk manga cover artwork titled Tokyo Circuit Rebels featuring a neon-lit futuristic highway at midnight with high-speed motorcycles leaving electric violet and orange light trails. Stylized gritty Japanese graphic novel aesthetic with sharp dynamic line art." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7epAoCREyFtgZ3Jzfp1eUNqx_awfqWStXIm5y6IKaED2prvxRW1HPbA9IHUPnHLx5ZeKnxPtbOXsKqA17x8XEQ68FpX0bha2SbiauBTcRsJ_OJ8X4xOCv6Np7p5M7r8tGPxGaWKflwmr8uuK4o6GuvTbV5pDbyOcAGZ-aa_i1RF96d60l4ZsCaV-OcMLLDNA2v65xtTsW1U91HyQqkksDcioaTfgBYXz6mqx9RQrz51Tdik4oyLJSTtN06lHU0OZWPkjKonHGfhcF"/>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Tokyo Circuit Rebels</h2>
+<span class="px-2 py-0.5 bg-surface-container-highest text-tertiary-fixed-dim text-[11px] font-medium rounded-md border border-outline-variant/40">Local Demo</span>
+</div>
+<p class="text-label-sm font-label-sm text-outline">1 chapter in queue</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-1 rounded text-outline hover:text-on-surface hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">expand_less</span>
+</button>
+</div>
+</div>
+<!-- Row 6: Error State -->
+<div class="group flex items-center justify-between p-3.5 bg-error-container/10 hover:bg-error-container/15 transition-colors">
+<div class="flex items-center gap-3 flex-1 min-w-0 pr-4">
+<span class="material-symbols-outlined text-outline/50 group-hover:text-outline cursor-grab text-[18px]">drag_indicator</span>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Ch. 45 — Overdrive Protocol</span>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 text-label-sm font-label-sm text-error bg-error-container/30 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                        Error: Failed after 3 retries (HTTP 503)
+                      </span>
+</div>
+</div>
+<div class="flex items-center gap-3 text-label-sm font-label-sm text-outline">
+<button class="text-primary hover:underline font-medium inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">replay</span>
+                      Retry
+                    </button>
+<span>·</span>
+<button class="text-outline hover:text-on-surface hover:underline">Details</button>
+</div>
+</div>
+</div>
+<!-- Right controls -->
+<div class="flex items-center gap-3 shrink-0">
+<span class="px-2 py-0.5 rounded bg-surface-container text-outline text-[11px] font-medium border border-outline-variant/40">CBZ</span>
+<span class="text-label-sm font-label-sm text-outline font-medium w-16 text-right">29.5 MB</span>
+<div class="flex items-center gap-1 ml-2">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg text-outline hover:text-error hover:bg-error-container/20 transition-colors" title="Cancel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= 4. BOTTOM STICKY DOCKED INFO BAR ================= -->
+<footer class="h-9 px-6 bg-surface-container-low border-t border-outline-variant flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant shrink-0 select-none">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+<span>Download ahead: <span class="text-on-surface font-medium">2 chapters</span></span>
+</div>
+<span class="text-outline">·</span>
+<div>
+<span>Auto-delete after reading: <span class="text-on-surface font-medium">on</span></span>
+</div>
+</div>
+<div>
+<a class="inline-flex items-center gap-1 text-primary hover:text-primary-fixed hover:underline transition-colors font-medium" href="#">
+<span>Download settings</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

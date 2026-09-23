@@ -1,0 +1,135 @@
+{
+  "app": {
+    "name": "MangaReader"
+  },
+  "nav": {
+    "library": "Library",
+    "updates": "Updates",
+    "history": "History",
+    "browse": "Browse",
+    "sources": "Sources",
+    "extensions": "Extensions",
+    "globalSearch": "Global search",
+    "downloads": "Downloads",
+    "bookmarks": "Bookmarks",
+    "statistics": "Statistics",
+    "settings": "Settings",
+    "manga": "Manga",
+    "reader": "Reader",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
+  },
+  "titlebar": {
+    "back": "Back",
+    "forward": "Forward",
+    "search": "Search…",
+    "searchSoon": "The command palette arrives in a later version",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close",
+    "offline": "Offline"
+  },
+  "empty": {
+    "library": {
+      "title": "Your library is empty",
+      "description": "Browse a source and add manga to your library to see them here."
+    },
+    "updates": {
+      "title": "No new chapters",
+      "description": "New chapters from manga in your library will appear here."
+    },
+    "history": {
+      "title": "Nothing read yet",
+      "description": "Manga you read will show up here so you can pick up where you left off."
+    },
+    "sources": {
+      "title": "No sources installed",
+      "description": "Install an extension to start browsing manga."
+    },
+    "extensions": {
+      "title": "No extensions yet",
+      "description": "Extension repositories arrive in a later version."
+    },
+    "globalSearch": {
+      "title": "Search every source at once",
+      "description": "Install at least one source to use global search."
+    },
+    "downloads": {
+      "title": "No downloads",
+      "description": "Downloaded chapters can be read offline."
+    },
+    "bookmarks": {
+      "title": "No bookmarks",
+      "description": "Bookmark chapters or pages while reading to find them here."
+    },
+    "statistics": {
+      "title": "No reading stats yet",
+      "description": "Statistics are collected as you read."
+    },
+    "manga": {
+      "title": "Manga not found",
+      "description": "Manga details arrive with the first source."
+    },
+    "reader": {
+      "title": "Reader is not ready yet",
+      "description": "The reader arrives in the next phase."
+    }
+  },
+  "settings": {
+    "sections": {
+      "general": "General",
+      "library": "Library",
+      "reader": "Reader",
+      "downloads": "Downloads",
+      "browse": "Browse & extensions",
+      "tracking": "Tracking",
+      "network": "Network",
+      "data": "Data & storage",
+      "advanced": "Advanced",
+      "about": "About"
+    },
+    "soon": "Soon",
+    "comingSoon": "These settings arrive in a later version.",
+    "appearance": "Appearance",
+    "theme": {
+      "label": "Theme",
+      "description": "Catppuccin flavor used across the app.",
+      "system": "System",
+      "mocha": "Mocha",
+      "macchiato": "Macchiato",
+      "frappe": "Frappé",
+      "latte": "Latte",
+      "amoled": "AMOLED"
+    },
+    "accent": {
+      "label": "Accent color",
+      "description": "Used for buttons, highlights and progress.",
+      "rosewater": "Rosewater",
+      "flamingo": "Flamingo",
+      "pink": "Pink",
+      "mauve": "Mauve",
+      "red": "Red",
+      "maroon": "Maroon",
+      "peach": "Peach",
+      "yellow": "Yellow",
+      "green": "Green",
+      "teal": "Teal",
+      "sky": "Sky",
+      "sapphire": "Sapphire",
+      "blue": "Blue",
+      "lavender": "Lavender"
+    },
+    "language": {
+      "label": "Language",
+      "description": "Language of the app interface.",
+      "system": "Follow system",
+      "en": "English",
+      "id": "Bahasa Indonesia"
+    },
+    "about": {
+      "version": "Version {{version}}",
+      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+    }
+  }
+}

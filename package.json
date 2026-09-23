@@ -1,0 +1,42 @@
+{
+  "name": "manga-reader",
+  "private": true,
+  "description": "Open-source desktop manga reader with a sandboxed extension system",
+  "license": "GPL-3.0-only",
+  "type": "module",
+  "packageManager": "pnpm@12.5.1",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.21.0",
+      "onFail": "warn"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^12.5.1",
+      "onFail": "warn"
+    }
+  },
+  "scripts": {
+    "dev": "pnpm --filter @manga-reader/desktop dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "eslint . --cache",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.6",
+    "eslint": "10.11.0",
+    "eslint-plugin-i18next": "6.1.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "^17.12.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.70.1",
+    "vite": "7.3.6",
+    "vitest": "5.0.1"
+  }
+}

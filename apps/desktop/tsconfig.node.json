@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "outDir": "node_modules/.cache/tsc-node",
+    "types": ["node", "electron-vite/node"]
+  },
+  "include": ["electron.vite.config.ts", "drizzle.config.ts", "src/main/**/*", "src/preload/**/*"]
+}

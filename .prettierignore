@@ -1,0 +1,11 @@
+node_modules
+out
+dist
+release
+pnpm-lock.yaml
+**/routeTree.gen.ts
+**/drizzle/meta
+docs/ui/html
+LICENSE
+BRAINSTORM.md
+docs

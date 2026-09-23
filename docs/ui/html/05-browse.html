@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader - Browse MangaDex (EN)</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration based on Design System Tokens -->
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-container": "#cba6f7", "on-tertiary-fixed": "#311300", "on-secondary": "#212c62", "inverse-on-surface": "#2f2f40", "surface-container": "#1e1e2e", "secondary-container": "#3b457c", "tertiary-fixed": "#ffdbc8", background: "#121221", "tertiary-container": "#eca77c", "surface-container-highest": "#333344", "on-secondary-fixed-variant": "#38437a", "surface-variant": "#333344", "inverse-surface": "#e3e0f7", "surface-tint": "#d9b9ff", surface: "#121221", "primary-fixed-dim": "#d9b9ff", "surface-container-low": "#1a1a2a", "on-primary": "#3f1e66", "on-error": "#690005", outline: "#968e9a", "on-primary-container": "#57377f", "surface-dim": "#121221", error: "#ffb4ab", "on-error-container": "#ffdad6", tertiary: "#ffc6a4", "surface-container-lowest": "#0d0d1c", "primary-fixed": "#eedbff", "on-background": "#e3e0f7", "surface-container-high": "#292839", primary: "#e2c7ff", "error-container": "#93000a", "surface-bright": "#383849", "outline-variant": "#4a444f", "inverse-primary": "#704f98", "on-surface": "#e3e0f7", "secondary-fixed-dim": "#bac3ff", "on-tertiary-fixed-variant": "#6b3a18", "secondary-fixed": "#dee0ff", "on-secondary-container": "#abb5f4", "on-tertiary-container": "#6c3b19", secondary: "#bac3ff", "on-tertiary": "#4f2504", "on-primary-fixed-variant": "#57377f", "tertiary-fixed-dim": "#feb78a", "on-surface-variant": "#cdc3d1", "on-primary-fixed": "#290350", "on-secondary-fixed": "#09154c"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, fontFamily: {"headline-sm": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-sm": ["14px", {lineHeight: "20px", fontWeight: "600"}], "headline-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "400"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+    /* Custom Scrollbar for sleek desktop client feel */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #121317;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #292a2e;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #474554;
+    }
+    .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1;
+    }
+    /* Pulse shimmer for infinite loading skeleton */
+    @keyframes shimmer {
+      0% { opacity: 0.35; }
+      50% { opacity: 0.8; }
+      100% { opacity: 0.35; }
+    }
+    .skeleton-shimmer {
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased font-body-md text-body-md select-none overflow-hidden h-screen w-screen flex flex-col">
+<!-- ==================== TOP TITLE BAR (Frameless 40px) ==================== -->
+<header class="flex justify-between items-center w-full h-10 px-3 z-50 fixed top-0 left-0 right-0 bg-surface-container-low border-b border-outline-variant select-none">
+<!-- Left Navigation Arrows & Breadcrumbs -->
+<div class="flex items-center gap-2">
+<div class="flex items-center gap-0.5">
+<button class="w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors disabled:opacity-30" title="Back">
+<span class="material-symbols-outlined text-[16px]">arrow_back</span>
+</button>
+<button class="w-6 h-6 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Forward">
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<div class="h-3.5 w-[1px] bg-outline-variant mx-1"></div>
+<!-- App Title & Breadcrumbs -->
+<nav class="flex items-center gap-1.5 text-xs">
+<span class="font-headline-sm text-headline-sm tracking-tight text-on-surface">MangaReader</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer">Browse</span>
+<span class="text-outline">/</span>
+<span class="text-primary font-medium flex items-center gap-1">
+          MangaDex (EN)
+        </span>
+</nav>
+</div>
+<!-- Center Search Trigger -->
+<div class="flex items-center justify-center flex-1 max-w-sm px-4">
+<div class="w-full flex items-center justify-between px-2.5 py-1 bg-surface-container rounded-lg border border-outline-variant/60 text-xs text-on-surface-variant hover:border-primary-container/80 transition-colors cursor-pointer group">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[15px] text-outline group-hover:text-primary transition-colors">search</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Search...</span>
+</div>
+<kbd class="px-1.5 py-0.5 text-[10px] font-mono bg-surface-container-high rounded text-on-surface-variant border border-outline-variant/40">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right Trailing Status & Window Controls -->
+<div class="flex items-center gap-1">
+<div class="flex items-center gap-0.5 mr-2">
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Incognito Mode Off">
+<span class="material-symbols-outlined text-[16px]">visibility_off</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Offline Sync Cache">
+<span class="material-symbols-outlined text-[16px]">cloud_off</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Synchronize Sources">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+</button>
+</div>
+<!-- Frameless Window Minimize/Maximize/Close Controls -->
+<div class="flex items-center">
+<button class="w-8 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Minimize">
+<span class="material-symbols-outlined text-[14px]">minimize</span>
+</button>
+<button class="w-8 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors" title="Maximize">
+<span class="material-symbols-outlined text-[13px]">crop_square</span>
+</button>
+<button class="w-8 h-7 rounded flex items-center justify-center text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors" title="Close">
+<span class="material-symbols-outlined text-[15px]">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ==================== BODY WRAPPER (Under 40px Header) ==================== -->
+<div class="flex flex-1 pt-10 h-screen overflow-hidden">
+<!-- ==================== LEFT SIDEBAR (220px Fixed) ==================== -->
+<aside class="w-[220px] shrink-0 h-full flex flex-col justify-between p-3 bg-surface-container-low border-r border-outline-variant z-40 select-none">
+<!-- Top Section: App Header & Nav Links -->
+<div class="flex flex-col gap-4">
+<!-- Logo / App Header -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-7 h-7 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary border border-primary-container/30">
+<span class="material-symbols-outlined text-[18px] fill-icon">menu_book</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold tracking-tight text-on-surface">MangaReader</span>
+</div>
+<!-- Navigation Group -->
+<nav class="flex flex-col gap-0.5">
+<!-- Library -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs font-medium" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span>Library</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-container-high text-on-surface-variant">148</span>
+</a>
+<!-- Updates -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs font-medium" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">update</span>
+<span>Updates</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] bg-primary-container/20 text-primary font-semibold">12</span>
+</a>
+<!-- History -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>History</span>
+</a>
+<!-- Browse (Expanded Category) -->
+<div class="flex flex-col gap-0.5 mt-0.5">
+<button class="w-full text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs font-medium">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-primary">explore</span>
+<span class="text-on-surface font-semibold">Browse</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</button>
+<!-- Browse Sub-items -->
+<div class="flex flex-col ml-3 pl-3 border-l border-outline-variant/60 gap-0.5 mt-0.5">
+<!-- ACTIVE: Sources -->
+<a class="bg-primary-container/30 text-on-surface font-semibold rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 border-l-2 border-primary text-xs" href="#">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span class="text-primary font-semibold">Sources</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>Extensions</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="w-1 h-1 rounded-full bg-outline"></span>
+<span>Global search</span>
+</a>
+</div>
+</div>
+<!-- Downloads -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center justify-between text-xs font-medium mt-1" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Downloads</span>
+</div>
+<span class="px-1.5 py-0.2 rounded-full text-[10px] bg-surface-container-high text-on-surface-variant">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span>Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-1.5 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span>Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Pinned Section: Settings -->
+<div class="pt-2 border-t border-outline-variant/60">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-2.5 py-2 flex items-center gap-2.5 text-xs font-medium" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- ==================== MAIN CONTENT: CENTER BROWSING PANEL ==================== -->
+<main class="flex-1 flex flex-col h-full bg-background overflow-hidden">
+<!-- Top Action & Filter Toolbar -->
+<section class="shrink-0 px-6 pt-5 pb-3 border-b border-outline-variant bg-surface-container-low/40">
+<!-- Header row with source icon, title, language, and external link -->
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-3">
+<!-- Stylized MangaDex source icon -->
+<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c9811a] to-[#ffb865] flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-background text-[22px] font-bold">auto_stories</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h1 class="font-headline-lg text-headline-lg font-bold text-on-surface">MangaDex</h1>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-surface-container-high text-on-surface-variant border border-outline-variant">EN</span>
+<span class="flex items-center gap-1 text-[11px] text-tertiary px-1.5 py-0.5 rounded bg-tertiary-container/20">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                  Online
+                </span>
+</div>
+</div>
+<button class="ml-1 p-1 rounded-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Open source in browser">
+<span class="material-symbols-outlined text-[18px]">open_in_new</span>
+</button>
+</div>
+<!-- Secondary Quick Actions: Refresh, Source Settings -->
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5 border border-outline-variant/40">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Refresh list</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors border border-outline-variant/40" title="Source Settings">
+<span class="material-symbols-outlined text-[18px]">tune</span>
+</button>
+</div>
+</div>
+<!-- Tabs & Secondary Filter Bar -->
+<div class="flex items-center justify-between gap-4">
+<!-- Navigation Tabs: Popular, Latest (Active), Search -->
+<div class="flex items-center gap-6">
+<button class="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors py-2 flex items-center gap-1.5">
+<span>Popular</span>
+</button>
+<button class="text-xs font-medium text-on-surface border-b-2 border-primary-container pb-2 pt-2 flex items-center gap-1.5 text-primary">
+<span class="font-semibold text-on-surface">Latest</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+</button>
+<button class="text-xs font-medium text-on-surface-variant hover:text-on-surface transition-colors py-2 flex items-center gap-1.5">
+<span>Search</span>
+</button>
+</div>
+<!-- Search Input & Filters Button -->
+<div class="flex items-center gap-2">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
+<input class="w-full bg-surface-container text-xs rounded-lg pl-8 pr-3 py-1.5 border border-outline-variant text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container transition-colors" placeholder="Search MangaDex..." type="text"/>
+</div>
+<!-- Active Filter Trigger -->
+<button class="px-3 py-1.5 bg-primary-container/20 text-primary border border-primary-container/50 rounded-lg text-xs font-medium flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">filter_list</span>
+<span>Filters</span>
+<span class="w-4 h-4 rounded-full bg-primary-container text-background text-[10px] font-bold flex items-center justify-center">3</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Scrollable Manga Card Grid Area -->
+<section class="flex-1 overflow-y-auto px-6 py-5">
+<!-- Dense 6-column desktop cover grid -->
+<div class="grid grid-cols-6 gap-x-4 gap-y-6">
+<!-- Card 1: Blade of the Ashen Sky (From User Reference Image) -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Cover artwork of Blade of the Ashen Sky manga featuring a fierce dark-haired swordsman in worn tactical armor holding a fiery volcanic katana. The background depicts a ruined mountain castle under an ashen sunset sky with swirling embers and dark atmospheric fantasy tones." src="https://lh3.googleusercontent.com/aida/AEtjO1XeZgJ6YlLkplzC1Do0-bzuURVP0WHFqK9tvI8nkfjzRE0XPVob--L9G157RsBkgXrdG4AvKU3mipbQ1p8j93QIzQ9Ho47ntYbdwYIGxDZsucd-b6pfVYd1k5HUFevg2dzjjMYRsoIJ22SBP0LSCVzAdwOLdho_xPtpn3HGd3BV0BQeMZnZ3yxtAxeVZ3GVTQ9iRvWhXIjhCltJ1abx6YTLc-RpEH9PJ8uA5NHGGUW2cfPpfdroX4a7iTGk"/>
+<!-- Badge: In Library -->
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container-lowest/85 backdrop-blur-md text-primary border border-primary-container/50 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[11px] fill-icon">bookmark</span>
+<span>In library</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Blade of the Ashen Sky</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 128</span>
+<span class="text-outline">•</span>
+<span class="text-outline">15m ago</span>
+</p>
+</div>
+</div>
+<!-- Card 2: Tokyo Circuit Rebels -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Cyberpunk anime manga cover with vibrant neon violet and cyan lighting showcasing a renegade youth hacker in a high-tech reflective streetwear hoodie overlooking a futuristic Tokyo megalopolis bathed in violet holographic signs and rain streaks." src="https://lh3.googleusercontent.com/aida/AEtjO1UK3QiVavQBRGAcD4HvEEnCbT6Sig1NuTjLqsPuKp61oK9ekC6eUz9IT9Rkic8Morp9lycdYkGLhSQId3BNGI7AJJsjzK23VJWwwD1VLKzzXxyVCV9dEYw89Vl0hm5zwMAesyU9SmCAZrRkgI2Z7wxVqDE9Z1-O6Eaqa_qTGbrsSj8LKNtUcjRKvxU_K_WzvKU3goMx7qyX-9mCeBYfkD4Fk7Vy59HYuMpwFqg78gyCqV1CuNsnDqKqtbCO=w600"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container-lowest/85 backdrop-blur-md text-primary border border-primary-container/50 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[11px] fill-icon">bookmark</span>
+<span>In library</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Tokyo Circuit Rebels</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 45</span>
+<span class="text-outline">•</span>
+<span class="text-outline">42m ago</span>
+</p>
+</div>
+</div>
+<!-- Card 3: The Last Archivist -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="A mystery fantasy manga cover illustration presenting an elegant scholar girl carrying glowing celestial parchment scrolls inside an endless ancient stone library with floating amber orbs and towering wooden bookshelves." src="https://lh3.googleusercontent.com/aida/AEtjO1UQS4NpC4Y-y79gXu0Mda0lPBv49KWy5pBtF8amlRcC4xiCtu93oKp818dkr95EvXFAJFWu-OVy9CYWxQHB0cmF4LNWbb2I5_4lNkQRZYoLQ5T5AxRXXJb4DmSGESYULbxhG8_EuXh_GckjokV2EbRR6GskfqYhAM-cZjKRF9bKGUXeRLqIdRLccnMfzWoO3rPWGpw1zjJjUsxwlGLenW9FSWk7cSDIm6XFdRxfoYwpWF2ihf8I2X7cz68L=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">The Last Archivist</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 89</span>
+<span class="text-outline">•</span>
+<span class="text-outline">1h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 4: Whispers of the Sunken Spire -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Deep ocean fantasy manga cover illustration depicting an explorer girl swimming through sunken gothic cathedral ruins surrounded by bioluminescent jellyfish and ancient coral in deep midnight blues and ethereal turquoise glows." src="https://lh3.googleusercontent.com/aida/AEtjO1V7wgWRWZKc8pVwL955Xq87emvqiBFW1MpB2rr1rpVpsoMHMm4b-LEDj8WMJ4aRsDm1IO39GRDZJqjNBrrs6zM8XARHZTurQWOkpnEi_xRVAE-8czLpzr2UzR1atUNHxVKSnCxyz8Jl1bB2dKpWgxeyDkrrIFguUXfUe3KQefo-6rB7Ihts5cnW5O7jymC2H5gRaSUAF7Ql5BgIbDAMOeqw7qWF_pDeHlskNfs75hWclsVCkJ9Ph03jPt4=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Whispers of Sunken Spire</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 14</span>
+<span class="text-outline">•</span>
+<span class="text-outline">2h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 5: Clockwork Ronin -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Steampunk samurai anime cover art featuring a wandering mechanical swordsman with brass gears exposed in his battle armor standing amidst falling cherry blossoms under an ominous eclipsed brass moon." src="https://lh3.googleusercontent.com/aida/AEtjO1WVOuCe8CEi6TvPDYSR6ph9jXgLGXxk34DefkMHcOBra0BdrKbnC1Oid36JT3AbnLzAmPkeujKTGAD9R4RdOvPUmIaUHii6AGAAhBCKen6IeB_nfsGycFAzykJwaYrxXBlnAcHAWnwvlrrIB4wzTI6Wxn4stGJYkwqbrg2n4CVlAsgkh1SLBercsrB5pwIr_7AvuPJQbSvB0Y6PkO2_eE6I4ljUKkdlYXBuacTdRRyr5fsOAYrcm6MQ6s4n=w600"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container-lowest/85 backdrop-blur-md text-primary border border-primary-container/50 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[11px] fill-icon">bookmark</span>
+<span>In library</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Clockwork Ronin</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 62</span>
+<span class="text-outline">•</span>
+<span class="text-outline">3h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 6: Echoes in Crimson -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Dark gothic fantasy manga cover painting of a silver-haired noble vampire huntress wielding an intricate rapier against crimson rose petals floating across a gloomy Victorian castle balcony." src="https://lh3.googleusercontent.com/aida/AEtjO1XSPyF5nPZKEN_rpd_DnE9XKDmq7fxKvebWE_sLExkDExxUld3CxKQfaJcwaHugUiWGEguAlE2RyQgBED2gpJZcE6Uc60RRCZQIWaCrDBEeXw9YWJUDh-dueozOfXAMpm32HojHyW59zTAmpmzolR6f5TtqyNdSdfc-uOqkd4eWQeunk2hEQBXLMDe96K4J0SO_8EEtM4heh-TUDvnZnldEhwrme1H9F3guj1tvlNKzzdPRR1KyzfPsJiE=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Echoes in Crimson</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 102</span>
+<span class="text-outline">•</span>
+<span class="text-outline">3h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 7: Neon Horizon Zero -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Sci-fi mecha anime manga cover with an agile white-and-purple robotic combat suit standing atop a floating orbital station overlooking the curved horizon of an alien planet." src="https://lh3.googleusercontent.com/aida/AEtjO1XIHGmiYRCZOLvqhZ98lq0ty4kdCleuha2bNVmg_-3ijYaopsx-u9a6uPlljTOafm-TqOz9cjZpCXtolxGEm0D7w0D3XO8FyoNS8ky2gV5NGDlDQXYWQYKIaaGX1oquYsTlX74lmGx9fB-r5kKmSqpYVjlfqOL5b_yCJ76DNlMv-O0bW-VkLMN_pCbLzJpfmP-tD59RnN5zULHmZkQhgUXBSJ4a8TVoOLZvwEycL_1zJHMrJxOznzAzt0Q=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Neon Horizon Zero</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 33</span>
+<span class="text-outline">•</span>
+<span class="text-outline">4h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 8: Starry Potion Shop -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Whimsical slice of life fantasy manga cover featuring a cozy potion shop keeper with long braided chestnut hair holding glowing potion flasks among dried starlight herbs in a warm wooden cottage." src="https://lh3.googleusercontent.com/aida/AEtjO1WO0IiGsQOtPCRVgDTbK99mNrCv9-5hrurx1WKHJwOWtFf6r3nQdqU2ycTYXZYYc4vusdA1QapjUKz9bOjuX8kD3cCySnbYzTnx1rQAHDJWh7QKzhEpS-0dkeQqEj4Q5h218Kax1SYtYZNzceeTEv2TJcN8h67zwIQAQqeQ1zAfbfCcjGFS3dbmLxnjq1l9hr7UoR2giIvZ31l1ub7vWUr3x9UPXE8LDSxXP9JwXV5F_wiPaO6F04uiQU6_=w600"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container-lowest/85 backdrop-blur-md text-primary border border-primary-container/50 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[11px] fill-icon">bookmark</span>
+<span>In library</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Starry Potion Shop</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 57</span>
+<span class="text-outline">•</span>
+<span class="text-outline">5h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 9: Abyssal Kitchen -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Culinary fantasy adventure manga cover art showing a determined young chef cooking exotic dungeon monster dishes over a blue magical flame pit in an ancient subterranean cavern." src="https://lh3.googleusercontent.com/aida/AEtjO1US2fIkubBvwYtX27RQ2XMKM04nZEME6JtDvBCzRKpJWR6FtJPiBru7M4r4sUGBLSXlquFY-r4cnasBRxUiP4mKqgzcCJOj-LD-TerkATSwdXGuvRPelnYU2vp4QWjYE0MSlhoZ-pfSpttzS3XJgmCLnwcExQEsdnG8yGRtPI_SaMMn1qKxv-T1cmfCrxnkdl5z73T2zNjur-TEmfhKIwfpaQxaxs4NfWTLO_Vu4_5gzCq1DLDrrq41CUMH=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Abyssal Kitchen</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 21</span>
+<span class="text-outline">•</span>
+<span class="text-outline">6h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 10: Song of the Iron Dunes -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Desert fantasy anime illustration displaying a masked desert nomad with fluttering ochre robes riding across massive metallic sand dunes toward a colossal sandstorm on the horizon." src="https://lh3.googleusercontent.com/aida/AEtjO1UjPbSG47-LyfoKS6RB3_nx7PfXzwBYVVzJacCvmnxNYuuLRfil9BS3mF42bOPVUua4FfujFHZlHLPj_HmI__4OA72XtbR-YlGD1ZwB8bWhHZ7RmHjPWv83H4q-8ryG6mbjscs_KGGY7h1BDqEuOYlnc2wcbiwopHduOng53ohs-QdVvumRv7WAe3Jz11c4S7enaudA2Fz0zktk6tJRDV30rerzLHCC5yH_oTmlQdb57ZEgRsEMEX8Uh_eR=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Song of the Iron Dunes</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 74</span>
+<span class="text-outline">•</span>
+<span class="text-outline">7h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 11: Phantom Thread -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="Psychological sci-fi anime cover showing a girl with digital threads woven through her fingertips amidst shimmering violet data streams in a dark virtual reality realm." src="https://lh3.googleusercontent.com/aida/AEtjO1VqjG-fB-uZYvj5jmCD1EKNY-sIrTtysO-fmuDPkyEkwDx-vUByK4AXGQ21fmnyzxQtb5TsMh1JogfzvgmjspWoM6gWCrwU2U-8BO2qGmp9dwL6_TuWvzhNH3LzCEq0eySt2UQn8yaB29gDonwvrVkcNDM_ZRVscXeDb6u6zJZ8yL_lddmUGVfZO8i_JJyf9FM9CMZ5wcLJ3mPtHO1-Gb6BWvQffG-sHULAgQGSjtXhpLEw1eBDeOgsl_m4=w600"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-semibold bg-surface-container-lowest/85 backdrop-blur-md text-primary border border-primary-container/50 flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[11px] fill-icon">bookmark</span>
+<span>In library</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Phantom Thread</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 19</span>
+<span class="text-outline">•</span>
+<span class="text-outline">8h ago</span>
+</p>
+</div>
+</div>
+<!-- Card 12: Warden of the Frozen Peaks -->
+<div class="group flex flex-col cursor-pointer">
+<div class="relative aspect-[2/3] w-full rounded-md overflow-hidden bg-surface-container-high border border-outline-variant/60 group-hover:border-primary-container transition-all duration-200 group-hover:scale-[1.02] shadow-sm">
+<img class="w-full h-full object-cover object-center" data-alt="High fantasy action manga cover showing a towering mountain knight with a rune-etched tower shield standing on a snowy precipice under swirling purple auroras." src="https://lh3.googleusercontent.com/aida/AEtjO1UCGbtiQS8H19gy9Wgq-eVAImxohxqUX1WgDmUQwNeEXEdOvmHOLZdl_Noe8oqKHZSgfg0OewW-9L4tolNQMETfm7C-PNS5_keLa0xfUcoRBncGPgChiGN0XWuisPfzo2xmHruq5hesoDpwIeUmkjQyINC6VG0kVvVui9cK7m-UYH3utc9hWXRcDBnUsjtzt6X7Vmw1--nreEzz_COxtE_RS5aXUWIXc3gPoYF4CT-mnAOnvenpNUUuus5f=w600"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2.5">
+<button class="w-full py-1 text-center bg-primary-container text-background font-semibold text-[11px] rounded shadow-md">Read Now</button>
+</div>
+</div>
+<div class="mt-2 flex flex-col">
+<h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Warden of the Frozen Peaks</h3>
+<p class="font-label-sm text-[11px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span>Ch. 05</span>
+<span class="text-outline">•</span>
+<span class="text-outline">9h ago</span>
+</p>
+</div>
+</div>
+<!-- ==================== SKELETON LOADING ROW (6 Cards with shimmer) ==================== -->
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-3/4 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-1/2 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-4/5 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-2/5 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-2/3 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-1/3 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-3/4 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-1/2 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-5/6 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-2/5 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="aspect-[2/3] w-full rounded-md bg-surface-container-high border border-outline-variant/40 skeleton-shimmer"></div>
+<div class="mt-2 space-y-1.5">
+<div class="h-3 w-3/5 rounded bg-surface-container-high skeleton-shimmer"></div>
+<div class="h-2.5 w-1/3 rounded bg-surface-container-high skeleton-shimmer"></div>
+</div>
+</div>
+</div>
+<!-- Infinite Scrolling Loader Indicator -->
+<div class="flex items-center justify-center gap-2 py-8 text-on-surface-variant text-xs">
+<span class="w-4 h-4 rounded-full border-2 border-primary-container border-t-transparent animate-spin"></span>
+<span>Loading more titles from MangaDex…</span>
+</div>
+</section>
+</main>
+<!-- ==================== RIGHT SIDE FILTER DRAWER (320px) ==================== -->
+<aside class="w-[320px] shrink-0 h-full bg-surface-container-low border-l border-outline-variant flex flex-col justify-between select-none z-40">
+<!-- Drawer Header -->
+<div class="p-4 border-b border-outline-variant/60 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-sm text-headline-sm font-semibold text-on-surface">Filters</h2>
+<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-primary-container/20 text-primary border border-primary-container/40">3 active</span>
+</div>
+<button class="w-7 h-7 rounded flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" title="Close filter panel">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Filter Sections -->
+<div class="flex-1 overflow-y-auto p-4 space-y-5">
+<!-- Section 1: Sort By -->
+<div class="space-y-1.5">
+<label class="font-label-sm text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Sort By</label>
+<div class="flex items-center gap-1.5">
+<div class="relative flex-1">
+<select class="w-full bg-surface-container text-xs rounded-lg px-3 py-2 border border-outline-variant text-on-surface appearance-none focus:outline-none focus:border-primary-container pr-8 cursor-pointer">
+<option selected="">Latest upload</option>
+<option>Popularity</option>
+<option>Rating score</option>
+<option>Recently added</option>
+<option>Title alphabetical</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">arrow_drop_down</span>
+</div>
+<button class="p-2 rounded-lg bg-surface-container border border-outline-variant text-on-surface hover:bg-surface-container-high transition-colors" title="Toggle Ascending/Descending">
+<span class="material-symbols-outlined text-[18px]">swap_vert</span>
+</button>
+</div>
+</div>
+<!-- Section 2: Publication Status -->
+<div class="space-y-2 pt-2 border-t border-outline-variant/40">
+<label class="font-label-sm text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Status</label>
+<div class="grid grid-cols-2 gap-2 text-xs">
+<!-- Ongoing (Checked) -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface">
+<input checked="" class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Ongoing</span>
+</label>
+<!-- Completed -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant hover:text-on-surface">
+<input class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Completed</span>
+</label>
+<!-- Hiatus -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant hover:text-on-surface">
+<input class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Hiatus</span>
+</label>
+<!-- Cancelled -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant hover:text-on-surface">
+<input class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Cancelled</span>
+</label>
+</div>
+</div>
+<!-- Section 3: Content Rating -->
+<div class="space-y-2 pt-2 border-t border-outline-variant/40">
+<label class="font-label-sm text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Content Rating</label>
+<div class="flex flex-col gap-1 text-xs">
+<!-- Safe (Checked) -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface">
+<input checked="" class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="font-medium">Safe</span>
+</label>
+<!-- Suggestive -->
+<label class="flex items-center gap-2 p-1.5 rounded hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant hover:text-on-surface">
+<input class="w-3.5 h-3.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Suggestive</span>
+</label>
+
+</div>
+</div>
+<!-- Section 4: Genres (Tri-state Chips) -->
+<div class="space-y-2 pt-2 border-t border-outline-variant/40">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Genres</label>
+<span class="text-[10px] text-outline">Click: + / - / Off</span>
+</div>
+<div class="flex flex-wrap gap-1.5 pt-1">
+<!-- Action [Included - Green] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-[#103822] text-[#86efac] border border-[#166534] flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[13px] font-bold">check</span>
+<span>Action</span>
+</button>
+<!-- Romance [Excluded - Red] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-[#450a0a] text-[#fca5a5] border border-[#991b1b] flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[13px] font-bold">remove</span>
+<span>Romance</span>
+</button>
+<!-- Comedy [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Comedy
+            </button>
+<!-- Fantasy [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Fantasy
+            </button>
+<!-- Horror [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Horror
+            </button>
+<!-- Slice of Life [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Slice of Life
+            </button>
+<!-- Sci-Fi [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Sci-Fi
+            </button>
+<!-- Mystery [Neutral] -->
+<button class="px-2.5 py-1 rounded-full text-xs font-medium bg-surface-container text-on-surface-variant border border-outline-variant hover:border-outline hover:text-on-surface transition-colors">
+              Mystery
+            </button>
+</div>
+</div>
+<!-- Section 5: Author search -->
+<div class="space-y-1.5 pt-2 border-t border-outline-variant/40">
+<label class="font-label-sm text-xs font-semibold text-on-surface-variant uppercase tracking-wider text-[11px]">Author</label>
+<div class="relative">
+<input class="w-full bg-surface-container text-xs rounded-lg px-3 py-1.5 border border-outline-variant text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container" placeholder="e.g. Ren Kaito" type="text"/>
+</div>
+</div>
+</div>
+<!-- Drawer Sticky Footer -->
+<div class="p-4 border-t border-outline-variant/60 flex items-center gap-2 bg-surface-container-low">
+<button class="flex-1 py-2 rounded-lg text-xs font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors border border-outline-variant/60">
+          Reset
+        </button>
+<button class="flex-1 py-2 rounded-lg text-xs font-semibold bg-primary-container text-background hover:opacity-95 transition-opacity shadow-sm flex items-center justify-center gap-1.5">
+<span>Apply</span>
+<span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+</button>
+</div>
+</aside>
+</div>
+</body></html>

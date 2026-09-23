@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader - Global Search</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-surface": "#e3e0f7", "surface-dim": "#121221", background: "#121221", "on-primary": "#3f1e66", "on-secondary-container": "#abb5f4", "on-background": "#e3e0f7", "on-error-container": "#ffdad6", "tertiary-fixed-dim": "#feb78a", "surface-container-low": "#1a1a2a", "on-tertiary-container": "#6c3b19", "on-secondary-fixed-variant": "#38437a", "outline-variant": "#4a444f", "on-tertiary-fixed": "#311300", "inverse-primary": "#704f98", "tertiary-container": "#eca77c", "surface-tint": "#d9b9ff", "on-primary-fixed-variant": "#57377f", "surface-container-highest": "#333344", outline: "#968e9a", "primary-fixed": "#eedbff", "primary-container": "#cba6f7", "on-error": "#690005", "surface-variant": "#333344", "inverse-on-surface": "#2f2f40", "on-primary-container": "#57377f", tertiary: "#ffc6a4", "surface-container-lowest": "#0d0d1c", "on-surface": "#e3e0f7", secondary: "#bac3ff", "surface-container": "#1e1e2e", error: "#ffb4ab", "surface-container-high": "#292839", surface: "#121221", primary: "#e2c7ff", "error-container": "#93000a", "on-secondary-fixed": "#09154c", "on-surface-variant": "#cdc3d1", "surface-bright": "#383849", "primary-fixed-dim": "#d9b9ff", "secondary-fixed-dim": "#bac3ff", "secondary-container": "#3b457c", "on-tertiary": "#4f2504", "secondary-fixed": "#dee0ff", "tertiary-fixed": "#ffdbc8", "on-primary-fixed": "#290350", "on-tertiary-fixed-variant": "#6b3a18", "on-secondary": "#212c62"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"space-md": "0.75rem", "space-lg": "1rem", "space-sm": "0.5rem", margin: "1rem", gutter: "1rem", "space-xs": "0.25rem", "space-xl": "1.5rem"}, fontFamily: {"headline-lg": ["Inter", "sans-serif"], "label-sm": ["Inter", "sans-serif"], "headline-sm": ["Inter", "sans-serif"], "body-md": ["Inter", "sans-serif"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "400"}], "headline-sm": ["14px", {lineHeight: "20px", fontWeight: "600"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      user-select: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #474554;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #928e9f;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden select-none font-body-md text-body-md h-screen w-screen flex flex-col">
+<!-- TOP TITLE BAR (Shared Component: TopNavBar with Exact Spec Classes) -->
+<header class="bg-surface-container-low dark:bg-surface-container-low border-b border-outline-variant dark:border-outline-variant flex justify-between items-center w-full h-10 px-3 z-50 fixed top-0 left-0 right-0 select-none">
+<!-- Left Breadcrumbs -->
+<div class="flex items-center gap-2"><div class="flex items-center gap-0.5 mr-1"><button class="w-6 h-6 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest rounded transition-colors" title="Back"><span class="material-symbols-outlined" style="font-size: 16px;">chevron_left</span></button><button class="w-6 h-6 flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-highest rounded transition-colors opacity-80" title="Forward"><span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span></button></div>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">MangaReader</span>
+<span class="text-outline">/</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">Browse</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface font-medium">Global search</span>
+</div>
+</div>
+<!-- Centered Quick Jump Input / Pill -->
+<div class="flex items-center justify-center flex-1 max-w-sm mx-4">
+<button class="w-full h-7 px-3 flex items-center justify-between bg-surface-container border border-outline-variant/60 rounded text-on-surface-variant hover:border-outline hover:text-on-surface transition-all text-xs group">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors" style="font-size: 15px;">search</span>
+<span class="font-label-sm text-label-sm text-outline">Search library, authors, tags...</span>
+</div>
+<kbd class="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-mono border border-outline-variant">Ctrl+K</kbd>
+</button>
+</div>
+<!-- Right Window Controls & Trailing Actions -->
+<div class="flex items-center gap-1">
+<div class="flex items-center gap-0.5 mr-2 pr-2 border-r border-outline-variant">
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Incognito mode">
+<span class="material-symbols-outlined">visibility_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Offline status: Disconnected">
+<span class="material-symbols-outlined">cloud_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Sync now">
+<span class="material-symbols-outlined">sync</span>
+</button>
+</div>
+<!-- Frameless Window Controls -->
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Minimize">
+<span class="material-symbols-outlined">minimize</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded transition-colors active:scale-95" title="Maximize">
+<span class="material-symbols-outlined">crop_square</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-error/80 hover:text-white rounded transition-colors active:scale-95" title="Close window">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</header>
+<!-- WORKSPACE BODY (SideNav + Content) -->
+<div class="flex flex-1 pt-10 h-screen overflow-hidden">
+<!-- SIDEBAR (Shared Component: SideNavBar strictly following JSON) -->
+<aside class="fixed top-10 left-0 w-[220px] h-[calc(100vh-2.5rem)] flex flex-col justify-between p-3 z-40 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant dark:border-outline-variant select-none">
+<!-- Top Brand Anchor & Navigation Tabs -->
+<div class="space-y-4">
+<!-- Logo Cluster -->
+<div class="flex items-center gap-2.5 px-2 py-1">
+<div class="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center shadow-inner">
+<span class="material-symbols-outlined text-on-primary font-bold" style="font-size: 18px;">auto_stories</span>
+</div>
+<div class="flex flex-col"><span class="font-headline font-bold text-base text-on-surface leading-tight">MangaReader</span></div>
+</div>
+<!-- Navigation Group -->
+<nav class="space-y-0.5">
+<!-- Library (badge 148) -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center justify-between transition-all duration-150 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">local_library</span>
+<span class="font-label text-xs font-medium">Library</span>
+</div>
+<span class="font-label-sm text-[11px] px-1.5 py-0.2 rounded-full bg-surface-container-highest text-on-surface-variant font-medium">148</span>
+</a>
+<!-- Updates (badge 12) -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center justify-between transition-all duration-150 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">update</span>
+<span class="font-label text-xs font-medium">Updates</span>
+</div>
+<span class="font-label-sm text-[11px] px-1.5 py-0.2 rounded-full bg-tertiary-container text-on-tertiary-container font-semibold">12</span>
+</a>
+<!-- History -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-all duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-outline">history</span>
+<span class="font-label text-xs font-medium">History</span>
+</a>
+<!-- Browse Subtree (Expanded) -->
+<div class="pt-1 pb-1">
+<div class="px-3 py-1.5 flex items-center justify-between text-on-surface font-label text-xs font-semibold">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">explore</span>
+<span>Browse</span>
+</div>
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">expand_less</span>
+</div>
+<!-- Sub items -->
+<div class="ml-4 pl-3 border-l border-outline-variant/60 space-y-0.5 mt-1">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">hub</span>
+<span>Sources</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg px-2.5 py-1.5 flex items-center gap-2 text-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-outline" style="font-size: 16px;">extension</span>
+<span>Extensions</span>
+</a>
+<!-- Global search (ACTIVE per exact instructions) -->
+<a class="bg-primary-container/30 dark:bg-primary-container/30 text-on-surface dark:text-on-surface font-semibold rounded-lg px-2.5 py-1.5 flex items-center gap-2 border-l-2 border-primary transition-all duration-150 text-xs" href="#">
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">travel_explore</span>
+<span class="text-primary-fixed">Global search</span>
+</a>
+</div>
+</div>
+<!-- Downloads (badge 3) -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center justify-between transition-all duration-150 active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-outline">download</span>
+<span class="font-label text-xs font-medium">Downloads</span>
+</div>
+<span class="font-label-sm text-[11px] px-1.5 py-0.2 rounded-full bg-surface-container-highest text-on-surface-variant">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-all duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-outline">bookmark</span>
+<span class="font-label text-xs font-medium">Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-all duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-outline">bar_chart</span>
+<span class="font-label text-xs font-medium">Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Footer Action (Settings from JSON) -->
+<div class="pt-2 border-t border-outline-variant">
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-on-surface dark:hover:text-on-surface hover:bg-surface-container-high rounded-lg px-3 py-2 flex items-center gap-3 transition-all duration-150 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-outline">settings</span>
+<span class="font-label text-xs font-medium">Settings</span>
+</a>
+</div>
+</aside>
+<!-- MAIN CONTENT CANVAS -->
+<main class="ml-[220px] flex-1 h-[calc(100vh-2.5rem)] overflow-y-auto custom-scrollbar bg-background">
+<!-- STICKY TOP FILTER & PROGRESS BAR HEADER -->
+<div class="sticky top-0 z-30 bg-surface/95 backdrop-blur-md border-b border-outline-variant px-6 pt-5 pb-3">
+<!-- Controls Bar -->
+<div class="flex items-center gap-3">
+<!-- Main Search Box pre-filled with 'ashen' -->
+<div class="relative flex-1 max-w-xl">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary" style="font-size: 19px;">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-9 pr-9 py-2 text-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-medium" type="text" value="ashen"/>
+<button class="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface p-0.5 rounded transition-colors" title="Clear query">
+<span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+</button>
+</div>
+<!-- Sources Dropdown Filter -->
+<button class="flex items-center gap-2 px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg hover:border-outline hover:bg-surface-container transition-all text-xs font-medium text-on-surface">
+<span class="material-symbols-outlined text-secondary" style="font-size: 16px;">filter_list</span>
+<span>Sources: Pinned (5)</span>
+<span class="material-symbols-outlined text-outline" style="font-size: 14px;">arrow_drop_down</span>
+</button>
+<!-- Toggle: Only sources with results -->
+<label class="flex items-center gap-2.5 px-3 py-2 bg-surface-container-low border border-outline-variant rounded-lg cursor-pointer hover:border-outline transition-colors text-xs font-medium text-on-surface">
+<input checked="" class="w-4 h-4 rounded bg-surface-container border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span>Only sources with results</span>
+</label>
+<div class="flex-1"></div>
+<!-- View density / sort actions -->
+<div class="flex items-center gap-1 bg-surface-container-low p-1 border border-outline-variant rounded-lg">
+<button class="p-1 rounded bg-surface-container-high text-primary" title="Comfortable view">
+<span class="material-symbols-outlined" style="font-size: 16px;">view_module</span>
+</button>
+<button class="p-1 rounded text-outline hover:text-on-surface transition-colors" title="Compact list view">
+<span class="material-symbols-outlined" style="font-size: 16px;">view_stream</span>
+</button>
+</div>
+</div>
+<!-- Progress Tracker Banner -->
+<div class="mt-3.5 space-y-1.5">
+<div class="flex items-center justify-between text-xs">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-medium text-on-surface">Searching 5 sources · 3 done</span>
+<span class="text-outline">·</span>
+<span class="text-outline">1 searching, 1 failed</span>
+</div>
+<div class="font-label-sm text-label-sm text-outline">60% Complete</div>
+</div>
+<!-- Sleek Progress Bar with Violet Accent -->
+<div class="w-full h-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full relative" style="width: 60%;">
+<span class="absolute right-0 top-0 bottom-0 w-2 bg-surface-tint shadow-[0_0_8px_#c7bfff]"></span>
+</div>
+</div>
+</div>
+</div>
+<!-- MAIN RESULTS CONTAINER -->
+<div class="p-6 space-y-7"><section class="space-y-3"><div class="flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded bg-[#ff6740]/20 text-[#ff6740] flex items-center justify-center text-xs font-bold border border-[#ff6740]/30">MD</span><h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">MangaDex (EN)</h2><span class="px-2 py-0.5 rounded text-xs bg-surface-container-high text-on-surface-variant font-medium border border-outline-variant">8 results</span></div><button class="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-fixed transition-colors group"><span>See all</span><span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span></button></div><div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 pt-1"><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Blade of the Ashen Sky cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1XeZgJ6YlLkplzC1Do0-bzuURVP0WHFqK9tvI8nkfjzRE0XPVob--L9G157RsBkgXrdG4AvKU3mipbQ1p8j93QIzQ9Ho47ntYbdwYIGxDZsucd-b6pfVYd1k5HUFevg2dzjjMYRsoIJ22SBP0LSCVzAdwOLdho_xPtpn3HGd3BV0BQeMZnZ3yxtAxeVZ3GVTQ9iRvWhXIjhCltJ1abx6YTLc-RpEH9PJ8uA5NHGGUW2cfPpfdroX4a7iTGk"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-primary-container text-on-primary-container font-semibold text-[10px] shadow-sm flex items-center gap-1 backdrop-blur-sm"><span class="material-symbols-outlined" style="font-size: 11px;">bookmark_added</span><span>In library</span></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 74</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Blade of the Ashen Sky</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Ren Kaito · Action, Fantasy</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Ashen Valkyrie cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1WcxBu93f5weR6cjkEsnD8HT7bR0uC_03Jk05HZP41UBEnqz873g8mBNyS_W05wQO6MZxNw-VyWsn2cXVlnL1sliMvo4xssElBES0C3mTOkLLMiToMUl3KKjWxNbi6itXfKqqmZlaOA2oEQlX31ZVvnrz-n0FQCHpToMuc7MCDbt_s-GcQPG1YJaps_DoPswKdDldvXAkIAC6yWbwsVyqTge_sxbtt3ODZ1t9Gn6YRlWzcKver-zN9u4cAt=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 38</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Ashen Valkyrie</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Sora Shindo · Supernatural</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Chronicles of the Ash King cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1X3OO5cx5nAKZND8k0j4M2Ipl7Itq2TiDoOWLSzdn0xLpIpo1r5ia65kpY6dJm1K6nYDZqD1dOmFTzwkDzcIoEDiiFP32xxyiVtQaV9k3cHO9thPgN1fUuiUElQ90UzOMbcab1nye-0fYHrzfDg8NquKqWXWTMYzGHpb0Fayn7k9wZJFLEq7mpqD459PxUcXugiIAQGk2kNbNcHKGsF2Axe3GFOVZBRKp6Ro7Fz5AP3HkN_w4REKuaIPRI=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 112</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Chronicles of the Ash King</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">K. Murata · High Fantasy</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Ashen Requiem cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1XoabnhrcUj7ueVpZxJ_72Nwaq-Wrh_uI5oEDqQvUV3UOh5w6rgKjyHdNhZ-lizfRKU_4219LOyayiIggtJCdkZ8oOjXazNbJPjznGdgXN4FklUlxUP4-0ZIzyRBmF2vOQFiwcnVsDCkpWTmF-dWZhtyjxJ559NaEsxbyS2hX3JDehnHMLKfTTmSRY7rQNONQr1JZvrdzV71jtIdC0AAne-Vmi84Yqenr1ZQlZOsTrJcXuvS9VqXf5gaFym=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 22</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Ashen Requiem</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Eri Tachibana · Mystery, Drama</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Children of Ash &amp; Starlight cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1XgGYgChR5qkZS4jOERYmRuNQqbxqFALIfkrHfZHb097Jb79fDuhAWOwXKcjc1S7v6EbJk_We654M62HeukvkM82nauSUdNSp0bH7yZdUpZ3RFTD85YumrLRqw1jzdD7kr--JvqoSwZ09e5ZPRdqUYuYm0hmy_yxvU2i_nE5R8E8jxfXqH6jWWXLmCIYlyg7a7jz02ujT1HBcnpZ5uhRb83WAj-tfV-pIKiYjF8LiRZktxQODAajb5tZssp=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 51</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Children of Ash &amp; Starlight</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Noa Hazuki · Sci-Fi, Adventure</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Wings of the Ashfall cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UE1GgR0jsjW5pG3Xg2dLiM2QCAlozM1lgairR51SsFwzKKJsCASz65atFBUcEaDvVWjb1QLW7CzOnTrFm7GakG0VxL10i1kbAjgFB5Xyeg0D3XWCKqyrDWyRK_DIllOLDFlIMQAsuEq8w_EvH7aqlFBjs2udrrA4J8gRsCQaR3_lUmOC8JZK830ls7S9ta27YgNlwqG1i19t7tLqwPX-C361skOTxXXDViXEk4KgmIZqlB_uZ4EAi16JeP=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 19</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Wings of the Ashfall</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Ginzo Takagi · Steampunk</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Song of the Iron Ash cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmGpoz9GS9G8nhPvyTevssL2NItwo3Eew93_RGmAT9P_oyjW3JTCwdDd0B9fsIq3dJ2lMEtPp3nXMosrzsdV8QXZQLyYjtpf2wF8fkvvpCoA0Tmjgc24CACM0qlmi9KEpi0u5QUySImifcuzxTY-ntbaAsDebigiOz2kWaF6xTSN4nBaI6Tje1lAembkB5twH9YnSejJ2bwbNABufZ3WXHrfA7HgnSrIgS46xoHD50TD3cMAZbnDLFMcUGfbiZxRVSSSPZsgnBNeG3"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 41</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Song of the Iron Ash</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">R. Shirou · Dark Fantasy</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Ash &amp; Ember cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VzDZNsYyigwm9i-dB2-QE9478K62FqDOl2Eayht8abZhjqS8YSWqML1LposxoHXoiGqM0KGGpmjzT9TZVCN4OrJGeO4HfPfsj1bDveJ8twXhxDl3255jVrqSAtmHnhqiUA7-zvE0hCORBpQ-E_rkM96p1d14R9X_R6-tYWD5IpyNajfNB995cGJIKrqagC-ep_52hSR8Sc_hRHR19mIj8_IyiEXS7hADf3ORQXKX4OKNkqxizLTw7nlkF6=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 29</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Ash &amp; Ember</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">H. Tsubasa · Shounen, Magic</p></div></div></div></section><section class="space-y-3 pt-2"><div class="flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded bg-[#2dd4bf]/20 text-[#2dd4bf] flex items-center justify-center text-xs font-bold border border-[#2dd4bf]/30">AS</span><h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Aurora Source (EN)</h2><span class="px-2 py-0.5 rounded text-xs bg-surface-container-high text-on-surface-variant font-medium border border-outline-variant">3 results</span></div><button class="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-fixed transition-colors group"><span>See all</span><span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span></button></div><div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 pt-1"><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="The Ash Herbalist cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UzhEDzMwl6CG2lk4h0a0krtr6LLHn3DjGwpatwsUHni3Dkj5LxZdj1dHxGoOFq3ftf8KXoYrlROSZFaw_NKS7OoDw6HQum9Xf2MWYMNelUct1zJIFvwlTKfqWOIZYXAay2l-QBfknZ361lVlJveudXrAvfSBPoE_xIj_rANGMpBm59YicTcQ9PShs0zzyhgApycGp52k7LTbCdG0mIpuXQH-P_RHdO90OI3oZui52S1xXlGLR1iRTlIuQR=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 45</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">The Ash Herbalist</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Yuki Mizuki · Fantasy, Slice of Life</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Ashen Horizon Echoes cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1V1pp0I2yUUAzUhFmpHD6QdsiafB-hZehCx0437HfLlYCwi4JFcGcoSl1zd9YvRMVi6gDQ1vJrRGQjhhmGEIasOO6fn5D3BKxcP3Mzyh4Ybme_nL4PV5Ibmn49y-7srXVYBRS8MHNW30r1HTL6kArxzY6DTQzIS5Ts_f4Lz64wWJWL0fNtZYMCclZTgWvbI5OcSfv9wnb4PH70Qs-scIH08uZ1TvXk-uiaS-HNPku8exJ-LoEZG2SNkLfJR=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 14</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Ashen Horizon Echoes</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Daiki Tan · Mecha, Post-Apoc</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="The Ashen Alchemist cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VVl4QawOugxqseeP4WibCe9NY7tCpauQSRS3uZ_PctNhf-S0VLzl1oCzTzUtwh4y_Aw__abV0vJuEKm7k6wggDkf-TKfDFSubIE3pNel7KUxd3yVEbz72ZEUQc2oNkmdgi8ggsg1Tsr8xETAYUXjxY6YXZtMossQRQih4KfWIVzgyLEFw4bxIKW0ympjUAQPXAWISaKQZ6m8P8MRIlYHuqDfb9wmeJjgkGVRAzp8GmVC8nAEhah5Xsi4Y=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 63</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">The Ashen Alchemist</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">M. Arisawa · Mystery, Shounen</p></div></div></div></section><section class="space-y-3 pt-2"><div class="flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded bg-[#ef4444]/20 text-[#ef4444] flex items-center justify-center text-xs font-bold border border-[#ef4444]/30">ID</span><h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">MangaDex (ID)</h2><span class="px-2 py-0.5 rounded text-xs bg-surface-container-high text-on-surface-variant font-medium border border-outline-variant">2 results</span></div><button class="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-fixed transition-colors group"><span>See all</span><span class="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">arrow_forward</span></button></div><div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 pt-1"><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Pendekar Api: Benteng Gunung cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VGcVNSK3KZ1er5B-zA5TPIaF8tQVuxuRL6g797dUDhTZVNUJ2_gG9lM4vfRRu1YRxXVUay5Fe5UpRdGAc6N4GrwDpE9NO2lVb6A-urowcREyvCHHHnAIkqiEGAujGqZzPlmEQIwpyyO3TKcFYNg-Tf3THbsfXOlMuvUtft8IWt031-Cvoe1xSVe9jm991oYog52BZ4CGdJIulVVe0CXRCarPEGW-PcHajQmG_RNLWfqBd_Gj4kNwLfQLY=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 70</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Pendekar Api: Benteng Gunung</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Ren Kaito · Aksi, Petualangan</p></div></div><div class="group cursor-pointer"><div class="relative aspect-[2/3] rounded-md overflow-hidden bg-surface-container border border-outline-variant group-hover:border-primary transition-all duration-200"><img alt="Sayap Abu Langit cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1WnksQxykvjoJJJR1S6npSROtHAng39Sw_I1PUPkCS_NxIKM-LWUlz99wE9nVRlhgNmGMEUpWNjWJHCEUNs3DJThr3u4d39ne4EuHaQMKp2ev2ZVqkGJIB6tDp-f86QunVZg0nR0q2H8BITswB5O-J0gpezSzzWbiXC_fdGMKlaIm0BLf-VEaTYcKacVOWOh3btj7h_aRdPJ28MwvvSw0IbZVGGr2vVjoxTpMwOFN6snLP6u8vrP81UW1Sr=w600"/><div class="absolute inset-0 bg-gradient-to-t from-surface-dim via-transparent to-transparent opacity-75"></div><div class="absolute bottom-1.5 left-2 right-2"><span class="text-[11px] text-on-surface-variant font-medium">Ch. 18</span></div></div><div class="mt-1.5 space-y-0.5"><h3 class="font-headline-sm text-xs font-semibold text-on-surface line-clamp-1 group-hover:text-primary transition-colors">Sayap Abu Langit</h3><p class="font-label-sm text-[11px] text-on-surface-variant line-clamp-1">Bambang H. · Fantasi, Seinen</p></div></div></div></section><section class="space-y-3 pt-2"><div class="flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-xs font-bold border border-outline-variant">LD</span><h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Local Demo</h2><span class="px-2 py-0.5 rounded text-xs bg-primary/10 text-primary font-medium border border-primary/20 flex items-center gap-1.5"><span class="material-symbols-outlined animate-spin" style="font-size: 13px;">progress_activity</span><span>Searching…</span></span></div></div><div class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-3 pt-1"><div class="animate-pulse"><div class="aspect-[2/3] rounded-md bg-surface-container-high border border-outline-variant/50 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div><div class="mt-2 space-y-1.5"><div class="h-3 bg-surface-container-high rounded w-3/4"></div><div class="h-2.5 bg-surface-container-high rounded w-1/2"></div></div></div><div class="animate-pulse"><div class="aspect-[2/3] rounded-md bg-surface-container-high border border-outline-variant/50 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div><div class="mt-2 space-y-1.5"><div class="h-3 bg-surface-container-high rounded w-4/5"></div><div class="h-2.5 bg-surface-container-high rounded w-2/5"></div></div></div><div class="animate-pulse"><div class="aspect-[2/3] rounded-md bg-surface-container-high border border-outline-variant/50 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div><div class="mt-2 space-y-1.5"><div class="h-3 bg-surface-container-high rounded w-2/3"></div><div class="h-2.5 bg-surface-container-high rounded w-3/5"></div></div></div><div class="animate-pulse"><div class="aspect-[2/3] rounded-md bg-surface-container-high border border-outline-variant/50 relative overflow-hidden"><div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div></div><div class="mt-2 space-y-1.5"><div class="h-3 bg-surface-container-high rounded w-3/4"></div><div class="h-2.5 bg-surface-container-high rounded w-1/3"></div></div></div></div></section><section class="space-y-3 pt-2 pb-6"><div class="flex items-center justify-between"><div class="flex items-center gap-2.5"><span class="w-6 h-6 rounded bg-[#818cf8]/20 text-[#818cf8] flex items-center justify-center text-xs font-bold border border-[#818cf8]/30">NS</span><h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Nebula Source (EN)</h2><span class="px-2 py-0.5 rounded text-xs bg-error-container/40 text-error font-medium border border-error/30 flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 13px;">error</span><span>Failed</span></span></div></div><div class="max-w-2xl bg-surface-container-low border border-error/30 rounded-lg p-4 flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg bg-error-container/50 text-error flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined" style="font-size: 20px;">shield</span></div><div><h4 class="text-xs font-semibold text-on-surface">Cloudflare verification required</h4><p class="font-label-sm text-label-sm text-on-surface-variant">The source rejected requests due to bot protection challenge.</p></div></div><div class="flex items-center gap-2 flex-shrink-0 ml-4"><button class="px-3 py-1.5 rounded-lg bg-primary-container text-on-primary-container hover:bg-primary transition-colors text-xs font-semibold">Verify</button><button class="px-3 py-1.5 rounded-lg bg-surface-container-highest border border-outline-variant hover:border-outline text-on-surface text-xs font-medium hover:bg-surface-container transition-colors flex items-center gap-1.5"><span class="material-symbols-outlined" style="font-size: 14px;">sync</span><span>Retry</span></button></div></div></section></div>
+</main>
+</div>
+</body></html>

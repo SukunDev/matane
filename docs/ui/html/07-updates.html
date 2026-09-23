@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader — Updates</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Inter Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS Play CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration Injection -->
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary": "#4f2504", "surface-container-highest": "#333344", "surface-container": "#1e1e2e", "inverse-on-surface": "#2f2f40", "on-error-container": "#ffdad6", "inverse-primary": "#704f98", "on-tertiary-container": "#6c3b19", "on-primary-container": "#57377f", "surface-variant": "#333344", "surface-container-low": "#1a1a2a", "primary-fixed": "#eedbff", "on-secondary": "#212c62", primary: "#e2c7ff", "on-surface": "#e3e0f7", "error-container": "#93000a", "secondary-container": "#3b457c", "tertiary-container": "#eca77c", "outline-variant": "#4a444f", "surface-container-high": "#292839", "on-secondary-fixed-variant": "#38437a", "on-tertiary-fixed-variant": "#6b3a18", "on-error": "#690005", error: "#ffb4ab", "tertiary-fixed": "#ffdbc8", "on-secondary-fixed": "#09154c", "tertiary-fixed-dim": "#feb78a", "on-primary-fixed": "#290350", "surface-tint": "#d9b9ff", "primary-fixed-dim": "#d9b9ff", "on-background": "#e3e0f7", secondary: "#bac3ff", surface: "#121221", "on-secondary-container": "#abb5f4", "inverse-surface": "#e3e0f7", "primary-container": "#cba6f7", "on-surface-variant": "#cdc3d1", "surface-bright": "#383849", "on-primary": "#3f1e66", background: "#121221", tertiary: "#ffc6a4", "secondary-fixed": "#dee0ff", "secondary-fixed-dim": "#bac3ff", "on-tertiary-fixed": "#311300", "surface-dim": "#121221", "surface-container-lowest": "#0d0d1c", outline: "#968e9a", "on-primary-fixed-variant": "#57377f"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"space-xl": "1.5rem", "space-sm": "0.5rem", "space-md": "0.75rem", margin: "1rem", "space-lg": "1rem", gutter: "1rem", "space-xs": "0.25rem"}, fontFamily: {"headline-sm": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-sm": ["14px", {lineHeight: "20px", fontWeight: "600"}], "headline-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "400"}], "body-md": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    /* Custom scrollbar matching dark desktop UI */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #343439;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #474554;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden w-screen h-screen flex flex-col">
+<!-- ========================================== -->
+<!-- TopNavBar (Frameless Desktop Titlebar: 40px) -->
+<!-- ========================================== -->
+<header class="flex justify-between items-center w-full h-10 px-3 z-50 fixed top-0 left-0 right-0 bg-surface-container-low border-b border-outline-variant select-none">
+<!-- Left: Navigation History & Breadcrumb -->
+<div class="flex items-center gap-2">
+<!-- Window Nav Chevrons -->
+<div class="flex items-center gap-0.5 text-on-surface-variant">
+<button class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-container-highest hover:text-on-surface transition-colors active:scale-95 text-outline" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-surface-container-highest hover:text-on-surface transition-colors active:scale-95 text-outline/40 cursor-not-allowed" disabled="" type="button">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<!-- Breadcrumb Hierarchy -->
+<div class="flex items-center gap-1.5 text-xs ml-1">
+<span class="font-headline font-bold text-sm tracking-tight text-on-surface">MangaReader</span>
+<span class="text-outline text-[11px]">/</span>
+<span class="font-headline font-semibold text-sm text-primary">Updates</span>
+</div>
+</div>
+<!-- Center: Search trigger with shortcut pill -->
+<div class="flex items-center w-80 max-w-sm">
+<div class="w-full flex items-center justify-between bg-surface-container px-2.5 py-1 rounded-lg border border-outline-variant/40 hover:border-outline text-xs text-on-surface-variant cursor-pointer transition-colors group">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-colors">search</span>
+<span class="font-label text-xs">Search...</span>
+</div>
+<kbd class="font-sans text-[10px] bg-surface-container-high text-outline px-1.5 py-0.5 rounded border border-outline-variant/60 font-medium">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right: Status Indicators & Frameless Window Controls -->
+<div class="flex items-center gap-1">
+<!-- Sync Status with active violet spin -->
+<div class="flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:bg-surface-container-highest text-on-surface-variant cursor-pointer group" title="Synchronizing Library">
+<span class="material-symbols-outlined text-[17px] text-primary animate-spin" style="animation-duration: 2.2s;">sync</span>
+<span class="text-[11px] font-medium text-primary hidden xl:inline">Syncing</span>
+</div>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded-lg transition-colors" title="Incognito Mode Off" type="button">
+<span class="material-symbols-outlined text-[17px]">visibility_off</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface rounded-lg transition-colors" title="Network status" type="button">
+<span class="material-symbols-outlined text-[17px]">cloud_off</span>
+</button>
+<div class="h-3.5 w-[1px] bg-outline-variant mx-1"></div>
+<!-- Native OS Window Controls -->
+<div class="flex items-center">
+<button class="w-8 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" title="Minimize" type="button">
+<span class="material-symbols-outlined text-[16px]">minimize</span>
+</button>
+<button class="w-8 h-7 flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors" title="Maximize" type="button">
+<span class="material-symbols-outlined text-[15px]">crop_square</span>
+</button>
+<button class="w-8 h-7 flex items-center justify-center text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-colors" title="Close" type="button">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ========================================== -->
+<!-- App Layout: Sidebar + Main Content Area -->
+<!-- ========================================== -->
+<div class="flex flex-1 pt-10 h-screen overflow-hidden">
+<!-- SideNavBar (Docked w-[220px]) -->
+<aside class="fixed top-10 left-0 w-[220px] h-[calc(100vh-2.5rem)] flex flex-col justify-between p-3 z-40 bg-surface-container-low border-r border-outline-variant select-none">
+<!-- Top Group: Logo & Primary Nav -->
+<div class="flex flex-col gap-3">
+<!-- Brand Header Item -->
+<div class="flex items-center gap-2.5 px-2 py-1.5">
+<div class="w-7 h-7 rounded-lg bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<span class="font-headline font-bold text-base text-on-surface tracking-tight">MangaReader</span>
+</div>
+<div class="h-[1px] bg-outline-variant/40 mx-1"></div>
+<!-- Navigation Tabs -->
+<nav class="flex flex-col gap-0.5">
+<!-- Library with counter -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between group active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">local_library</span>
+<span class="font-label text-xs font-medium">Library</span>
+</div>
+<span class="text-[11px] font-medium px-1.5 py-0.2 bg-surface-container text-outline rounded font-mono">148</span>
+</a>
+<!-- Updates: ACTIVE ITEM with Violet Accent & Left Border Pill -->
+<a class="bg-primary-container/30 text-on-surface font-semibold rounded-lg px-3 py-2 flex items-center justify-between border-l-2 border-primary active:scale-[0.98] transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">update</span>
+<span class="font-label text-xs font-medium text-primary">Updates</span>
+</div>
+<span class="text-[11px] font-semibold px-1.5 py-0.2 bg-primary/20 text-primary rounded-full">12</span>
+</a>
+<!-- History -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline">history</span>
+<span class="font-label text-xs font-medium">History</span>
+</a>
+<!-- Browse with Expandable Accordion Sub-items -->
+<div class="flex flex-col">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between active:scale-[0.98] group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">explore</span>
+<span class="font-label text-xs font-medium">Browse</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline/60">expand_more</span>
+</a>
+<!-- Sub-items tree -->
+<div class="pl-8 pr-2 py-1 flex flex-col gap-1 border-l border-outline-variant/30 ml-4 my-0.5">
+<a class="text-[11px] text-on-surface-variant hover:text-primary transition-colors py-1 flex items-center justify-between" href="#">
+<span>Sources</span>
+<span class="text-[10px] text-outline">3 active</span>
+</a>
+<a class="text-[11px] text-on-surface-variant hover:text-primary transition-colors py-1" href="#">Extensions</a>
+<a class="text-[11px] text-on-surface-variant hover:text-primary transition-colors py-1" href="#">Global search</a>
+</div>
+</div>
+<!-- Downloads with badge -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center justify-between group active:scale-[0.98]" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px] text-outline group-hover:text-on-surface">download</span>
+<span class="font-label text-xs font-medium">Downloads</span>
+</div>
+<span class="text-[11px] font-medium px-1.5 py-0.2 bg-surface-container-highest text-on-surface rounded font-mono">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline">bookmark</span>
+<span class="font-label text-xs font-medium">Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline">bar_chart</span>
+<span class="font-label text-xs font-medium">Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Pinned Footer Item: Settings -->
+<div class="pt-2 border-t border-outline-variant/40">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors rounded-lg px-3 py-2 flex items-center gap-3 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined text-[18px] text-outline">settings</span>
+<span class="font-label text-xs font-medium">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas (Left margin matches docked sidebar w-56: 220px) -->
+<main class="ml-[220px] flex-1 h-[calc(100vh-2.5rem)] overflow-y-auto px-8 py-6 bg-surface-dim">
+<!-- ========================================== -->
+<!-- Header Section -->
+<!-- ========================================== -->
+<section class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface">Updates</h1>
+<p class="font-label-sm text-label-sm text-outline mt-0.5">Last checked 12 minutes ago · next check in 11h 48m</p>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center gap-2">
+<!-- Check Library Button -->
+<button class="bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30 rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors active:scale-95 shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Check library</span>
+</button>
+<!-- Category Filter Dropdown -->
+<button class="bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface px-3 py-1.5 rounded-lg border border-outline-variant/40 flex items-center gap-2 transition-colors" type="button">
+<span>All categories</span>
+<span class="material-symbols-outlined text-[14px] text-outline">arrow_drop_down</span>
+</button>
+<!-- More Options -->
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface border border-outline-variant/40 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</section>
+<!-- ========================================== -->
+<!-- Active Progress Banner / Card -->
+<!-- ========================================== -->
+<section class="bg-surface-container-low border border-primary/30 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-7 h-7 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span>
+</div>
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="font-medium text-sm text-on-surface">Checking for updates</span>
+<span class="text-xs text-outline font-mono">37 / 148 titles</span>
+</div>
+<!-- Progress Bar & Subtext -->
+<div class="flex items-center gap-3">
+<div class="w-56 h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-300" style="width: 25%;"></div>
+</div>
+<span class="text-[11px] text-outline truncate max-w-xs">Checking: <span class="text-on-surface-variant font-medium">Blade of the Ashen Sky...</span></span>
+</div>
+</div>
+</div>
+<button class="text-xs text-outline hover:text-on-surface px-2.5 py-1 rounded-md border border-outline-variant/40 hover:border-outline hover:bg-surface-container-high transition-colors shrink-0 self-end sm:self-center" type="button">
+          Cancel
+        </button>
+</section>
+<!-- ========================================== -->
+<!-- Updates List Grouped by Date -->
+<!-- ========================================== -->
+<div class="flex flex-col gap-6">
+<!-- GROUP 1: TODAY -->
+<div class="flex flex-col gap-2">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-2 py-1">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-outline">Today</span>
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono">6 chapters</span>
+</div>
+<button class="text-xs text-primary hover:underline flex items-center gap-1 cursor-pointer font-medium" type="button">
+<span class="material-symbols-outlined text-[14px]">download</span>
+<span>Download all 4</span>
+</button>
+</div>
+<!-- Rows Container -->
+<div class="flex flex-col bg-surface-container-lowest/60 rounded-xl border border-outline-variant/30 divide-y divide-outline-variant/20 overflow-hidden">
+<!-- Row 1 (Hero / Featured active showcase) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group bg-surface-container-high/40">
+<div class="flex items-center gap-3 min-w-0">
+<!-- Checkbox -->
+<input checked="" class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<!-- Unread Dot Indicator -->
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<!-- 2:3 Vertical Manga Thumbnail with DATA placeholder -->
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/50 relative bg-surface-container">
+<img alt="Cover of Blade of the Ashen Sky" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XeZgJ6YlLkplzC1Do0-bzuURVP0WHFqK9tvI8nkfjzRE0XPVob--L9G157RsBkgXrdG4AvKU3mipbQ1p8j93QIzQ9Ho47ntYbdwYIGxDZsucd-b6pfVYd1k5HUFevg2dzjjMYRsoIJ22SBP0LSCVzAdwOLdho_xPtpn3HGd3BV0BQeMZnZ3yxtAxeVZ3GVTQ9iRvWhXIjhCltJ1abx6YTLc-RpEH9PJ8uA5NHGGUW2cfPpfdroX4a7iTGk"/>
+</div>
+<!-- Title & Chapter details -->
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Blade of the Ashen Sky</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 128 — The Last Ember</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>Nightowl Scans</span>
+<span>•</span>
+<span>2h ago</span>
+</div>
+</div>
+</div>
+<!-- Row 1 Actions: Primary Read Button Highlighted -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="bg-primary hover:bg-primary-container text-on-primary-container text-xs px-3 py-1.5 rounded-lg font-semibold shadow-md shadow-primary/20 flex items-center gap-1.5 transition-all active:scale-95" type="button">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Read</span>
+</button>
+</div>
+</div>
+<!-- Row 2 (Unread) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<!-- Generic Fallback Cover Thumbnail -->
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Dark aesthetic cyberpunk manga cover artwork depicting a neon motorcycle race in Tokyo rain, vibrant purple and deep cyan glow, clean Japanese title lettering, ultra detailed digital art." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzCM4IRQlmqq2Xr5oAfpGNvVfoGrxczrnLMJldPHulITPGn36aMoiInUzEaM3EgigJB-yvOTsX2ilK7rOdITASD5aMJBiFeT6EYc3G04rr6Q-LoEzw9ITKNNd0J9eUoUqYQ1Z2aUM9caPUo5tgtEzrIisWTIG5sMYGKtrK4PsTyMyO0Jf7BmStKSHKVc-rfdUgL4OecnuYk59NvFhGZZrx91BACVq4l5Y1Vdhh3N2CSa3t5aDxduLO278q_6vgj4dNrpodPo_kUnjf"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Tokyo Circuit Rebels</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 45 — Neon Drift</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>MangaDex</span>
+<span>•</span>
+<span>4h ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 3 (Unread with downloaded indicator) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Ethereal fantasy manga cover illustration depicting an ancient botanical academy surrounded by floating glowing blossoms, deep indigo nighttime ambiance with soft violet highlights, immaculate line art." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv0DnCWQWIvh9n5sMQgpsEusu4WyBns_B4OL-fH9KHqt8aOitb5KdU2kIlbjNQ1rHLaeIVdEzOCJHUipMlWmKWSEqMsDxJ2KOFxcs2Zc6WA8twrCDOkaNrfS9ELS_gVIBjTwmXKD7AOwzY5vUeDLzEL1h9v-kJn_1BrUJfefkHgxM0dqu3mZ-zmfrB3p3Ssshg3SwaA0U5l1SkgTQEyohmsqgv_nepx2m8LXNxcGeLhnV6kYY3F8aQFtdbLCElXGthXV8lz9ULg3FF"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Spirit Garden Academy</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 14 — The Silver Gate</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>Aurora Source</span>
+<span>•</span>
+<span>5h ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="w-7 h-7 flex items-center justify-center text-primary" title="Downloaded">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">download_done</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 4 (Unread) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Charming cozy fantasy manga cover art featuring a magical bakery at night, glowing star shaped pastries on shelves, warm golden aura against dark midnight purple interior, crisp vector anime aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2huMM-s8750Q9j1uAjA8udMJxcqvOmp9Klnnc58q2Cscap_2rXrosU8zwiZ7vudNhnV60pb8POQnlvSd1uQHvmhoVbjlMCiO8iCgdOYW4UrKZQz9D-0V3pAachx1R8jkOUBk_Jpx5Zs3o5oe7Jt20fX8JfupCGAspOUlduLLSz4TR71VmfJG8SzJuRVKjh_eLz_2o6NfLVMW7XQZbrhHw9QZTdBjcTDGsiGaIL9EBGrs11SmtdAWK8Km_PCf8A2O5G77vrKGybZih"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Moonlit Bakery Chronicles</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 32 — Cinnamon Stardust</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>Aurora Source</span>
+<span>•</span>
+<span>7h ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 5 (Unread) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Mysterious dark fantasy manga cover showing an ancient scholarly vault with floating enchanted scrolls and candles, atmospheric dim purple and amber lighting, fine hand drawn manga style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqWsMAsFMXVTSIHGWEgrMceoKqTkYCGq-M31WBJ67VoS9Njf7L0-I2blOdKpOjdupBpFVDcbJrASSmGrN4KIxFkhH68fpIlGnI8P7UqhUdTlmE4_Iak3ldjtPymItAUGYp5_7wvrr2QroIKA33DzL2Zj0Eo1PGMNc0RJ7qp95QA2KXhYsVNOLISdedNMmYJAV3ROJVtEuXgAcSKb1twNKcYUcJb26tQ5KGiGTUkNjzXF_euq51a-hPPYWHDg4nYhyw1ctAt73uRxtp"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">The Last Archivist</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 42 — Whispers in Vellum</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>Local Demo</span>
+<span>•</span>
+<span>8h ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 6 (Read, Muted) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group opacity-65">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<!-- Empty placeholder for align since it is read -->
+<span class="w-2 h-2 shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Steampunk samurai manga volume cover illustration with brass gears and clockwork armor, dark dramatic rain setting, stylized Japanese typography, polished manga publishing artwork." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdEskRgKamheVw3b_B0IYdOyj9xnttN-4NNQx5QPN7pwh4gx-7-6ylU7egR4JC_J5s6s3hR1i8sqOkSX8tlpTqhCmL3hTOQBb5y17HgZe4r6DrCkKw05iilks4_g8zcJkS_PnVQqQvX6GjCOic7_4PwojM6wQtfvtiIYmpgElw50x88wW6w22uMQ_1re3YhN8ghkkto6N-xCsi0y1zaUoApzb_lbZrgHk1vETTrfs2XbxmKFyWxnGg5nW2zkBVfIqXrn9pFoUJ_Xzn"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-normal text-sm text-outline group-hover:text-on-surface transition-colors truncate">Clockwork Ronin</span>
+<span class="text-outline/40 text-xs">·</span>
+<span class="text-xs text-outline truncate">Ch. 62 — Gears of War</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline/60">
+<span>MangaDex</span>
+<span>•</span>
+<span>10h ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="text-[11px] text-outline/60 px-2 py-0.5 rounded bg-surface-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">done</span>
+<span>Read</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- GROUP 2: YESTERDAY -->
+<div class="flex flex-col gap-2">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-2 py-1">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-outline">Yesterday</span>
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono">4 chapters</span>
+</div>
+</div>
+<!-- Rows Container -->
+<div class="flex flex-col bg-surface-container-lowest/60 rounded-xl border border-outline-variant/30 divide-y divide-outline-variant/20 overflow-hidden">
+<!-- Row 7 (Unread) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Brutal mecha military manga cover art featuring a towering dark metal war machine on a desolate crater battlefield, stark monochrome contrast with muted purple spotlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4n3ac93QvcdjRT1PkWu5shqIObHm-QZ2kMp4XZdejGAYcd6utYtQVb2W1M1CFjvjGaVfv2trueeNTubHv9mAmwbJD0nzeBWqMJyzpDd9ZICW2fUzYNHP_PSUo-zCpj4hmYlP9LutCZ6-VM-BVX7Dew5EFTMYNkkkKqFyHHBUIQ-xG5k5kF2VxGA4MefK3zOtbvVbRWBT18Rm0hyo-bOefZQyhx3G9BXOPFsqNL259z-Jg16OT4yLlugf_YIzeLRoJrlOU-6grer4k"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Iron Tide</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 74 — Desolation Vanguard</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>MangaDex</span>
+<span>•</span>
+<span>Yesterday, 18:20</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 8 (Unread) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/40 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Lovecraftian oceanic manga cover showing a ruined gothic cathedral underwater illuminated by bioluminescent deep-sea jellyfish and purple rays, dark surreal atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe17Q2TWrSinaCq1iGOAw7Y-UnjUrsSC44FXPuW2x1v1XSmO8M0-P-cL0dx0wy64U8beNXcD3s4jgNX1hCpHdcoGhf7DU4B7WipnI9Z3-2QgSXCU6uU3_YO2MAaQYCJRe5uV3ktLLQyz1LAxU8-2gxBgwDlFjaGFWqiBKJVXXs-3McBF583dowdnvGAAbmpqd-QUbhKQEFhddjT3FBnvh5jfvkYKlZlPgdG7chhlRexDE1egI2kywvzW6ONgUAwSPVlaoiBIMuOxMH"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-semibold text-sm text-on-surface group-hover:text-primary transition-colors truncate">Whispers of the Sunken Spire</span>
+<span class="text-outline text-xs">·</span>
+<span class="text-xs text-primary font-medium truncate">Ch. 28 — Abyssal Resonance</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline">
+<span>Aurora Source</span>
+<span>•</span>
+<span>Yesterday, 14:15</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download Chapter" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Mark as Read" type="button">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</button>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-primary transition-colors" title="Read Now" type="button">
+<span class="material-symbols-outlined text-[16px]">play_arrow</span>
+</button>
+</div>
+</div>
+<!-- Row 9 (Read, Muted) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group opacity-65">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Noir detective manga cover featuring a silhouette figure holding a traditional paper lantern in a misty alleyway, deep shadows and striking ink wash aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB08FCI9Re-5dk9g-f1meomd8MOE9pWbEEGCh9Bgbadsp96iiiWjGBXNSbihVdAmjQ4eS87VxaLvVBnT2ZWbmHCvGrFGC4GyttfEBP_ZYHW_VqsDRzSYcX63HW9bR3KL-sLMUy81CFeEMfwyXBaL9jX4Tvmc8mQYT8a7fgAvXTojTrC902dEFv4uweocBGfsDoi53eAUPhjojP8mLoqqaVU27JAGZRzlWAdvw9Y7RwFEGQtKIiVB3UItB1dCvr0Tt_7BVWw_DWIgLro"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-normal text-sm text-outline group-hover:text-on-surface transition-colors truncate">Paper Lantern Detective</span>
+<span class="text-outline/40 text-xs">·</span>
+<span class="text-xs text-outline truncate">Ch. 17 — The Shadow Theater</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline/60">
+<span>Local Demo</span>
+<span>•</span>
+<span>Yesterday, 11:30</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="text-[11px] text-outline/60 px-2 py-0.5 rounded bg-surface-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">done</span>
+<span>Read</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+<!-- Row 10 (Read, Muted) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group opacity-65">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Sci-fi space manga volume cover depicting an orbital elevator ascending through planetary clouds into a starry violet cosmos, clean Japanese tankobon framing." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJrbe1b-RzIlhcryZ4BkTp_ei3rs0rYTOCnGAEKFEB35PxIO5Qt1fYbu5_7FiJl4BuP8gihNvGXSDqLiHHqSZb7uBL1tQ1hdf7oIyl0ap29TA4vGiVW_VamiE-_TuDPLOnAMBosQ5FLqOZdVIrsmdKmVJjlV4AtoAdOF3mt1KlCnoB5k7Ep_9Ob3nMXJFZ5lGwTZbqtjgFQQoGdAnO7GbToerWYF-a-Q0NxTZAuiOtBvNXbYHBkVBG2Pm_J8F2-m8vCqy1S3cHs_GN"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-normal text-sm text-outline group-hover:text-on-surface transition-colors truncate">Neon Horizon Zero</span>
+<span class="text-outline/40 text-xs">·</span>
+<span class="text-xs text-outline truncate">Ch. 65 — Stratosphere</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline/60">
+<span>Aurora Source</span>
+<span>•</span>
+<span>Yesterday, 09:05</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="text-[11px] text-outline/60 px-2 py-0.5 rounded bg-surface-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">done</span>
+<span>Read</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- GROUP 3: SEP 20 -->
+<div class="flex flex-col gap-2 pb-8">
+<!-- Group Header -->
+<div class="flex items-center justify-between px-2 py-1">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold uppercase tracking-wider text-outline">Sep 20</span>
+<span class="text-[11px] px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono">2 chapters</span>
+</div>
+</div>
+<!-- Rows Container -->
+<div class="flex flex-col bg-surface-container-lowest/60 rounded-xl border border-outline-variant/30 divide-y divide-outline-variant/20 overflow-hidden">
+<!-- Row 11 (Read, Muted) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group opacity-65">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="High fantasy apothecary manga cover showcasing glowing crystal flasks filled with starlight liquids inside an antique herbarium, soft ethereal tones, detailed digital painting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5_VGbjbTy7mGwJb-22riqnBWx01TKAwP0pTilFh4SUCZ76SGGSsQuiKvwYoiyX7567TO2A88PntPIXOtZ9LIe5qh2tRFS1wnrjeET_TVvLQeJIAIu9veM72bbBvF58vljCZdMgcM5hbNh9VbykKwHtlhpTOEP9t_UG6ZBo7-f23ttqN0I-lalYp0td8Cj-b0v4183IjAfI5oZ5eZEHEippNBCb4mf9qf5WFRNlf-Qt1uriM4ntR_VusZtzgol5wYqxf_51Fwb2gjA"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-normal text-sm text-outline group-hover:text-on-surface transition-colors truncate">Apothecary of Starlight</span>
+<span class="text-outline/40 text-xs">·</span>
+<span class="text-xs text-outline truncate">Ch. 20 — Elixir of Celestial Flame</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline/60">
+<span>MangaDex</span>
+<span>•</span>
+<span>Sep 20</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="text-[11px] text-outline/60 px-2 py-0.5 rounded bg-surface-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">done</span>
+<span>Read</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+<!-- Row 12 (Read, Muted) -->
+<div class="h-14 px-3 flex items-center justify-between gap-3 hover:bg-surface-container-high transition-colors group opacity-65">
+<div class="flex items-center gap-3 min-w-0">
+<input class="w-4 h-4 rounded bg-surface-container-high border-outline-variant text-primary focus:ring-0 focus:ring-offset-0 cursor-pointer" type="checkbox"/>
+<span class="w-2 h-2 shrink-0"></span>
+<div class="w-7 h-10 rounded overflow-hidden shrink-0 border border-outline-variant/30 bg-surface-container flex items-center justify-center text-outline">
+<img class="w-full h-full object-cover" data-alt="Gothic alchemical manga cover featuring stained glass patterns and a young alchemist transmuting crystal shards with glowing purple runic circles, sharp lines, cinematic mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAparRasvKhyIPpEOxZff-8tt-PgKpNwm6hgYfeIcaolFwHTknI6yTWMTM-u1ZydVZ0sKyBB6eceNON090laDJZ6s4VIdxcyqMwGNPqx-lhX5-m2hDTaeDStHsNbqKfoUBUEpPBHd0cT3krXJpSbr187hrssnJ-t6m8TDAnxIwyU3kTQk2sUIIl1w3PUaHiI2D01WrBU4ZaUgDdQP37MBgq5INgA6njLFsYlRDHz4ClR5fFNctraMd8mxXDdU-g17H3jjFF_E3uK_-Z"/>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2 truncate">
+<span class="font-normal text-sm text-outline group-hover:text-on-surface transition-colors truncate">The Glass Alchemist</span>
+<span class="text-outline/40 text-xs">·</span>
+<span class="text-xs text-outline truncate">Ch. 91 — Vitreous Soul</span>
+</div>
+<div class="flex items-center gap-2 text-[11px] text-outline/60">
+<span>Aurora Source</span>
+<span>•</span>
+<span>Sep 20</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 shrink-0">
+<span class="text-[11px] text-outline/60 px-2 py-0.5 rounded bg-surface-container flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">done</span>
+<span>Read</span>
+</span>
+<button class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface transition-colors" title="Download" type="button">
+<span class="material-symbols-outlined text-[16px]">download</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MangaReader Desktop - History</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "primary": "#e2c7ff",
+            "on-primary-fixed-variant": "#57377f",
+            "on-secondary-container": "#abb5f4",
+            "primary-fixed-dim": "#d9b9ff",
+            "surface-container-low": "#1a1a2a",
+            "surface-container-highest": "#333344",
+            "inverse-on-surface": "#2f2f40",
+            "on-surface": "#e3e0f7",
+            "surface-dim": "#121221",
+            "on-primary-container": "#57377f",
+            "surface-tint": "#d9b9ff",
+            "on-tertiary-fixed-variant": "#6b3a18",
+            "on-tertiary-container": "#6c3b19",
+            "on-tertiary-fixed": "#311300",
+            "on-surface-variant": "#cdc3d1",
+            "on-background": "#e3e0f7",
+            "surface-bright": "#383849",
+            "surface-variant": "#333344",
+            "on-secondary-fixed-variant": "#38437a",
+            "on-error": "#690005",
+            "secondary": "#bac3ff",
+            "surface": "#121221",
+            "outline-variant": "#4a444f",
+            "outline": "#968e9a",
+            "surface-container": "#1e1e2e",
+            "primary-container": "#cba6f7",
+            "inverse-surface": "#e3e0f7",
+            "error-container": "#93000a",
+            "on-tertiary": "#4f2504",
+            "secondary-fixed-dim": "#bac3ff",
+            "inverse-primary": "#704f98",
+            "secondary-container": "#3b457c",
+            "surface-container-high": "#292839",
+            "tertiary-fixed-dim": "#feb78a",
+            "secondary-fixed": "#dee0ff",
+            "tertiary-container": "#eca77c",
+            "tertiary": "#ffc6a4",
+            "error": "#ffb4ab",
+            "primary-fixed": "#eedbff",
+            "tertiary-fixed": "#ffdbc8",
+            "on-secondary": "#212c62",
+            "background": "#121221",
+            "surface-container-lowest": "#0d0d1c",
+            "on-secondary-fixed": "#09154c",
+            "on-error-container": "#ffdad6",
+            "on-primary": "#3f1e66",
+            "on-primary-fixed": "#290350",
+            /* Catppuccin Mocha semantic tokens */
+            "mocha-base": "#1e1e2e",
+            "mocha-mantle": "#181825",
+            "mocha-crust": "#11111b",
+            "mocha-surface0": "#313244",
+            "mocha-surface1": "#45475a",
+            "mocha-surface2": "#585b70",
+            "mocha-text": "#cdd6f4",
+            "mocha-subtext1": "#bac2de",
+            "mocha-subtext0": "#a6adc8",
+            "mocha-mauve": "#cba6f7",
+            "mocha-red": "#f38ba8",
+            "mocha-lavender": "#b4befe",
+            "mocha-green": "#a6e3a1",
+            "mocha-yellow": "#f9e2af"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "fontFamily": {
+            "headline": ["Inter", "sans-serif"],
+            "display": ["Inter", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "label": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      user-select: none;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #181825;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #45475a;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #585b70;
+    }
+  </style>
+</head>
+<body class="bg-[#11111b] text-[#cdd6f4] flex items-center justify-center min-h-screen p-0 m-0 antialiased overflow-hidden select-none">
+<!-- Desktop App Window: 1440x900 Frameless Electron Container -->
+<div class="w-[1440px] h-[900px] bg-[#1e1e2e] rounded-xl shadow-2xl flex flex-col border border-[#45475a]/50 overflow-hidden relative">
+<!-- TopNavBar / Title Bar (docked full-width top-0 h-10, bg-[#181825], border-b border-[#45475a]) -->
+<header class="bg-[#181825] border-b border-[#45475a] h-10 w-full flex items-center justify-between px-3 shrink-0 z-30 select-none">
+<!-- Left: Navigation Arrows & Breadcrumbs -->
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1 text-[#a6adc8]">
+<button class="w-6 h-6 rounded flex items-center justify-center hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Back">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-6 h-6 rounded flex items-center justify-center hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors opacity-50 cursor-not-allowed" title="Forward">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<div class="h-3.5 w-[1px] bg-[#45475a]"></div>
+<div class="flex items-center gap-1.5 text-xs">
+<span class="text-[#a6adc8] font-medium hover:text-[#cdd6f4] cursor-pointer">MangaReader</span>
+<span class="text-[#585b70]">/</span>
+<span class="text-[#cba6f7] font-semibold">History</span>
+</div>
+</div>
+<!-- Center: Universal Search Ctrl+K -->
+<div class="w-72">
+<div class="flex items-center gap-2 bg-[#313244]/60 border border-[#45475a] hover:border-[#585b70] focus-within:border-[#cba6f7] transition-all rounded-md px-2.5 py-1 text-xs text-[#a6adc8] cursor-text">
+<span class="material-symbols-outlined text-[15px] text-[#a6adc8]">search</span>
+<span class="text-[#a6adc8]/80 flex-1 truncate">Search...</span>
+<kbd class="text-[10px] bg-[#181825] border border-[#45475a] rounded px-1.5 py-0.5 text-[#a6adc8] font-mono">Ctrl+K</kbd>
+</div>
+</div>
+<!-- Right: System Indicators & Window Controls -->
+<div class="flex items-center gap-2">
+<!-- Status & Mode Icons -->
+<div class="flex items-center gap-1 text-[#a6adc8] mr-2">
+<button class="w-7 h-7 rounded flex items-center justify-center hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Sync Status: Up to date">
+<span class="material-symbols-outlined text-[16px] text-[#a6e3a1]">sync</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center hover:bg-[#313244] hover:text-[#cba6f7] transition-colors" title="Incognito mode off">
+<span class="material-symbols-outlined text-[16px]">visibility_off</span>
+</button>
+<button class="w-7 h-7 rounded flex items-center justify-center hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" title="Notifications">
+<span class="material-symbols-outlined text-[16px]">notifications</span>
+</button>
+</div>
+<!-- Window Buttons -->
+<div class="flex items-center gap-1 border-l border-[#45475a] pl-2">
+<button class="w-6 h-6 rounded flex items-center justify-center hover:bg-[#313244] text-[#a6adc8] hover:text-[#cdd6f4] transition-colors" title="Minimize">
+<span class="material-symbols-outlined text-[14px]">minimize</span>
+</button>
+<button class="w-6 h-6 rounded flex items-center justify-center hover:bg-[#313244] text-[#a6adc8] hover:text-[#cdd6f4] transition-colors" title="Maximize">
+<span class="material-symbols-outlined text-[14px]">check_box_outline_blank</span>
+</button>
+<button class="w-6 h-6 rounded flex items-center justify-center hover:bg-[#f38ba8] text-[#a6adc8] hover:text-[#11111b] transition-colors" title="Close">
+<span class="material-symbols-outlined text-[15px]">close</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main App Body: Sidebar + History Content Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- SideNavBar (w-56, bg-[#181825], border-r border-[#45475a]) -->
+<aside class="w-56 bg-[#181825] border-r border-[#45475a] flex flex-col justify-between p-3 select-none shrink-0 h-full">
+<!-- Top Section: Brand & Navigation -->
+<div class="flex flex-col gap-4">
+<!-- Logo Header -->
+<div class="flex items-center gap-2.5 px-2 py-1.5">
+<div class="w-8 h-8 rounded-lg bg-[#cba6f7] flex items-center justify-center text-[#11111b] shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">menu_book</span>
+</div>
+<div>
+<div class="text-sm font-semibold text-[#cdd6f4] tracking-tight">MangaReader</div>
+</div>
+</div>
+<!-- Nav Items -->
+<nav class="flex flex-col gap-0.5">
+<!-- Library -->
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">local_library</span>
+<span>Library</span>
+</div>
+<span class="text-[11px] font-medium bg-[#313244] text-[#bac2de] px-1.5 py-0.5 rounded-full">148</span>
+</a>
+<!-- Updates -->
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">update</span>
+<span>Updates</span>
+</div>
+<span class="text-[11px] font-semibold bg-[#cba6f7] text-[#11111b] px-1.5 py-0.5 rounded-full">12</span>
+</a>
+<!-- History (ACTIVE STATE: Mauve 15% tint, 2px border, Mauve text) -->
+<a class="flex items-center justify-between px-3 py-2 text-[#cba6f7] bg-[#cba6f7]/15 border-l-2 border-[#cba6f7] font-semibold text-sm rounded-r-lg transition-all" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">history</span>
+<span>History</span>
+</div>
+</a>
+<!-- Browse (Expandable Section) -->
+<div class="pt-1">
+<button class="w-full flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">explore</span>
+<span>Browse</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-[#a6adc8]">expand_more</span>
+</button>
+<!-- Sub-items -->
+<div class="pl-8 pr-1 py-1 flex flex-col gap-0.5 text-xs text-[#a6adc8]">
+<a class="px-2.5 py-1.5 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors flex items-center justify-between" href="#">
+<span>Sources</span>
+<span class="text-[10px] text-[#585b70]">4</span>
+</a>
+<a class="px-2.5 py-1.5 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors flex items-center justify-between" href="#">
+<span>Extensions</span>
+<span class="w-1.5 h-1.5 rounded-full bg-[#a6e3a1]"></span>
+</a>
+<a class="px-2.5 py-1.5 rounded hover:bg-[#313244] hover:text-[#cdd6f4] transition-colors" href="#">
+<span>Global search</span>
+</a>
+</div>
+</div>
+<!-- Downloads -->
+<a class="flex items-center justify-between px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Downloads</span>
+</div>
+<span class="text-[11px] font-medium bg-[#313244] text-[#bac2de] px-1.5 py-0.5 rounded-full">3</span>
+</a>
+<!-- Bookmarks -->
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">bookmark</span>
+<span>Bookmarks</span>
+</a>
+<!-- Statistics -->
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">bar_chart</span>
+<span>Statistics</span>
+</a>
+</nav>
+</div>
+<!-- Footer / Settings Tab -->
+<div class="border-t border-[#45475a]/70 pt-2">
+<a class="flex items-center gap-3 px-3 py-2 text-[#a6adc8] hover:bg-[#313244] hover:text-[#cdd6f4] text-sm rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main History Canvas (bg-[#1e1e2e], p-6, scrollable) -->
+<main class="flex-1 bg-[#1e1e2e] p-6 overflow-y-auto custom-scrollbar flex flex-col">
+<!-- Page Header -->
+<div class="flex items-center justify-between pb-4 border-b border-[#45475a]/40 shrink-0">
+<div>
+<h1 class="text-2xl font-bold text-[#cdd6f4] tracking-tight">History</h1>
+<p class="text-xs text-[#a6adc8] mt-1">One entry per manga · last read first</p>
+</div>
+<div class="flex items-center gap-3">
+<!-- Search History Input -->
+<div class="relative flex items-center">
+<span class="material-symbols-outlined text-[16px] text-[#a6adc8] absolute left-3 pointer-events-none">search</span>
+<input class="bg-[#313244] border border-[#45475a] focus:border-[#cba6f7] focus:ring-1 focus:ring-[#cba6f7] text-xs text-[#cdd6f4] placeholder-[#a6adc8]/60 rounded-lg pl-9 pr-3 py-1.5 w-60 outline-none transition-all" placeholder="Search history…" type="text"/>
+</div>
+<!-- Clear History Destructive Button -->
+<button class="border border-[#f38ba8]/40 text-[#f38ba8] hover:bg-[#f38ba8]/10 rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[15px]">delete_sweep</span>
+<span>Clear all history</span>
+</button>
+</div>
+</div>
+<!-- Incognito Hint Banner -->
+<div class="bg-[#313244] border border-[#45475a] rounded-lg px-4 py-2.5 my-4 flex items-center justify-between shrink-0 shadow-sm">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[18px] text-[#a6adc8]">visibility_off</span>
+<span class="text-xs text-[#cdd6f4]">Incognito mode is off — reading is being recorded</span>
+</div>
+<button class="text-[#cba6f7] hover:underline text-xs font-semibold flex items-center gap-1 transition-all">
+<span>Turn on</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+<!-- History Groups Container -->
+<div class="space-y-6 pb-8 flex-1">
+<!-- ================= GROUP 1: TODAY ================= -->
+<section>
+<h2 class="text-xs font-semibold uppercase tracking-wider text-[#a6adc8] mb-2.5 px-0.5">Today</h2>
+<div class="space-y-2.5">
+<!-- Row 1: Blade of the Ashen Sky -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<!-- Left: Thumbnail + Manga Info -->
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img alt="Blade of the Ashen Sky cover art" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XeZgJ6YlLkplzC1Do0-bzuURVP0WHFqK9tvI8nkfjzRE0XPVob--L9G157RsBkgXrdG4AvKU3mipbQ1p8j93QIzQ9Ho47ntYbdwYIGxDZsucd-b6pfVYd1k5HUFevg2dzjjMYRsoIJ22SBP0LSCVzAdwOLdho_xPtpn3HGd3BV0BQeMZnZ3yxtAxeVZ3GVTQ9iRvWhXIjhCltJ1abx6YTLc-RpEH9PJ8uA5NHGGUW2cfPpfdroX4a7iTGk"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Blade of the Ashen Sky</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">MangaDex</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 42 — Ash and Origin · Page 12/38</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">21:14</span>
+</div>
+<!-- Progress Bar -->
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 32%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">32%</span>
+</div>
+</div>
+</div>
+<!-- Right: Action Buttons -->
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Spirit Garden Academy -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img alt="Spirit Garden Academy cover art" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1U1ejV1euvPSG_8cF9ZHtYkjLFlHky1slQTNbLKP0nn3N1zhwocQGh-ew_in2y-VSF3PgyOcbCe4lLeVRm4x5YergGA3JETgv1uqCOzSmk1xRlLccX9WF2soFe_Gtme_KYdF-ZqPiVI-I7dlgdpaCf2WPqUm_ME_-d5rzZ0yqe4h5cK4FmEWhI_AXrH7EqGN5JgPoixd3nmoEYi3HlTdiSSr82mJOrykA5zZP3qpKhq1MIoocKa4shg7tYg"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Spirit Garden Academy</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">Aurora Source</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 13 — Blossoming Magic · Webtoon mode</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">18:40</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 94%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">94%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3: Tokyo Circuit Rebels -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="High quality manga book cover art for cyberpunk sci-fi manga Tokyo Circuit Rebels. A young rebel girl with glowing cybernetic optic implants and iridescent holographic visor standing amidst a rain-soaked neon-lit Shinjuku alleyway. Dark moody aesthetic, electric purple and cyan reflections on wet asphalt, intricate mechanical street details." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9wWKzbm3KpR5VvuPozY6WUO28KuQlJKozG_v6Sud20TlWWuoaqdAwkAHGLY0g-nY5-hE9nCF0KqdohXYLL1p0Lfr20Sey0niH1vaXSudtT_n4Ms4Ju68V-Zz9B0Ubo2Uif-UawJMDKnBlQaRbIzAGC82Kjw7KUtkV3U6WiyRMqzKq1pgTPnYvi0co0mi51Lvhb4TjpP65CTD_rCvVsqWBCj1JS0ObXXnO30E4Fj9bIrn7NSPuxOK6qphVHBk8ubx7sWpqEsxWcnfQ"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Tokyo Circuit Rebels</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">MangaDex</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 45 — Neon Drift · Page 28/34</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">14:15</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 82%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">82%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= GROUP 2: YESTERDAY ================= -->
+<section>
+<h2 class="text-xs font-semibold uppercase tracking-wider text-[#a6adc8] mb-2.5 px-0.5">Yesterday</h2>
+<div class="space-y-2.5">
+<!-- Row 4: The Last Archivist -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Gothic dark fantasy manga cover art for The Last Archivist. An ancient scholar in heavy embroidered velvet robes holding an enormous glowing grimoire in a towering candlelit cathedral library. Subtle dust motes floating in amber moonlight beams, intricate medieval engravings, somber atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7YJX8ZzAs9FkPMt1Yfo-OT3qCPXtVszsVQAIW2IcqiyCuIuV9hSh1HGN8ENhZV4ppKiVrxkH_nrw-KdgGRxlw17s6PELijkw5z3fk7BYdabNGZlFf5T-jk5mAnY4neMgsfucDzH-3OE4Hnr8kKKTN6qwkPH8uPTOKF4FBPqx_-riNfiDPSBhJxUZ-H1r_pHPO3usHTsBkQbD5fFbvopAwOOxlywAKJWtl0VQLzKL3qhHNAjFzQH-E_Zub_WeWqQOZGrJ5ukv0gxZI"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">The Last Archivist</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">Local Demo</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 42 — Whispers in Vellum · Page 5/26</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">Yesterday, 22:50</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 19%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">19%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 5: Iron Tide -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Dramatic steampunk mecha manga illustration for Iron Tide. Giant rusted armored colossus standing knee-deep in misty harbor waters during a blood-red sunset. Swirling coal smoke and bronze gears, bold linework, epic cinematic battle manga aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRCCZd7YVpE3AXHzBbi9-xRr5zz86IAK99FdoW3sK3c5vXy5XDtEzbv8zBEJm9XSV8oeEbhQ3M9sWGS7IDGi20Zlvaps872H091UCwaTmQnDuYIo6QbskuXdjIRudCe7koyxosTeEqDedGMTYOj6_jA65YZ_DW5nqgK_mPIpnnl6sdT4b3X878Px2zG4rdICEETsw9ttFLuGQesDEdzTFcckeHSbx8yYx1eIOxNzIFnrGXIuxIrBA2T9REDZXR-WIU1-mdOfhHruBl"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Iron Tide</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">MangaDex</span>
+<span class="bg-[#a6e3a1]/15 text-[#a6e3a1] border border-[#a6e3a1]/30 px-1.5 py-0.2 rounded text-[10px] font-medium">Completed</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 74 — Desolation Vanguard · Page 40/40</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">Yesterday, 19:30</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#a6e3a1] rounded-full" style="width: 100%;"></div>
+</div>
+<span class="text-[10px] text-[#a6e3a1]">100%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#313244] border border-[#45475a] hover:border-[#585b70] text-[#cdd6f4] font-medium text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#45475a] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]">replay</span>
+<span>Re-read</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= GROUP 3: THIS WEEK ================= -->
+<section>
+<h2 class="text-xs font-semibold uppercase tracking-wider text-[#a6adc8] mb-2.5 px-0.5">This week</h2>
+<div class="space-y-2.5">
+<!-- Row 6: Moonlit Bakery Chronicles -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Cozy slice of life anime manga cover for Moonlit Bakery Chronicles. Warm pastel interior of a vintage cobblestone bakery with freshly baked glowing pastries, steam rising into soft dusk light, smiling girl with baker apron dusting powdered sugar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVFEDKyYqNaoJbNQNlm4OYT7fOzfTq3o3LO6qaD3aVeLaxLCDSxUXQOxroFa5nWYtF1SlYqWKHZl1tk_a0jxOB8MGrfj3mFbvFRHhyfhiYO4wJHA_GK7RYPBrvu7djuqXH1H2IvkxIfQEObrvIFnmFD2DJmW0Vjh1pnStdIgABFrRNdLt2K5J5ImxXy1TTUMpPR72mqSM0aibYsQ9ltSenvyfmKI4CXvE38JIfksEh7uBDRYzJQnHWK3vW9yYO7tCsRhIiH6VnRSQM"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Moonlit Bakery Chronicles</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">Aurora Source</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 31 — Cinnamon Stardust · Page 18/22</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">Mon, Sep 16</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 80%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">80%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================= GROUP 4: SEP 12 ================= -->
+<section>
+<h2 class="text-xs font-semibold uppercase tracking-wider text-[#a6adc8] mb-2.5 px-0.5">Sep 12</h2>
+<div class="space-y-2.5">
+<!-- Row 7: Paper Lantern Detective -->
+<div class="h-[72px] bg-[#313244] border border-[#45475a] hover:border-[#cba6f7]/60 rounded-xl transition-all duration-150 px-4 py-2.5 flex items-center justify-between gap-4 group">
+<div class="flex items-center gap-3.5 min-w-0 flex-1">
+<div class="w-[44px] h-[64px] rounded-md overflow-hidden bg-[#181825] border border-[#45475a] shrink-0 shadow-sm flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Atmospheric detective mystery manga cover for Paper Lantern Detective. A sharp investigator in 1920s trenchcoat and fedora holding an ornate glowing red paper lantern down a fog-covered narrow canal alley in historical Edo Kyoto." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDe74c7YF92CiCKuNsgKuUGFw65OagX2RwuhLWTt_59bhe2XIHL1oLiuvXTvoPqFwwkM6lndEA_S4ROeTthw8PGhoupzBSZA-7k2W2bkKlSNgElKl95C4xqG-7J6M64KmhvVVg03mmeQiXId2u5y1EQzjdNvsrmfQbY3edkoS5bSAHc-_mhgr8PwEVHSgvfu6-WZajxTyuS4K8yvQ6DY7WFAwKLYNDCAZjnC1HBIZfu7LN5MRhbqcROHSoH5S-pbZBG-Zqf5Zbj74VK"/>
+</div>
+<div class="flex flex-col justify-center min-w-0 flex-1">
+<div class="flex items-center gap-2">
+<h3 class="font-medium text-sm text-[#cdd6f4] truncate">Paper Lantern Detective</h3>
+<span class="bg-[#181825] border border-[#45475a]/70 px-2 py-0.5 rounded text-[10px] text-[#a6adc8] font-mono">Local Demo</span>
+</div>
+<div class="flex items-center gap-2 text-xs text-[#cdd6f4]/90 mt-0.5">
+<span class="truncate">Ch. 17 — The Shadow Theater · Page 3/28</span>
+<span class="text-[#585b70]">·</span>
+<span class="text-[11px] text-[#a6adc8] shrink-0">Thu, Sep 12</span>
+</div>
+<div class="flex items-center gap-2 mt-1.5">
+<div class="h-1 bg-[#181825] rounded-full w-56 overflow-hidden">
+<div class="h-full bg-[#cba6f7] rounded-full" style="width: 10%;"></div>
+</div>
+<span class="text-[10px] text-[#a6adc8]">10%</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="bg-[#cba6f7] text-[#11111b] font-semibold text-xs px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 hover:bg-[#b48ead] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+<span>Resume</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#f38ba8] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Remove from history">
+<span class="material-symbols-outlined text-[17px]">delete</span>
+</button>
+<button class="text-[#a6adc8] hover:text-[#cdd6f4] hover:bg-[#181825] p-1.5 rounded-lg transition-colors" title="Options">
+<span class="material-symbols-outlined text-[17px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+</div>
+</body></html>

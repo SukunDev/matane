@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+@import '@catppuccin/tailwindcss/mocha.css';
+
+/*
+ * Theme model (BRAINSTORM.md §6.6):
+ * - flavor: one of .latte/.frappe/.macchiato/.mocha on <html> (from @catppuccin/tailwindcss)
+ * - .amoled: Mocha with pure black surfaces
+ * - data-accent: one of the 14 Catppuccin accents; text on the accent uses crust (base on Latte)
+ * Semantic tokens below follow shadcn/ui naming so generated components work unchanged.
+ */
+
+@custom-variant amoled (&:where(.amoled, .amoled *));
+
+@theme inline {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--catppuccin-color-base);
+  --color-foreground: var(--catppuccin-color-text);
+  --color-sidebar: var(--catppuccin-color-mantle);
+  --color-card: var(--catppuccin-color-surface0);
+  --color-card-foreground: var(--catppuccin-color-text);
+  --color-popover: var(--catppuccin-color-mantle);
+  --color-popover-foreground: var(--catppuccin-color-text);
+  --color-primary: var(--app-accent);
+  --color-primary-foreground: var(--app-on-accent);
+  --color-secondary: var(--catppuccin-color-surface0);
+  --color-secondary-foreground: var(--catppuccin-color-text);
+  --color-muted: var(--catppuccin-color-surface0);
+  --color-muted-foreground: var(--catppuccin-color-subtext0);
+  --color-accent: var(--catppuccin-color-surface0);
+  --color-accent-foreground: var(--catppuccin-color-text);
+  --color-destructive: var(--catppuccin-color-red);
+  --color-border: var(--catppuccin-color-surface0);
+  --color-input: var(--catppuccin-color-surface1);
+  --color-ring: var(--app-accent);
+}
+
+@layer base {
+  :root {
+    --app-accent: var(--catppuccin-color-mauve);
+    --app-on-accent: var(--catppuccin-color-crust);
+  }
+  .latte {
+    --app-on-accent: var(--catppuccin-color-base);
+  }
+  [data-accent='rosewater'] {
+    --app-accent: var(--catppuccin-color-rosewater);
+  }
+  [data-accent='flamingo'] {
+    --app-accent: var(--catppuccin-color-flamingo);
+  }
+  [data-accent='pink'] {
+    --app-accent: var(--catppuccin-color-pink);
+  }
+  [data-accent='mauve'] {
+    --app-accent: var(--catppuccin-color-mauve);
+  }
+  [data-accent='red'] {
+    --app-accent: var(--catppuccin-color-red);
+  }
+  [data-accent='maroon'] {
+    --app-accent: var(--catppuccin-color-maroon);
+  }
+  [data-accent='peach'] {
+    --app-accent: var(--catppuccin-color-peach);
+  }
+  [data-accent='yellow'] {
+    --app-accent: var(--catppuccin-color-yellow);
+  }
+  [data-accent='green'] {
+    --app-accent: var(--catppuccin-color-green);
+  }
+  [data-accent='teal'] {
+    --app-accent: var(--catppuccin-color-teal);
+  }
+  [data-accent='sky'] {
+    --app-accent: var(--catppuccin-color-sky);
+  }
+  [data-accent='sapphire'] {
+    --app-accent: var(--catppuccin-color-sapphire);
+  }
+  [data-accent='blue'] {
+    --app-accent: var(--catppuccin-color-blue);
+  }
+  [data-accent='lavender'] {
+    --app-accent: var(--catppuccin-color-lavender);
+  }
+  .amoled {
+    --catppuccin-color-base: #000000;
+    --catppuccin-color-mantle: #000000;
+    --catppuccin-color-crust: #000000;
+    --app-on-accent: #11111b;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-background font-sans text-sm text-foreground antialiased;
+    overflow: hidden;
+    user-select: none;
+  }
+  *,
+  ::before,
+  ::after {
+    @apply border-border;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@utility drag-region {
+  -webkit-app-region: drag;
+}
+@utility no-drag {
+  -webkit-app-region: no-drag;
+}

@@ -1,0 +1,135 @@
+{
+  "app": {
+    "name": "MangaReader"
+  },
+  "nav": {
+    "library": "Pustaka",
+    "updates": "Pembaruan",
+    "history": "Riwayat",
+    "browse": "Jelajah",
+    "sources": "Sumber",
+    "extensions": "Ekstensi",
+    "globalSearch": "Pencarian global",
+    "downloads": "Unduhan",
+    "bookmarks": "Penanda",
+    "statistics": "Statistik",
+    "settings": "Pengaturan",
+    "manga": "Manga",
+    "reader": "Pembaca",
+    "collapse": "Ciutkan sidebar",
+    "expand": "Lebarkan sidebar"
+  },
+  "titlebar": {
+    "back": "Kembali",
+    "forward": "Maju",
+    "search": "Cari…",
+    "searchSoon": "Command palette hadir di versi berikutnya",
+    "minimize": "Perkecil",
+    "maximize": "Perbesar",
+    "restore": "Pulihkan",
+    "close": "Tutup",
+    "offline": "Offline"
+  },
+  "empty": {
+    "library": {
+      "title": "Pustaka masih kosong",
+      "description": "Jelajahi sumber dan tambahkan manga ke pustaka untuk melihatnya di sini."
+    },
+    "updates": {
+      "title": "Belum ada chapter baru",
+      "description": "Chapter baru dari manga di pustaka akan muncul di sini."
+    },
+    "history": {
+      "title": "Belum ada yang dibaca",
+      "description": "Manga yang kamu baca akan muncul di sini agar bisa dilanjutkan."
+    },
+    "sources": {
+      "title": "Belum ada sumber terpasang",
+      "description": "Pasang ekstensi untuk mulai menjelajah manga."
+    },
+    "extensions": {
+      "title": "Belum ada ekstensi",
+      "description": "Repositori ekstensi hadir di versi berikutnya."
+    },
+    "globalSearch": {
+      "title": "Cari di semua sumber sekaligus",
+      "description": "Pasang minimal satu sumber untuk memakai pencarian global."
+    },
+    "downloads": {
+      "title": "Tidak ada unduhan",
+      "description": "Chapter yang diunduh bisa dibaca tanpa internet."
+    },
+    "bookmarks": {
+      "title": "Belum ada penanda",
+      "description": "Tandai chapter atau halaman saat membaca untuk menemukannya di sini."
+    },
+    "statistics": {
+      "title": "Belum ada statistik",
+      "description": "Statistik dikumpulkan saat kamu membaca."
+    },
+    "manga": {
+      "title": "Manga tidak ditemukan",
+      "description": "Detail manga hadir bersama sumber pertama."
+    },
+    "reader": {
+      "title": "Pembaca belum siap",
+      "description": "Pembaca hadir di fase berikutnya."
+    }
+  },
+  "settings": {
+    "sections": {
+      "general": "Umum",
+      "library": "Pustaka",
+      "reader": "Pembaca",
+      "downloads": "Unduhan",
+      "browse": "Jelajah & ekstensi",
+      "tracking": "Pelacakan",
+      "network": "Jaringan",
+      "data": "Data & penyimpanan",
+      "advanced": "Lanjutan",
+      "about": "Tentang"
+    },
+    "soon": "Segera",
+    "comingSoon": "Pengaturan ini hadir di versi berikutnya.",
+    "appearance": "Tampilan",
+    "theme": {
+      "label": "Tema",
+      "description": "Flavor Catppuccin yang dipakai di seluruh aplikasi.",
+      "system": "Sistem",
+      "mocha": "Mocha",
+      "macchiato": "Macchiato",
+      "frappe": "Frappé",
+      "latte": "Latte",
+      "amoled": "AMOLED"
+    },
+    "accent": {
+      "label": "Warna aksen",
+      "description": "Dipakai untuk tombol, sorotan, dan progres.",
+      "rosewater": "Rosewater",
+      "flamingo": "Flamingo",
+      "pink": "Pink",
+      "mauve": "Mauve",
+      "red": "Red",
+      "maroon": "Maroon",
+      "peach": "Peach",
+      "yellow": "Yellow",
+      "green": "Green",
+      "teal": "Teal",
+      "sky": "Sky",
+      "sapphire": "Sapphire",
+      "blue": "Blue",
+      "lavender": "Lavender"
+    },
+    "language": {
+      "label": "Bahasa",
+      "description": "Bahasa antarmuka aplikasi.",
+      "system": "Ikuti sistem",
+      "en": "English",
+      "id": "Bahasa Indonesia"
+    },
+    "about": {
+      "version": "Versi {{version}}",
+      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+    }
+  }
+}
