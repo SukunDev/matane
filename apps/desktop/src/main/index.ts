@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { BrowserWindow, app } from 'electron';
+import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
 import { initLogging, log } from './app/log';
 import { createMainWindow } from './app/window';
 import { DbChanges } from './db/changes';
@@ -35,6 +36,15 @@ const DEV_FOLDERS_KEY = 'extensions.devFolders';
 /** BRAINSTORM.md §6.5; becomes a setting with the Data & storage section. */
 const IMAGE_CACHE_BYTES = 1024 * 1024 * 1024;
 
+// Before anything (logging, the single-instance lock, Chromium) creates the new data folder.
+const legacyUserData = join(app.getPath('appData'), LEGACY_APP_NAME);
+let legacyMove: boolean | Error = false;
+try {
+  legacyMove = moveLegacyUserData(legacyUserData, app.getPath('userData'));
+} catch (error) {
+  legacyMove = error instanceof Error ? error : new Error(String(error));
+}
+
 initLogging();
 registerMangaScheme();
 
@@ -54,7 +64,12 @@ async function bootstrap(): Promise<void> {
 
   const userData = app.getPath('userData');
   mkdirSync(userData, { recursive: true });
+  if (legacyMove instanceof Error) log.error(`Could not move ${legacyUserData} to ${userData}`, legacyMove);
   const connection = openDatabase(join(userData, 'data.db'));
+  if (legacyMove === true) {
+    const paths = rewriteDataPaths(connection.sqlite, legacyUserData, userData);
+    log.info(`Moved the data folder from ${legacyUserData} to ${userData}`, { paths });
+  }
   const migration = await runMigrations(connection, {
     // `drizzle/` sits next to package.json both in dev and inside the packaged app.
     migrationsFolder: join(app.getAppPath(), 'drizzle'),

@@ -87,7 +87,7 @@ function writeExtension(folder: string, code = CODE, version = '1.0.0') {
 }
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'manga-reader-ext-'));
+  dir = mkdtempSync(join(tmpdir(), 'matane-ext-'));
   writeExtension(join(dir, 'builtin', 'demo'));
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });

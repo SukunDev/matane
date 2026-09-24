@@ -13,7 +13,12 @@ export function AboutSettings() {
         <BookOpen className="size-6" />
       </div>
       <div>
-        <p className="font-semibold">{t('app.name')}</p>
+        <p className="font-semibold">
+          {t('app.name')}{' '}
+          <span lang="ja" className="font-normal text-muted-foreground">
+            {t('app.nameNative')}
+          </span>
+        </p>
         <p className="text-xs text-muted-foreground">{t('settings.about.version', { version: info.version })}</p>
         <p className="text-xs text-muted-foreground">{t('settings.about.runtime', info)}</p>
       </div>

@@ -42,7 +42,7 @@ async function load(code: string, host: HostApi = createHost().host, limits?: Pa
     code,
     manifest,
     host,
-    hostInfo: { appName: 'MangaReader', appVersion: '0.0.0-test', apiVersion: 1 },
+    hostInfo: { appName: 'Matane', appVersion: '0.0.0-test', apiVersion: 1 },
     limits,
   });
   runtimes.push(runtime);
@@ -70,7 +70,7 @@ describe('ExtensionRuntime', () => {
       ),
     );
     await expect(runtime.call('en', 'getPopular', [1])).resolves.toEqual({
-      items: [{ url: '/p1', title: 'en MangaReader' }],
+      items: [{ url: '/p1', title: 'en Matane' }],
       hasNextPage: true,
     });
     await expect(runtime.call('en', '__info')).resolves.toEqual({ baseUrl: 'https://example.com', capabilities: [] });

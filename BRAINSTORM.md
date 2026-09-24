@@ -1,4 +1,4 @@
-# Brainstorming: Manga Reader (Electron)
+# Brainstorming: Matane (またね), manga reader (Electron)
 
 > Status: brainstorming lengkap, semua topik sudah dibahas — 23 Sep 2026. Siap mulai Fase 0 (nama project menyusul).
 > Arah: aplikasi desktop open source untuk membaca manga dari **sumber online** lewat sistem extension, mirip Mihon/Tachiyomi tapi untuk desktop.
@@ -26,7 +26,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 | Tujuan | Rilis open source |
 | Frontend | React + Vite |
 | Fitur prioritas | Mode baca, library, progress & riwayat, download & update |
-| Nama | Belum ditentukan. Nama kerja `manga-reader`, ditentukan sebelum rilis (cek dulu ketersediaan di GitHub/npm/Flathub) |
+| Nama | **Matane (またね)**, "sampai jumpa lagi" (ditetapkan 24 Sep 2026). Identifier teknis ASCII: `productName` `Matane`, folder data `~/.config/Matane` (data lama `MangaReader` dipindah otomatis sekali). Scope paket internal tetap `@manga-reader/*`. Ketersediaan nama di GitHub/Flathub dicek sebelum rilis |
 | Lisensi | **App: GPL-3.0**, **SDK, runtime, dan CLI extension (`extension-sdk`, `extension-runtime`, `extension-cli`): MIT**, supaya pembuat extension bebas memilih lisensi (ADR 0002, 0011) |
 | Struktur repo | Monorepo **pnpm workspaces** (Turborepo nanti kalau perlu) |
 | Router | **TanStack Router** (hash/memory history), search params typed untuk filter |
@@ -538,7 +538,7 @@ repo/
 - Tidak menghitung data dari sesi incognito.
 
 **Tracker (setelah v1)**
-- Login OAuth lewat **browser sistem** → callback via **deep link** `mangareader://oauth/<service>` (`app.setAsDefaultProtocolClient`). Token disimpan terenkripsi dengan `safeStorage`.
+- Login OAuth lewat **browser sistem** → callback via **deep link** `matane://oauth/<service>` (`app.setAsDefaultProtocolClient`). Token disimpan terenkripsi dengan `safeStorage`.
 - Satu manga bisa di-link ke satu entri per tracker. Pencarian entri otomatis memakai judul manga.
 - **Lokal → tracker**: saat chapter ditandai dibaca, progress di tracker diperbarui kalau nomornya lebih tinggi. Status, skor, dan tanggal mulai/selesai bisa diedit dari app.
 - **Tracker → lokal (dua arah)**: saat refresh, kalau progress di tracker lebih tinggi, chapter lokal sampai nomor itu ikut ditandai dibaca. Bisa dimatikan per tracker.
@@ -743,7 +743,7 @@ repo/
 | Auto-backup | **Harian, simpan 7 file** (pilihan: mati, harian, mingguan) |
 | Import Mihon/Tachiyomi | **Setelah v1** |
 
-**Format file**: `manga-reader-backup-YYYY-MM-DD.zip`
+**Format file**: `matane-backup-YYYY-MM-DD.zip`
 ```
 backup.json        # { formatVersion, appVersion, createdAt, data: {...} }
 covers/            # cover kustom (nama file = hash natural key manga)

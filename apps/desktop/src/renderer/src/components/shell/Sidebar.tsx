@@ -62,7 +62,14 @@ export function Sidebar() {
         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <BookOpen className="size-4.5" />
         </div>
-        {!collapsed && <span className="text-base font-semibold tracking-tight">{t('app.name')}</span>}
+        {!collapsed && (
+          <span className="flex items-baseline gap-1.5">
+            <span className="text-base font-semibold tracking-tight">{t('app.name')}</span>
+            <span lang="ja" className="text-xs text-muted-foreground">
+              {t('app.nameNative')}
+            </span>
+          </span>
+        )}
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">

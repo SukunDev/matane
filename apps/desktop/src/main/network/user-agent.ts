@@ -5,6 +5,6 @@
 export function browserUserAgent(electronUserAgent: string): string {
   return electronUserAgent
     .split(' ')
-    .filter((token) => !/^(Electron|MangaReader|manga-reader|@manga-reader[^/]*)\//i.test(token))
+    .filter((token) => !/^(Electron|Matane|@manga-reader[^/]*)\//i.test(token))
     .join(' ');
 }

@@ -64,7 +64,7 @@ beforeAll(async () => {
     code,
     manifest,
     host,
-    hostInfo: { appName: 'MangaReader', appVersion: '0.0.0-test', apiVersion: 1 },
+    hostInfo: { appName: 'Matane', appVersion: '0.0.0-test', apiVersion: 1 },
   });
 }, 30_000);
 
@@ -110,9 +110,9 @@ suite('listing', () => {
 
   it('identifies itself with the app User-Agent, never a browser one', async () => {
     await call('id', 'getPopular', [1]);
-    expect(host.requests[0]?.headers?.['User-Agent']).toBe('MangaReader/0.0.0-test');
+    expect(host.requests[0]?.headers?.['User-Agent']).toBe('Matane/0.0.0-test');
     expect(values(0, 'availableTranslatedLanguage[]')).toEqual(['id']);
-    await expect(call('en', 'imageHeaders')).resolves.toEqual({ 'User-Agent': 'MangaReader/0.0.0-test' });
+    await expect(call('en', 'imageHeaders')).resolves.toEqual({ 'User-Agent': 'Matane/0.0.0-test' });
   });
 
   it('getLatest orders by latest upload and pages with offsets', async () => {

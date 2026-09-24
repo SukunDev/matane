@@ -16,7 +16,7 @@ export interface TestApp {
 /** Fake site + a fresh app profile with the e2e-demo extension loaded from a dev folder. */
 export async function launchApp(): Promise<TestApp> {
   const site = await startSite();
-  const home = mkdtempSync(join(tmpdir(), 'manga-reader-e2e-'));
+  const home = mkdtempSync(join(tmpdir(), 'matane-e2e-'));
   const extensionDir = join(home, 'e2e-demo');
   mkdirSync(extensionDir);
   for (const [name, content] of Object.entries(extensionFiles(site.origin)))

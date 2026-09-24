@@ -32,7 +32,7 @@ const EXPECTED_TABLES = [
 
 const tempDirs: string[] = [];
 function tempDir(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'manga-reader-db-'));
+  const dir = mkdtempSync(join(tmpdir(), 'matane-db-'));
   tempDirs.push(dir);
   return dir;
 }

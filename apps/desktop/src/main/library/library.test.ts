@@ -38,7 +38,7 @@ const titles = (patch?: Partial<LibraryQuery>) => library.list(query(patch)).map
 const ch = (url: string, number?: number, scanlator?: string): Chapter => ({ url, name: url, number, scanlator });
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'manga-reader-library-'));
+  dir = mkdtempSync(join(tmpdir(), 'matane-library-'));
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   for (const [id, name] of [

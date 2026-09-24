@@ -34,7 +34,7 @@ const setReader = (patch: Record<string, unknown>) =>
 
 test.beforeAll(async () => {
   site = await startSite();
-  home = mkdtempSync(join(tmpdir(), 'manga-reader-e2e-'));
+  home = mkdtempSync(join(tmpdir(), 'matane-e2e-'));
   const extensionDir = join(home, 'e2e-demo');
   mkdirSync(extensionDir);
   for (const [name, content] of Object.entries(extensionFiles(site.origin)))

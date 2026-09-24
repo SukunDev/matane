@@ -20,7 +20,7 @@ let now: number;
 let cache: ImageCache;
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'manga-reader-img-'));
+  dir = mkdtempSync(join(tmpdir(), 'matane-img-'));
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   now = 1000;

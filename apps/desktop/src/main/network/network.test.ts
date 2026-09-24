@@ -69,8 +69,8 @@ describe('ExtensionFetcher', () => {
     expect(new Headers(calls[0]?.init.headers).get('user-agent')).toBe('Chrome-ish');
 
     const own = fetcher({ 'https://example.com/a': ok() });
-    await own.fetcher.request({ url: 'https://example.com/a', headers: { 'User-Agent': 'MangaReader/1.0' } });
-    expect(new Headers(own.calls[0]?.init.headers).get('user-agent')).toBe('MangaReader/1.0');
+    await own.fetcher.request({ url: 'https://example.com/a', headers: { 'User-Agent': 'Matane/1.0' } });
+    expect(new Headers(own.calls[0]?.init.headers).get('user-agent')).toBe('Matane/1.0');
   });
 
   it('follows allowed redirects and reports the final URL', async () => {
@@ -217,7 +217,7 @@ describe('helpers', () => {
 
   it('strips Electron and app tokens from the UA', () => {
     const ua =
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) MangaReader/0.0.0 Chrome/146.0.0.0 Electron/44.4.5 Safari/537.36';
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Matane/0.0.0 Chrome/146.0.0.0 Electron/44.4.5 Safari/537.36';
     expect(browserUserAgent(ua)).toBe(
       'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36',
     );

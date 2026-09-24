@@ -1,4 +1,4 @@
-# Plan: Fase 2 (Library & progress) Manga Reader
+# Plan: Fase 2 (Library & progress) Matane
 
 ## Context
 
@@ -271,3 +271,17 @@ Bug yang ditemukan saat verifikasi dan sudah diperbaiki:
 - Baris tab kategori menampilkan scrollbar vertikal kecil (`-mb-px` di dalam `overflow-x-auto`).
 
 Belum dicakup E2E: cover kustom dari **file**, karena dialog file native tidak bisa diotomasi. Jalurnya sama dengan cover dari halaman (`CoverStore.setCustom`, ada unit test-nya).
+
+---
+
+## Selingan: ganti nama menjadi Matane (またね), 24 Sep 2026
+
+Dikerjakan sebelum 2c atas permintaan pengguna.
+- **Nama yang terlihat pengguna:** `productName` `Matane`, judul jendela, title bar, sidebar dan About (`app.name` + `app.nameNative` "またね"), README, BRAINSTORM (deep link `matane://`, file backup `matane-backup-*.zip`). Nama root workspace `matane`.
+- **Tetap:** scope paket internal `@manga-reader/*` (tidak terlihat pengguna, dan menggantinya cuma membuat diff besar). Plan Fase 0/1 dan catatan mockup/Stitch dibiarkan sebagai arsip.
+- **Folder data** pindah dari `<appData>/MangaReader` ke `<appData>/Matane` (`main/app/legacy-data.ts`):
+  - dijalankan sekali di awal proses, sebelum logging, single-instance lock, dan Chromium membuat folder baru, jadi biasanya cukup satu `rename`;
+  - kalau folder baru sudah ada tanpa `data.db`, isinya digabung tanpa menimpa (lock file Chromium dilewati);
+  - tidak melakukan apa pun kalau folder baru sudah punya `data.db`;
+  - path absolut di DB (`manga.cover_path`, `manga.custom_cover_path`, `image_cache.path`, `downloads.path`) ditulis ulang ke folder baru.
+- User-Agent: filter token app diperbarui ke `Matane` (UA extension MangaDex sekarang `Matane/<versi>`).

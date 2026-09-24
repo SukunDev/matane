@@ -41,7 +41,7 @@ const row = (id: number) =>
 const flush = () => new Promise((r) => setImmediate(r));
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'manga-reader-reading-'));
+  dir = mkdtempSync(join(tmpdir(), 'matane-reading-'));
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   connection.sqlite

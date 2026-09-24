@@ -36,7 +36,7 @@ let manga: MangaRepository;
 let chapters: ChaptersRepository;
 
 beforeEach(async () => {
-  dir = mkdtempSync(join(tmpdir(), 'manga-reader-repo-'));
+  dir = mkdtempSync(join(tmpdir(), 'matane-repo-'));
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   emitted = [];

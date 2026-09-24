@@ -1,6 +1,7 @@
 {
   "app": {
-    "name": "MangaReader"
+    "name": "Matane",
+    "nameNative": "またね"
   },
   "nav": {
     "library": "Library",

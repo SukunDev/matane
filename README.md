@@ -1,6 +1,8 @@
-# MangaReader
+# Matane (またね)
 
-> Working name. Pre-alpha: you can browse MangaDex and read chapters; library and progress come next.
+> Pre-alpha: you can browse MangaDex, read chapters, and keep a library with reading progress.
+
+_Matane_ is Japanese for "see you later": close the app now and pick up on the same page next time.
 
 An open-source desktop manga reader (Windows, macOS, Linux) with a sandboxed extension system, library, reading progress, downloads and update checks — think Mihon, for the desktop.
 

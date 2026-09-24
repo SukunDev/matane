@@ -60,7 +60,7 @@ export class ExtensionHostClient implements HostCaller {
     }
 
     const child = utilityProcess.fork(this.options.entry, [], {
-      serviceName: 'MangaReader Extension Host',
+      serviceName: 'Matane Extension Host',
       stdio: 'pipe',
       env: { ...process.env, ...this.options.env },
     });

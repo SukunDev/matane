@@ -10,7 +10,7 @@ const SWEEP_INTERVAL_MS = 60_000;
 const port = process.parentPort;
 if (!port) throw new Error('The extension host must run as an Electron utilityProcess');
 
-const appName = process.env['MR_APP_NAME'] ?? 'MangaReader';
+const appName = process.env['MR_APP_NAME'] ?? 'Matane';
 const appVersion = process.env['MR_APP_VERSION'] ?? '0.0.0';
 
 // The host needs the peer and the peer needs the host's handlers; the closures bind late.
