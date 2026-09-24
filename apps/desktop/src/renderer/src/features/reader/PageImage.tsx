@@ -39,6 +39,7 @@ export function PageImage({
           alt={alt}
           draggable={false}
           decoding="async"
+          data-page={`${chapterId}:${index}`}
           onLoad={(event) => {
             const image = event.currentTarget;
             setSize(chapterId, index, { width: image.naturalWidth, height: image.naturalHeight });

@@ -5,3 +5,4 @@ export * from './ipc/channels';
 export * from './ipc/contract';
 export * from './errors';
 export * from './models';
+export * from './chapters';

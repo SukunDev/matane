@@ -35,6 +35,7 @@ export function WebtoonView({
   gap,
   settings,
   start,
+  startOffset,
   onVisibleChapter,
   onMenu,
   onExit,
@@ -45,6 +46,8 @@ export function WebtoonView({
   gap: number;
   settings: ReaderSettings;
   start: number | 'last';
+  /** Scrolled fraction of the start page to restore (resume inside a long webtoon page). */
+  startOffset?: number | null;
   onVisibleChapter: (chapter: ChapterInfo) => void;
   onMenu: () => void;
   onExit: () => void;
@@ -113,22 +116,56 @@ export function WebtoonView({
     if (target > 0) virtualizer.scrollToIndex(target, { align: 'start' });
   }, [virtualizer, start, pages.length]);
 
+  // Resume inside the start page once its real height is known (long strips can be many screens
+  // tall, so the estimated height would land far off).
+  // Read once: the parent may pass the live position later, which must not cancel the restore.
+  const [initialOffset] = useState(startOffset ?? 0);
+  const [restoring, setRestoring] = useState(initialOffset > 0);
+  const startIndex = start === 'last' ? pages.length - 1 : start;
+  const startSize = sizes[sizeKey(chapter.id, startIndex)];
+  useEffect(() => {
+    if (!restoring || !startSize) return;
+    const frame = requestAnimationFrame(() => {
+      const item = virtualizer.measurementsCache[startIndex];
+      if (item && scroller.current) scroller.current.scrollTop = item.start + initialOffset * item.size;
+      setRestoring(false);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [restoring, startSize, initialOffset, startIndex, virtualizer]);
+
   const range = virtualizer.getVirtualItems();
-  const firstVisible = range.find((row) => row.end > (virtualizer.scrollOffset ?? 0) + 1) ?? range[0];
+  const scrollTop = virtualizer.scrollOffset ?? 0;
+  const firstVisible = range.find((row) => row.end > scrollTop + 1) ?? range[0];
   const current = firstVisible ? items[firstVisible.index] : undefined;
   const currentChapter = current?.kind === 'page' ? current.chapter : current?.from;
+  // Where the top page is scrolled to, and the lowest page of that chapter on screen (read once
+  // its last page or the chapter's end divider shows).
+  const offset = firstVisible ? Math.min(Math.max((scrollTop - firstVisible.start) / firstVisible.size, 0), 1) : 0;
+  let pageEnd = current?.kind === 'page' ? current.index : 0;
+  for (const row of range) {
+    if (row.start >= scrollTop + viewport.height) continue;
+    const item = items[row.index];
+    if (item?.kind === 'page' && item.chapter.id === currentChapter?.id) pageEnd = Math.max(pageEnd, item.index);
+    if (item?.kind === 'divider' && item.from.id === currentChapter?.id) pageEnd = Number.MAX_SAFE_INTEGER;
+  }
 
   // Position report + URL follow the chapter on screen.
   const report = useReaderPosition((s) => s.report);
   const lastChapter = useRef(chapter.id);
   useEffect(() => {
-    if (!current) return;
-    if (current.kind === 'page') report(current.chapter.id, current.index, current.total);
+    // Until the saved position is restored, the top of the strip is not where the reader is.
+    if (!current || restoring) return;
+    if (current.kind === 'page') {
+      report(current.chapter.id, current.index, current.total, {
+        pageEnd: Math.min(pageEnd, current.total - 1),
+        offset: Math.round(offset * 1000) / 1000,
+      });
+    }
     if (currentChapter && currentChapter.id !== lastChapter.current) {
       lastChapter.current = currentChapter.id;
       onVisibleChapter(currentChapter);
     }
-  }, [current, currentChapter, report, onVisibleChapter]);
+  }, [current, currentChapter, report, onVisibleChapter, pageEnd, offset, restoring]);
 
   const setJump = useReaderPosition((s) => s.setJump);
   useEffect(() => {

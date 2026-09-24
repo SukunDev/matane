@@ -51,6 +51,8 @@ export const browseItemSchema = z.object({
   url: z.string(),
   title: z.string(),
   thumbnailUrl: z.string().nullable(),
+  /** Changes whenever the shown cover changes (custom cover or new source cover); null = none. */
+  coverKey: z.string().nullable(),
   inLibrary: z.boolean(),
 });
 export type BrowseItem = z.infer<typeof browseItemSchema>;
@@ -70,7 +72,10 @@ export const mangaInfoSchema = z.object({
   status: z.enum(MANGA_STATUSES),
   type: z.enum(MANGA_TYPES).nullable(),
   thumbnailUrl: z.string().nullable(),
+  coverKey: z.string().nullable(),
+  hasCustomCover: z.boolean(),
   inLibrary: z.boolean(),
+  categoryIds: z.array(z.number()),
   /** When details + chapters were last fetched from the source; null for browse-only rows. */
   lastFetchedAt: z.number().nullable(),
 });
@@ -86,9 +91,12 @@ export const chapterInfoSchema = z.object({
   uploadedAt: z.number().nullable(),
   sourceOrder: z.number(),
   read: z.boolean(),
+  readAt: z.number().nullable(),
   bookmarked: z.boolean(),
   lastPage: z.number(),
   totalPages: z.number().nullable(),
+  /** Scrolled fraction of `lastPage` in webtoon mode. */
+  pageOffset: z.number().nullable(),
   sourceMissing: z.boolean(),
 });
 export type ChapterInfo = z.infer<typeof chapterInfoSchema>;
@@ -108,6 +116,88 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "sources" · "manga:<id>" · "chapters:<mangaId>"
+ * "extensions" · "sources" · "library" · "categories" · "history" · "bookmarks" · "manga:<id>" ·
+ * "chapters:<mangaId>"
  */
-export type DbChangeTag = 'extensions' | 'sources' | `manga:${number}` | `chapters:${number}`;
+export type DbChangeTag =
+  | 'extensions'
+  | 'sources'
+  | 'library'
+  | 'categories'
+  | 'history'
+  | 'bookmarks'
+  | `manga:${number}`
+  | `chapters:${number}`;
+
+export const categorySchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  sortOrder: z.number(),
+  /** Manga in the library with this category. */
+  count: z.number(),
+});
+export type Category = z.infer<typeof categorySchema>;
+
+export const LIBRARY_SORTS = ['title', 'lastRead', 'latestChapter', 'added', 'unread', 'total'] as const;
+export type LibrarySortKey = (typeof LIBRARY_SORTS)[number];
+
+export const libraryFiltersSchema = z.object({
+  unread: z.boolean().catch(false),
+  /** Started but not finished (has history and unread chapters). */
+  reading: z.boolean().catch(false),
+  status: z.array(z.enum(MANGA_STATUSES)).catch([]),
+  sourceIds: z.array(z.string()).catch([]),
+});
+export type LibraryFilters = z.infer<typeof libraryFiltersSchema>;
+
+/** "all" = every library manga, "default" = those without a category. */
+export const libraryTabSchema = z.union([z.literal('all'), z.literal('default'), z.number().int().positive()]);
+export type LibraryTab = z.infer<typeof libraryTabSchema>;
+
+export const libraryItemSchema = z.object({
+  mangaId: z.number(),
+  title: z.string(),
+  coverKey: z.string().nullable(),
+  sourceId: z.string(),
+  sourceName: z.string().nullable(),
+  status: z.enum(MANGA_STATUSES),
+  /** Counted per chapter number, so several scanlator versions count once (§6.2). */
+  unreadCount: z.number(),
+  readCount: z.number(),
+  chapterCount: z.number(),
+  lastReadAt: z.number().nullable(),
+  lastReadChapter: z.string().nullable(),
+  latestChapterAt: z.number().nullable(),
+  addedAt: z.number().nullable(),
+  categoryIds: z.array(z.number()),
+});
+export type LibraryItem = z.infer<typeof libraryItemSchema>;
+
+export const libraryCountsSchema = z.object({
+  all: z.number(),
+  default: z.number(),
+  byCategory: z.record(z.string(), z.number()),
+});
+export type LibraryCounts = z.infer<typeof libraryCountsSchema>;
+
+/** One row of the History page: the chapter read last in a manga (BRAINSTORM.md §6.3). */
+export const historyEntrySchema = z.object({
+  mangaId: z.number(),
+  title: z.string(),
+  thumbnailUrl: z.string().nullable(),
+  sourceId: z.string(),
+  sourceName: z.string().nullable(),
+  chapterId: z.number(),
+  chapterName: z.string(),
+  chapterNumber: z.number().nullable(),
+  lastPage: z.number(),
+  totalPages: z.number().nullable(),
+  read: z.boolean(),
+  readAt: z.number(),
+});
+export type HistoryEntry = z.infer<typeof historyEntrySchema>;
+
+export const continueTargetSchema = z.object({
+  chapterId: z.number(),
+  kind: z.enum(['start', 'continue', 'next', 'reread']),
+});

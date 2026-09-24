@@ -1,15 +1,20 @@
 import type { BrowseItem } from '@manga-reader/shared';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Bookmark, Loader2 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoverImage } from '../../components/CoverImage';
 import { Skeleton } from '../../components/ui/skeleton';
+import { libraryIdsQuery } from '../../lib/library';
 
 export const GRID_CLASS = 'grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-6';
 
 export function MangaCard({ item }: { item: BrowseItem }) {
   const { t } = useTranslation();
+  // Browse results are cached remote data; library membership comes from the local query (ADR 0010).
+  const { data: libraryIds } = useQuery(libraryIdsQuery);
+  const inLibrary = libraryIds ? libraryIds.has(item.mangaId) : item.inLibrary;
   return (
     <Link
       to="/manga/$mangaId"
@@ -20,11 +25,11 @@ export function MangaCard({ item }: { item: BrowseItem }) {
       <div className="relative">
         <CoverImage
           mangaId={item.mangaId}
-          thumbnailUrl={item.thumbnailUrl}
+          coverKey={item.coverKey}
           alt={item.title}
           className="aspect-[2/3] rounded-lg border transition-colors group-hover:border-primary"
         />
-        {item.inLibrary && (
+        {inLibrary && (
           <span className="absolute top-2 left-2 flex items-center gap-1 rounded-md bg-ctp-crust/85 px-1.5 py-1 text-[11px] font-medium text-foreground backdrop-blur-sm">
             <Bookmark className="size-3 fill-current text-primary" />
             {t('browse.inLibrary')}

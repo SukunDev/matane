@@ -3,9 +3,14 @@ import { toChapterInfo } from '../db/repositories/chapters';
 import { BrowserWindow, app, dialog, shell } from 'electron';
 import type { SettingsRepository } from '../db/repositories/settings';
 import type { ChaptersRepository } from '../db/repositories/chapters';
+import type { CategoriesRepository } from '../db/repositories/categories';
+import type { HistoryRepository } from '../db/repositories/history';
+import type { LibraryRepository } from '../db/repositories/library';
 import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
 import type { NetworkManager } from '../network/manager';
+import type { LibraryService } from '../library/service';
+import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
 import type { RequestRegistry } from './requests';
 
@@ -16,6 +21,11 @@ export interface IpcDeps {
   chapters: ChaptersRepository;
   network: NetworkManager;
   requests: RequestRegistry;
+  reading: ReadingService;
+  history: HistoryRepository;
+  library: LibraryService;
+  libraryRepo: LibraryRepository;
+  categories: CategoriesRepository;
 }
 
 export function createIpcHandlers({
@@ -25,6 +35,11 @@ export function createIpcHandlers({
   chapters,
   network,
   requests,
+  reading,
+  history,
+  library,
+  libraryRepo,
+  categories,
 }: IpcDeps): IpcHandlers {
   const windowOf = (event: Electron.IpcMainInvokeEvent): BrowserWindow | null =>
     BrowserWindow.fromWebContents(event.sender);
@@ -113,5 +128,46 @@ export function createIpcHandlers({
     'chapter.pages': ({ chapterId, requestId }) =>
       requests.run(requestId, (signal) => sources.pages(chapterId, signal)),
     'requests.cancel': ({ requestId }) => requests.cancel(requestId),
+
+    'progress.save': (input) => reading.saveProgress(input),
+    'chapters.markRead': ({ chapterIds, read }) => reading.markRead(chapterIds, read),
+    'chapters.markPreviousRead': ({ chapterId }) => reading.markPreviousRead(chapterId),
+    'manga.continue': ({ mangaId }) => reading.continueTarget(mangaId),
+    'reading.heartbeat': ({ chapterId }) => reading.heartbeat(chapterId),
+    'reading.end': () => reading.endSession(),
+    'history.list': (input) => history.list(input ?? {}),
+    'history.remove': ({ mangaId }) => history.remove(mangaId),
+    'history.clear': () => history.clear(),
+
+    'library.list': (input) => libraryRepo.list(input),
+    'library.counts': () => libraryRepo.counts(),
+    'library.add': ({ mangaId, categoryIds }) => library.add(mangaId, categoryIds),
+    'library.remove': ({ mangaIds }) => library.remove(mangaIds),
+    'library.setCategories': ({ mangaIds, categoryIds }) => library.setCategories(mangaIds, categoryIds),
+    'library.markRead': ({ mangaIds, read }) => library.markRead(mangaIds, read),
+    'categories.list': () => categories.list(),
+    'categories.create': ({ name }) => categories.create(name),
+    'categories.rename': ({ id, name }) => categories.rename(id, name),
+    'categories.delete': ({ id }) => categories.delete(id),
+    'categories.reorder': ({ ids }) => categories.reorder(ids),
+    'manga.setCustomCover': async ({ mangaId, from }, event) => {
+      if (from.kind === 'page') {
+        await library.setCustomCoverFromPage(mangaId, from.chapterId, from.index);
+        return true;
+      }
+      const window = windowOf(event);
+      const options: Electron.OpenDialogOptions = {
+        properties: ['openFile'],
+        filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'avif'] }],
+      };
+      const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+      const path = picked.filePaths[0];
+      if (picked.canceled || !path) return false;
+      await library.setCustomCoverFromFile(mangaId, path);
+      return true;
+    },
+    'manga.resetCover': ({ mangaId }) => library.resetCover(mangaId),
+    'manga.findDuplicates': ({ mangaId }) => libraryRepo.findDuplicates(mangaId),
+    'chapters.setBookmarked': ({ chapterIds, bookmarked }) => chapters.setBookmarked(chapterIds, bookmarked),
   };
 }

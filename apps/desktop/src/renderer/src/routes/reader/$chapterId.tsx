@@ -34,9 +34,9 @@ function ReaderRoute() {
   // A reading session restarts on explicit navigation, but not when webtoon mode scrolls into the
   // next chapter and only moves the URL along.
   const followed = useReaderPosition((state) => state.followedChapterId);
-  const [session, setSession] = useState({ chapterId, start: page ?? 0 });
+  const [session, setSession] = useState({ chapterId, start: page });
   if (chapterId !== session.chapterId && chapterId !== followed) {
-    setSession({ chapterId, start: page ?? 0 });
+    setSession({ chapterId, start: page });
   }
 
   const onVisibleChapter = useCallback(

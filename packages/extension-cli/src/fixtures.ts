@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
@@ -33,6 +34,18 @@ const KEPT_HEADERS = ['content-type', 'location', 'retry-after'];
 export function fixtureKey(request: HttpRequest): string {
   const identity = JSON.stringify([request.method ?? 'GET', request.url, request.body ?? null]);
   return createHash('sha1').update(identity).digest('hex').slice(0, 16);
+}
+
+/**
+ * Whether `dir` holds recorded responses. Lets an extension's tests skip themselves (instead of
+ * failing on "No fixture") in a checkout where fixtures were not committed.
+ */
+export function hasFixtures(dir: string): boolean {
+  try {
+    return readdirSync(dir).some((file) => file.endsWith('.json'));
+  } catch {
+    return false;
+  }
 }
 
 /** Host that replays recorded HTTP responses, so extension tests never touch the network in CI. */

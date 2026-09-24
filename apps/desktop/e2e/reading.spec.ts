@@ -148,6 +148,25 @@ test('keeps the chapter list after returning from the reader', async () => {
   await expect(page.locator('main a[href*="/reader/"]')).toHaveCount(5);
 });
 
+test('resumes where reading stopped and marks chapters read', async () => {
+  const rows = page.locator('main section div.group a[href*="/reader/"]');
+  // Chapter 1 was left on its landscape spread (page 3) in double mode.
+  const ch1 = page.locator('main section div.group', { hasText: 'Ch. 1' });
+  await expect(ch1).toContainText('Page 3 / 4');
+  // History points at chapter 5 (opened last, not finished).
+  await expect(page.getByRole('link', { name: 'Continue · Ch. 5' })).toBeVisible();
+  await ch1.locator('a').click();
+  await expect(page.getByText('3 / 4').first()).toBeVisible();
+  await page.getByTitle('Back to manga').click({ force: true });
+  await expect(rows).toHaveCount(4);
+
+  // Row menu: mark chapter 5's predecessors read.
+  await page.locator('main section div.group', { hasText: 'Ch. 5' }).getByTitle('Chapter actions').click();
+  await page.getByRole('menuitem', { name: 'Mark previous as read' }).click();
+  await expect(ch1).not.toContainText('Page 3 / 4');
+  await expect(page.locator('main section [aria-label="Read"]')).toHaveCount(3);
+});
+
 test('reads a manhwa as a continuous webtoon into the next chapter', async () => {
   await goto('#/browse/sources/e2e-demo/en?tab=search&q=scroll');
   await page.getByText('Scroll Garden').click();

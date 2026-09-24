@@ -13,10 +13,11 @@ import { Skeleton } from '../../components/ui/skeleton';
 import { appError } from '../../lib/errors';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
-import { chaptersQuery, mangaQuery, sourcesQuery, useRefreshManga } from '../../lib/sources';
+import { chaptersQuery, continueQuery, mangaQuery, sourcesQuery, useRefreshManga } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { ChapterList } from './ChapterList';
+import { LibraryButton, MoreMenu } from './LibraryActions';
 
 const STATUS_VARIANT = {
   ongoing: 'success',
@@ -25,14 +26,6 @@ const STATUS_VARIANT = {
   cancelled: 'danger',
   unknown: 'outline',
 } as const;
-
-/** Where "Start/Continue reading" goes: the oldest unread chapter, else the first one. */
-export function nextChapter(chapters: ChapterInfo[]): ChapterInfo | undefined {
-  const present = chapters.filter((c) => !c.sourceMissing);
-  // Source order is newest first, so walk it backwards.
-  const oldestFirst = [...present].reverse();
-  return oldestFirst.find((c) => !c.read) ?? oldestFirst[0];
-}
 
 export function MangaDetailPage({ mangaId }: { mangaId: number }) {
   const { t } = useTranslation();
@@ -121,8 +114,16 @@ function MangaHeader({
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const openInBrowser = useMutation({ mutationFn: () => ipc.invoke('manga.openInBrowser', { mangaId: manga.id }) });
-  const target = nextChapter(chapters);
-  const started = chapters.some((c) => c.read || c.lastPage > 0);
+  // Main decides where "Continue" goes (last chapter read, next unread, or the first one).
+  const { data: next } = useQuery(continueQuery(manga.id));
+  const target = next ? chapters.find((c) => c.id === next.chapterId) : undefined;
+  const label = !target
+    ? t('manga.start')
+    : next?.kind === 'start'
+      ? t('manga.start')
+      : next?.kind === 'reread'
+        ? t('manga.reread', { chapter: target.name })
+        : t('manga.continue', { chapter: target.name });
   const lastUpload = chapters.reduce<number | null>(
     (max, c) => (c.uploadedAt !== null && (max === null || c.uploadedAt > max) ? c.uploadedAt : max),
     null,
@@ -135,10 +136,10 @@ function MangaHeader({
   return (
     <section className="relative shrink-0 overflow-hidden border-b">
       {/* Blurred cover as a tinted backdrop (docs/ui/screens/02-detail.png). */}
-      {manga.thumbnailUrl && (
+      {manga.coverKey && (
         <img
           aria-hidden
-          src={coverSrc(manga.id, manga.thumbnailUrl)}
+          src={coverSrc(manga.id, manga.coverKey)}
           alt=""
           className="pointer-events-none absolute inset-0 size-full scale-110 object-cover opacity-20 blur-2xl"
         />
@@ -148,7 +149,7 @@ function MangaHeader({
       <div className="relative flex gap-8 px-6 py-6">
         <CoverImage
           mangaId={manga.id}
-          thumbnailUrl={manga.thumbnailUrl}
+          coverKey={manga.coverKey}
           alt={manga.title}
           className="aspect-[2/3] w-52 shrink-0 rounded-xl border shadow-2xl shadow-black/40"
         />
@@ -209,7 +210,7 @@ function MangaHeader({
               <Button asChild className="h-10 px-5 text-sm">
                 <Link to="/reader/$chapterId" params={{ chapterId: String(target.id) }}>
                   <Play className="fill-current" />
-                  {started ? t('manga.continue', { chapter: target.name }) : t('manga.start')}
+                  {label}
                 </Link>
               </Button>
             ) : (
@@ -218,6 +219,7 @@ function MangaHeader({
                 {t('manga.start')}
               </Button>
             )}
+            <LibraryButton manga={manga} />
             <Button variant="secondary" className="h-10" onClick={() => openInBrowser.mutate()}>
               <ExternalLink />
               {t('manga.openInBrowser')}
@@ -232,6 +234,7 @@ function MangaHeader({
             >
               <RefreshCw className={cn(refreshing && 'animate-spin')} />
             </Button>
+            <MoreMenu manga={manga} />
           </div>
         </div>
       </div>

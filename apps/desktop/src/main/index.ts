@@ -9,6 +9,10 @@ import { runMigrations } from './db/migrate';
 import { ChaptersRepository } from './db/repositories/chapters';
 import { ExtensionsRepository } from './db/repositories/extensions';
 import { MangaRepository } from './db/repositories/manga';
+import { CategoriesRepository } from './db/repositories/categories';
+import { HistoryRepository } from './db/repositories/history';
+import { LibraryRepository } from './db/repositories/library';
+import { ProgressRepository } from './db/repositories/progress';
 import { SettingsRepository } from './db/repositories/settings';
 import { ExtensionHostClient } from './extensions/host-client';
 import { ExtensionRegistry } from './extensions/registry';
@@ -18,9 +22,13 @@ import { createIpcHandlers } from './ipc/handlers';
 import { broadcast, registerIpcHandlers } from './ipc/register';
 import { RequestRegistry } from './ipc/requests';
 import { ImageCache } from './images/cache';
+import { CoverStore } from './images/covers';
 import { handleMangaProtocol, registerMangaScheme } from './images/protocol';
 import { ImageService } from './images/service';
+import { LibraryService } from './library/service';
 import { CloudflareSolver } from './network/cloudflare';
+import { ReadingService } from './reading/service';
+import { SessionRecorder } from './reading/sessions';
 import { NetworkManager } from './network/manager';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
@@ -110,11 +118,14 @@ async function bootstrap(): Promise<void> {
     installed.map((e) => `${e.id}@${e.version} (${e.origin}${e.error ? `, error: ${e.error}` : ''})`),
   );
 
+  const covers = new CoverStore(join(userData, 'covers'), mangaRepo);
   const images = new ImageService({
     cache: new ImageCache(connection.db, join(userData, 'cache', 'images'), IMAGE_CACHE_BYTES),
     manga: mangaRepo,
     chapters: chaptersRepo,
     sources,
+    covers,
+    log: (message) => log.scope('images').warn(message),
     fetcher: {
       fetchImage: (extensionId, url, headers) => {
         const manifest = extensions.get(extensionId)?.manifest;
@@ -129,6 +140,28 @@ async function bootstrap(): Promise<void> {
     (message) => imageLog.warn(message),
   );
 
+  const historyRepo = new HistoryRepository(connection.db, changes);
+  const progressRepo = new ProgressRepository(connection.db, changes);
+  const libraryRepo = new LibraryRepository(connection.db, changes);
+  const library = new LibraryService({
+    library: libraryRepo,
+    manga: mangaRepo,
+    chapters: chaptersRepo,
+    progress: progressRepo,
+    sources,
+    images,
+    covers,
+    log: (message) => log.scope('library').warn(message),
+  });
+  const sessions = new SessionRecorder(connection.db);
+  const reading = new ReadingService({
+    progress: progressRepo,
+    history: historyRepo,
+    sessions,
+    chapters: chaptersRepo,
+    incognito: () => settings.getAppSettings().incognito,
+  });
+
   registerIpcHandlers(
     createIpcHandlers({
       settings,
@@ -137,6 +170,11 @@ async function bootstrap(): Promise<void> {
       chapters: chaptersRepo,
       network,
       requests: new RequestRegistry(),
+      reading,
+      history: historyRepo,
+      library,
+      libraryRepo,
+      categories: new CategoriesRepository(connection.db, changes),
     }),
   );
 
@@ -153,6 +191,7 @@ async function bootstrap(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    sessions.end();
     registry.close();
     host.dispose();
     connection.sqlite.close();

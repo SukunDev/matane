@@ -9,7 +9,8 @@
     "./theme": "./src/theme.ts",
     "./ipc/channels": "./src/ipc/channels.ts",
     "./errors": "./src/errors.ts",
-    "./reader": "./src/reader.ts"
+    "./reader": "./src/reader.ts",
+    "./chapters": "./src/chapters.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

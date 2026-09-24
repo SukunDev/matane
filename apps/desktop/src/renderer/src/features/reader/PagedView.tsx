@@ -12,6 +12,8 @@ import { useReaderPosition } from './store';
 
 const PRELOAD_AHEAD = 4;
 const WHEEL_COOLDOWN_MS = 250;
+/** Stable empty spread for transition screens (it is an effect dependency). */
+const NO_SPREAD: number[] = [];
 
 /** Which slide is shown: a page (first page of its spread) or a transition screen. */
 export type Anchor = number | 'prev' | 'next';
@@ -57,7 +59,7 @@ export function PagedView({
     start === 'last' ? Math.max(0, count - 1) : Math.min(Math.max(start, 0), Math.max(count - 1, 0)),
   );
   const spreadIndex = typeof anchor === 'number' ? spreads.findIndex((s) => s.includes(anchor)) : -1;
-  const spread = spreadIndex >= 0 ? spreads[spreadIndex]! : [];
+  const spread = spreadIndex >= 0 ? spreads[spreadIndex]! : NO_SPREAD;
 
   const go = useCallback(
     (delta: 1 | -1) => {
@@ -83,8 +85,11 @@ export function PagedView({
   const report = useReaderPosition((s) => s.report);
   const setJump = useReaderPosition((s) => s.setJump);
   useEffect(() => {
-    report(chapter.id, typeof anchor === 'number' ? anchor : -1, count);
-  }, [report, chapter.id, anchor, count]);
+    // The "next" transition means every page was seen; "prev" is before the first page.
+    if (anchor === 'next') report(chapter.id, count - 1, count, { pageEnd: count - 1 });
+    else if (anchor === 'prev') report(chapter.id, -1, count);
+    else report(chapter.id, anchor, count, { pageEnd: Math.max(anchor, ...spread) });
+  }, [report, chapter.id, anchor, count, spread]);
   useEffect(() => {
     setJump((page) => setAnchor(Math.min(Math.max(page, 0), count - 1)));
     return () => setJump(null);

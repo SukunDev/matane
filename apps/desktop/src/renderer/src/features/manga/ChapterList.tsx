@@ -1,14 +1,33 @@
 import type { ChapterInfo } from '@manga-reader/shared';
 import { Link } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, Bookmark, CheckCheck, CircleAlert, Search } from 'lucide-react';
-import { type FormEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  Bookmark,
+  BookmarkMinus,
+  CheckCheck,
+  Circle,
+  CircleAlert,
+  CircleCheck,
+  EllipsisVertical,
+  EyeOff,
+  ListChecks,
+  Search,
+  X,
+} from 'lucide-react';
+import { DropdownMenu } from 'radix-ui';
+import { type FormEvent, type MouseEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { formatRelative } from '../../lib/format';
+import { ipc } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
+import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../library/selection';
+import { isTyping } from '../reader/PagedView';
 
 const ROW_HEIGHT = 48;
 const ALL = '__all__';
@@ -82,6 +101,24 @@ export function ChapterList({
 
   const toggle = (key: 'unreadOnly' | 'bookmarkedOnly') => setFilters((f) => ({ ...f, [key]: !f[key] }));
 
+  // Multi-select like the library: Ctrl/Shift+click, or click once something is selected; Esc clears.
+  const order = useMemo(() => visible.map((c) => c.id), [visible]);
+  const [selection, setSelection] = useState<Selection>(EMPTY_SELECTION);
+  const selected = visibleSelection(selection, order);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isTyping(event)) setSelection(EMPTY_SELECTION);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+  const onRowClick = (event: MouseEvent, id: number) => {
+    const mode = event.shiftKey ? 'range' : event.ctrlKey || event.metaKey || selected.length > 0 ? 'toggle' : null;
+    if (!mode) return;
+    event.preventDefault();
+    setSelection((current) => select(current, order, id, mode));
+  };
+
   return (
     <section>
       <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b bg-background/95 px-6 py-2.5 backdrop-blur">
@@ -139,7 +176,14 @@ export function ChapterList({
                 className="absolute inset-x-6"
                 style={{ top: row.start - scrollMargin, height: row.size }}
               >
-                <ChapterRow chapter={chapter} isNew={newIds.has(chapter.id)} language={i18n.language} />
+                <ChapterRow
+                  chapter={chapter}
+                  isNew={newIds.has(chapter.id)}
+                  language={i18n.language}
+                  selected={selection.ids.has(chapter.id)}
+                  onClick={(event) => onRowClick(event, chapter.id)}
+                  onToggle={() => setSelection((current) => select(current, order, chapter.id, 'toggle'))}
+                />
               </div>
             );
           })}
@@ -148,43 +192,206 @@ export function ChapterList({
       <p className="px-6 py-4 text-xs text-muted-foreground">
         {t('manga.showing', { shown: visible.length, total: chapters.length })}
       </p>
+      {selected.length > 0 && (
+        <ChapterSelectionBar
+          chapters={visible.filter((c) => selection.ids.has(c.id))}
+          onSelectAll={() => setSelection({ ids: new Set(order), anchor: null })}
+          onClear={() => setSelection(EMPTY_SELECTION)}
+        />
+      )}
     </section>
   );
 }
 
-function ChapterRow({ chapter, isNew, language }: { chapter: ChapterInfo; isNew: boolean; language: string }) {
+function ChapterRow({
+  chapter,
+  isNew,
+  language,
+  selected,
+  onClick,
+  onToggle,
+}: {
+  chapter: ChapterInfo;
+  isNew: boolean;
+  language: string;
+  selected: boolean;
+  onClick: (event: MouseEvent) => void;
+  onToggle: () => void;
+}) {
   const { t } = useTranslation();
   return (
-    <Link
-      to="/reader/$chapterId"
-      params={{ chapterId: String(chapter.id) }}
+    <div
       className={cn(
-        'flex h-full items-center gap-3 border-b px-2 transition-colors hover:bg-accent/60',
+        'group flex h-full items-center border-b',
         chapter.read && 'text-muted-foreground',
+        selected && 'bg-primary/10',
       )}
     >
-      {chapter.read ? (
-        <CheckCheck className="size-4 shrink-0" aria-label={t('manga.read')} />
-      ) : (
-        <span className="mx-1 size-2 shrink-0 rounded-full bg-primary" aria-label={t('manga.unread')} />
-      )}
-      <span className={cn('truncate', !chapter.read && 'font-medium')}>{chapter.name}</span>
-      {isNew && <Badge variant="primary">{t('manga.new')}</Badge>}
-      {chapter.sourceMissing && (
-        <Badge variant="warning" title={t('manga.sourceMissingHint')}>
-          <CircleAlert />
-          {t('manga.sourceMissing')}
-        </Badge>
-      )}
-      {chapter.scanlator && <span className="truncate text-xs text-muted-foreground">· {chapter.scanlator}</span>}
-      <span className="ml-auto flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
-        {chapter.lastPage > 0 && !chapter.read && chapter.totalPages !== null && (
-          <span>{t('manga.pageProgress', { page: chapter.lastPage + 1, total: chapter.totalPages })}</span>
+      <button
+        type="button"
+        aria-label={selected ? t('library.selection.deselect') : t('library.selection.select')}
+        aria-pressed={selected}
+        onClick={onToggle}
+        className={cn(
+          'flex h-full w-7 shrink-0 items-center justify-center text-muted-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
+          selected && 'text-primary opacity-100',
         )}
-        {chapter.uploadedAt !== null && <span>{formatRelative(chapter.uploadedAt, language)}</span>}
-        {chapter.bookmarked && <Bookmark className="size-3.5 fill-current text-ctp-peach" />}
-      </span>
-    </Link>
+      >
+        {selected ? <CircleCheck className="size-4" /> : <Circle className="size-4" />}
+      </button>
+      <Link
+        to="/reader/$chapterId"
+        params={{ chapterId: String(chapter.id) }}
+        onClick={onClick}
+        data-testid="chapter-row"
+        className="flex h-full min-w-0 flex-1 items-center gap-3 pr-2 transition-colors hover:bg-accent/60"
+      >
+        {chapter.read ? (
+          <CheckCheck className="size-4 shrink-0" aria-label={t('manga.read')} />
+        ) : (
+          <span className="mx-1 size-2 shrink-0 rounded-full bg-primary" aria-label={t('manga.unread')} />
+        )}
+        <span className={cn('truncate', !chapter.read && 'font-medium')}>{chapter.name}</span>
+        {isNew && <Badge variant="primary">{t('manga.new')}</Badge>}
+        {chapter.sourceMissing && (
+          <Badge variant="warning" title={t('manga.sourceMissingHint')}>
+            <CircleAlert />
+            {t('manga.sourceMissing')}
+          </Badge>
+        )}
+        {chapter.scanlator && <span className="truncate text-xs text-muted-foreground">· {chapter.scanlator}</span>}
+        <span className="ml-auto flex shrink-0 items-center gap-3 text-xs text-muted-foreground">
+          {chapter.lastPage > 0 && !chapter.read && chapter.totalPages !== null && (
+            <span className="text-primary">
+              {t('manga.pageProgress', { page: chapter.lastPage + 1, total: chapter.totalPages })}
+            </span>
+          )}
+          {chapter.uploadedAt !== null && <span>{formatRelative(chapter.uploadedAt, language)}</span>}
+          {chapter.bookmarked && <Bookmark className="size-3.5 fill-current text-ctp-peach" />}
+        </span>
+      </Link>
+      <ChapterMenu chapter={chapter} />
+    </div>
+  );
+}
+
+/** Per-chapter actions (BRAINSTORM.md §6.3): mark read/unread, mark everything before as read. */
+function ChapterMenu({ chapter }: { chapter: ChapterInfo }) {
+  const { t } = useTranslation();
+  const markRead = useMutation({
+    mutationFn: (read: boolean) => ipc.invoke('chapters.markRead', { chapterIds: [chapter.id], read }),
+  });
+  const markPrevious = useMutation({
+    mutationFn: () => ipc.invoke('chapters.markPreviousRead', { chapterId: chapter.id }),
+  });
+  const bookmark = useMutation({
+    mutationFn: (bookmarked: boolean) => ipc.invoke('chapters.setBookmarked', { chapterIds: [chapter.id], bookmarked }),
+  });
+  const item =
+    'flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-accent';
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          title={t('manga.menu.more')}
+          className="mx-1 opacity-60 group-hover:opacity-100 data-[state=open]:opacity-100"
+        >
+          <EllipsisVertical />
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={4}
+          className="z-50 min-w-52 rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl"
+        >
+          <DropdownMenu.Item className={item} onSelect={() => markRead.mutate(!chapter.read)}>
+            <CheckCheck className="size-4" />
+            {chapter.read ? t('manga.menu.markUnread') : t('manga.menu.markRead')}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item className={item} onSelect={() => markPrevious.mutate()}>
+            <ListChecks className="size-4" />
+            {t('manga.menu.markPrevious')}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item className={item} onSelect={() => bookmark.mutate(!chapter.bookmarked)}>
+            {chapter.bookmarked ? <BookmarkMinus className="size-4" /> : <Bookmark className="size-4" />}
+            {chapter.bookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
+
+/** Actions for the selected chapters, floating at the bottom of the page. */
+function ChapterSelectionBar({
+  chapters,
+  onSelectAll,
+  onClear,
+}: {
+  chapters: ChapterInfo[];
+  onSelectAll: () => void;
+  onClear: () => void;
+}) {
+  const { t } = useTranslation();
+  const chapterIds = chapters.map((c) => c.id);
+  const markRead = useMutation({
+    mutationFn: (read: boolean) => ipc.invoke('chapters.markRead', { chapterIds, read }),
+    onSuccess: onClear,
+  });
+  const bookmark = useMutation({
+    mutationFn: (bookmarked: boolean) => ipc.invoke('chapters.setBookmarked', { chapterIds, bookmarked }),
+    onSuccess: onClear,
+  });
+  const markPrevious = useMutation({
+    mutationFn: (chapterId: number) => ipc.invoke('chapters.markPreviousRead', { chapterId }),
+    onSuccess: onClear,
+  });
+  const allBookmarked = chapters.every((c) => c.bookmarked);
+  const single = chapters.length === 1 ? chapters[0] : undefined;
+
+  return (
+    <div className="pointer-events-none sticky bottom-5 z-20 flex justify-center">
+      <div
+        role="toolbar"
+        aria-label={t('library.selection.toolbar')}
+        className="pointer-events-auto flex items-center gap-1 rounded-xl border bg-popover/95 p-1.5 shadow-2xl backdrop-blur"
+      >
+        <span className="flex items-center gap-2 px-3 font-medium text-primary">
+          <span className="size-2 rounded-full bg-primary" />
+          {t('library.selection.count', { count: chapters.length })}
+        </span>
+        <span className="h-5 w-px bg-border" />
+        <Button variant="ghost" size="sm" onClick={onSelectAll}>
+          <ListChecks />
+          {t('library.selection.all')}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => markRead.mutate(true)}>
+          <CheckCheck />
+          {t('library.selection.markRead')}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => markRead.mutate(false)}>
+          <EyeOff />
+          {t('library.selection.markUnread')}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => bookmark.mutate(!allBookmarked)}>
+          {allBookmarked ? <BookmarkMinus /> : <Bookmark />}
+          {allBookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
+        </Button>
+        {single && (
+          <Button variant="ghost" size="sm" onClick={() => markPrevious.mutate(single.id)}>
+            <ListChecks />
+            {t('manga.menu.markPrevious')}
+          </Button>
+        )}
+        <span className="h-5 w-px bg-border" />
+        <Button variant="ghost" size="icon-sm" title={t('library.selection.clear')} onClick={onClear}>
+          <X />
+        </Button>
+      </div>
+    </div>
   );
 }
 

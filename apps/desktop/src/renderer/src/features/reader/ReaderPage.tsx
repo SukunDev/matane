@@ -11,7 +11,7 @@ import {
   SkipBack,
   SkipForward,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
@@ -22,10 +22,12 @@ import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from
 import { chapterQuery, chaptersQuery, mangaQuery, pagesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { isTyping, PagedView } from './PagedView';
+import { PageContextMenu } from './PageContextMenu';
 import { ReaderSettingsPanel } from './ReaderSettingsPanel';
 import { TapZoneOverlay } from './TapZoneOverlay';
 import { WebtoonView } from './WebtoonView';
 import { adjacentChapter, resolveDirection, resolveMode } from './navigation';
+import { useProgressSaver, useReadingHeartbeat } from './progress';
 import { useReaderPosition } from './store';
 
 const HIDE_AFTER_MS = 3000;
@@ -47,12 +49,14 @@ export function ReaderPage({
   onVisibleChapter,
 }: {
   chapterId: number;
-  start: number | 'last';
+  /** Explicit start page (search param); otherwise the saved position. */
+  start: number | 'last' | undefined;
   onVisibleChapter: (chapter: ChapterInfo) => void;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const chapterResult = useQuery(chapterQuery(chapterId));
+  // Always re-read: the saved position may have changed since the list was last fetched.
+  const chapterResult = useQuery({ ...chapterQuery(chapterId), refetchOnMount: 'always' });
   const chapter = chapterResult.data;
   const mangaId = chapter?.mangaId ?? 0;
   const manga = useQuery({ ...mangaQuery(mangaId), enabled: mangaId > 0 });
@@ -62,6 +66,10 @@ export function ReaderPage({
   const { data: info } = useQuery(appInfoQuery);
   const updateSettings = useUpdateSettings();
   const reader = settings?.reader;
+  // A new session must not mistake the previous one's position for the live one (see below).
+  useLayoutEffect(() => useReaderPosition.getState().reset(), []);
+  useProgressSaver();
+  useReadingHeartbeat();
 
   // Every change of the tap-zone preset shows the zones for a few seconds (not when opening).
   const [zoneChange, setZoneChange] = useState({ zones: reader?.tapZones, count: 0 });
@@ -168,10 +176,15 @@ export function ReaderPage({
       </div>
     );
   }
-  if (!chapter || !reader || !manga.data || !pages.data || !chapters.data) {
+  if (!chapter || !chapterResult.isFetchedAfterMount || !reader || !manga.data || !pages.data || !chapters.data) {
     return <div className="h-full bg-black" aria-busy />;
   }
 
+  // Resume where the chapter was left, unless it was finished (then start over).
+  // Switching modes remounts the view mid-session: keep the page on screen, not the saved one.
+  const live = position.chapterId === chapter.id && position.page >= 0 ? position : null;
+  const resumeAt = live?.page ?? start ?? (chapter.read ? 0 : chapter.lastPage);
+  const resumeOffset = live ? live.offset : start === undefined && !chapter.read ? chapter.pageOffset : null;
   const mode = resolveMode(reader.mode, manga.data.type);
   const direction = resolveDirection(reader.direction, manga.data.type);
   const rtl = direction === 'rtl' && (mode === 'single' || mode === 'double');
@@ -204,35 +217,38 @@ export function ReaderPage({
         if (event.clientY < EDGE_PX || event.clientY > window.innerHeight - EDGE_PX) poke();
       }}
     >
-      {mode === 'webtoon' || mode === 'vertical' ? (
-        <WebtoonView
-          key={`${chapter.id}:${mode}`}
-          chapter={chapter}
-          pages={pages.data.pages}
-          chapters={chapters.data}
-          gap={mode === 'vertical' ? reader.verticalGap : 0}
-          settings={reader}
-          start={start}
-          onVisibleChapter={onVisibleChapter}
-          onMenu={toggleOverlay}
-          onExit={exit}
-        />
-      ) : (
-        <PagedView
-          key={`${chapter.id}:${mode}`}
-          chapter={chapter}
-          pages={pages.data.pages}
-          double={mode === 'double'}
-          direction={direction}
-          settings={reader}
-          start={start}
-          prevChapter={prev}
-          nextChapter={next}
-          onChapter={goChapter}
-          onMenu={toggleOverlay}
-          onExit={exit}
-        />
-      )}
+      <PageContextMenu mangaId={chapter.mangaId}>
+        {mode === 'webtoon' || mode === 'vertical' ? (
+          <WebtoonView
+            key={`${chapter.id}:${mode}`}
+            chapter={chapter}
+            pages={pages.data.pages}
+            chapters={chapters.data}
+            gap={mode === 'vertical' ? reader.verticalGap : 0}
+            settings={reader}
+            start={resumeAt}
+            startOffset={resumeOffset}
+            onVisibleChapter={onVisibleChapter}
+            onMenu={toggleOverlay}
+            onExit={exit}
+          />
+        ) : (
+          <PagedView
+            key={`${chapter.id}:${mode}`}
+            chapter={chapter}
+            pages={pages.data.pages}
+            double={mode === 'double'}
+            direction={direction}
+            settings={reader}
+            start={resumeAt}
+            prevChapter={prev}
+            nextChapter={next}
+            onChapter={goChapter}
+            onMenu={toggleOverlay}
+            onExit={exit}
+          />
+        )}
+      </PageContextMenu>
 
       {zoneChange.count > 0 && (
         <TapZoneOverlay

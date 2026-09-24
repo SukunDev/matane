@@ -34,6 +34,34 @@ export const DEFAULT_READER_SETTINGS: ReaderSettings = {
   background: 'black',
 };
 
+export const LIBRARY_DISPLAYS = ['compact', 'comfortable', 'cover', 'list'] as const;
+const LIBRARY_SORT_KEYS = ['title', 'lastRead', 'latestChapter', 'added', 'unread', 'total'] as const;
+
+/** How the library looks (BRAINSTORM.md §6.2); per-field fallbacks like the reader settings. */
+export const librarySettingsSchema = z.object({
+  display: z.enum(LIBRARY_DISPLAYS).catch('comfortable'),
+  /** Cover width in CSS px for the grid displays. */
+  coverSize: z.number().int().min(100).max(280).catch(160),
+  sort: z.enum(LIBRARY_SORT_KEYS).catch('lastRead'),
+  ascending: z.boolean().catch(false),
+  unreadOnly: z.boolean().catch(false),
+  readingOnly: z.boolean().catch(false),
+  status: z.array(z.enum(['ongoing', 'completed', 'hiatus', 'cancelled', 'unknown'])).catch([]),
+  sourceIds: z.array(z.string()).catch([]),
+});
+export type LibrarySettings = z.infer<typeof librarySettingsSchema>;
+
+export const DEFAULT_LIBRARY_SETTINGS: LibrarySettings = {
+  display: 'comfortable',
+  coverSize: 160,
+  sort: 'lastRead',
+  ascending: false,
+  unreadOnly: false,
+  readingOnly: false,
+  status: [],
+  sourceIds: [],
+};
+
 export const appSettingsSchema = z.object({
   theme: z.enum(THEME_MODES),
   accent: z.enum(ACCENTS),
@@ -41,6 +69,9 @@ export const appSettingsSchema = z.object({
   language: z.enum(LANGUAGES).nullable(),
   sidebarCollapsed: z.boolean(),
   reader: readerSettingsSchema,
+  /** While on, nothing about reading is recorded: progress, history, sessions (§6.3). */
+  incognito: z.boolean(),
+  library: librarySettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -50,4 +81,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   language: null,
   sidebarCollapsed: false,
   reader: DEFAULT_READER_SETTINGS,
+  incognito: false,
+  library: DEFAULT_LIBRARY_SETTINGS,
 };

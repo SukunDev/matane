@@ -2,10 +2,17 @@ import { z } from 'zod';
 import type { Filter, Page, Preference } from '@manga-reader/extension-sdk';
 import {
   browseResultSchema,
+  categorySchema,
   chapterInfoSchema,
   cloudflareStatusSchema,
+  continueTargetSchema,
   extensionEntrySchema,
   filterStateSchema,
+  historyEntrySchema,
+  libraryCountsSchema,
+  libraryFiltersSchema,
+  libraryItemSchema,
+  libraryTabSchema,
   mangaInfoSchema,
   requestIdSchema,
   sourceCapabilitiesSchema,
@@ -106,6 +113,86 @@ export const invokeContract = {
     z.object({ pages: pagesSchema, fromCache: z.boolean() }),
   ),
   'requests.cancel': invoke(z.object({ requestId: z.string() }), z.void()),
+
+  /**
+   * Reader position. `page` is where to resume (first page of a spread), `pageEnd` the last page
+   * seen (the chapter is read once it reaches the end), `offset` the scrolled fraction of `page`
+   * in webtoon mode. Ignored while incognito.
+   */
+  'progress.save': invoke(
+    z.object({
+      chapterId: idSchema,
+      page: z.number().int().nonnegative(),
+      pageEnd: z.number().int().nonnegative(),
+      total: z.number().int().positive(),
+      offset: z.number().min(0).max(1).nullable(),
+    }),
+    z.void(),
+  ),
+  'chapters.markRead': invoke(
+    z.object({ chapterIds: z.array(idSchema).min(1).max(20_000), read: z.boolean() }),
+    z.void(),
+  ),
+  /** Marks every chapter before this one (by number, else source order) as read. */
+  'chapters.markPreviousRead': invoke(z.object({ chapterId: idSchema }), z.void()),
+  'manga.continue': invoke(z.object({ mangaId: idSchema }), continueTargetSchema.nullable()),
+  /** Reader activity for reading sessions (active time; idle after ~2 min). */
+  'reading.heartbeat': invoke(z.object({ chapterId: idSchema }), z.void()),
+  'reading.end': invoke(z.void(), z.void()),
+  'history.list': invoke(
+    z
+      .object({ query: z.string().max(200).optional(), limit: z.number().int().positive().max(500).optional() })
+      .optional(),
+    z.array(historyEntrySchema),
+  ),
+  'history.remove': invoke(z.object({ mangaId: idSchema }), z.void()),
+  'history.clear': invoke(z.void(), z.void()),
+
+  'library.list': invoke(
+    z.object({
+      tab: libraryTabSchema,
+      sort: z.enum(['title', 'lastRead', 'latestChapter', 'added', 'unread', 'total']),
+      ascending: z.boolean(),
+      filters: libraryFiltersSchema,
+      /** Full-text search over title, author and genres (FTS5, prefix match). */
+      query: z.string().max(200).optional(),
+    }),
+    z.array(libraryItemSchema),
+  ),
+  'library.counts': invoke(z.void(), libraryCountsSchema),
+  /** Adds (or updates the categories of) a manga; fetches details first if never refreshed. */
+  'library.add': invoke(z.object({ mangaId: idSchema, categoryIds: z.array(idSchema) }), z.void()),
+  'library.remove': invoke(z.object({ mangaIds: z.array(idSchema).min(1) }), z.void()),
+  'library.setCategories': invoke(
+    z.object({ mangaIds: z.array(idSchema).min(1), categoryIds: z.array(idSchema) }),
+    z.void(),
+  ),
+  /** Marks every chapter of these manga read or unread. */
+  'library.markRead': invoke(z.object({ mangaIds: z.array(idSchema).min(1), read: z.boolean() }), z.void()),
+  'categories.list': invoke(z.void(), z.array(categorySchema)),
+  'categories.create': invoke(z.object({ name: z.string().trim().min(1).max(60) }), categorySchema),
+  'categories.rename': invoke(z.object({ id: idSchema, name: z.string().trim().min(1).max(60) }), z.void()),
+  'categories.delete': invoke(z.object({ id: idSchema }), z.void()),
+  /** New order, first to last; every category id exactly once. */
+  'categories.reorder': invoke(z.object({ ids: z.array(idSchema) }), z.void()),
+  /** Cover from a file (picked in a dialog) or from a cached reader page. Returns false if cancelled. */
+  'manga.setCustomCover': invoke(
+    z.object({
+      mangaId: idSchema,
+      from: z.discriminatedUnion('kind', [
+        z.object({ kind: z.literal('file') }),
+        z.object({ kind: z.literal('page'), chapterId: idSchema, index: z.number().int().nonnegative() }),
+      ]),
+    }),
+    z.boolean(),
+  ),
+  'manga.resetCover': invoke(z.object({ mangaId: idSchema }), z.void()),
+  /** Library manga from other sources with the same (normalized) title. */
+  'manga.findDuplicates': invoke(z.object({ mangaId: idSchema }), z.array(mangaInfoSchema)),
+  'chapters.setBookmarked': invoke(
+    z.object({ chapterIds: z.array(idSchema).min(1), bookmarked: z.boolean() }),
+    z.void(),
+  ),
 } satisfies Record<InvokeChannel, { input: z.ZodType; output: z.ZodType }>;
 
 /** Main → renderer push channels. */

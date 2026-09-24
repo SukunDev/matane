@@ -5,7 +5,7 @@ import { ExtensionRuntime } from '@manga-reader/extension-runtime';
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildExtension } from './build';
 import { createExtension } from './create';
-import { createFixtureHost } from './fixtures';
+import { createFixtureHost, hasFixtures } from './fixtures';
 import { RateLimiter } from './node-host';
 
 // Scratch dirs live inside the package so the scaffold resolves the workspace SDK.
@@ -80,5 +80,15 @@ describe('RateLimiter', () => {
     expect(times[1]).toBeLessThan(50);
     expect(times[2]).toBeGreaterThanOrEqual(95);
     expect(times[3]).toBeGreaterThanOrEqual(95);
+  });
+});
+
+describe('hasFixtures', () => {
+  it('is true only for a folder with recorded responses', async () => {
+    const dir = await scratch();
+    expect(hasFixtures(path.join(dir, 'missing'))).toBe(false);
+    expect(hasFixtures(dir)).toBe(false);
+    await writeFile(path.join(dir, 'abc.json'), '{}');
+    expect(hasFixtures(dir)).toBe(true);
   });
 });

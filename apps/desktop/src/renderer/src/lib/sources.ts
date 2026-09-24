@@ -47,6 +47,8 @@ export const queryKeys = {
   chapters: (mangaId: number) => ['chapters', mangaId] as const,
   chapter: (chapterId: number) => ['chapter', chapterId] as const,
   pages: (chapterId: number) => ['pages', chapterId] as const,
+  continue: (mangaId: number) => ['continue', mangaId] as const,
+  history: (query: string) => ['history', query] as const,
 };
 
 export const extensionsQuery = queryOptions({
@@ -119,6 +121,14 @@ export const chapterQuery = (chapterId: number) =>
     ...localQueryDefaults,
   });
 
+/** Which chapter "Continue reading" opens (main applies BRAINSTORM.md §6.3). */
+export const continueQuery = (mangaId: number) =>
+  queryOptions({
+    queryKey: queryKeys.continue(mangaId),
+    queryFn: () => ipc.invoke('manga.continue', { mangaId }),
+    ...localQueryDefaults,
+  });
+
 /** Page list of a chapter; main caches it (~1 h) and falls back to a stale copy offline. */
 export const pagesQuery = (chapterId: number) =>
   queryOptions({
@@ -143,9 +153,16 @@ export function keysForTag(tag: DbChangeTag): readonly (readonly unknown[])[] {
     return [queryKeys.extensions, queryKeys.sources, ['sourceInfo'], ['sourceFilters'], ['preferences']];
   }
   if (tag === 'sources') return [queryKeys.sources];
+  // Library rows show unread counts (chapters) and "last read" (history).
+  if (tag === 'history') return [['history'], ['continue'], ['library']];
+  if (tag === 'library') return [['library']];
+  if (tag === 'categories') return [['categories'], ['library']];
+  if (tag === 'bookmarks') return [['bookmarks']];
   const [kind, id] = tag.split(':');
   if (kind === 'manga') return [queryKeys.manga(Number(id))];
-  if (kind === 'chapters') return [queryKeys.chapters(Number(id)), ['chapter']];
+  if (kind === 'chapters') {
+    return [queryKeys.chapters(Number(id)), ['chapter'], queryKeys.continue(Number(id)), ['library', 'list']];
+  }
   return [];
 }
 

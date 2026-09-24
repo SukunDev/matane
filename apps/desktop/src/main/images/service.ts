@@ -5,6 +5,7 @@ import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { MangaRepository } from '../db/repositories/manga';
 import type { SourceService } from '../extensions/sources';
 import type { CachedImage, ImageCache, ImageKind } from './cache';
+import type { CoverStore } from './covers';
 
 export interface ImageFetcher {
   /** Fetches an image through the extension's session and allowlist; returns the raw response. */
@@ -28,16 +29,30 @@ export class ImageService {
       chapters: ChaptersRepository;
       sources: SourceService;
       fetcher: ImageFetcher;
+      covers?: CoverStore;
+      log?: (message: string) => void;
     },
   ) {}
 
   async cover(mangaId: number): Promise<CachedImage> {
     const row = this.deps.manga.get(mangaId);
     if (!row) throw new AppError('not_found', `Manga ${mangaId} not found`);
+    const covers = this.deps.covers;
+    // Custom cover → permanent library copy → cache → source (BRAINSTORM.md §6.2, §6.5).
+    const custom = row.customCoverPath && covers ? await covers.file(row.customCoverPath) : undefined;
+    if (custom) return custom;
     if (!row.thumbnailUrl) throw new AppError('not_found', `Manga ${mangaId} has no cover`);
+    const permanent = row.inLibrary && covers ? await covers.library(row) : undefined;
+    if (permanent) return permanent;
     // Keyed by URL so a new cover from the source is fetched instead of served stale.
     const key = `cover:${createHash('sha1').update(row.thumbnailUrl).digest('hex')}`;
-    return this.load(key, 'browse_cover', row.sourceId, row.thumbnailUrl);
+    const image = await this.load(key, 'browse_cover', row.sourceId, row.thumbnailUrl);
+    if (row.inLibrary && covers) {
+      await covers
+        .persist(row, image)
+        .catch((error: unknown) => this.deps.log?.(`cover copy failed: ${String(error)}`));
+    }
+    return image;
   }
 
   /**

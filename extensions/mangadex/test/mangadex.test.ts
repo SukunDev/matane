@@ -2,7 +2,7 @@
 // after deleting the stale files (only missing fixtures are fetched).
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type FixtureHost, buildExtension, createFixtureHost } from '@manga-reader/extension-cli';
+import { type FixtureHost, buildExtension, createFixtureHost, hasFixtures } from '@manga-reader/extension-cli';
 import { ExtensionRuntime } from '@manga-reader/extension-runtime';
 import type { Chapter, Filter, HttpResponse, MangaDetails, MangaPage, Page } from '@manga-reader/extension-sdk';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
@@ -12,6 +12,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 /** Small series with chapters in both languages (keeps fixtures tiny). */
 const MANGA = { url: '5272da37-6c69-4ecc-a1e0-d25db7b3e80f', title: '' };
 const REPORT_URL = 'https://api.mangadex.network/report';
+const FIXTURES = path.join(root, 'test/fixtures');
+const RECORD = process.env.MR_RECORD === '1';
+/** Without recorded responses (and not recording) the suite is skipped rather than failing. */
+const enabled = RECORD || hasFixtures(FIXTURES);
+const suite = enabled ? describe : describe.skip;
+if (!enabled)
+  console.warn(`MangaDex tests skipped: no fixtures in ${FIXTURES} (record them with MR_RECORD=1 pnpm test)`);
 
 const KEPT_LANGS = ['en', 'id', 'ja-ro'];
 
@@ -44,10 +51,11 @@ let host: FixtureHost;
 let runtime: ExtensionRuntime;
 
 beforeAll(async () => {
+  if (!enabled) return;
   const { code, manifest } = await buildExtension(root, { write: false });
   host = createFixtureHost({
-    dir: path.join(root, 'test/fixtures'),
-    record: process.env.MR_RECORD === '1',
+    dir: FIXTURES,
+    record: RECORD,
     shrink,
     stub: (request) =>
       request.url === REPORT_URL ? { status: 200, url: request.url, headers: {}, body: '' } : undefined,
@@ -63,7 +71,7 @@ beforeAll(async () => {
 afterAll(() => runtime?.dispose());
 
 beforeEach(() => {
-  host.requests.length = 0;
+  if (host) host.requests.length = 0;
 });
 
 const call = <T>(source: 'en' | 'id', method: string, args: unknown[] = [], prefs: Record<string, unknown> = {}) =>
@@ -83,7 +91,7 @@ const values = (index: number, key: string) =>
     .filter(([k]) => k === key)
     .map(([, v]) => v);
 
-describe('listing', () => {
+suite('listing', () => {
   it('getPopular lists safe manga with chapters in the source language, by follows', async () => {
     const page = await call<MangaPage>('en', 'getPopular', [1]);
     expect(page.items).toHaveLength(24);
@@ -114,7 +122,7 @@ describe('listing', () => {
   });
 });
 
-describe('search', () => {
+suite('search', () => {
   it('maps filters onto query parameters', async () => {
     const filters = await call<Filter[]>('en', 'getFilters');
     const tags = filters.flatMap((f) => (f.type === 'group' && f.id.startsWith('tags.') ? f.filters : []));
@@ -165,7 +173,7 @@ describe('search', () => {
   });
 });
 
-describe('manga', () => {
+suite('manga', () => {
   it('getMangaDetails parses the entity', async () => {
     const details = await call<MangaDetails>('en', 'getMangaDetails', [MANGA]);
     expect(details.url).toBe(MANGA.url);
@@ -193,7 +201,7 @@ describe('manga', () => {
   });
 });
 
-describe('pages', () => {
+suite('pages', () => {
   let chapter: Chapter;
   beforeAll(async () => {
     [chapter] = (await call<Chapter[]>('en', 'getChapters', [MANGA])) as [Chapter];
@@ -213,7 +221,7 @@ describe('pages', () => {
   });
 });
 
-describe('urls', () => {
+suite('urls', () => {
   it('resolveUrl accepts title links only', async () => {
     await expect(
       call('en', 'resolveUrl', [`https://mangadex.org/title/${MANGA.url.toUpperCase()}/slug`]),
@@ -233,7 +241,7 @@ describe('urls', () => {
   });
 });
 
-describe('reportImage', () => {
+suite('reportImage', () => {
   const result = { success: true, bytes: 1234, durationMs: 250, cached: true };
 
   it('reports MangaDex@Home images', async () => {

@@ -3,7 +3,7 @@ import type { BrowseResult, MangaInfo, SourceCapabilities, SourceEntry } from '@
 import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { ExtensionsRepository, SourceRow } from '../db/repositories/extensions';
-import { type MangaRepository, toMangaInfo } from '../db/repositories/manga';
+import type { MangaRepository } from '../db/repositories/manga';
 import type { ExtensionService } from './service';
 import { validate } from './validate';
 
@@ -152,7 +152,8 @@ export class SourceService {
   }
 
   getManga(mangaId: number): MangaInfo {
-    return toMangaInfo(this.mangaRow(mangaId));
+    this.mangaRow(mangaId);
+    return this.deps.manga.info(mangaId)!;
   }
 
   /** Fetches details and chapters, then syncs both into the DB. */
@@ -169,7 +170,7 @@ export class SourceService {
     const chapters = validate.chapters(await call('getChapters', [detailsForChapters]));
     const updated = this.deps.manga.updateDetails(mangaId, detailsForChapters, this.now());
     const sync = this.deps.chapters.sync(mangaId, chapters, this.now());
-    return { manga: toMangaInfo(updated), newChapterIds: sync.added };
+    return { manga: this.deps.manga.info(updated.id)!, newChapterIds: sync.added };
   }
 
   /**

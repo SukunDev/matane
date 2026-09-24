@@ -3,7 +3,7 @@ import type { BrowseItem, MangaInfo } from '@manga-reader/shared';
 import { and, eq } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
-import { manga } from '../schema';
+import { manga, mangaCategories } from '../schema';
 
 export type MangaRow = typeof manga.$inferSelect;
 
@@ -16,7 +16,11 @@ function parseGenres(json: string): string[] {
   }
 }
 
-export function toMangaInfo(row: MangaRow): MangaInfo {
+/** Identifies the cover on screen: a custom cover wins over the source's (BRAINSTORM.md §6.2). */
+export const coverKeyOf = (row: Pick<MangaRow, 'customCoverPath' | 'thumbnailUrl'>) =>
+  row.customCoverPath ?? row.thumbnailUrl;
+
+export function toMangaInfo(row: MangaRow, categoryIds: number[] = []): MangaInfo {
   return {
     id: row.id,
     sourceId: row.sourceId,
@@ -29,7 +33,10 @@ export function toMangaInfo(row: MangaRow): MangaInfo {
     status: row.status,
     type: row.type,
     thumbnailUrl: row.thumbnailUrl,
+    coverKey: coverKeyOf(row),
+    hasCustomCover: row.customCoverPath !== null,
     inLibrary: row.inLibrary,
+    categoryIds,
     lastFetchedAt: row.lastUpdateCheckAt,
   };
 }
@@ -43,6 +50,19 @@ export class MangaRepository {
 
   get(id: number): MangaRow | undefined {
     return this.db.select().from(manga).where(eq(manga.id, id)).get();
+  }
+
+  /** Row + categories, as the renderer sees it. */
+  info(id: number): MangaInfo | undefined {
+    const row = this.get(id);
+    if (!row) return undefined;
+    const categoryIds = this.db
+      .select({ id: mangaCategories.categoryId })
+      .from(mangaCategories)
+      .where(eq(mangaCategories.mangaId, id))
+      .all()
+      .map((c) => c.id);
+    return toMangaInfo(row, categoryIds);
   }
 
   findByUrl(sourceId: string, url: string): MangaRow | undefined {
@@ -76,7 +96,14 @@ export class MangaRepository {
             .values({ sourceId, url: item.url, title: item.title, thumbnailUrl, createdAt: now, updatedAt: now })
             .returning({ id: manga.id })
             .get();
-          result.push({ mangaId: inserted.id, url: item.url, title: item.title, thumbnailUrl, inLibrary: false });
+          result.push({
+            mangaId: inserted.id,
+            url: item.url,
+            title: item.title,
+            thumbnailUrl,
+            coverKey: thumbnailUrl,
+            inLibrary: false,
+          });
           continue;
         }
         const title = !existing.inLibrary && item.title ? item.title : existing.title;
@@ -85,7 +112,14 @@ export class MangaRepository {
           tx.update(manga).set({ title, thumbnailUrl: cover, updatedAt: now }).where(eq(manga.id, existing.id)).run();
           this.changes.mark(`manga:${existing.id}`);
         }
-        result.push({ mangaId: existing.id, url: item.url, title, thumbnailUrl: cover, inLibrary: existing.inLibrary });
+        result.push({
+          mangaId: existing.id,
+          url: item.url,
+          title,
+          thumbnailUrl: cover,
+          coverKey: existing.customCoverPath ?? cover,
+          inLibrary: existing.inLibrary,
+        });
       }
     });
     return result;
@@ -95,6 +129,16 @@ export class MangaRepository {
   ensure(sourceId: string, summary: MangaSummary, now = Date.now()): number {
     const [item] = this.upsertSummaries(sourceId, [summary], now);
     return item!.mangaId;
+  }
+
+  /** Permanent copy of the source cover for library manga (not shown differently, no event). */
+  setCoverPath(id: number, path: string | null): void {
+    this.db.update(manga).set({ coverPath: path }).where(eq(manga.id, id)).run();
+  }
+
+  setCustomCoverPath(id: number, path: string | null): void {
+    this.db.update(manga).set({ customCoverPath: path }).where(eq(manga.id, id)).run();
+    this.changes.mark(`manga:${id}`, 'library');
   }
 
   updateDetails(id: number, details: MangaDetails, now = Date.now()): MangaRow {

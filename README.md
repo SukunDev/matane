@@ -8,7 +8,7 @@ An open-source desktop manga reader (Windows, macOS, Linux) with a sandboxed ext
 
 ## Status
 
-Phases 0 and 1 are done: Electron shell with the Catppuccin UI, typed IPC and SQLite; the QuickJS extension sandbox with MangaDex built in; browse, filters and manga details; and the reader (single, double, webtoon, RTL) with an offline image cache. See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md) and the plans for [Phase 0](docs/plans/fase-0-fondasi.md) and [Phase 1](docs/plans/fase-1-extension-membaca.md).
+Phases 0 and 1 are done: Electron shell with the Catppuccin UI, typed IPC and SQLite; the QuickJS extension sandbox with MangaDex built in; browse, filters and manga details; and the reader (single, double, webtoon, RTL) with an offline image cache. See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md) and the plans for [Phase 0](docs/plans/fase-0-fondasi.md), [Phase 1](docs/plans/fase-1-extension-membaca.md) and [Phase 2](docs/plans/fase-2-library-progress.md) (next: library & progress).
 
 ## Development
 

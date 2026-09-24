@@ -5,6 +5,7 @@ import { EmptyState } from '../../../components/EmptyState';
 import { AboutSettings } from '../../../features/settings/AboutSettings';
 import { AdvancedSettings } from '../../../features/settings/AdvancedSettings';
 import { GeneralSettings } from '../../../features/settings/GeneralSettings';
+import { LibrarySettings } from '../../../features/settings/LibrarySettings';
 import { READY_SECTIONS, SETTINGS_SECTIONS, isSettingsSection } from '../../../features/settings/sections';
 import { cn } from '../../../lib/utils';
 
@@ -48,6 +49,7 @@ function SettingsPage() {
         <div className="mx-auto max-w-4xl p-8">
           <h1 className="mb-6 text-xl font-semibold">{t(`settings.sections.${current}`)}</h1>
           {current === 'general' && <GeneralSettings />}
+          {current === 'library' && <LibrarySettings />}
           {current === 'advanced' && <AdvancedSettings />}
           {current === 'about' && <AboutSettings />}
           {!READY_SECTIONS.includes(current) && (

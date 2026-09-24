@@ -4,6 +4,7 @@ import { BookOpen, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from '
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
+import { libraryCountsQuery } from '../../lib/library';
 import { cn } from '../../lib/utils';
 import { NAV_ITEMS, type NavLeaf } from './nav';
 
@@ -11,7 +12,17 @@ const itemClass =
   'flex h-9 items-center gap-3 rounded-lg border-l-2 border-transparent px-3 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground';
 const activeClass = 'border-primary bg-primary/15 font-semibold text-primary hover:bg-primary/15 hover:text-primary';
 
-function SidebarLink({ item, collapsed, nested }: { item: NavLeaf; collapsed: boolean; nested?: boolean }) {
+function SidebarLink({
+  item,
+  collapsed,
+  nested,
+  badge,
+}: {
+  item: NavLeaf;
+  collapsed: boolean;
+  nested?: boolean;
+  badge?: number;
+}) {
   const { t } = useTranslation();
   const Icon = item.icon;
   return (
@@ -22,7 +33,10 @@ function SidebarLink({ item, collapsed, nested }: { item: NavLeaf; collapsed: bo
       activeProps={{ className: activeClass }}
     >
       <Icon className="size-4 shrink-0" />
-      {!collapsed && <span className="truncate">{t(`nav.${item.labelKey}`)}</span>}
+      {!collapsed && <span className="flex-1 truncate">{t(`nav.${item.labelKey}`)}</span>}
+      {!collapsed && badge !== undefined && badge > 0 && (
+        <span className="rounded-md bg-primary/20 px-1.5 text-[11px] font-semibold text-primary">{badge}</span>
+      )}
     </Link>
   );
 }
@@ -34,6 +48,8 @@ export function Sidebar() {
   const collapsed = settings?.sidebarCollapsed ?? false;
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [browseOpen, setBrowseOpen] = useState(true);
+  const { data: counts } = useQuery(libraryCountsQuery);
+  const badges: Partial<Record<NavLeaf['to'], number>> = { '/library': counts?.all };
 
   return (
     <aside
@@ -51,7 +67,8 @@ export function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
         {NAV_ITEMS.map((item) => {
-          if ('to' in item) return <SidebarLink key={item.to} item={item} collapsed={collapsed} />;
+          if ('to' in item)
+            return <SidebarLink key={item.to} item={item} collapsed={collapsed} badge={badges[item.to]} />;
           const Icon = item.icon;
           const groupActive = item.children.some((child) => pathname.startsWith(child.to));
           if (collapsed) {

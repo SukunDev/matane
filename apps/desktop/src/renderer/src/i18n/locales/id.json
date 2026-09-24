@@ -131,11 +131,21 @@
       "devTitle": "Pengembangan extension",
       "devDescription": "Muat extension dari folder (proyeknya atau hasil build). Otomatis dimuat ulang saat `mr-ext build` memperbaruinya.",
       "noFolders": "Belum ada folder yang dimuat."
+    },
+    "library": {
+      "categories": "Kategori",
+      "categoriesHint": "Kelompokkan library ke dalam tab. Seret untuk mengurutkan. Manga tanpa kategori ada di \"Default\".",
+      "rename": "Ganti nama",
+      "delete": "Hapus",
+      "deleteTitle": "Hapus \"{{name}}\"?",
+      "deleteDescription": "Manganya tetap di library (masuk \"Default\" kalau ini satu-satunya kategorinya)."
     }
   },
   "common": {
     "retry": "Coba lagi",
-    "close": "Tutup"
+    "close": "Tutup",
+    "cancel": "Batal",
+    "save": "Simpan"
   },
   "errors": {
     "network": "Tidak bisa menghubungi source",
@@ -262,7 +272,21 @@
     "new": "Baru",
     "sourceMissing": "Dihapus dari source",
     "sourceMissingHint": "Source tidak lagi mencantumkan chapter ini; tetap disimpan demi progres bacamu.",
-    "pageProgress": "Hal. {{page}} / {{total}}"
+    "pageProgress": "Hal. {{page}} / {{total}}",
+    "reread": "Baca lagi · {{chapter}}",
+    "menu": {
+      "more": "Aksi chapter",
+      "markRead": "Tandai sudah dibaca",
+      "markUnread": "Tandai belum dibaca",
+      "markPrevious": "Tandai sebelumnya sudah dibaca",
+      "bookmark": "Tandai (bookmark)",
+      "unbookmark": "Hapus bookmark"
+    },
+    "cover": {
+      "change": "Ganti cover…",
+      "reset": "Pakai cover dari source"
+    },
+    "moreActions": "Aksi lainnya"
   },
   "reader": {
     "back": "Kembali ke manga",
@@ -342,6 +366,90 @@
       "menu": "Menu",
       "scrollUp": "Gulir ke atas",
       "scrollDown": "Gulir ke bawah"
+    },
+    "setAsCover": "Jadikan halaman {{page}} sebagai cover",
+    "coverSet": "Cover diperbarui",
+    "coverFailed": "Gagal mengganti cover"
+  },
+  "library": {
+    "titles_other": "{{count}} judul",
+    "tabs": "Kategori",
+    "all": "Semua",
+    "default": "Default",
+    "filterPlaceholder": "Filter tampilan ini…",
+    "browseSources": "Jelajahi source",
+    "coverSize": "Ukuran cover",
+    "unread_other": "{{count}} chapter belum dibaca",
+    "readOf": "{{read}} / {{total}} dibaca",
+    "display": {
+      "label": "Tampilan",
+      "comfortable": "Grid nyaman",
+      "compact": "Grid ringkas",
+      "cover": "Cover saja",
+      "list": "Daftar"
+    },
+    "filter": {
+      "label": "Filter",
+      "unread": "Belum dibaca",
+      "reading": "Sedang dibaca",
+      "downloaded": "Didownload",
+      "soon": "Tersedia setelah fitur download hadir",
+      "status": "Status",
+      "source": "Source",
+      "clear": "Hapus filter"
+    },
+    "sort": {
+      "label": "Urut: {{sort}}",
+      "title": "Judul",
+      "lastRead": "Terakhir dibaca",
+      "latestChapter": "Chapter terbaru",
+      "added": "Tanggal ditambahkan",
+      "unread": "Jumlah belum dibaca",
+      "total": "Total chapter",
+      "ascending": "Naik",
+      "descending": "Turun"
+    },
+    "noMatches": {
+      "title": "Kosong",
+      "filtered": "Tidak ada manga yang cocok dengan pencarian atau filter.",
+      "category": "Kategori ini belum berisi manga. Pilih manga di \"Semua\" lalu gunakan \"Atur kategori\"."
+    },
+    "selection": {
+      "select": "Pilih",
+      "deselect": "Batal pilih",
+      "toolbar": "Aksi pilihan",
+      "count_other": "{{count}} dipilih",
+      "all": "Pilih semua",
+      "markRead": "Tandai dibaca",
+      "markUnread": "Tandai belum dibaca",
+      "categories": "Atur kategori",
+      "open": "Buka",
+      "remove": "Keluarkan",
+      "clear": "Batalkan pilihan"
+    },
+    "remove": {
+      "title_other": "Keluarkan {{count}} manga dari library?",
+      "description": "Progres baca dan history tetap disimpan; kategori dihapus.",
+      "confirm": "Keluarkan"
+    },
+    "add": "Tambah ke library",
+    "addTo": "Tambah ke library",
+    "inLibrary": "Di library",
+    "editCategories": "Ubah kategori",
+    "removeOne": "Keluarkan dari library",
+    "duplicate": {
+      "title": "Sudah ada di library?",
+      "description": "Manga dengan judul yang sama sudah ada di library dari source lain.",
+      "addAnyway": "Tetap tambahkan"
+    },
+    "categories": {
+      "dialogHint": "Pilih kategori untuk manga ini.",
+      "none": "Belum ada kategori. Buat di bawah.",
+      "newPlaceholder": "Nama kategori baru",
+      "create": "Buat",
+      "defaultHint": "Tanpa kategori: tampil di \"Default\".",
+      "selected_other": "{{count}} kategori",
+      "setTitle_other": "Atur kategori untuk {{count}} manga"
     }
   }
 }

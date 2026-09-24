@@ -21,9 +21,11 @@ const ch = (number: number | null, scanlator: string | null = 'A', extra: Partia
   uploadedAt: null,
   sourceOrder: 0,
   read: false,
+  readAt: null,
   bookmarked: false,
   lastPage: 0,
   totalPages: null,
+  pageOffset: null,
   sourceMissing: false,
   ...extra,
 });

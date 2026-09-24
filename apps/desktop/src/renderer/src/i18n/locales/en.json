@@ -131,11 +131,21 @@
       "devTitle": "Extension development",
       "devDescription": "Load an extension from a folder (its project or a built bundle). It reloads automatically when `mr-ext build` updates it.",
       "noFolders": "No folders loaded."
+    },
+    "library": {
+      "categories": "Categories",
+      "categoriesHint": "Group your library into tabs. Drag to reorder. Manga without a category are under \"Default\".",
+      "rename": "Rename",
+      "delete": "Delete",
+      "deleteTitle": "Delete \"{{name}}\"?",
+      "deleteDescription": "Its manga stay in your library (under \"Default\" if this was their only category)."
     }
   },
   "common": {
     "retry": "Try again",
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "errors": {
     "network": "Could not reach the source",
@@ -266,7 +276,21 @@
     "new": "New",
     "sourceMissing": "Removed from source",
     "sourceMissingHint": "The source no longer lists this chapter; it is kept for your progress.",
-    "pageProgress": "Page {{page}} / {{total}}"
+    "pageProgress": "Page {{page}} / {{total}}",
+    "reread": "Read again · {{chapter}}",
+    "menu": {
+      "more": "Chapter actions",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "markPrevious": "Mark previous as read",
+      "bookmark": "Bookmark",
+      "unbookmark": "Remove bookmark"
+    },
+    "cover": {
+      "change": "Change cover…",
+      "reset": "Use the source's cover"
+    },
+    "moreActions": "More actions"
   },
   "reader": {
     "back": "Back to manga",
@@ -347,6 +371,96 @@
       "menu": "Menu",
       "scrollUp": "Scroll up",
       "scrollDown": "Scroll down"
+    },
+    "setAsCover": "Set page {{page}} as cover",
+    "coverSet": "Cover updated",
+    "coverFailed": "Couldn't set the cover"
+  },
+  "library": {
+    "titles_one": "{{count}} title",
+    "titles_other": "{{count}} titles",
+    "tabs": "Categories",
+    "all": "All",
+    "default": "Default",
+    "filterPlaceholder": "Filter current view…",
+    "browseSources": "Browse sources",
+    "coverSize": "Cover size",
+    "unread_one": "{{count}} unread chapter",
+    "unread_other": "{{count}} unread chapters",
+    "readOf": "{{read}} / {{total}} read",
+    "display": {
+      "label": "Display",
+      "comfortable": "Comfortable grid",
+      "compact": "Compact grid",
+      "cover": "Covers only",
+      "list": "List"
+    },
+    "filter": {
+      "label": "Filter",
+      "unread": "Unread",
+      "reading": "Started reading",
+      "downloaded": "Downloaded",
+      "soon": "Available once downloads arrive",
+      "status": "Status",
+      "source": "Source",
+      "clear": "Clear filters"
+    },
+    "sort": {
+      "label": "Sort: {{sort}}",
+      "title": "Title",
+      "lastRead": "Last read",
+      "latestChapter": "Latest chapter",
+      "added": "Date added",
+      "unread": "Unread count",
+      "total": "Total chapters",
+      "ascending": "Ascending",
+      "descending": "Descending"
+    },
+    "noMatches": {
+      "title": "Nothing here",
+      "filtered": "No manga match the current search or filters.",
+      "category": "This category has no manga yet. Select manga in \"All\" and use \"Set categories\"."
+    },
+    "selection": {
+      "select": "Select",
+      "deselect": "Deselect",
+      "toolbar": "Selection actions",
+      "count_one": "{{count}} selected",
+      "count_other": "{{count}} selected",
+      "all": "Select all",
+      "markRead": "Mark as read",
+      "markUnread": "Mark as unread",
+      "categories": "Set categories",
+      "open": "Open",
+      "remove": "Remove",
+      "clear": "Clear selection"
+    },
+    "remove": {
+      "title_one": "Remove from library?",
+      "title_other": "Remove {{count}} manga from the library?",
+      "description": "Reading progress and history are kept; categories are cleared.",
+      "confirm": "Remove"
+    },
+    "add": "Add to library",
+    "addTo": "Add to library",
+    "inLibrary": "In library",
+    "editCategories": "Edit categories",
+    "removeOne": "Remove from library",
+    "duplicate": {
+      "title": "Already in your library?",
+      "description": "A manga with the same title is in your library from another source.",
+      "addAnyway": "Add anyway"
+    },
+    "categories": {
+      "dialogHint": "Choose the categories for this manga.",
+      "none": "No categories yet. Create one below.",
+      "newPlaceholder": "New category name",
+      "create": "Create",
+      "defaultHint": "No category: shown under \"Default\".",
+      "selected_one": "{{count}} category",
+      "selected_other": "{{count}} categories",
+      "setTitle_one": "Set categories",
+      "setTitle_other": "Set categories for {{count}} manga"
     }
   }
 }

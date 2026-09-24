@@ -1,6 +1,6 @@
 import type { Chapter, Page } from '@manga-reader/extension-sdk';
 import type { ChapterInfo } from '@manga-reader/shared';
-import { asc, eq, sql } from 'drizzle-orm';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
 import { chapters, manga, pageListCache } from '../schema';
@@ -26,9 +26,11 @@ export function toChapterInfo(row: ChapterRow): ChapterInfo {
     uploadedAt: row.uploadedAt,
     sourceOrder: row.sourceOrder,
     read: row.read,
+    readAt: row.readAt,
     bookmarked: row.bookmarked,
     lastPage: row.lastPage,
     totalPages: row.totalPages,
+    pageOffset: row.pageOffset,
     sourceMissing: row.sourceMissing,
   };
 }
@@ -115,6 +117,16 @@ export class ChaptersRepository {
     });
     if (result.added.length > 0 || result.updated > 0 || result.missing > 0) this.changes.mark(`chapters:${mangaId}`);
     return result;
+  }
+
+  setBookmarked(chapterIds: readonly number[], bookmarked: boolean): void {
+    const rows = this.db
+      .update(chapters)
+      .set({ bookmarked })
+      .where(inArray(chapters.id, [...chapterIds]))
+      .returning({ mangaId: chapters.mangaId })
+      .all();
+    for (const mangaId of new Set(rows.map((r) => r.mangaId))) this.changes.mark(`chapters:${mangaId}`, 'bookmarks');
   }
 
   // ------------------------------------------------------------ page list cache

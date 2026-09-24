@@ -4,21 +4,21 @@ import { cn } from '../lib/utils';
 
 interface CoverImageProps {
   mangaId: number;
-  /** The source's cover URL; null when the source has none (yet). */
-  thumbnailUrl: string | null;
+  /** Changes whenever the cover does (custom cover path or source cover URL); null = no cover. */
+  coverKey: string | null;
   alt: string;
   className?: string;
 }
 
-/** Short, stable hash so the `manga://` URL changes when the source changes the cover. */
+/** Short, stable hash so the `manga://` URL changes when the cover changes. */
 function version(url: string): string {
   let hash = 0;
   for (let i = 0; i < url.length; i++) hash = (Math.imul(hash, 31) + url.charCodeAt(i)) | 0;
   return (hash >>> 0).toString(36);
 }
 
-export function coverSrc(mangaId: number, thumbnailUrl: string): string {
-  return `manga://cover/${mangaId}?v=${version(thumbnailUrl)}`;
+export function coverSrc(mangaId: number, coverKey: string): string {
+  return `manga://cover/${mangaId}?v=${version(coverKey)}`;
 }
 
 /**
@@ -27,16 +27,16 @@ export function coverSrc(mangaId: number, thumbnailUrl: string): string {
  */
 export function CoverImage(props: CoverImageProps) {
   // Remount on a new cover URL so the load state starts over (e.g. details just filled it in).
-  return <Cover key={props.thumbnailUrl ?? ''} {...props} />;
+  return <Cover key={props.coverKey ?? ''} {...props} />;
 }
 
-function Cover({ mangaId, thumbnailUrl, alt, className }: CoverImageProps) {
-  const [state, setState] = useState<'loading' | 'loaded' | 'failed'>(thumbnailUrl ? 'loading' : 'failed');
+function Cover({ mangaId, coverKey, alt, className }: CoverImageProps) {
+  const [state, setState] = useState<'loading' | 'loaded' | 'failed'>(coverKey ? 'loading' : 'failed');
   return (
     <div className={cn('relative overflow-hidden bg-muted', className)}>
-      {thumbnailUrl && state !== 'failed' && (
+      {coverKey && state !== 'failed' && (
         <img
-          src={coverSrc(mangaId, thumbnailUrl)}
+          src={coverSrc(mangaId, coverKey)}
           alt={alt}
           loading="lazy"
           decoding="async"
