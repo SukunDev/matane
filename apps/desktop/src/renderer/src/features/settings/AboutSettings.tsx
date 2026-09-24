@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import logoMark from '../../assets/logo-mark.png';
 import { appInfoQuery } from '../../lib/ipc';
 
 export function AboutSettings() {
@@ -9,9 +9,7 @@ export function AboutSettings() {
   if (!info) return null;
   return (
     <section className="flex items-center gap-4 rounded-xl border bg-card/40 p-5">
-      <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-        <BookOpen className="size-6" />
-      </div>
+      <img src={logoMark} alt="" className="size-12" />
       <div>
         <p className="font-semibold">
           {t('app.name')}{' '}

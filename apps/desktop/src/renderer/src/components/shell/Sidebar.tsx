@@ -1,10 +1,11 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { libraryCountsQuery } from '../../lib/library';
+import logoMark from '../../assets/logo-mark.png';
 import { cn } from '../../lib/utils';
 import { NAV_ITEMS, type NavLeaf } from './nav';
 
@@ -59,9 +60,7 @@ export function Sidebar() {
       )}
     >
       <div className={cn('mb-3 flex items-center gap-2.5 border-b pb-3', collapsed ? 'justify-center' : 'px-1')}>
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-          <BookOpen className="size-4.5" />
-        </div>
+        <img src={logoMark} alt="" className="size-8 shrink-0" />
         {!collapsed && (
           <span className="flex items-baseline gap-1.5">
             <span className="text-base font-semibold tracking-tight">{t('app.name')}</span>

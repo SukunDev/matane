@@ -2,6 +2,7 @@ import { join } from 'node:path';
 import { BrowserWindow, type Rectangle, screen, shell } from 'electron';
 import type { SettingsRepository } from '../db/repositories/settings';
 import { broadcast } from '../ipc/register';
+import icon from '../../../resources/icon.png?asset';
 
 const WINDOW_STATE_KEY = 'window.state';
 const DEFAULT_SIZE = { width: 1440, height: 900 };
@@ -34,6 +35,8 @@ export function createMainWindow(settings: SettingsRepository): BrowserWindow {
     frame: isMac,
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     backgroundColor: '#1e1e2e',
+    // macOS takes the icon from the app bundle.
+    ...(isMac ? {} : { icon }),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

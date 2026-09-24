@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/assets/logo.png" width="128" alt=""></p>
+
 # Matane (またね)
 
 > Pre-alpha: you can browse MangaDex, read chapters, and keep a library with reading progress.

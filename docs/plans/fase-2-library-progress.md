@@ -285,3 +285,4 @@ Dikerjakan sebelum 2c atas permintaan pengguna.
   - tidak melakukan apa pun kalau folder baru sudah punya `data.db`;
   - path absolut di DB (`manga.cover_path`, `manga.custom_cover_path`, `image_cache.path`, `downloads.path`) ditulis ulang ke folder baru.
 - User-Agent: filter token app diperbarui ke `Matane` (UA extension MangaDex sekarang `Matane/<versi>`).
+- **Logo** (sumber dari pengguna, `docs/assets/logo.png`): diturunkan menjadi `apps/desktop/resources/icon.png` (512 px, sudut transparan; ikon jendela Windows/Linux lewat `?asset`) dan `renderer/src/assets/logo-mark.png` (128 px, buku saja tanpa tulisan, karena tulisan tidak terbaca di ukuran 32 px) untuk sidebar dan About. README menampilkan logo penuh.
