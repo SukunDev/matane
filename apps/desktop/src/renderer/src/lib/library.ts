@@ -27,16 +27,23 @@ export const categoriesQuery = queryOptions({
 });
 
 /** Ids of every library manga, for "In library" badges outside the library (browse results). */
+const allLibrary = () =>
+  ipc.invoke('library.list', {
+    tab: 'all',
+    sort: 'title',
+    ascending: true,
+    filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
+  });
+
 export const libraryIdsQuery = queryOptions({
   queryKey: ['library', 'ids'] as const,
-  queryFn: async () => {
-    const items = await ipc.invoke('library.list', {
-      tab: 'all',
-      sort: 'title',
-      ascending: true,
-      filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
-    });
-    return new Set(items.map((item) => item.mangaId));
-  },
+  queryFn: async () => new Set((await allLibrary()).map((item) => item.mangaId)),
+  ...localQueryDefaults,
+});
+
+/** Sources with manga in the library (global search's default set). */
+export const librarySourceIdsQuery = queryOptions({
+  queryKey: ['library', 'sourceIds'] as const,
+  queryFn: async () => new Set((await allLibrary()).map((item) => item.sourceId)),
   ...localQueryDefaults,
 });

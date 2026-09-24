@@ -238,3 +238,44 @@ export const continueTargetSchema = z.object({
   chapterId: z.number(),
   kind: z.enum(['start', 'continue', 'next', 'reread']),
 });
+
+/** A possible match for a manga in a migration target source. */
+export const migrationCandidateSchema = z.object({
+  sourceId: z.string(),
+  item: browseItemSchema,
+  /** Title similarity, 0–1; 1 = the same title once normalized. */
+  score: z.number(),
+  match: z.enum(['exact', 'similar']),
+});
+export type MigrationCandidate = z.infer<typeof migrationCandidateSchema>;
+
+/** What `migration.findCandidates` found for one manga across the target sources. */
+export const migrationSearchSchema = z.object({
+  /** The first exact match in target order, else the most similar one; null = nothing close. */
+  best: migrationCandidateSchema.nullable(),
+  /** Every close candidate, best first, for "Change". */
+  candidates: z.array(migrationCandidateSchema),
+  /** Targets whose search failed (e.g. Cloudflare), with the error code for "Verify". */
+  errors: z.array(z.object({ sourceId: z.string(), code: z.string(), message: z.string() })),
+});
+export type MigrationSearch = z.infer<typeof migrationSearchSchema>;
+
+export const migrationResultSchema = z.object({
+  fromMangaId: z.number(),
+  toMangaId: z.number(),
+  status: z.enum(['migrated', 'failed']),
+  error: z.string().nullable(),
+  /** Read chapters carried over (by number). */
+  readMatched: z.number(),
+  /** Read or bookmarked chapters with no chapter of the same number in the new source. */
+  unmatched: z.array(z.string()),
+});
+export type MigrationResult = z.infer<typeof migrationResultSchema>;
+
+export const migrationProgressSchema = z.object({
+  done: z.number(),
+  total: z.number(),
+  /** The manga being migrated now (null once finished). */
+  current: z.number().nullable(),
+});
+export type MigrationProgress = z.infer<typeof migrationProgressSchema>;

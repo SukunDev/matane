@@ -55,6 +55,8 @@ export const INVOKE_CHANNELS = [
   'manga.setReaderSettings',
   'manga.setScanlatorPrefs',
   'manga.setChapterView',
+  'migration.findCandidates',
+  'migration.run',
   'chapters.setBookmarked',
 ] as const;
 export type InvokeChannel = (typeof INVOKE_CHANNELS)[number];
@@ -65,5 +67,6 @@ export const EVENT_CHANNELS = [
   'db.changed',
   'cloudflare.status',
   'window.fullScreenChanged',
+  'migration.progress',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

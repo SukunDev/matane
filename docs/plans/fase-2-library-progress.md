@@ -348,6 +348,43 @@ Keputusan:
 
 ---
 
+### Milestone 2e: selesai (24 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 4 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (desktop 117 test).
+  - Test baru:
+    - `titleSimilarity` (judul dinormalisasi, Dice bigram);
+    - `findCandidates`: berhenti di kecocokan persis pertama sesuai urutan tujuan, source sendiri dilewati, error per source dilaporkan dengan kodenya, hasil yang terlalu berbeda tidak ditawarkan;
+    - `run`: status baca per nomor, progres, history, penanda, kategori, setting reader, cover kustom, pilihan "simpan keduanya", chapter yang tidak cocok, dan satu pasangan gagal tanpa menghentikan yang lain;
+    - `createLimiter` (maks. N, slot diserahkan langsung, antrean yang dibatalkan tidak jalan).
+- E2E 29/29. Extension tiruan sekarang punya **tiga source**: E2E Demo EN, E2E Demo ID (katalog sama, chapter hanya sampai 3), dan E2E Broken (pencarian selalu 503). Spec baru `e2e/search-migration.spec.ts` (2 test):
+  - global search "hero": 3 baris, Broken gagal (HTTP 503, tombol Coba lagi) tanpa menahan yang lain, "Searching 3 sources · 2 done", 100%; "Hanya source dengan hasil"; set source kustom tersimpan; "See all" → tab Search source itu;
+  - migrasi 2 manga dari multi-select library: Exact di source ID, cari manual → pilih lain → pilih lagi, lewati satu → ringkasan 1 berhasil / 1 dilewati / 0 gagal, "2 read chapters carried over · 1 chapter could not be matched: Ch. 5". Isi DB dicek lewat IPC: kategori, override reader, cover kustom, dibaca ch. 1–2, progres hal. 2 di ch. 3, dan entri lama keluar dari library.
+- Diverifikasi di app hasil build terhadap MangaDex asli:
+  - global search "frieren" ke MangaDex EN + ID: EN 7 hasil, ID 2 hasil (±7 detik; `curl` langsung ke API juga 7,3 detik). Pada percobaan pertama, API MangaDex timeout 20 detik: kedua baris menampilkan error + "Coba lagi" dan progres tetap 100%;
+  - migrasi Kage no Jitsuryokusha EN → ID: kandidat Exact, eksekusi 0,9 detik. **89 nomor chapter** dibaca terbawa ke 162 versi (MangaDex ID punya 170 chapter dari beberapa grup). Kategori "Isekai", cover kustom, override reader, history, dan 2 penanda (per nomor, semua versi) ikut pindah, dan entri EN keluar dari library.
+
+Implementasi:
+- **Shared:** `migrationCandidateSchema`, `migrationSearchSchema`, `migrationResultSchema`, `migrationProgressSchema` (`models.ts`); `globalSearchSettingsSchema` dan `migrationSettingsSchema` + `DEFAULT_MIGRATION_OPTIONS` (`settings.ts`); IPC `migration.findCandidates` (bisa dibatalkan) dan `migration.run`, serta event `migration.progress`.
+- **Main:** `MigrationService` (`main/library/migration.ts`):
+  - kandidat: cari judul di tiap tujuan sesuai urutan; kecocokan persis menghentikan pencarian; kemiripan ≥ 60% ditawarkan sebagai "Similar";
+  - eksekusi per pasangan: refresh manga tujuan (detail + chapter) → **satu transaksi** (status baca per nomor, progres kalau jumlah halaman sama/belum diketahui, history dengan versi terpilih, penanda, setting reader, tambah ke library dengan kategori) → cover kustom → keluarkan entri lama (opsional).
+  - `HistoryRepository.entry`.
+- **Renderer:**
+  - `lib/limit.ts` (antrean maks. 5, dipakai global search dan pencarian kandidat migrasi); `lib/search.ts` (`sourceSearchQuery`, `defaultSearchSources`); `librarySourceIdsQuery`;
+  - `features/search/GlobalSearchPage.tsx` (mockup 06): query di URL (`?q=`), baris per source (skeleton, jumlah hasil, `ErrorState` dengan Verifikasi/Coba lagi, "Lihat semua"), progres keseluruhan, "Hanya source dengan hasil", dan pemilih source (Default / kustom, disimpan);
+  - `features/migration/` (mockup 15): route `/library/migrate?ids=[…]`, urutan tujuan (checkbox + naik/turun, disimpan), opsi (disimpan; download non-aktif), baris per manga (Exact / Similar % / Tidak ditemukan / Dipilih, "Ganti", "Cari manual", "Lewati"), footer siap/perlu dipilih, progres, dan ringkasan;
+  - tombol **Migrasi** di bar multi-select library dan di detail manga (untuk manga di library).
+
+Keputusan:
+- **Penilaian kandidat hanya dari judul.** SDK belum punya judul alternatif, dan author baru diketahui setelah detail diambil (satu request per kandidat), jadi keduanya belum dipakai. Kalau hasilnya kurang, pengguna bisa memakai "Ganti" atau "Cari manual".
+- Default source global search = source yang di-pin + source yang punya manga di library; kalau keduanya kosong, semua source terpasang. Default urutan tujuan migrasi = urutan tersimpan, lalu source yang di-pin, lalu semua source.
+- Progres chapter yang sedang dibaca hanya dipindah kalau jumlah halaman versi tujuan sama atau belum diketahui. Reader tetap membatasi halaman awal.
+- Status baca dipindah ke **semua versi** nomor yang sama, konsisten dengan aturan per nomor (§6.2). Penanda juga ke semua versi.
+- Prefs scanlator tidak dipindah, karena grup di source lain berbeda.
+- Pencarian manual tidak menawarkan source asal manga dan tidak bisa memilih manga itu sendiri (bug yang tertangkap E2E, sudah diperbaiki).
+
+---
+
 ## Selingan: ganti nama menjadi Matane (またね), 24 Sep 2026
 
 Dikerjakan sebelum 2c atas permintaan pengguna.

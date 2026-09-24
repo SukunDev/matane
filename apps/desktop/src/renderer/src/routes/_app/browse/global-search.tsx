@@ -1,8 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ScanSearch } from 'lucide-react';
-import { PlaceholderPage } from '../../../components/PlaceholderPage';
+import { GlobalSearchPage } from '../../../features/search/GlobalSearchPage';
+
+export interface GlobalSearchSearch {
+  q?: string;
+}
 
 export const Route = createFileRoute('/_app/browse/global-search')({
   staticData: { crumbs: ['browse', 'globalSearch'] },
-  component: () => <PlaceholderPage titleKey="globalSearch" emptyKey="globalSearch" icon={ScanSearch} />,
+  // The query lives in the URL so Back from a manga shows the same (cached) results.
+  validateSearch: (search: Record<string, unknown>): GlobalSearchSearch =>
+    typeof search['q'] === 'string' && search['q'].trim() ? { q: search['q'].trim() } : {},
+  component: GlobalSearchRoute,
 });
+
+function GlobalSearchRoute() {
+  const { q = '' } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  return <GlobalSearchPage query={q} onQuery={(next) => void navigate({ search: next ? { q: next } : {} })} />;
+}

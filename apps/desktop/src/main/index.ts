@@ -27,6 +27,7 @@ import { ImageCache } from './images/cache';
 import { CoverStore } from './images/covers';
 import { handleMangaProtocol, registerMangaScheme } from './images/protocol';
 import { ImageService } from './images/service';
+import { MigrationService } from './library/migration';
 import { LibraryService } from './library/service';
 import { CloudflareSolver } from './network/cloudflare';
 import { ReadingService } from './reading/service';
@@ -169,6 +170,19 @@ async function bootstrap(): Promise<void> {
     covers,
     log: (message) => log.scope('library').warn(message),
   });
+  const sourceMigration = new MigrationService({
+    manga: mangaRepo,
+    chapters: chaptersRepo,
+    progress: progressRepo,
+    history: historyRepo,
+    library: libraryRepo,
+    libraryService: library,
+    sources,
+    covers,
+    images,
+    transaction: (work) => connection.sqlite.transaction(work)(),
+    log: (message) => log.scope('migration').warn(message),
+  });
   const sessions = new SessionRecorder(connection.db);
   const reading = new ReadingService({
     progress: progressRepo,
@@ -196,6 +210,7 @@ async function bootstrap(): Promise<void> {
       libraryRepo,
       categories: new CategoriesRepository(connection.db, changes),
       manga: mangaRepo,
+      migration: sourceMigration,
     }),
   );
 

@@ -17,7 +17,8 @@
     "manga": "Manga",
     "reader": "Pembaca",
     "collapse": "Ciutkan sidebar",
-    "expand": "Lebarkan sidebar"
+    "expand": "Lebarkan sidebar",
+    "migrate": "Migrasi"
   },
   "titlebar": {
     "back": "Kembali",
@@ -301,7 +302,8 @@
       "priorityHint": "Grup teratas yang merilis chapter itu dipakai; kalau tidak ada, grup yang terakhir dibaca, lalu rilis terbaru.",
       "noPriorityHint": "Tanpa urutan: chapter berikutnya memakai grup yang terakhir dibaca, atau rilis terbaru. Pindahkan grup untuk mengatur urutan.",
       "clearOrder": "Hapus urutan"
-    }
+    },
+    "migrate": "Migrasi"
   },
   "reader": {
     "back": "Kembali ke manga",
@@ -447,7 +449,8 @@
       "categories": "Atur kategori",
       "open": "Buka",
       "remove": "Keluarkan",
-      "clear": "Batalkan pilihan"
+      "clear": "Batalkan pilihan",
+      "migrate": "Migrasi"
     },
     "remove": {
       "title_other": "Keluarkan {{count}} manga dari library?",
@@ -503,5 +506,86 @@
     "bannerOn": "Mode incognito aktif — progres, riwayat, dan waktu baca tidak dicatat",
     "turnOn": "Nyalakan",
     "turnOff": "Matikan"
+  },
+  "globalSearch": {
+    "placeholder": "Cari di semua source…",
+    "clear": "Hapus",
+    "onlyWithResults": "Hanya source dengan hasil",
+    "status_other": "Mencari di {{count}} source · {{done}} selesai",
+    "statusDetail": "{{searching}} mencari, {{failed}} gagal",
+    "complete": "{{percent}}% selesai",
+    "progress": "Progres pencarian",
+    "promptTitle": "Cari di semua source sekaligus",
+    "prompt": "Ketik judul lalu tekan Enter. Hasil muncul per source begitu tiba.",
+    "noSources": "Belum ada source yang dipilih. Pilih dari menu Source.",
+    "noResults": "Tidak ada hasil.",
+    "searching": "Mencari…",
+    "failed": "Gagal",
+    "results_other": "{{count}} hasil",
+    "seeAll": "Lihat semua",
+    "sourcesDefault": "Source: Default ({{count}})",
+    "sourcesCustom": "Source: {{count}} dipilih",
+    "useDefault": "Default: source yang di-pin dan yang ada di library"
+  },
+  "migration": {
+    "title_other": "Migrasi {{count}} manga",
+    "from": "Dari: {{sources}}",
+    "targetOrder": "Urutan tujuan:",
+    "editOrder": "Ubah urutan",
+    "orderHint": "Source dicari sesuai urutan ini; judul yang sama persis pertama yang dipakai.",
+    "options": "Pengaturan migrasi",
+    "dataToTransfer": "Data yang dipindahkan",
+    "afterwards": "Setelahnya",
+    "option": {
+      "readStatus": "Status baca & progres",
+      "categories": "Kategori",
+      "readerSettings": "Pengaturan reader",
+      "customCover": "Cover kustom",
+      "bookmarks": "Penanda chapter",
+      "downloads": "Download"
+    },
+    "soon": "Hadir bersama fitur download di versi berikutnya",
+    "removeOld": "Keluarkan entri lama dari library",
+    "recommended": "(disarankan)",
+    "keepBoth": "Simpan keduanya",
+    "queue_other": "Antrean migrasi ({{count}} manga)",
+    "rescan": "Cari ulang semua tujuan",
+    "noTargets": "Tidak ada source tujuan. Pasang source atau pilih di “Ubah urutan”.",
+    "readUpTo": "Dibaca: Ch. {{number}}",
+    "skipped": "dilewati",
+    "exactShort": "cocok 100%",
+    "verify": "periksa kecocokan",
+    "noMatchShort": "tidak cocok",
+    "searching": "Mencari di source tujuan…",
+    "noMatch": "Tidak ditemukan",
+    "searched": "Dicari di {{sources}}",
+    "searchFailed": "Pencarian gagal di {{sources}}",
+    "skip": "Lewati judul ini",
+    "change": "Ganti",
+    "searchManually": "Cari manual",
+    "exact": "Sama persis",
+    "similar": "Mirip ({{percent}}%)",
+    "manual": "Dipilih",
+    "ready": "{{count}} dari {{total}} siap dimigrasi",
+    "needsChoice_other": "{{count}} perlu dipilih manual",
+    "migrate_other": "Migrasi {{count}} manga",
+    "running": "Memigrasi {{done}} dari {{total}}…",
+    "manualTitle": "Cari manual",
+    "manualDescription": "Cari di source tujuan lalu pilih manga tujuan migrasi.",
+    "manualQuery": "Judul",
+    "manualSource": "Source",
+    "manualSearch": "Cari",
+    "summaryTitle": "Migrasi selesai",
+    "stat": {
+      "migrated": "Berhasil",
+      "skipped": "Dilewati",
+      "failed": "Gagal"
+    },
+    "openNew": "Buka entri baru",
+    "readMatched_other": "{{count}} chapter dibaca dipindahkan",
+    "unmatched_other": "{{count}} chapter tidak bisa dicocokkan: {{chapters}}",
+    "backToLibrary": "Kembali ke library",
+    "emptyTitle": "Tidak ada yang dimigrasi",
+    "emptyDescription": "Pilih manga di library (Ctrl+klik) lalu pilih Migrasi."
   }
 }

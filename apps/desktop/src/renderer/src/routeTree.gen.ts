@@ -19,6 +19,7 @@ import { Route as AppUpdatesRouteImport } from './routes/_app/updates'
 import { Route as ReaderChapterIdRouteImport } from './routes/reader/$chapterId'
 import { Route as AppBrowseExtensionsRouteImport } from './routes/_app/browse/extensions'
 import { Route as AppBrowseGlobalSearchRouteImport } from './routes/_app/browse/global-search'
+import { Route as AppLibraryMigrateRouteImport } from './routes/_app/library_.migrate'
 import { Route as AppMangaMangaIdRouteImport } from './routes/_app/manga/$mangaId'
 import { Route as AppSettingsSectionRouteImport } from './routes/_app/settings/$section'
 import { Route as AppBrowseSourcesIndexRouteImport } from './routes/_app/browse/sources.index'
@@ -73,6 +74,11 @@ const AppBrowseGlobalSearchRoute = AppBrowseGlobalSearchRouteImport.update({
   path: '/browse/global-search',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLibraryMigrateRoute = AppLibraryMigrateRouteImport.update({
+  id: '/library_/migrate',
+  path: '/library/migrate',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppMangaMangaIdRoute = AppMangaMangaIdRouteImport.update({
   id: '/manga/$mangaId',
   path: '/manga/$mangaId',
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/browse/extensions': typeof AppBrowseExtensionsRoute
   '/browse/global-search': typeof AppBrowseGlobalSearchRoute
+  '/library/migrate': typeof AppLibraryMigrateRoute
   '/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/browse/sources/': typeof AppBrowseSourcesIndexRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByTo {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/browse/extensions': typeof AppBrowseExtensionsRoute
   '/browse/global-search': typeof AppBrowseGlobalSearchRoute
+  '/library/migrate': typeof AppLibraryMigrateRoute
   '/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/settings/$section': typeof AppSettingsSectionRoute
   '/browse/sources': typeof AppBrowseSourcesIndexRoute
@@ -137,6 +145,7 @@ export interface FileRoutesById {
   '/reader/$chapterId': typeof ReaderChapterIdRoute
   '/_app/browse/extensions': typeof AppBrowseExtensionsRoute
   '/_app/browse/global-search': typeof AppBrowseGlobalSearchRoute
+  '/_app/library_/migrate': typeof AppLibraryMigrateRoute
   '/_app/manga/$mangaId': typeof AppMangaMangaIdRoute
   '/_app/settings/$section': typeof AppSettingsSectionRoute
   '/_app/browse/sources/': typeof AppBrowseSourcesIndexRoute
@@ -154,6 +163,7 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/browse/extensions'
     | '/browse/global-search'
+    | '/library/migrate'
     | '/manga/$mangaId'
     | '/settings/$section'
     | '/browse/sources/'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/browse/extensions'
     | '/browse/global-search'
+    | '/library/migrate'
     | '/manga/$mangaId'
     | '/settings/$section'
     | '/browse/sources'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/reader/$chapterId'
     | '/_app/browse/extensions'
     | '/_app/browse/global-search'
+    | '/_app/library_/migrate'
     | '/_app/manga/$mangaId'
     | '/_app/settings/$section'
     | '/_app/browse/sources/'
@@ -269,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBrowseGlobalSearchRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/library_/migrate': {
+      id: '/_app/library_/migrate'
+      path: '/library/migrate'
+      fullPath: '/library/migrate'
+      preLoaderRoute: typeof AppLibraryMigrateRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manga/$mangaId': {
       id: '/_app/manga/$mangaId'
       path: '/manga/$mangaId'
@@ -308,6 +327,7 @@ interface AppRouteChildren {
   AppUpdatesRoute: typeof AppUpdatesRoute
   AppBrowseExtensionsRoute: typeof AppBrowseExtensionsRoute
   AppBrowseGlobalSearchRoute: typeof AppBrowseGlobalSearchRoute
+  AppLibraryMigrateRoute: typeof AppLibraryMigrateRoute
   AppMangaMangaIdRoute: typeof AppMangaMangaIdRoute
   AppSettingsSectionRoute: typeof AppSettingsSectionRoute
   AppBrowseSourcesIndexRoute: typeof AppBrowseSourcesIndexRoute
@@ -322,6 +342,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppUpdatesRoute: AppUpdatesRoute,
   AppBrowseExtensionsRoute: AppBrowseExtensionsRoute,
   AppBrowseGlobalSearchRoute: AppBrowseGlobalSearchRoute,
+  AppLibraryMigrateRoute: AppLibraryMigrateRoute,
   AppMangaMangaIdRoute: AppMangaMangaIdRoute,
   AppSettingsSectionRoute: AppSettingsSectionRoute,
   AppBrowseSourcesIndexRoute: AppBrowseSourcesIndexRoute,

@@ -15,6 +15,9 @@ import {
   libraryItemSchema,
   libraryTabSchema,
   mangaInfoSchema,
+  migrationProgressSchema,
+  migrationResultSchema,
+  migrationSearchSchema,
   scanlatorPrefsSchema,
   requestIdSchema,
   sourceCapabilitiesSchema,
@@ -22,7 +25,7 @@ import {
   sourceIdSchema,
 } from '../models';
 import type { DbChangeTag } from '../models';
-import { appSettingsSchema, mangaReaderSettingsSchema } from '../settings';
+import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
 import type { EventChannel, InvokeChannel } from './channels';
 
 const invoke = <I extends z.ZodType, O extends z.ZodType>(input: I, output: O) => ({ input, output });
@@ -198,6 +201,25 @@ export const invokeContract = {
   ),
   /** Hidden scanlators and their priority order (BRAINSTORM.md §6.2). */
   'manga.setScanlatorPrefs': invoke(z.object({ mangaId: idSchema, prefs: scanlatorPrefsSchema }), z.void()),
+  /**
+   * Searches the target sources, in order, for a manga to migrate (BRAINSTORM.md §6.2). Exact title
+   * matches stop the search; otherwise every target is searched and the most similar result wins.
+   */
+  'migration.findCandidates': invoke(
+    z.object({ mangaId: idSchema, targets: z.array(sourceIdSchema).min(1).max(20), requestId: requestIdSchema }),
+    migrationSearchSchema,
+  ),
+  /** Migrates each pair in turn (progress on `migration.progress`); one failure doesn't stop the rest. */
+  'migration.run': invoke(
+    z.object({
+      items: z
+        .array(z.object({ fromMangaId: idSchema, toMangaId: idSchema }))
+        .min(1)
+        .max(500),
+      options: migrationOptionsSchema,
+    }),
+    z.array(migrationResultSchema),
+  ),
   /** The chapter list's filter and sort for this manga; null = default. */
   'manga.setChapterView': invoke(z.object({ mangaId: idSchema, view: chapterViewSchema.nullable() }), z.void()),
   'chapters.setBookmarked': invoke(
@@ -213,6 +235,7 @@ export const eventContract = {
   'db.changed': z.object({ tags: z.array(z.custom<DbChangeTag>()) }),
   'cloudflare.status': cloudflareStatusSchema,
   'window.fullScreenChanged': z.boolean(),
+  'migration.progress': migrationProgressSchema,
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

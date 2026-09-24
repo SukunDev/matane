@@ -13,7 +13,7 @@ import { localQueryDefaults } from './query';
 // - main-owned rows use `localQueryDefaults` and are refreshed by `db.changed` tags;
 // - calls that reach an extension keep the remote defaults (retry, no focus refetch).
 
-type CancellableChannel = 'sources.browse' | 'manga.refresh' | 'chapter.pages';
+type CancellableChannel = 'sources.browse' | 'manga.refresh' | 'chapter.pages' | 'migration.findCandidates';
 
 /**
  * Invokes a slow source call that TanStack Query may abort (unmount, new filters, …). The abort is

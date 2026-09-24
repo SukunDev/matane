@@ -1,7 +1,7 @@
 import type { ChapterInfo, MangaInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { BookOpen, ChevronDown, ChevronUp, ExternalLink, Globe, Play, RefreshCw } from 'lucide-react';
+import { ArrowRightLeft, BookOpen, ChevronDown, ChevronUp, ExternalLink, Globe, Play, RefreshCw } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoverImage, coverSrc } from '../../components/CoverImage';
@@ -220,6 +220,14 @@ function MangaHeader({
               </Button>
             )}
             <LibraryButton manga={manga} />
+            {manga.inLibrary && (
+              <Button asChild variant="secondary" className="h-10">
+                <Link to="/library/migrate" search={{ ids: [manga.id] }}>
+                  <ArrowRightLeft />
+                  {t('manga.migrate')}
+                </Link>
+              </Button>
+            )}
             <Button variant="secondary" className="h-10" onClick={() => openInBrowser.mutate()}>
               <ExternalLink />
               {t('manga.openInBrowser')}

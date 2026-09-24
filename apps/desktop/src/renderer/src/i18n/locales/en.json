@@ -17,7 +17,8 @@
     "manga": "Manga",
     "reader": "Reader",
     "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar"
+    "expand": "Expand sidebar",
+    "migrate": "Migrate"
   },
   "titlebar": {
     "back": "Back",
@@ -307,7 +308,8 @@
       "priorityHint": "The highest group with a release wins; others follow the group you read last, then the newest upload.",
       "noPriorityHint": "No order: the next chapter uses the group you read last, else the newest upload. Move a group to set an order.",
       "clearOrder": "Clear order"
-    }
+    },
+    "migrate": "Migrate"
   },
   "reader": {
     "back": "Back to manga",
@@ -457,7 +459,8 @@
       "categories": "Set categories",
       "open": "Open",
       "remove": "Remove",
-      "clear": "Clear selection"
+      "clear": "Clear selection",
+      "migrate": "Migrate"
     },
     "remove": {
       "title_one": "Remove from library?",
@@ -516,5 +519,94 @@
     "bannerOn": "Incognito mode is on — progress, history and reading time aren't recorded",
     "turnOn": "Turn on",
     "turnOff": "Turn off"
+  },
+  "globalSearch": {
+    "placeholder": "Search every source…",
+    "clear": "Clear",
+    "onlyWithResults": "Only sources with results",
+    "status_one": "Searching {{count}} source · {{done}} done",
+    "status_other": "Searching {{count}} sources · {{done}} done",
+    "statusDetail": "{{searching}} searching, {{failed}} failed",
+    "complete": "{{percent}}% complete",
+    "progress": "Search progress",
+    "promptTitle": "Search every source at once",
+    "prompt": "Type a title and press Enter. Results appear per source as they arrive.",
+    "noSources": "No sources selected. Pick some from the Sources menu.",
+    "noResults": "No results.",
+    "searching": "Searching…",
+    "failed": "Failed",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results",
+    "seeAll": "See all",
+    "sourcesDefault": "Sources: Default ({{count}})",
+    "sourcesCustom": "Sources: {{count}} selected",
+    "useDefault": "Default: pinned and library sources"
+  },
+  "migration": {
+    "title_one": "Migrate {{count}} manga",
+    "title_other": "Migrate {{count}} manga",
+    "from": "From: {{sources}}",
+    "targetOrder": "Target order:",
+    "editOrder": "Edit order",
+    "orderHint": "Sources are searched in this order; the first exact title match wins.",
+    "options": "Migration settings",
+    "dataToTransfer": "Data to transfer",
+    "afterwards": "Afterwards",
+    "option": {
+      "readStatus": "Read status & progress",
+      "categories": "Categories",
+      "readerSettings": "Reader settings",
+      "customCover": "Custom cover",
+      "bookmarks": "Chapter bookmarks",
+      "downloads": "Downloads"
+    },
+    "soon": "Arrives with downloads in a later version",
+    "removeOld": "Remove the old entry from the library",
+    "recommended": "(recommended)",
+    "keepBoth": "Keep both",
+    "queue_one": "Migration queue ({{count}} item)",
+    "queue_other": "Migration queue ({{count}} items)",
+    "rescan": "Re-scan all targets",
+    "noTargets": "No target sources. Install a source or pick some under “Edit order”.",
+    "readUpTo": "Read: Ch. {{number}}",
+    "skipped": "skipped",
+    "exactShort": "match 100%",
+    "verify": "verify match",
+    "noMatchShort": "no match",
+    "searching": "Searching the target sources…",
+    "noMatch": "No match found",
+    "searched": "Searched {{sources}}",
+    "searchFailed": "Search failed in {{sources}}",
+    "skip": "Skip this title",
+    "change": "Change",
+    "searchManually": "Search manually",
+    "exact": "Exact",
+    "similar": "Similar ({{percent}}%)",
+    "manual": "Chosen",
+    "ready": "{{count}} of {{total}} ready to migrate",
+    "needsChoice_one": "{{count}} requires manual selection",
+    "needsChoice_other": "{{count}} require manual selection",
+    "migrate_one": "Migrate {{count}} manga",
+    "migrate_other": "Migrate {{count}} manga",
+    "running": "Migrating {{done}} of {{total}}…",
+    "manualTitle": "Search manually",
+    "manualDescription": "Search a target source and pick the manga to migrate to.",
+    "manualQuery": "Title",
+    "manualSource": "Source",
+    "manualSearch": "Search",
+    "summaryTitle": "Migration finished",
+    "stat": {
+      "migrated": "Migrated",
+      "skipped": "Skipped",
+      "failed": "Failed"
+    },
+    "openNew": "Open new entry",
+    "readMatched_one": "{{count}} read chapter carried over",
+    "readMatched_other": "{{count}} read chapters carried over",
+    "unmatched_one": "{{count}} chapter could not be matched: {{chapters}}",
+    "unmatched_other": "{{count}} chapters could not be matched: {{chapters}}",
+    "backToLibrary": "Back to library",
+    "emptyTitle": "Nothing to migrate",
+    "emptyDescription": "Select manga in the library (Ctrl+click) and choose Migrate."
   }
 }

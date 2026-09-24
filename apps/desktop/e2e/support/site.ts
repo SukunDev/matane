@@ -88,6 +88,10 @@ export async function startSite(): Promise<Site> {
       const include = url.searchParams.getAll('include');
       const exclude = url.searchParams.getAll('exclude');
       if (q === 'boom') return { type: 'text/plain', body: Buffer.from('broken'), status: 404 };
+      // The "E2E Broken" source: every search fails.
+      if (url.searchParams.get('lang') === 'broken' && q) {
+        return { type: 'text/plain', body: Buffer.from('down'), status: 503 };
+      }
       const all = SITE_MANGA.filter(
         (m) =>
           m.title.toLowerCase().includes(q) &&
@@ -100,7 +104,9 @@ export async function startSite(): Promise<Site> {
     const manga = /^\/api\/manga\/([\w-]+)$/.exec(path);
     if (manga) {
       const m = SITE_MANGA.find((x) => x.id === manga[1]);
-      return m ? json(m) : { type: 'text/plain', body: Buffer.from('no'), status: 404 };
+      if (!m) return { type: 'text/plain', body: Buffer.from('no'), status: 404 };
+      // The Indonesian mirror has only chapters up to 3 (migration: later ones can't be matched).
+      return json(url.searchParams.get('lang') === 'id' ? { ...m, chapters: m.chapters.filter((n) => n <= 3) } : m);
     }
     const cover = /^\/img\/cover\/([\w-]+)\.png$/.exec(path);
     if (cover) return { type: 'image/png', body: png(60, 90, [203, 166, 247]) };
@@ -147,12 +153,19 @@ export function extensionFiles(origin: string): Record<string, string> {
     apiVersion: 1,
     nsfw: false,
     domains: ['e2e.localhost'],
-    sources: [{ key: 'en', lang: 'en', name: 'E2E Demo' }],
+    sources: [
+      { key: 'en', lang: 'en', name: 'E2E Demo' },
+      // Same catalogue, fewer chapters: a migration target.
+      { key: 'id', lang: 'id', name: 'E2E Demo' },
+      // Searches always fail: global search must go on without it.
+      { key: 'broken', lang: 'en', name: 'E2E Broken' },
+    ],
   };
   const code = `globalThis.__extension = {
-  createSource: () => {
+  createSource: ({ key }) => {
     const base = ${JSON.stringify(origin)};
-    const get = async (path) => (await http.get(base + path, { responseType: 'json' })).body;
+    const get = async (path) =>
+      (await http.get(base + path + (path.includes('?') ? '&' : '?') + 'lang=' + key, { responseType: 'json' })).body;
     const toPage = (data) => ({ items: data.items.map((m) => ({ url: m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png' })), hasNextPage: data.more });
     return {
       baseUrl: base,

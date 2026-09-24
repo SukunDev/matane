@@ -71,7 +71,7 @@ test('lists the extension and browses its source with covers and infinite scroll
     .first()
     .evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   await expect(page.locator('a[href*="/manga/"]')).toHaveCount(24);
-  expect(site.hits).toContain('/api/list?page=2');
+  expect(site.hits).toContain('/api/list?page=2&lang=en');
 });
 
 test('filters with tri-state genres and keeps them in the URL', async () => {

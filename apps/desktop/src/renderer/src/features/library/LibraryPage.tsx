@@ -3,10 +3,11 @@ import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import {
+  ArrowRightLeft,
   BookmarkMinus,
   CheckCheck,
-  CircleCheck,
   Circle,
+  CircleCheck,
   EyeOff,
   Folder,
   Globe,
@@ -544,6 +545,10 @@ function SelectionBar({
       <Button variant="ghost" size="sm" onClick={() => setCategoriesOpen(true)}>
         <Folder />
         {t('library.selection.categories')}
+      </Button>
+      <Button variant="ghost" size="sm" onClick={() => void navigate({ to: '/library/migrate', search: { ids } })}>
+        <ArrowRightLeft />
+        {t('library.selection.migrate')}
       </Button>
       {ids.length === 1 && (
         <Button

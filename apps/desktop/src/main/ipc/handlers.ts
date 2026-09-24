@@ -11,6 +11,7 @@ import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
 import type { NetworkManager } from '../network/manager';
 import type { LibraryService } from '../library/service';
+import type { MigrationService } from '../library/migration';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
 import type { RequestRegistry } from './requests';
@@ -28,6 +29,7 @@ export interface IpcDeps {
   libraryRepo: LibraryRepository;
   categories: CategoriesRepository;
   manga: MangaRepository;
+  migration: MigrationService;
 }
 
 export function createIpcHandlers({
@@ -43,6 +45,7 @@ export function createIpcHandlers({
   libraryRepo,
   categories,
   manga,
+  migration,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
     if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
@@ -178,6 +181,10 @@ export function createIpcHandlers({
     'manga.setReaderSettings': ({ mangaId, settings }) => manga.setReaderSettings(existing(mangaId), settings),
     'manga.setScanlatorPrefs': ({ mangaId, prefs }) => manga.setScanlatorPrefs(existing(mangaId), prefs),
     'manga.setChapterView': ({ mangaId, view }) => manga.setChapterView(existing(mangaId), view),
+    'migration.findCandidates': ({ mangaId, targets, requestId }) =>
+      requests.run(requestId, (signal) => migration.findCandidates(mangaId, targets, signal)),
+    'migration.run': ({ items, options }) =>
+      migration.run(items, options, (progress) => broadcast('migration.progress', progress)),
     'chapters.setBookmarked': ({ chapterIds, bookmarked }) => chapters.setBookmarked(chapterIds, bookmarked),
   };
 }

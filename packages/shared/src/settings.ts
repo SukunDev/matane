@@ -106,6 +106,44 @@ export const DEFAULT_LIBRARY_SETTINGS: LibrarySettings = {
   sourceIds: [],
 };
 
+/** Global search (BRAINSTORM.md §6.2): which sources, and whether to hide sources without results. */
+export const globalSearchSettingsSchema = z.object({
+  /** null = the default set: pinned sources and sources with manga in the library. */
+  sourceIds: z.array(z.string()).nullable().catch(null),
+  onlyWithResults: z.boolean().catch(false),
+});
+export type GlobalSearchSettings = z.infer<typeof globalSearchSettingsSchema>;
+
+/** What a source migration carries over (BRAINSTORM.md §6.2), remembered between migrations. */
+export const migrationOptionsSchema = z.object({
+  /** Read status and progress, matched by chapter number. */
+  readStatus: z.boolean().catch(true),
+  categories: z.boolean().catch(true),
+  readerSettings: z.boolean().catch(true),
+  customCover: z.boolean().catch(true),
+  /** Chapter bookmarks, matched by chapter number. */
+  bookmarks: z.boolean().catch(true),
+  /** Remove the old manga from the library afterwards (else keep both). */
+  removeOld: z.boolean().catch(true),
+});
+export type MigrationOptions = z.infer<typeof migrationOptionsSchema>;
+
+export const DEFAULT_MIGRATION_OPTIONS: MigrationOptions = {
+  readStatus: true,
+  categories: true,
+  readerSettings: true,
+  customCover: true,
+  bookmarks: true,
+  removeOld: true,
+};
+
+export const migrationSettingsSchema = z.object({
+  /** Target sources in priority order; empty = pinned sources. */
+  targets: z.array(z.string()).catch([]),
+  options: migrationOptionsSchema.catch(DEFAULT_MIGRATION_OPTIONS),
+});
+export type MigrationSettings = z.infer<typeof migrationSettingsSchema>;
+
 export const appSettingsSchema = z.object({
   theme: z.enum(THEME_MODES),
   accent: z.enum(ACCENTS),
@@ -116,6 +154,8 @@ export const appSettingsSchema = z.object({
   /** While on, nothing about reading is recorded: progress, history, sessions (§6.3). */
   incognito: z.boolean(),
   library: librarySettingsSchema,
+  globalSearch: globalSearchSettingsSchema,
+  migration: migrationSettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -127,4 +167,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   reader: DEFAULT_READER_SETTINGS,
   incognito: false,
   library: DEFAULT_LIBRARY_SETTINGS,
+  globalSearch: { sourceIds: null, onlyWithResults: false },
+  migration: { targets: [], options: DEFAULT_MIGRATION_OPTIONS },
 };

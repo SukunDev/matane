@@ -24,6 +24,11 @@ export class HistoryRepository {
     this.changes.mark('history');
   }
 
+  /** The manga's history row (chapter read last, and when). */
+  entry(mangaId: number): { chapterId: number; readAt: number } | undefined {
+    return this.db.select().from(history).where(eq(history.mangaId, mangaId)).get();
+  }
+
   /** Chapter read last in a manga, if any. */
   lastChapterId(mangaId: number): number | null {
     return this.db.select().from(history).where(eq(history.mangaId, mangaId)).get()?.chapterId ?? null;
