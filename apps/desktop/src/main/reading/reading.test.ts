@@ -131,6 +131,13 @@ describe('ProgressRepository / ReadingService', () => {
     history.clear();
     expect(history.list()).toEqual([]);
   });
+
+  it('tells whether a history entry still has unread chapters', () => {
+    reading.saveProgress({ chapterId: ids['3']!, page: 9, pageEnd: 9, total: 10, offset: null });
+    expect(history.list()[0]).toMatchObject({ read: true, hasUnread: true, coverKey: null });
+    reading.markRead([ids['1']!, ids['2a']!], true);
+    expect(history.list()[0]?.hasUnread).toBe(false);
+  });
 });
 
 describe('SessionRecorder', () => {

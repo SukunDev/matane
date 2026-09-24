@@ -4,6 +4,7 @@ import { ContextMenu } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ipc } from '../../lib/ipc';
+import { useReaderNotice } from './notice';
 
 interface PageRef {
   chapterId: number;
@@ -19,19 +20,18 @@ function pageAt(target: EventTarget | null): PageRef | undefined {
     : undefined;
 }
 
+const itemClass =
+  'flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-ctp-surface0';
+
 /** Right-click a page → "Set as cover" (BRAINSTORM.md §6.2). Elsewhere no menu opens. */
 export function PageContextMenu({ mangaId, children }: { mangaId: number; children: ReactNode }) {
   const { t } = useTranslation();
+  const notify = useReaderNotice((state) => state.show);
   const [page, setPage] = useState<PageRef>();
-  const [notice, setNotice] = useState<'set' | 'failed' | null>(null);
-  const flash = (value: 'set' | 'failed') => {
-    setNotice(value);
-    setTimeout(() => setNotice(null), 2500);
-  };
   const setCover = useMutation({
     mutationFn: (ref: PageRef) => ipc.invoke('manga.setCustomCover', { mangaId, from: { kind: 'page', ...ref } }),
-    onSuccess: () => flash('set'),
-    onError: () => flash('failed'),
+    onSuccess: () => notify(t('reader.coverSet')),
+    onError: () => notify(t('reader.coverFailed')),
   });
 
   return (
@@ -49,23 +49,12 @@ export function PageContextMenu({ mangaId, children }: { mangaId: number; childr
       </ContextMenu.Trigger>
       <ContextMenu.Portal>
         <ContextMenu.Content className="z-50 min-w-48 rounded-lg border border-ctp-surface1 bg-ctp-mantle p-1 text-ctp-text shadow-xl">
-          <ContextMenu.Item
-            className="flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-ctp-surface0"
-            onSelect={() => page && setCover.mutate(page)}
-          >
+          <ContextMenu.Item className={itemClass} onSelect={() => page && setCover.mutate(page)}>
             <ImageUp className="size-4" />
             {t('reader.setAsCover', { page: (page?.index ?? 0) + 1 })}
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>
-      {notice && (
-        <div
-          role="status"
-          className="pointer-events-none absolute bottom-20 left-1/2 z-30 -translate-x-1/2 rounded-lg bg-ctp-crust/90 px-4 py-2 text-sm text-ctp-text shadow-lg"
-        >
-          {notice === 'failed' ? t('reader.coverFailed') : t('reader.coverSet')}
-        </div>
-      )}
     </ContextMenu.Root>
   );
 }

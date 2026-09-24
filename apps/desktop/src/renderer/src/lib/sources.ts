@@ -157,11 +157,17 @@ export function keysForTag(tag: DbChangeTag): readonly (readonly unknown[])[] {
   if (tag === 'history') return [['history'], ['continue'], ['library']];
   if (tag === 'library') return [['library']];
   if (tag === 'categories') return [['categories'], ['library']];
-  if (tag === 'bookmarks') return [['bookmarks']];
   const [kind, id] = tag.split(':');
-  if (kind === 'manga') return [queryKeys.manga(Number(id))];
+  // History rows show the manga's title and cover, and chapter names and read state.
+  if (kind === 'manga') return [queryKeys.manga(Number(id)), ['history']];
   if (kind === 'chapters') {
-    return [queryKeys.chapters(Number(id)), ['chapter'], queryKeys.continue(Number(id)), ['library', 'list']];
+    return [
+      queryKeys.chapters(Number(id)),
+      ['chapter'],
+      queryKeys.continue(Number(id)),
+      ['library', 'list'],
+      ['history'],
+    ];
   }
   return [];
 }

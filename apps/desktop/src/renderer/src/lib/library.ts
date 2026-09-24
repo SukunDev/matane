@@ -34,7 +34,7 @@ export const libraryIdsQuery = queryOptions({
       tab: 'all',
       sort: 'title',
       ascending: true,
-      filters: { unread: false, reading: false, status: [], sourceIds: [] },
+      filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
     });
     return new Set(items.map((item) => item.mangaId));
   },

@@ -12,7 +12,6 @@
     "extensions": "Extensions",
     "globalSearch": "Global search",
     "downloads": "Downloads",
-    "bookmarks": "Bookmarks",
     "statistics": "Statistics",
     "settings": "Settings",
     "manga": "Manga",
@@ -59,10 +58,6 @@
     "downloads": {
       "title": "No downloads",
       "description": "Downloaded chapters can be read offline."
-    },
-    "bookmarks": {
-      "title": "No bookmarks",
-      "description": "Bookmark chapters or pages while reading to find them here."
     },
     "statistics": {
       "title": "No reading stats yet",
@@ -375,7 +370,9 @@
     },
     "setAsCover": "Set page {{page}} as cover",
     "coverSet": "Cover updated",
-    "coverFailed": "Couldn't set the cover"
+    "coverFailed": "Couldn't set the cover",
+    "bookmarkChapter": "Bookmark this chapter",
+    "unbookmarkChapter": "Remove chapter bookmark"
   },
   "library": {
     "titles_one": "{{count}} title",
@@ -404,7 +401,8 @@
       "soon": "Available once downloads arrive",
       "status": "Status",
       "source": "Source",
-      "clear": "Clear filters"
+      "clear": "Clear filters",
+      "bookmarked": "Bookmarked"
     },
     "sort": {
       "label": "Sort: {{sort}}",
@@ -463,5 +461,35 @@
       "setTitle_one": "Set categories",
       "setTitle_other": "Set categories for {{count}} manga"
     }
+  },
+  "history": {
+    "subtitle": "One entry per manga · last read first",
+    "search": "Search history…",
+    "clearAll": "Clear all history",
+    "clearTitle": "Clear all history?",
+    "clearDescription": "Only this list is cleared. Reading progress and read chapters stay.",
+    "clearConfirm": "Clear history",
+    "resume": "Resume",
+    "readAgain": "Read again",
+    "remove": "Remove from history",
+    "page": "Page {{page}}/{{total}}",
+    "pageNoTotal": "Page {{page}}",
+    "finished": "Finished",
+    "groups": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "week": "This week"
+    },
+    "noResults": "Nothing in your history matches “{{query}}”."
+  },
+  "incognito": {
+    "label": "Incognito",
+    "turnOnHint": "Turn on incognito: reading isn't recorded",
+    "turnOffHint": "Incognito is on. Click to turn it off",
+    "readerHint": "Incognito: progress, history and reading time aren't recorded",
+    "bannerOff": "Incognito mode is off — reading is being recorded",
+    "bannerOn": "Incognito mode is on — progress, history and reading time aren't recorded",
+    "turnOn": "Turn on",
+    "turnOff": "Turn off"
   }
 }

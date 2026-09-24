@@ -116,18 +116,11 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "sources" · "library" · "categories" · "history" · "bookmarks" · "manga:<id>" ·
+ * "extensions" · "sources" · "library" · "categories" · "history" · "manga:<id>" ·
  * "chapters:<mangaId>"
  */
 export type DbChangeTag =
-  | 'extensions'
-  | 'sources'
-  | 'library'
-  | 'categories'
-  | 'history'
-  | 'bookmarks'
-  | `manga:${number}`
-  | `chapters:${number}`;
+  'extensions' | 'sources' | 'library' | 'categories' | 'history' | `manga:${number}` | `chapters:${number}`;
 
 export const categorySchema = z.object({
   id: z.number(),
@@ -145,6 +138,8 @@ export const libraryFiltersSchema = z.object({
   unread: z.boolean().catch(false),
   /** Started but not finished (has history and unread chapters). */
   reading: z.boolean().catch(false),
+  /** Has at least one bookmarked chapter (like Mihon's library filter). */
+  bookmarked: z.boolean().catch(false),
   status: z.array(z.enum(MANGA_STATUSES)).catch([]),
   sourceIds: z.array(z.string()).catch([]),
 });
@@ -184,7 +179,8 @@ export type LibraryCounts = z.infer<typeof libraryCountsSchema>;
 export const historyEntrySchema = z.object({
   mangaId: z.number(),
   title: z.string(),
-  thumbnailUrl: z.string().nullable(),
+  /** Custom cover path or the source's cover URL (see `MangaInfo.coverKey`). */
+  coverKey: z.string().nullable(),
   sourceId: z.string(),
   sourceName: z.string().nullable(),
   chapterId: z.number(),
@@ -194,6 +190,8 @@ export const historyEntrySchema = z.object({
   totalPages: z.number().nullable(),
   read: z.boolean(),
   readAt: z.number(),
+  /** Whether the manga still has unread chapters ("Continue" rather than "Read again"). */
+  hasUnread: z.boolean(),
 });
 export type HistoryEntry = z.infer<typeof historyEntrySchema>;
 

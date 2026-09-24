@@ -267,11 +267,37 @@ function ChapterRow({
             </span>
           )}
           {chapter.uploadedAt !== null && <span>{formatRelative(chapter.uploadedAt, language)}</span>}
-          {chapter.bookmarked && <Bookmark className="size-3.5 fill-current text-ctp-peach" />}
         </span>
       </Link>
+      <BookmarkToggle chapter={chapter} />
       <ChapterMenu chapter={chapter} />
     </div>
+  );
+}
+
+/** Filled when the chapter is bookmarked; otherwise shown on hover (mockup 02). */
+function BookmarkToggle({ chapter }: { chapter: ChapterInfo }) {
+  const { t } = useTranslation();
+  const bookmark = useMutation({
+    mutationFn: () =>
+      ipc.invoke('chapters.setBookmarked', { chapterIds: [chapter.id], bookmarked: !chapter.bookmarked }),
+  });
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      aria-pressed={chapter.bookmarked}
+      title={chapter.bookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
+      onClick={() => bookmark.mutate()}
+      className={cn(
+        'ml-1',
+        chapter.bookmarked
+          ? 'text-ctp-peach hover:text-ctp-peach'
+          : 'opacity-0 group-hover:opacity-60 hover:opacity-100 focus-visible:opacity-100',
+      )}
+    >
+      <Bookmark className={cn(chapter.bookmarked && 'fill-current')} />
+    </Button>
   );
 }
 

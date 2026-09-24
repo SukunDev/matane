@@ -9,7 +9,7 @@ Sumber keputusan: `BRAINSTORM.md` §6.1–§6.7. Mockup dibuat di Google Stitch,
 - **Tema utama mockup**: **gelap** (dark). Varian terang dan AMOLED dibuat untuk 1–2 layar saja.
 - **Warna aksen**: satu warna aksen (default: biru/violet). Komponen mengikuti gaya shadcn/ui (Radix): radius sedang, border halus, tipografi Inter.
 - **Title bar kustom** (frameless) setinggi ±40 px: back/forward, kolom "Cari… Ctrl+K" di tengah, indikator incognito/offline/aktivitas, tombol jendela (min/max/close) di kanan.
-- **Sidebar kiri** yang bisa diciutkan: Library, Updates, History, Browse (Sources, Extensions, Global search), Downloads (badge angka), Bookmark, Statistik; Settings di bawah.
+- **Sidebar kiri** yang bisa diciutkan: Library, Updates, History, Browse (Sources, Extensions, Global search), Downloads (badge angka), Statistik (menu Bookmark dihapus di Fase 2c, bookmark cukup per chapter seperti Mihon); Settings di bawah.
 - **Bahasa UI di mockup**: Inggris (bahasa default rilis), dengan konten contoh manga fiktif.
 - **Konten**: gunakan judul dan cover manga **fiktif**, jangan pakai judul atau karya asli.
 

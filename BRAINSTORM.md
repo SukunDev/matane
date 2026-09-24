@@ -510,7 +510,7 @@ repo/
 | History | **Per manga** (satu entri = chapter terakhir yang dibaca) |
 | Tracker | **Setelah v1**. Tabel dan antrean disiapkan sejak awal |
 | Layanan tracker | AniList, MyAnimeList, MangaUpdates, Kitsu |
-| Ekstra | Mode incognito, halaman statistik, bookmark halaman, sinkronisasi dua arah tracker |
+| Ekstra | Mode incognito, halaman statistik, sinkronisasi dua arah tracker |
 
 **Progress**
 - Per chapter: `last_page`, `total_pages`, `read`, `read_at`. Untuk webtoon ditambah **offset di dalam halaman**, supaya posisi scroll bisa dikembalikan persis.
@@ -529,8 +529,8 @@ repo/
 **Mode incognito**: toggle global (ikon di title bar). Selama aktif, **tidak ada** history, sesi baca, progress, maupun update tracker yang dicatat. Indikatornya selalu terlihat supaya pengguna tidak lupa.
 
 **Bookmark**
-- **Bookmark chapter** (tanda di daftar chapter, bisa difilter).
-- **Bookmark halaman**: menandai halaman tertentu + **catatan singkat** opsional. Bisa dibuka dari halaman detail manga (tab "Bookmark") dan dari halaman global "Bookmark". Tersimpan per `(chapter, halaman)` sehingga ikut terbawa saat migrasi, selama nomor chapter cocok.
+- **Bookmark chapter saja**, seperti Mihon: ikon di bar atas reader dan di tiap baris chapter, filter "Ditandai" di daftar chapter, dan filter "Ditandai" di library (manga yang punya chapter bertanda). Ikut terbawa saat migrasi, selama nomor chapter cocok.
+- Tidak ada bookmark halaman, tab "Bookmark" di detail, maupun halaman global "Bookmark" (diputuskan saat review Fase 2c; tabel `page_bookmarks` dihapus di migrasi `0002`).
 
 **Halaman statistik**
 - Ringkasan: jumlah manga di library, chapter dibaca, total waktu baca, rata-rata per hari.
@@ -668,7 +668,6 @@ repo/
 │  Extensions│                                                 │
 │  Global    │                                                 │
 │ Downloads 3│                                                 │
-│ Bookmark   │                                                 │
 │ Statistik  │                                                 │
 │            │                                                 │
 │ Settings   │                                                 │
@@ -755,7 +754,7 @@ covers/            # cover kustom (nama file = hash natural key manga)
 **Isi backup**
 - Manga di library: metadata, kategori, chapter (status dibaca, bookmark, progress), pengaturan reader, prefs scanlator, cover kustom.
 - Kategori (beserta urutan dan setting-nya).
-- History, bookmark halaman, sesi baca (statistik).
+- History, sesi baca (statistik).
 - Repo extension + daftar extension terpasang (id, versi, repo) + prefs & storage extension.
 - Setting app.
 - Link tracker (`manga_tracks`) **tanpa token**.
@@ -833,12 +832,10 @@ page_list_cache   (chapter_id PK FK, pages_json, fetched_at)  -- cache getPages 
 - Halaman **Updates** = `chapters` dari manga di library, diurutkan `fetched_at DESC` (tanpa tabel khusus).
 - Manga yang **bukan** di library (hasil browse) juga disimpan supaya halaman detail cepat. Manga tanpa library, history, download, maupun bookmark yang tidak dibuka lebih dari 30 hari dibersihkan berkala.
 
-**Progress, history, bookmark, statistik**
+**Progress, history, statistik** (bookmark = kolom `chapters.bookmarked`)
 ```
 history           (manga_id PK FK, chapter_id FK, read_at)   -- satu entri per manga (§6.3)
 reading_sessions  (id PK, manga_id FK, chapter_id FK, started_at, ended_at, active_ms)
-page_bookmarks    (id PK, chapter_id FK, page_index, note, created_at)
-                   UNIQUE(chapter_id, page_index)
 ```
 - `history` dan `reading_sessions` sengaja dipisah. **Menghapus entri history tidak menghapus statistik.** Tombol "hapus semua data statistik" ada terpisah di setting.
 - Mode incognito: tidak menulis ke keempat tabel ini maupun ke progress di `chapters`.
@@ -1007,7 +1004,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 
 **Fase 2: Library & progress**
 - Library: tampilan, kategori (multi), sort/filter, pencarian FTS5, multi-select, cover kustom.
-- Progress (termasuk offset webtoon), logika "lanjut baca", history, sesi baca, bookmark chapter & halaman, mode incognito.
+- Progress (termasuk offset webtoon), logika "lanjut baca", history, sesi baca, bookmark chapter, mode incognito.
 - Pengaturan reader per manga, filter & prioritas scanlator.
 - **Global search** dan **migrasi source**.
 

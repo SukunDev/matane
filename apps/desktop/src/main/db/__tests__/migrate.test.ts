@@ -21,7 +21,6 @@ const EXPECTED_TABLES = [
   'manga_categories',
   'manga_fts',
   'manga_tracks',
-  'page_bookmarks',
   'page_list_cache',
   'reading_sessions',
   'settings',

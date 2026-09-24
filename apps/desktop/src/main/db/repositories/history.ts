@@ -3,6 +3,7 @@ import { desc, eq, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
 import { chapters, history, manga, sources } from '../schema';
+import { coverKeyOf } from './manga';
 
 /** Escapes LIKE wildcards so a search for "100%" matches literally. */
 export const escapeLike = (text: string) => text.replace(/[%_\\]/g, (c) => `\\${c}`);
@@ -36,6 +37,7 @@ export class HistoryRepository {
         mangaId: manga.id,
         title: manga.title,
         thumbnailUrl: manga.thumbnailUrl,
+        customCoverPath: manga.customCoverPath,
         sourceId: manga.sourceId,
         sourceName: sources.name,
         chapterId: chapters.id,
@@ -45,6 +47,7 @@ export class HistoryRepository {
         totalPages: chapters.totalPages,
         read: chapters.read,
         readAt: history.readAt,
+        hasUnread: sql<number>`EXISTS (SELECT 1 FROM ${chapters} u WHERE u.manga_id = ${manga.id} AND u.read = 0)`,
       })
       .from(history)
       .innerJoin(manga, eq(manga.id, history.mangaId))
@@ -54,7 +57,11 @@ export class HistoryRepository {
       .orderBy(desc(history.readAt))
       .limit(options.limit ?? 200)
       .all();
-    return rows;
+    return rows.map(({ thumbnailUrl, customCoverPath, hasUnread, ...row }) => ({
+      ...row,
+      coverKey: coverKeyOf({ thumbnailUrl, customCoverPath }),
+      hasUnread: hasUnread === 1,
+    }));
   }
 
   remove(mangaId: number): void {

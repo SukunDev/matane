@@ -12,7 +12,6 @@
     "extensions": "Ekstensi",
     "globalSearch": "Pencarian global",
     "downloads": "Unduhan",
-    "bookmarks": "Penanda",
     "statistics": "Statistik",
     "settings": "Pengaturan",
     "manga": "Manga",
@@ -59,10 +58,6 @@
     "downloads": {
       "title": "Tidak ada unduhan",
       "description": "Chapter yang diunduh bisa dibaca tanpa internet."
-    },
-    "bookmarks": {
-      "title": "Belum ada penanda",
-      "description": "Tandai chapter atau halaman saat membaca untuk menemukannya di sini."
     },
     "statistics": {
       "title": "Belum ada statistik",
@@ -370,7 +365,9 @@
     },
     "setAsCover": "Jadikan halaman {{page}} sebagai cover",
     "coverSet": "Cover diperbarui",
-    "coverFailed": "Gagal mengganti cover"
+    "coverFailed": "Gagal mengganti cover",
+    "bookmarkChapter": "Tandai chapter ini",
+    "unbookmarkChapter": "Hapus penanda chapter"
   },
   "library": {
     "titles_other": "{{count}} judul",
@@ -397,7 +394,8 @@
       "soon": "Tersedia setelah fitur download hadir",
       "status": "Status",
       "source": "Source",
-      "clear": "Hapus filter"
+      "clear": "Hapus filter",
+      "bookmarked": "Ditandai"
     },
     "sort": {
       "label": "Urut: {{sort}}",
@@ -452,5 +450,35 @@
       "selected_other": "{{count}} kategori",
       "setTitle_other": "Atur kategori untuk {{count}} manga"
     }
+  },
+  "history": {
+    "subtitle": "Satu entri per manga · terakhir dibaca di atas",
+    "search": "Cari di riwayat…",
+    "clearAll": "Hapus semua riwayat",
+    "clearTitle": "Hapus semua riwayat?",
+    "clearDescription": "Hanya daftar ini yang dihapus. Progres baca dan chapter yang sudah dibaca tetap tersimpan.",
+    "clearConfirm": "Hapus riwayat",
+    "resume": "Lanjut",
+    "readAgain": "Baca lagi",
+    "remove": "Hapus dari riwayat",
+    "page": "Hal. {{page}}/{{total}}",
+    "pageNoTotal": "Hal. {{page}}",
+    "finished": "Selesai",
+    "groups": {
+      "today": "Hari ini",
+      "yesterday": "Kemarin",
+      "week": "Minggu ini"
+    },
+    "noResults": "Tidak ada riwayat yang cocok dengan “{{query}}”."
+  },
+  "incognito": {
+    "label": "Incognito",
+    "turnOnHint": "Nyalakan incognito: bacaan tidak dicatat",
+    "turnOffHint": "Incognito aktif. Klik untuk mematikan",
+    "readerHint": "Incognito: progres, riwayat, dan waktu baca tidak dicatat",
+    "bannerOff": "Mode incognito mati — bacaanmu sedang dicatat",
+    "bannerOn": "Mode incognito aktif — progres, riwayat, dan waktu baca tidak dicatat",
+    "turnOn": "Nyalakan",
+    "turnOff": "Matikan"
   }
 }

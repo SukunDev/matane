@@ -101,6 +101,9 @@ export class LibraryRepository {
         )})`,
       );
     }
+    if (filters.bookmarked) {
+      where.push(sql`EXISTS (SELECT 1 FROM chapters b WHERE b.manga_id = m.id AND b.bookmarked = 1)`);
+    }
     const fts = options.query ? ftsQuery(options.query) : null;
     if (fts) where.push(sql`m.id IN (SELECT rowid FROM manga_fts WHERE manga_fts MATCH ${fts})`);
 

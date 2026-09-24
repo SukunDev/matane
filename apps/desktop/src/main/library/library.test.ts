@@ -31,7 +31,7 @@ const query = (patch: Partial<LibraryQuery> = {}): LibraryQuery => ({
   tab: 'all',
   sort: 'title',
   ascending: true,
-  filters: { unread: false, reading: false, status: [], sourceIds: [] },
+  filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
   ...patch,
 });
 const titles = (patch?: Partial<LibraryQuery>) => library.list(query(patch)).map((i) => i.title);
@@ -98,7 +98,7 @@ describe('LibraryRepository', () => {
     });
   });
 
-  it('filters by tab, status, source, unread and reading', () => {
+  it('filters by tab, status, source, unread, reading and bookmarked', () => {
     const { alpha, beta, a } = seed();
     const cat = categories.create('Favourites');
     library.setCategories([alpha], [cat.id]);
@@ -113,6 +113,9 @@ describe('LibraryRepository', () => {
     expect(titles({ filters: { ...query().filters, unread: true } })).toEqual(['Alpha Blade']);
     history.touch(alpha, a[0]!, 10);
     expect(titles({ filters: { ...query().filters, reading: true } })).toEqual(['Alpha Blade']);
+    expect(titles({ filters: { ...query().filters, bookmarked: true } })).toEqual([]);
+    chapters.setBookmarked([a[0]!], true);
+    expect(titles({ filters: { ...query().filters, bookmarked: true } })).toEqual(['Alpha Blade']);
   });
 
   it('searches title, author and genres by word prefix, safely', () => {

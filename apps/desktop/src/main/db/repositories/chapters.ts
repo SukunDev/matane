@@ -126,7 +126,7 @@ export class ChaptersRepository {
       .where(inArray(chapters.id, [...chapterIds]))
       .returning({ mangaId: chapters.mangaId })
       .all();
-    for (const mangaId of new Set(rows.map((r) => r.mangaId))) this.changes.mark(`chapters:${mangaId}`, 'bookmarks');
+    for (const mangaId of new Set(rows.map((r) => r.mangaId))) this.changes.mark(`chapters:${mangaId}`);
   }
 
   // ------------------------------------------------------------ page list cache

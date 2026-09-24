@@ -21,7 +21,7 @@ Di luar cakupan Fase 2:
 
 Data sesi baca tetap direkam mulai Fase 2 supaya statistik Fase 5 punya riwayat. Opsi "download" di migrasi dan filter "didownload" di library ditampilkan non-aktif sampai Fase 3.
 
-Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `manga_categories`, `history`, `reading_sessions`, `page_bookmarks`, `manga_fts`, dan kolom manga `in_library`, `added_at`, `custom_cover_path`, `cover_path`, `reader_settings_json`, `scanlator_prefs_json`, `chapter_view_json`, serta kolom chapter `read`, `read_at`, `last_page`, `page_offset`, `bookmarked`). Migrasi baru hanya dibuat kalau ternyata perlu index tambahan.
+Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `manga_categories`, `history`, `reading_sessions`, `manga_fts`, dan kolom manga `in_library`, `added_at`, `custom_cover_path`, `cover_path`, `reader_settings_json`, `scanlator_prefs_json`, `chapter_view_json`, serta kolom chapter `read`, `read_at`, `last_page`, `page_offset`, `bookmarked`). Migrasi baru hanya dibuat kalau ternyata perlu index tambahan.
 
 **Prasyarat sebelum mulai:** `packages/extension-cli/src/index.ts` meng-export `hasFixtures` yang belum ada di `fixtures.ts` (pekerjaanmu yang belum selesai), sehingga `typecheck` gagal. Ini perlu dilengkapi atau di-revert dulu.
 
@@ -43,7 +43,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
 - **Logika "lanjut baca"** (`manga.continue`, §6.3): chapter terakhir belum selesai → lanjutkan chapter itu; sudah selesai → chapter belum dibaca berikutnya menurut nomor; belum pernah baca → chapter pertama. Aturan scanlator menyusul di 2d.
   - Memakai ulang `adjacentChapter` dari `features/reader/navigation.ts`, dipindah ke `packages/shared` supaya bisa dipakai main dan renderer.
 - **Incognito** disimpan sebagai setting `incognito` (persisten). Selama aktif, semua penulisan progress, history, dan sesi dilewati di sisi main (satu penjaga di service, bukan di tiap panggilan renderer).
-- Tag **`db.changed`** baru: `library`, `categories`, `history`, dan `bookmarks`, ditambah tag `manga:<id>` dan `chapters:<id>` yang sudah ada. Pemetaannya diperbarui di `keysForTag` (`renderer/src/lib/sources.ts`).
+- Tag **`db.changed`** baru: `library`, `categories`, dan `history` (tag `bookmarks` sempat ada, lalu dihapus di revisi 2c), ditambah tag `manga:<id>` dan `chapters:<id>` yang sudah ada. Pemetaannya diperbarui di `keysForTag` (`renderer/src/lib/sources.ts`).
 - **IPC baru:** `progress.save`, `chapters.markRead`, `chapters.markPreviousRead`, `manga.continue`, `reading.heartbeat`, `reading.end`, `history.list`, `history.remove`, dan `history.clear`.
 
 **Reader** (`features/reader/`)
@@ -100,18 +100,14 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
   - tiap entri: cover, source, chapter + halaman, bar progres %, tombol **Lanjut** / **Baca lagi**, hapus entri;
   - pencarian, dan "Hapus semua history" dengan konfirmasi;
   - di bagian atas ada banner status incognito seperti di mockup.
-- **Bookmark chapter:** toggle di reader (ikon di bar atas, mockup 03) dan di daftar chapter, plus filter "Ditandai" yang sudah ada.
-- **Bookmark halaman** + catatan singkat opsional:
-  - dibuat dari reader (bookmark halaman aktif);
-  - ditampilkan di tab **Bookmark** di detail manga (mockup 02) dan di halaman global **Bookmarks** (`routes/_app/bookmarks.tsx`);
-  - klik → reader terbuka di halaman itu.
+- **Bookmark chapter saja (seperti Mihon):** toggle di reader (ikon di bar atas, mockup 03) dan di daftar chapter, filter "Ditandai" di daftar chapter, dan filter "Ditandai" di library. *(Revisi setelah review: bookmark halaman, tab Bookmark di detail, dan halaman global Bookmarks dihapus.)*
 - **Incognito:**
   - toggle di title bar dengan indikator yang selalu terlihat;
   - di reader, indikator tampil di bar atas;
   - di History, ada tombol "Nyalakan" / "Matikan".
-- **IPC baru:** `bookmarks.page.list/add/update/remove`, `chapters.setBookmarked`, dan `settings.set({ incognito })` (sudah ada).
+- **IPC:** `chapters.setBookmarked` dan `settings.set({ incognito })` (sudah ada); filter `bookmarked` di `library.list`.
 
-**Checkpoint 2c:** history terisi saat membaca, dan resume dari history membuka halaman yang benar. Bookmark chapter dan halaman beserta catatannya muncul di tiga tempat. Selama incognito tidak ada history, progres, maupun sesi yang tercatat (dicek langsung di DB).
+**Checkpoint 2c:** history terisi saat membaca, dan resume dari history membuka halaman yang benar. Bookmark chapter muncul di reader dan daftar chapter, dan filter "Ditandai" di library bekerja. Selama incognito tidak ada history, progres, maupun sesi yang tercatat (dicek langsung di DB).
 
 ---
 
@@ -139,7 +135,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
   - memakai ulang `browseQuery`/`sources.browse` (kind `search`), `MangaCard`, dan `invokeCancellable`.
 - **Migrasi** (route baru `/library/migrate`, dibuka dari multi-select library dan tombol **Migrasi** di detail):
   - **Urutan source tujuan** bisa diedit. Untuk tiap manga, main mencari judul di tujuan berurutan dan menilai kandidat (judul dinormalisasi + kemiripan dengan alt title, ditambah author). Kandidat diberi label Exact / Similar (%) / Tidak ditemukan, bisa diganti atau dicari manual, dan manga bisa dilewati.
-  - **Opsi:** status baca dan progres (dicocokkan per nomor chapter), kategori, setting reader, cover kustom, dan bookmark halaman (per nomor chapter). Opsi download non-aktif sampai Fase 3. Setelah migrasi, manga lama **dihapus dari library** (default) atau **tetap disimpan**.
+  - **Opsi:** status baca dan progres (dicocokkan per nomor chapter), kategori, setting reader, cover kustom, dan bookmark chapter (per nomor chapter). Opsi download non-aktif sampai Fase 3. Setelah migrasi, manga lama **dihapus dari library** (default) atau **tetap disimpan**.
   - **Eksekusi di main dalam transaksi per manga:** refresh manga tujuan (detail + chapter) → salin data → tambah ke library → keluarkan yang lama sesuai opsi. Lalu tampil **ringkasan** (berhasil, dilewati, gagal, dan chapter yang tidak bisa dicocokkan).
   - **IPC:** `migration.findCandidates({ mangaId, targets })` dan `migration.run({ items, options })`, dengan event progres (`migration.progress`).
 
@@ -161,16 +157,16 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
 ## File kunci
 
 - **Main:**
-  - `apps/desktop/src/main/db/repositories/{progress,history,library,categories,bookmarks}.ts` (baru) dan `manga.ts`/`chapters.ts` (diperluas);
+  - `apps/desktop/src/main/db/repositories/{progress,history,library,categories}.ts` (baru) dan `manga.ts`/`chapters.ts` (diperluas);
   - `main/reading/sessions.ts`, `main/library/migration.ts` (baru);
   - `main/images/service.ts` (cover permanen dan kustom), `main/ipc/handlers.ts`.
 - **Shared:**
-  - `packages/shared/src/ipc/{channels,contract}.ts`, `models.ts` (LibraryItem, HistoryEntry, PageBookmark, MigrationCandidate), `settings.ts` (`incognito`, `library`, `globalSearch`);
+  - `packages/shared/src/ipc/{channels,contract}.ts`, `models.ts` (LibraryItem, HistoryEntry, MigrationCandidate), `settings.ts` (`incognito`, `library`, `globalSearch`);
   - `adjacentChapter`/`resolveMode` dipindah ke `packages/shared/src/reader.ts`.
 - **Renderer:**
-  - `features/{library,history,bookmarks,search,migration}/` (baru);
+  - `features/{library,history,search,migration}/` (baru);
   - `features/reader/*` (simpan/pulihkan progres, bookmark, klik kanan jadikan cover, simpan setting per manga);
-  - `features/manga/*` (lanjut baca, multi-select, tab Bookmark, dialog scanlator);
+  - `features/manga/*` (lanjut baca, multi-select, dialog scanlator);
   - `lib/sources.ts` (query + `keysForTag`), `components/shell/TitleBar.tsx` (incognito).
 - **E2E:** `apps/desktop/e2e/support/site.ts` (extension kedua), dan spec baru `e2e/library.spec.ts`.
 
@@ -271,6 +267,42 @@ Bug yang ditemukan saat verifikasi dan sudah diperbaiki:
 - Baris tab kategori menampilkan scrollbar vertikal kecil (`-mb-px` di dalam `overflow-x-auto`).
 
 Belum dicakup E2E: cover kustom dari **file**, karena dialog file native tidak bisa diotomasi. Jalurnya sama dengan cover dari halaman (`CoverStore.setCustom`, ada unit test-nya).
+
+---
+
+### Milestone 2c: selesai (24 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 4 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (desktop 103 test).
+  - Test baru: `hasUnread` dan `coverKey` di history, filter `bookmarked` di query library, pengelompokan hari (`features/history/groups.ts`), dan migrasi `0002` (tabel `page_bookmarks` hilang).
+- E2E 23/23. Spec baru `e2e/history.spec.ts` (5 test):
+  - history kosong → baca Ch. 2 sampai hal. 3 → entri "Today" dengan "Page 3/4 · 75%" → **Resume** membuka hal. 3;
+  - ikon di bar atas reader menandai chapter → ikon penanda di baris chapter → filter "Bookmarked" di daftar chapter → dua manga di library → filter "Bookmarked" di library hanya menampilkan manga yang punya chapter bertanda;
+  - incognito dari title bar → baca Ch. 3 → history dan `last_page` tidak berubah (dicek lewat IPC) → banner di History → matikan;
+  - hapus satu entri, lalu "Hapus semua riwayat" dengan konfirmasi.
+- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah):
+  - Kage no Jitsuryokusha Ch. 1 sampai hal. 6 dan Chainsaw Man Ch. 1 selesai + Ch. 2 hal. 3. History menampilkan dua entri "Today" dengan cover, badge source, "Page x/y", jam, dan bar progres, sesuai mockup 10;
+  - **incognito:** Ch. 3 Kage dibaca sampai hal. 5. DB langsung: `last_page` tetap 0, tidak ada baris `history` untuknya, dan 0 baris `reading_sessions`. Sesi bacaan sebelumnya tercatat (2,1–4,3 detik aktif). Incognito tetap aktif setelah restart, dan membaca lagi tetap tidak menulis apa pun;
+  - pil "Incognito" tampil di title bar dan di bar atas reader;
+  - filter "Bookmarked" di library hanya menampilkan manga dengan chapter bertanda;
+  - migrasi `0002` di profil yang sudah berisi bookmark halaman: backup DB otomatis dibuat, lalu tabelnya terhapus.
+
+Implementasi:
+- **Main:** `history.list` sekarang mengembalikan `coverKey` (cover kustom ikut tampil) dan `hasUnread`. Filter `bookmarked` di `LibraryRepository` (manga dengan minimal satu chapter bertanda). Migrasi `drizzle/0002_drop_page_bookmarks.sql`.
+- **Renderer:**
+  - `features/history/` (halaman, banner incognito, pengelompokan Hari ini / Kemarin / Minggu ini / tanggal);
+  - reader: ikon penanda di bar atas = toggle chapter (sesuai plan dan mockup 03); notifikasi singkat bersama (`notice.tsx`, dipakai "Jadikan cover");
+  - tombol penanda per baris chapter (terisi saat ditandai, muncul saat hover), seperti mockup 02;
+  - filter "Ditandai" di popover filter library (setting `library.bookmarkedOnly`);
+  - `IncognitoToggle` di title bar dan reader (ikon saja saat mati, pil berlabel saat aktif), `SearchField` bersama (library dan history);
+  - `keysForTag`: `chapters:*` dan `manga:*` ikut me-refresh history.
+
+Keputusan:
+- **Bookmark cukup per chapter, seperti Mihon** (keputusan pengguna saat review). Versi awal punya bookmark halaman + catatan, tab Bookmark di detail, dan halaman global Bookmarks. Semuanya dihapus, termasuk menu sidebar dan tabel `page_bookmarks`. BRAINSTORM §6.3, §6.6, §6.9, dan §7 sudah diperbarui.
+- Bookmark chapter tetap bisa dibuat saat incognito, karena termasuk edit eksplisit pengguna seperti "tandai dibaca".
+- **Resume** di history: chapter yang belum selesai dibuka di posisi terakhir. Chapter yang sudah selesai memakai logika "lanjut baca" yang sama dengan detail manga. Tombol berubah jadi **Baca lagi** kalau manga tidak punya chapter belum dibaca.
+- History dibatasi 200 entri terakhir tanpa virtualisasi (sudah ada sejak 2a).
+
+Bug yang ditemukan dan sudah diperbaiki: shortcut reader (Esc dan lainnya) sekarang mengabaikan event yang sudah ditangani popover atau menu Radix (`defaultPrevented`). Sebelumnya, Esc yang menutup popover juga ikut mengeluarkan pengguna dari reader.
 
 ---
 

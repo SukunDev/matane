@@ -1,9 +1,10 @@
 import type { ChapterInfo, ReaderSettings } from '@manga-reader/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
   ArrowLeftRight,
+  Bookmark,
   BookOpenText,
   Maximize,
   Minimize,
@@ -14,6 +15,7 @@ import {
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../components/EmptyState';
+import { IncognitoToggle } from '../../components/IncognitoToggle';
 import { ErrorState } from '../../components/ErrorState';
 import { WindowControls } from '../../components/shell/WindowControls';
 import { Button } from '../../components/ui/button';
@@ -21,6 +23,7 @@ import { appError } from '../../lib/errors';
 import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
 import { chapterQuery, chaptersQuery, mangaQuery, pagesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
+import { ReaderNotice } from './notice';
 import { isTyping, PagedView } from './PagedView';
 import { PageContextMenu } from './PageContextMenu';
 import { ReaderSettingsPanel } from './ReaderSettingsPanel';
@@ -70,6 +73,10 @@ export function ReaderPage({
   useLayoutEffect(() => useReaderPosition.getState().reset(), []);
   useProgressSaver();
   useReadingHeartbeat();
+  const setChapterBookmark = useMutation({
+    mutationFn: (input: { chapterId: number; bookmarked: boolean }) =>
+      ipc.invoke('chapters.setBookmarked', { chapterIds: [input.chapterId], bookmarked: input.bookmarked }),
+  });
 
   // Every change of the tap-zone preset shows the zones for a few seconds (not when opening).
   const [zoneChange, setZoneChange] = useState({ zones: reader?.tapZones, count: 0 });
@@ -132,7 +139,8 @@ export function ReaderPage({
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event)) return;
+      // Handled already, e.g. Escape closing a popover or menu.
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTyping(event)) return;
       if (event.key === 'f' || event.key === 'F') {
         void ipc.invoke('window.toggleFullScreen');
       } else if (event.key === 'Escape') {
@@ -279,6 +287,19 @@ export function ReaderPage({
           </p>
         </div>
         <div className="no-drag ml-auto flex h-full items-center gap-1">
+          <IncognitoToggle className="mr-1" />
+          {shown && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-pressed={shown.bookmarked}
+              title={shown.bookmarked ? t('reader.unbookmarkChapter') : t('reader.bookmarkChapter')}
+              onClick={() => setChapterBookmark.mutate({ chapterId: shown.id, bookmarked: !shown.bookmarked })}
+              className={cn(shown.bookmarked && 'text-primary hover:text-primary')}
+            >
+              <Bookmark className={cn(shown.bookmarked && 'fill-current')} />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -344,6 +365,8 @@ export function ReaderPage({
         )}
         {rtl ? prevButton : nextButton}
       </footer>
+
+      <ReaderNotice />
 
       {/* Page indicator while the bars are hidden. */}
       {!overlay && position.page >= 0 && (

@@ -10,7 +10,6 @@ import {
   ListFilter,
   List,
   type LucideIcon,
-  Search,
   SlidersHorizontal,
   ZoomIn,
   ZoomOut,
@@ -18,8 +17,8 @@ import {
 import { DropdownMenu, Popover } from 'radix-ui';
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { SearchField } from '../../components/SearchField';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { filterCount } from './settings';
@@ -48,17 +47,7 @@ export function LibraryToolbar({
   const { t } = useTranslation();
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
-      <div className="relative w-56">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="search"
-          value={query}
-          onChange={(event) => onQuery(event.target.value)}
-          placeholder={t('library.filterPlaceholder')}
-          aria-label={t('library.filterPlaceholder')}
-          className="h-8 pl-8 text-xs"
-        />
-      </div>
+      <SearchField value={query} onChange={onQuery} placeholder={t('library.filterPlaceholder')} className="w-56" />
       <FilterPopover settings={settings} onChange={onChange} />
       <SortMenu settings={settings} onChange={onChange} />
       <div role="radiogroup" aria-label={t('library.display.label')} className="flex rounded-lg border p-0.5">
@@ -146,6 +135,12 @@ function FilterPopover({
           <FilterToggle on={settings.readingOnly} onClick={() => onChange({ readingOnly: !settings.readingOnly })}>
             {t('library.filter.reading')}
           </FilterToggle>
+          <FilterToggle
+            on={settings.bookmarkedOnly}
+            onClick={() => onChange({ bookmarkedOnly: !settings.bookmarkedOnly })}
+          >
+            {t('library.filter.bookmarked')}
+          </FilterToggle>
           <FilterToggle on={false} disabled title={t('library.filter.soon')}>
             {t('library.filter.downloaded')}
           </FilterToggle>
@@ -183,7 +178,9 @@ function FilterPopover({
               variant="ghost"
               size="sm"
               className="mt-2"
-              onClick={() => onChange({ unreadOnly: false, readingOnly: false, status: [], sourceIds: [] })}
+              onClick={() =>
+                onChange({ unreadOnly: false, readingOnly: false, bookmarkedOnly: false, status: [], sourceIds: [] })
+              }
             >
               <ListFilter />
               {t('library.filter.clear')}

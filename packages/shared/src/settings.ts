@@ -46,6 +46,7 @@ export const librarySettingsSchema = z.object({
   ascending: z.boolean().catch(false),
   unreadOnly: z.boolean().catch(false),
   readingOnly: z.boolean().catch(false),
+  bookmarkedOnly: z.boolean().catch(false),
   status: z.array(z.enum(['ongoing', 'completed', 'hiatus', 'cancelled', 'unknown'])).catch([]),
   sourceIds: z.array(z.string()).catch([]),
 });
@@ -58,6 +59,7 @@ export const DEFAULT_LIBRARY_SETTINGS: LibrarySettings = {
   ascending: false,
   unreadOnly: false,
   readingOnly: false,
+  bookmarkedOnly: false,
   status: [],
   sourceIds: [],
 };

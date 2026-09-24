@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as AppBookmarksRouteImport } from './routes/_app/bookmarks'
 import { Route as AppDownloadsRouteImport } from './routes/_app/downloads'
 import { Route as AppHistoryRouteImport } from './routes/_app/history'
 import { Route as AppLibraryRouteImport } from './routes/_app/library'
@@ -33,11 +32,6 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AppBookmarksRoute = AppBookmarksRouteImport.update({
-  id: '/bookmarks',
-  path: '/bookmarks',
-  getParentRoute: () => AppRoute,
 } as any)
 const AppDownloadsRoute = AppDownloadsRouteImport.update({
   id: '/downloads',
@@ -103,7 +97,6 @@ const AppBrowseSourcesExtensionIdSourceKeyRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/bookmarks': typeof AppBookmarksRoute
   '/downloads': typeof AppDownloadsRoute
   '/history': typeof AppHistoryRoute
   '/library': typeof AppLibraryRoute
@@ -119,7 +112,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/bookmarks': typeof AppBookmarksRoute
   '/downloads': typeof AppDownloadsRoute
   '/history': typeof AppHistoryRoute
   '/library': typeof AppLibraryRoute
@@ -137,7 +129,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
-  '/_app/bookmarks': typeof AppBookmarksRoute
   '/_app/downloads': typeof AppDownloadsRoute
   '/_app/history': typeof AppHistoryRoute
   '/_app/library': typeof AppLibraryRoute
@@ -155,7 +146,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/bookmarks'
     | '/downloads'
     | '/history'
     | '/library'
@@ -171,7 +161,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/bookmarks'
     | '/downloads'
     | '/history'
     | '/library'
@@ -188,7 +177,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
-    | '/_app/bookmarks'
     | '/_app/downloads'
     | '/_app/history'
     | '/_app/library'
@@ -224,13 +212,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_app/bookmarks': {
-      id: '/_app/bookmarks'
-      path: '/bookmarks'
-      fullPath: '/bookmarks'
-      preLoaderRoute: typeof AppBookmarksRouteImport
-      parentRoute: typeof AppRoute
     }
     '/_app/downloads': {
       id: '/_app/downloads'
@@ -320,7 +301,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
-  AppBookmarksRoute: typeof AppBookmarksRoute
   AppDownloadsRoute: typeof AppDownloadsRoute
   AppHistoryRoute: typeof AppHistoryRoute
   AppLibraryRoute: typeof AppLibraryRoute
@@ -335,7 +315,6 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppBookmarksRoute: AppBookmarksRoute,
   AppDownloadsRoute: AppDownloadsRoute,
   AppHistoryRoute: AppHistoryRoute,
   AppLibraryRoute: AppLibraryRoute,

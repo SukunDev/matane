@@ -171,7 +171,7 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
                   className="mt-2"
                   onClick={() => {
                     setQuery('');
-                    update({ unreadOnly: false, readingOnly: false, status: [], sourceIds: [] });
+                    update({ unreadOnly: false, readingOnly: false, bookmarkedOnly: false, status: [], sourceIds: [] });
                   }}
                 >
                   {t('library.filter.clear')}

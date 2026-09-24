@@ -1,5 +1,4 @@
 import {
-  Bookmark,
   ChartColumn,
   Compass,
   Download,
@@ -21,18 +20,8 @@ export interface NavLeaf {
     | '/browse/extensions'
     | '/browse/global-search'
     | '/downloads'
-    | '/bookmarks'
     | '/statistics';
-  labelKey:
-    | 'library'
-    | 'updates'
-    | 'history'
-    | 'sources'
-    | 'extensions'
-    | 'globalSearch'
-    | 'downloads'
-    | 'bookmarks'
-    | 'statistics';
+  labelKey: 'library' | 'updates' | 'history' | 'sources' | 'extensions' | 'globalSearch' | 'downloads' | 'statistics';
   icon: LucideIcon;
 }
 
@@ -57,6 +46,5 @@ export const NAV_ITEMS: (NavLeaf | NavGroup)[] = [
     ],
   },
   { to: '/downloads', labelKey: 'downloads', icon: Download },
-  { to: '/bookmarks', labelKey: 'bookmarks', icon: Bookmark },
   { to: '/statistics', labelKey: 'statistics', icon: ChartColumn },
 ];
