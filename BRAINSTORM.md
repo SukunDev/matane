@@ -1002,11 +1002,13 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - `manga://` protocol + cache LRU + dimensi halaman (diukur di renderer setelah decode).
 - Penutup: benchmark runtime (ADR 0003), E2E dengan extension tiruan + server fixture di CI, `docs/extensions.md`, ADR 0011–0014.
 
-**Fase 2: Library & progress**
-- Library: tampilan, kategori (multi), sort/filter, pencarian FTS5, multi-select, cover kustom.
-- Progress (termasuk offset webtoon), logika "lanjut baca", history, sesi baca, bookmark chapter, mode incognito.
-- Pengaturan reader per manga, filter & prioritas scanlator.
+**Fase 2: Library & progress** ✅ selesai 24 Sep 2026 (rincian dan penyesuaian: `docs/plans/fase-2-library-progress.md`)
+- Library: tampilan, kategori (multi), sort/filter, pencarian FTS5, multi-select, cover library permanen + cover kustom (ADR 0016).
+- Progress (termasuk offset webtoon), logika "lanjut baca", history, sesi baca, bookmark chapter, mode incognito (ADR 0017).
+- Pengaturan reader per manga, filter & prioritas scanlator, status baca per nomor chapter (ADR 0015).
 - **Global search** dan **migrasi source**.
+- Penyesuaian: bookmark cukup per chapter seperti Mihon; bookmark halaman, tab Bookmark, dan halaman global Bookmark dibatalkan (ADR 0018). Nama app ditetapkan **Matane (またね)**. Penilaian kandidat migrasi memakai judul saja karena SDK belum punya judul alternatif.
+- Penutup: E2E alur penuh (termasuk restart app) dengan dua extension tiruan, ukur performa 1.000 manga / 50 ribu chapter, ADR 0015–0018.
 
 **Fase 3: Download & update** → mulai **beta**
 - Antrean download (persisten, paralel, retry), CBZ + ComicInfo.xml / folder, baca offline, mode offline.

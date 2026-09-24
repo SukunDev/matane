@@ -18,6 +18,7 @@ export function ManualSearchDialog({
   initialQuery,
   targets,
   excludeMangaId,
+  defaultSourceId,
   onPick,
 }: {
   open: boolean;
@@ -25,6 +26,7 @@ export function ManualSearchDialog({
   initialQuery: string;
   targets: SourceEntry[];
   excludeMangaId: number;
+  defaultSourceId?: string;
   onPick: (sourceId: string, item: BrowseItem) => void;
 }) {
   const { t } = useTranslation();
@@ -42,6 +44,7 @@ export function ManualSearchDialog({
               initialQuery={initialQuery}
               targets={targets}
               excludeMangaId={excludeMangaId}
+              defaultSourceId={defaultSourceId}
               onPick={onPick}
             />
           )}
@@ -55,17 +58,19 @@ function ManualSearch({
   initialQuery,
   targets,
   excludeMangaId,
+  defaultSourceId,
   onPick,
 }: {
   initialQuery: string;
   targets: SourceEntry[];
   excludeMangaId: number;
+  defaultSourceId?: string;
   onPick: (sourceId: string, item: BrowseItem) => void;
 }) {
   const { t } = useTranslation();
   const [draft, setDraft] = useState(initialQuery);
   const [query, setQuery] = useState(initialQuery);
-  const [sourceId, setSourceId] = useState(targets[0]?.id ?? '');
+  const [sourceId, setSourceId] = useState(targets.find((s) => s.id === defaultSourceId)?.id ?? targets[0]?.id ?? '');
   const results = useQuery({ ...sourceSearchQuery(sourceId, query), enabled: sourceId !== '' && query !== '' });
   const submit = (event: FormEvent) => {
     event.preventDefault();

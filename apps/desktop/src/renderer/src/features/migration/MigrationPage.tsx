@@ -599,6 +599,8 @@ function MigrationRow({
         // Its own source can't be a target, and neither can the manga itself.
         targets={targets.filter((s) => s.id !== manga.sourceId)}
         excludeMangaId={manga.id}
+        // Start where the current candidate came from (else the first target).
+        defaultSourceId={picked?.sourceId}
         onPick={(sourceId, item) => {
           onChoose({ sourceId, item, score: null, match: 'manual' });
           setManual(false);

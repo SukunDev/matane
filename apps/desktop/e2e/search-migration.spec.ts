@@ -1,9 +1,9 @@
 import { type Page, expect, test } from '@playwright/test';
 import { type TestApp, launchApp } from './support/app';
 
-// Phase 2e: global search and source migration. The fake extension has three sources: "E2E Demo"
-// in English and Indonesian (same catalogue, the Indonesian one only has chapters up to 3), and
-// "E2E Broken", whose searches always fail.
+// Phase 2e: global search and source migration across two fake extensions: "E2E Demo" (English, and
+// "E2E Broken", whose searches always fail) and "E2E Mirror" (same catalogue in Indonesian, chapters
+// only up to 3).
 test.describe.configure({ mode: 'serial' });
 
 let t: TestApp;
@@ -31,7 +31,7 @@ test.beforeAll(async () => {
   page = t.page;
   // Pinned sources are the default set for global search and migration; pinning the fake ones keeps
   // the built-in MangaDex (real network) out.
-  for (const sourceId of ['e2e-demo/en', 'e2e-demo/id', 'e2e-demo/broken']) {
+  for (const sourceId of ['e2e-demo/en', 'e2e-mirror/id', 'e2e-demo/broken']) {
     await api('sources.setPinned', { sourceId, pinned: true });
   }
 });
@@ -43,10 +43,7 @@ test.afterAll(async () => {
 test('searches every source, row by row, without waiting for a failing one', async () => {
   await goto('#/browse/global-search');
   await expect(page.getByText('Search every source at once')).toBeVisible();
-  await page
-    .getByRole('searchbox', { name: 'Search every source…' })
-    .or(page.getByLabel('Search every source…'))
-    .fill('hero');
+  await page.getByLabel('Search every source…').fill('hero');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/q=hero/);
 
@@ -74,7 +71,7 @@ test('searches every source, row by row, without waiting for a failing one', asy
   await expect(page.getByRole('button', { name: /^Sources: 2 selected/ })).toBeVisible();
   await expect(sections()).toHaveCount(2);
   const settings = await api<{ globalSearch: { sourceIds: string[] } }>('settings.get');
-  expect(settings.globalSearch.sourceIds).toEqual(['e2e-demo/en', 'e2e-demo/id']);
+  expect([...settings.globalSearch.sourceIds].sort()).toEqual(['e2e-demo/en', 'e2e-mirror/id']);
 
   await english.getByRole('link', { name: 'See all' }).click();
   await expect(page).toHaveURL(/browse\/sources\/e2e-demo\/en\?.*tab=search.*q=hero/);
@@ -146,7 +143,7 @@ test('migrates read status, bookmarks, categories, reader settings and cover by 
   await expect(summary).toContainText('0Failed');
   await expect(page.getByText('2 read chapters carried over · 1 chapter could not be matched: Ch. 5')).toBeVisible();
 
-  const target = await mangaIdOf('e2e-demo/id', 'Paged Hero');
+  const target = await mangaIdOf('e2e-mirror/id', 'Paged Hero');
   const info = await api<{
     inLibrary: boolean;
     categoryIds: number[];

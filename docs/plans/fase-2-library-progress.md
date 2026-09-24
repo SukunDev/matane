@@ -187,6 +187,7 @@ Yang dipakai ulang:
 
 - 23 Sep 2026: rencana disetujui dan disimpan di sini. Implementasi dimulai dari Milestone 2a setelah prasyarat `hasFixtures` beres.
 - Prasyarat selesai: `hasFixtures(dir)` di `extension-cli` (plus test). Test MangaDex dilewati dengan peringatan (bukan gagal) kalau fixture tidak ada dan tidak sedang merekam.
+- 24 Sep 2026: **Fase 2 selesai** (2a–2e + penutup, di bawah), menunggu review.
 
 ### Milestone 2a: selesai (23 Sep 2026), menunggu review
 
@@ -382,6 +383,30 @@ Keputusan:
 - Status baca dipindah ke **semua versi** nomor yang sama, konsisten dengan aturan per nomor (§6.2). Penanda juga ke semua versi.
 - Prefs scanlator tidak dipindah, karena grup di source lain berbeda.
 - Pencarian manual tidak menawarkan source asal manga dan tidak bisa memilih manga itu sendiri (bug yang tertangkap E2E, sudah diperbaiki).
+
+---
+
+### Penutup Fase 2: selesai (24 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 4 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau. **E2E 34/34** (sebelumnya 29).
+- **Situs palsu mendapat extension kedua**, sesuai plan. Di 2e mirror Indonesia masih berupa source di extension yang sama; sekarang ia extension terpisah `e2e-mirror` ("E2E Mirror", ID). `e2e-demo` tetap punya source EN dan "E2E Broken" (pencarian selalu gagal). Migrasi di E2E sekarang lintas extension.
+- `e2e/support/app.ts`: `launchApp()` memuat kedua extension dan punya **`restart()`** (keluar lalu buka lagi app dengan profil yang sama; folder extension dev diingat).
+- **Spec baru `e2e/full-flow.spec.ts`** (5 test, satu sesi, lewat UI):
+  1. buat kategori "Reading" di Settings → tambah Paged Hero ke kategori itu → tandai ch. 1 dibaca → baca ch. 2 sampai hal. 3 (RTL, tombol panah) → tandai chapter lewat ikon di reader;
+  2. **restart app** → tab Reading berisi Paged Hero dengan "3 unread chapters" → "Continue · Ch. 2" membuka hal. 3 (penanda tetap ada) → History "Ch. 2 · Page 3/4";
+  3. incognito dari title bar → baca ch. 3 sampai hal. 2 → tidak ada progres, history tetap ch. 2 → matikan;
+  4. global search "hero" dengan set default = source yang punya manga di library (E2E Demo) + source yang di-pin (E2E Mirror) → 2 baris, hasil di Demo diberi badge "In library";
+  5. tombol **Migrasi** di detail → Exact di E2E Mirror → "1 read chapter carried over" → entri baru: penanda ch. 2 ada, "Continue · Ch. 2" membuka hal. 3, dan tab Reading hanya berisi entri E2E Mirror.
+- **Perbaikan yang ditemukan:** dialog "Cari manual" di migrasi sekarang dibuka di source kandidat yang sedang dipilih, bukan selalu source tujuan pertama (yang bisa saja source yang sedang error).
+- **Performa di build final** (1.000 manga + 50.000 chapter, dua grup per nomor, separuh manga menyembunyikan satu grup):
+  - `library.list` 71–73 ms (median) untuk semua sort dan filter belum dibaca; filter "Ditandai" 80 ms; `history.list` 8 ms;
+  - halaman Library tampil **39 ms** setelah navigasi (36 kartu ter-render);
+  - scroll penuh 56.000 px (lompatan 400 px per frame, 138 frame): p50 **16,5 ms**, p95 22,3 ms, maks 29,9 ms;
+  - index tambahan tidak diperlukan (target: library < 200 ms, scroll lancar).
+- **Dokumentasi:**
+  - ADR 0015 (status baca per nomor + satu versi per nomor), 0016 (cover library permanen + cover kustom), 0017 (batas data incognito), dan 0018 (bookmark chapter saja, seperti Mihon), plus indeks `docs/adr/README.md`;
+  - `BRAINSTORM.md` §11: Fase 2 ditandai selesai beserta penyesuaiannya;
+  - `README.md`: status Fase 0–2 dan tautan ke ADR.
 
 ---
 

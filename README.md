@@ -2,7 +2,7 @@
 
 # Matane (またね)
 
-> Pre-alpha: you can browse MangaDex, read chapters, and keep a library with reading progress.
+> Pre-alpha: browse MangaDex, read, keep a library with reading progress, search every source at once and migrate between sources. Downloads and update checks come next.
 
 _Matane_ is Japanese for "see you later": close the app now and pick up on the same page next time.
 
@@ -12,7 +12,13 @@ An open-source desktop manga reader (Windows, macOS, Linux) with a sandboxed ext
 
 ## Status
 
-Phases 0 and 1 are done: Electron shell with the Catppuccin UI, typed IPC and SQLite; the QuickJS extension sandbox with MangaDex built in; browse, filters and manga details; and the reader (single, double, webtoon, RTL) with an offline image cache. See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md) and the plans for [Phase 0](docs/plans/fase-0-fondasi.md), [Phase 1](docs/plans/fase-1-extension-membaca.md) and [Phase 2](docs/plans/fase-2-library-progress.md) (next: library & progress).
+Phases 0–2 are done:
+
+- **Foundation:** Electron shell with the Catppuccin UI, typed IPC and SQLite.
+- **Extensions & reading:** the QuickJS extension sandbox with MangaDex built in; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
+- **Library & progress:** library with categories, sort/filter, full-text search, multi-select and permanent/custom covers; reading progress and "continue reading" (read status per chapter number); history with an incognito mode; chapter bookmarks; per-manga reader settings, hidden scanlators and scanlator priority; global search across sources and source migration.
+
+See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the plans for [Phase 0](docs/plans/fase-0-fondasi.md), [Phase 1](docs/plans/fase-1-extension-membaca.md) and [Phase 2](docs/plans/fase-2-library-progress.md), and the [architecture decisions](docs/adr/README.md). Next: downloads and update checks (Phase 3, first beta).
 
 ## Development
 

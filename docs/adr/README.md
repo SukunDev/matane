@@ -18,3 +18,7 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0012](0012-html-parsing-in-extension-host.md) | HTML parsing runs in the extension host; network stays in main |
 | [0013](0013-built-in-and-dev-extensions.md) | Built-in extensions and extensions loaded from a folder |
 | [0014](0014-image-protocol-and-cache.md) | Images are served through `manga://` from a disk cache |
+| [0015](0015-chapter-numbers-and-scanlator-versions.md) | Read status per chapter number, one version per number |
+| [0016](0016-library-and-custom-covers.md) | Permanent library covers and custom covers |
+| [0017](0017-incognito-boundary.md) | What incognito does and does not record |
+| [0018](0018-chapter-bookmarks-only.md) | Chapter bookmarks only, like Mihon |

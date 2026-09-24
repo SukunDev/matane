@@ -3,25 +3,19 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { type ElectronApplication, type Page, _electron as electron } from '@playwright/test';
 import electronPath from 'electron';
-import { type Site, extensionFiles, startSite } from './site';
+import { type Site, type SiteExtension, extensionFiles, startSite } from './site';
 
 export interface TestApp {
   site: Site;
   app: ElectronApplication;
   page: Page;
   home: string;
+  /** Quits and starts the app again on the same profile (`app`/`page` are replaced). */
+  restart: () => Promise<void>;
   close: () => Promise<void>;
 }
 
-/** Fake site + a fresh app profile with the e2e-demo extension loaded from a dev folder. */
-export async function launchApp(): Promise<TestApp> {
-  const site = await startSite();
-  const home = mkdtempSync(join(tmpdir(), 'matane-e2e-'));
-  const extensionDir = join(home, 'e2e-demo');
-  mkdirSync(extensionDir);
-  for (const [name, content] of Object.entries(extensionFiles(site.origin)))
-    writeFileSync(join(extensionDir, name), content);
-
+async function start(home: string): Promise<{ app: ElectronApplication; page: Page }> {
   const app = await electron.launch({
     executablePath: electronPath as unknown as string,
     // GitHub's Ubuntu runners forbid the unprivileged user namespaces Chromium's sandbox needs.
@@ -31,16 +25,38 @@ export async function launchApp(): Promise<TestApp> {
   const page = await app.firstWindow();
   await page.waitForSelector('aside');
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.setSize(1280, 860));
-  await page.evaluate((path) => window.api.invoke('extensions.loadDevFolder', { path }), extensionDir);
-  return {
+  return { app, page };
+}
+
+/**
+ * Fake site + a fresh app profile with the site's extensions loaded from dev folders ("e2e-demo",
+ * and "e2e-mirror" as a second extension). Dev folders are remembered, so a restart keeps them.
+ */
+export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']): Promise<TestApp> {
+  const site = await startSite();
+  const home = mkdtempSync(join(tmpdir(), 'matane-e2e-'));
+  const started = await start(home);
+  const test: TestApp = {
     site,
-    app,
-    page,
     home,
+    ...started,
+    restart: async () => {
+      await test.app.close();
+      Object.assign(test, await start(home));
+    },
     close: async () => {
-      await app.close();
+      await test.app.close();
       await site.close();
       rmSync(home, { recursive: true, force: true });
     },
   };
+  for (const which of extensions) {
+    const dir = join(home, `e2e-${which}`);
+    mkdirSync(dir);
+    for (const [name, content] of Object.entries(extensionFiles(site.origin, which))) {
+      writeFileSync(join(dir, name), content);
+    }
+    await test.page.evaluate((path) => window.api.invoke('extensions.loadDevFolder', { path }), dir);
+  }
+  return test;
 }

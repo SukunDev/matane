@@ -144,22 +144,30 @@ export async function startSite(): Promise<Site> {
   };
 }
 
-/** The extension under test, written as a ready bundle (manifest.json + index.js). */
-export function extensionFiles(origin: string): Record<string, string> {
-  const manifest = {
+const EXTENSIONS = {
+  demo: {
     id: 'e2e-demo',
     name: 'E2E Demo',
+    sources: [
+      { key: 'en', lang: 'en', name: 'E2E Demo' },
+      // Searches always fail: global search must go on without it.
+      { key: 'broken', lang: 'en', name: 'E2E Broken' },
+    ],
+  },
+  // A second extension on the same site: same catalogue in Indonesian, chapters only up to 3.
+  // Global search and migration work across extensions with it.
+  mirror: { id: 'e2e-mirror', name: 'E2E Mirror', sources: [{ key: 'id', lang: 'id', name: 'E2E Mirror' }] },
+} as const;
+export type SiteExtension = keyof typeof EXTENSIONS;
+
+/** An extension under test, written as a ready bundle (manifest.json + index.js). */
+export function extensionFiles(origin: string, which: SiteExtension = 'demo'): Record<string, string> {
+  const manifest = {
+    ...EXTENSIONS[which],
     version: '1.0.0',
     apiVersion: 1,
     nsfw: false,
     domains: ['e2e.localhost'],
-    sources: [
-      { key: 'en', lang: 'en', name: 'E2E Demo' },
-      // Same catalogue, fewer chapters: a migration target.
-      { key: 'id', lang: 'id', name: 'E2E Demo' },
-      // Searches always fail: global search must go on without it.
-      { key: 'broken', lang: 'en', name: 'E2E Broken' },
-    ],
   };
   const code = `globalThis.__extension = {
   createSource: ({ key }) => {
