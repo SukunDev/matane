@@ -306,6 +306,48 @@ Bug yang ditemukan dan sudah diperbaiki: shortcut reader (Esc dan lainnya) sekar
 
 ---
 
+### Milestone 2d: selesai (24 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 4 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (desktop 108 test, shared 14).
+  - Test baru:
+    - **pemilihan versi chapter** (`packages/shared/src/chapters.test.ts`): prioritas → scanlator sebelumnya → rilis terbaru, grup tanpa nama (`""`), navigasi yang melewati grup tersembunyi, dan "lanjut baca" dengan prefs;
+    - jumlah belum dibaca dan `hasUnread` history tanpa grup tersembunyi;
+    - simpan/baca override reader dan view chapter (JSON rusak diabaikan);
+    - `viewChapters` (sort sumber/nomor/tanggal naik-turun, nilai kosong di akhir, filter, grup tersembunyi);
+    - `ReadingService.continueTarget` dengan prioritas.
+- E2E 27/27. Spec baru `e2e/manga-prefs.spec.ts` (4 test). Situs palsu mendapat manga **Twin Scans**: ch. 1 Alpha, 2 Alpha+Beta, 3 Beta, 4 Alpha+Beta; satu filler dikurangi supaya total daftar tetap 24.
+  - sembunyikan Beta → 3 baris, "3 chapters hidden", belum dibaca 4 → 3, reader `]` dari ch. 1 → 2 Alpha → 4 Alpha (ch. 3 dilewati);
+  - tampilkan lagi + Beta prioritas pertama → dari ch. 1 ke 2 Beta, tombol "Continue · Ch. 2" mengarah ke versi Beta;
+  - sort nomor naik + filter belum dibaca → pindah ke manga lain (view default) → kembali, view tetap sama (juga dicek di `manga.get`);
+  - "Simpan sebagai default untuk manga ini" → webtoon + abu-abu → override tersimpan, setting global tetap `auto`/hitam → Reset.
+- Diverifikasi di app hasil build terhadap MangaDex asli, Kage no Jitsuryokusha (6 grup; ch. 39–40 Biamam+Weeaboo, 82 Biamam+My Darling, 83–84 hanya My Darling):
+  - sembunyikan My Darling + Weeaboo: "Showing 94 of 99 · 5 chapters hidden", belum dibaca di library 5 → 3, dari ch. 81 reader lanjut ke **82 Biamam**;
+  - tampilkan semua + prioritas My Darling: dari ch. 81 ke **82 My Darling**;
+  - override reader (webtoon + abu-abu) dan view (nomor naik + belum dibaca) **tetap berlaku setelah restart**. Setting global tetap `auto`/hitam, dan Chainsaw Man tetap membuka mode single RTL dengan latar hitam.
+- **Performa** (seed 1.000 manga + 50.000 chapter, dua grup per nomor, separuh manga menyembunyikan satu grup): `library.list` 67–74 ms (2b: 40–61 ms), filter "Ditandai" 74 ms, `history.list` 8 ms. Index tambahan tidak diperlukan.
+
+Implementasi:
+- **Shared:**
+  - `mangaReaderSettingsSchema` + `MANGA_READER_KEYS` + `effectiveReaderSettings` / `toMangaReaderSettings` (`settings.ts`);
+  - `scanlatorPrefsSchema`, `chapterViewSchema` + `DEFAULT_CHAPTER_VIEW`, serta `MangaInfo.readerSettings/scanlatorPrefs/chapterView` (`models.ts`);
+  - `pickVersion`, `isHiddenScanlator`, `scanlatorKey`, dan parameter `prefs` di `adjacentChapter` / `continueChapter` (`chapters.ts`).
+- **Main:** `MangaRepository.setReaderSettings/setScanlatorPrefs/setChapterView` (JSON divalidasi saat dibaca; tidak valid → null/default). Prefs scanlator memicu tag `chapters:<id>`, sehingga daftar, library, history, dan "lanjut baca" ikut di-refresh. CTE `hidden` (`json_each`) di query library dan filter yang sama di `hasUnread`. `ReadingService` menerima `scanlatorPrefs`. IPC `manga.setReaderSettings`, `manga.setScanlatorPrefs`, `manga.setChapterView`.
+- **Renderer:**
+  - reader: setting efektif = global + override. Footer panel: "Simpan sebagai default untuk manga ini" atau indikator "Pengaturan khusus manga ini" + "Kembali ke pengaturan global". Prefs scanlator dipakai tombol/`[` `]` dan strip webtoon;
+  - `ChapterList`: view per manga (optimistis) dengan chip Belum dibaca/Ditandai, filter scanlator, menu sort (urutan source / nomor / tanggal) + tombol arah, dan tombol **Scanlator** (jumlah grup tersembunyi);
+  - `ScanlatorDialog`: tampil/sembunyikan per grup (switch), urutan lewat drag atau tombol naik/turun, jumlah chapter per grup, dan "Hapus urutan";
+  - `features/manga/chapterView.ts` (filter + sort murni, dengan test).
+
+Keputusan:
+- Override per manga mencakup mode, arah, fit, geser halaman ganda, lebar strip, jarak halaman, dan latar. **Tap zone tetap global**, karena itu kebiasaan pembaca, bukan sifat manga.
+- Selama override aktif, perubahan di panel reader hanya mengubah manga itu (tap zone tetap ke global). "Simpan sebagai default" menyalin semua nilai yang sedang berlaku. "Reset" menghapus override.
+- **Prioritas scanlator baru ada setelah pengguna memindahkan grup.** Membuka dialog hanya untuk menyembunyikan grup tidak membuat urutan, jadi aturan "grup sebelumnya → rilis terbaru" tetap berlaku.
+- Tanpa prioritas dan tanpa grup sebelumnya (mis. "lanjut baca" ke chapter yang belum pernah dibaca), yang dipilih adalah **rilis terbaru**. Sebelumnya dipakai versi pertama dalam urutan source.
+- Chapter dari grup tersembunyi hilang dari daftar, jumlah belum dibaca, history (`hasUnread`), "lanjut baca", dan navigasi reader. Chapter tanpa grup bisa disembunyikan juga ("(tanpa grup)").
+- Filter scanlator yang menunjuk grup yang kemudian disembunyikan dianggap "semua".
+
+---
+
 ## Selingan: ganti nama menjadi Matane (またね), 24 Sep 2026
 
 Dikerjakan sebelum 2c atas permintaan pengguna.

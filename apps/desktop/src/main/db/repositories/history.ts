@@ -47,7 +47,13 @@ export class HistoryRepository {
         totalPages: chapters.totalPages,
         read: chapters.read,
         readAt: history.readAt,
-        hasUnread: sql<number>`EXISTS (SELECT 1 FROM ${chapters} u WHERE u.manga_id = ${manga.id} AND u.read = 0)`,
+        // Unread chapters of hidden scanlators don't count (§6.2).
+        hasUnread: sql<number>`EXISTS (
+          SELECT 1 FROM ${chapters} u WHERE u.manga_id = ${manga.id} AND u.read = 0 AND u.source_missing = 0
+            AND coalesce(u.scanlator, '') NOT IN (
+              SELECT value FROM json_each(coalesce(${manga.scanlatorPrefsJson}, '{}'), '$.hidden')
+            )
+        )`,
       })
       .from(history)
       .innerJoin(manga, eq(manga.id, history.mangaId))

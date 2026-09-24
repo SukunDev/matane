@@ -1,5 +1,13 @@
-import type { ChapterInfo, ReaderSettings } from '@manga-reader/shared';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  type ChapterInfo,
+  type MangaInfo,
+  type MangaReaderSettings,
+  MANGA_READER_KEYS,
+  type ReaderSettings,
+  effectiveReaderSettings,
+  toMangaReaderSettings,
+} from '@manga-reader/shared';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   ArrowLeft,
@@ -68,7 +76,18 @@ export function ReaderPage({
   const { data: settings } = useQuery(settingsQuery);
   const { data: info } = useQuery(appInfoQuery);
   const updateSettings = useUpdateSettings();
-  const reader = settings?.reader;
+  const queryClient = useQueryClient();
+  // Global settings with this manga's override on top (BRAINSTORM.md §6.1).
+  const override = manga.data?.readerSettings ?? null;
+  const reader = settings && effectiveReaderSettings(settings.reader, override);
+  const setMangaReader = useMutation({
+    mutationFn: (value: MangaReaderSettings | null) =>
+      ipc.invoke('manga.setReaderSettings', { mangaId, settings: value }),
+    onMutate: (value) =>
+      queryClient.setQueryData(mangaQuery(mangaId).queryKey, (current: MangaInfo | undefined) =>
+        current ? { ...current, readerSettings: value } : current,
+      ),
+  });
   // A new session must not mistake the previous one's position for the live one (see below).
   useLayoutEffect(() => useReaderPosition.getState().reset(), []);
   useProgressSaver();
@@ -118,8 +137,9 @@ export function ReaderPage({
   const list = chapters.data ?? [];
   // In webtoon mode the chapter on screen can be a later one than the URL's starting chapter.
   const shown = list.find((c) => c.id === position.chapterId) ?? chapter;
-  const prev = shown ? adjacentChapter(list, shown, -1) : undefined;
-  const next = shown ? adjacentChapter(list, shown, 1) : undefined;
+  const prefs = manga.data?.scanlatorPrefs;
+  const prev = shown ? adjacentChapter(list, shown, -1, prefs) : undefined;
+  const next = shown ? adjacentChapter(list, shown, 1, prefs) : undefined;
 
   const goChapter = useCallback(
     (target: ChapterInfo, at: 'start' | 'last' = 'start') =>
@@ -196,7 +216,19 @@ export function ReaderPage({
   const mode = resolveMode(reader.mode, manga.data.type);
   const direction = resolveDirection(reader.direction, manga.data.type);
   const rtl = direction === 'rtl' && (mode === 'single' || mode === 'double');
-  const save = (patch: Partial<ReaderSettings>) => updateSettings.mutate({ reader: { ...reader, ...patch } });
+  // With an override, the manga's fields change the override and the rest (tap zones) the global
+  // settings; without one, everything is global.
+  const save = (patch: Partial<ReaderSettings>) => {
+    const global = settings!.reader;
+    if (!override) {
+      updateSettings.mutate({ reader: { ...global, ...patch } });
+      return;
+    }
+    const own = Object.entries(patch).filter(([key]) => (MANGA_READER_KEYS as readonly string[]).includes(key));
+    const rest = Object.entries(patch).filter(([key]) => !(MANGA_READER_KEYS as readonly string[]).includes(key));
+    if (own.length > 0) setMangaReader.mutate({ ...override, ...Object.fromEntries(own) });
+    if (rest.length > 0) updateSettings.mutate({ reader: { ...global, ...Object.fromEntries(rest) } });
+  };
   const total = position.total || pages.data.pages.length;
   const page = Math.max(position.page, 0);
   const isMac = info?.platform === 'darwin';
@@ -232,6 +264,7 @@ export function ReaderPage({
             chapter={chapter}
             pages={pages.data.pages}
             chapters={chapters.data}
+            prefs={manga.data.scanlatorPrefs}
             gap={mode === 'vertical' ? reader.verticalGap : 0}
             settings={reader}
             start={resumeAt}
@@ -322,7 +355,15 @@ export function ReaderPage({
       </header>
 
       {panelOpen && (
-        <ReaderSettingsPanel settings={reader} mode={mode} onChange={save} onClose={() => setPanelOpen(false)} />
+        <ReaderSettingsPanel
+          settings={reader}
+          mode={mode}
+          mangaOverride={override !== null}
+          onChange={save}
+          onSaveForManga={() => setMangaReader.mutate(toMangaReaderSettings(reader))}
+          onResetManga={() => setMangaReader.mutate(null)}
+          onClose={() => setPanelOpen(false)}
+        />
       )}
 
       {/* Bottom bar */}

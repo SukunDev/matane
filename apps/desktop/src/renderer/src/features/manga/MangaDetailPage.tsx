@@ -90,7 +90,7 @@ export function MangaDetailPage({ mangaId }: { mangaId: number }) {
           ))}
         </div>
       ) : (
-        <ChapterList chapters={list} newIds={newIds} scrollElement={scrollElement} />
+        <ChapterList manga={manga.data} chapters={list} newIds={newIds} scrollElement={scrollElement} />
       )}
     </div>
   );

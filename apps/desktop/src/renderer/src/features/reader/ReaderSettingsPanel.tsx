@@ -6,7 +6,7 @@ import {
   READER_MODES,
   TAP_ZONES,
 } from '@manga-reader/shared/reader';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { BookMarked, RotateCcw, Save, SlidersHorizontal, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
@@ -93,13 +93,20 @@ function Range({
 export function ReaderSettingsPanel({
   settings,
   mode,
+  mangaOverride,
   onChange,
+  onSaveForManga,
+  onResetManga,
   onClose,
 }: {
   settings: ReaderSettings;
   /** The mode in effect ("auto" resolved), to show only relevant options. */
   mode: ResolvedMode;
+  /** This manga has its own settings (changes then apply to it only). */
+  mangaOverride: boolean;
   onChange: (patch: Partial<ReaderSettings>) => void;
+  onSaveForManga: () => void;
+  onResetManga: () => void;
   onClose: () => void;
 }) {
   const { t } = useTranslation();
@@ -194,9 +201,30 @@ export function ReaderSettingsPanel({
           render={(value) => t(`reader.settings.backgrounds.${value}`)}
         />
       </div>
-      <p className="mt-auto border-t border-ctp-surface1 px-4 py-3 text-[11px] text-ctp-subtext0">
-        {t('reader.settings.globalHint')}
-      </p>
+      {/* Mockup 03: "Save as default for this manga" · "Reset". */}
+      <footer className="mt-auto flex flex-col gap-2 border-t border-ctp-surface1 px-4 py-3">
+        {mangaOverride ? (
+          <>
+            <p className="flex items-center gap-2 text-xs">
+              <BookMarked className="size-3.5 shrink-0 text-primary" />
+              <span className="font-medium text-primary">{t('reader.settings.mangaOverride')}</span>
+            </p>
+            <p className="text-[11px] text-ctp-subtext0">{t('reader.settings.mangaOverrideHint')}</p>
+            <Button variant="ghost" size="sm" className="self-start" onClick={onResetManga}>
+              <RotateCcw />
+              {t('reader.settings.resetManga')}
+            </Button>
+          </>
+        ) : (
+          <>
+            <p className="text-[11px] text-ctp-subtext0">{t('reader.settings.globalHint')}</p>
+            <Button variant="ghost" size="sm" className="self-start text-primary" onClick={onSaveForManga}>
+              <Save />
+              {t('reader.settings.saveForManga')}
+            </Button>
+          </>
+        )}
+      </footer>
     </aside>
   );
 }

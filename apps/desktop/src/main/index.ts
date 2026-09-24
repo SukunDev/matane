@@ -9,7 +9,8 @@ import { openDatabase } from './db/client';
 import { runMigrations } from './db/migrate';
 import { ChaptersRepository } from './db/repositories/chapters';
 import { ExtensionsRepository } from './db/repositories/extensions';
-import { MangaRepository } from './db/repositories/manga';
+import { MangaRepository, scanlatorPrefsOf } from './db/repositories/manga';
+import { NO_SCANLATOR_PREFS } from '@manga-reader/shared/chapters';
 import { CategoriesRepository } from './db/repositories/categories';
 import { HistoryRepository } from './db/repositories/history';
 import { LibraryRepository } from './db/repositories/library';
@@ -174,6 +175,10 @@ async function bootstrap(): Promise<void> {
     history: historyRepo,
     sessions,
     chapters: chaptersRepo,
+    scanlatorPrefs: (mangaId) => {
+      const row = mangaRepo.get(mangaId);
+      return row ? scanlatorPrefsOf(row) : NO_SCANLATOR_PREFS;
+    },
     incognito: () => settings.getAppSettings().incognito,
   });
 
@@ -190,6 +195,7 @@ async function bootstrap(): Promise<void> {
       library,
       libraryRepo,
       categories: new CategoriesRepository(connection.db, changes),
+      manga: mangaRepo,
     }),
   );
 

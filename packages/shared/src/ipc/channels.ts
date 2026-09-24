@@ -52,6 +52,9 @@ export const INVOKE_CHANNELS = [
   'manga.setCustomCover',
   'manga.resetCover',
   'manga.findDuplicates',
+  'manga.setReaderSettings',
+  'manga.setScanlatorPrefs',
+  'manga.setChapterView',
   'chapters.setBookmarked',
 ] as const;
 export type InvokeChannel = (typeof INVOKE_CHANNELS)[number];

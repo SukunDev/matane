@@ -1,5 +1,15 @@
 import type { MangaDetails, MangaSummary } from '@manga-reader/extension-sdk';
-import type { BrowseItem, MangaInfo } from '@manga-reader/shared';
+import {
+  type BrowseItem,
+  type ChapterView,
+  type MangaInfo,
+  type MangaReaderSettings,
+  type ScanlatorPrefs,
+  chapterViewSchema,
+  mangaReaderSettingsSchema,
+  scanlatorPrefsSchema,
+} from '@manga-reader/shared';
+import type { z } from 'zod';
 import { and, eq } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
@@ -15,6 +25,20 @@ function parseGenres(json: string): string[] {
     return [];
   }
 }
+
+/** A JSON column read with its schema; null when empty or unreadable. */
+function parseJson<T extends z.ZodType>(schema: T, json: string | null): z.output<T> | null {
+  if (!json) return null;
+  try {
+    const result = schema.safeParse(JSON.parse(json));
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
+}
+
+export const scanlatorPrefsOf = (row: Pick<MangaRow, 'scanlatorPrefsJson'>): ScanlatorPrefs =>
+  parseJson(scanlatorPrefsSchema, row.scanlatorPrefsJson) ?? { hidden: [], priority: [] };
 
 /** Identifies the cover on screen: a custom cover wins over the source's (BRAINSTORM.md §6.2). */
 export const coverKeyOf = (row: Pick<MangaRow, 'customCoverPath' | 'thumbnailUrl'>) =>
@@ -38,6 +62,9 @@ export function toMangaInfo(row: MangaRow, categoryIds: number[] = []): MangaInf
     inLibrary: row.inLibrary,
     categoryIds,
     lastFetchedAt: row.lastUpdateCheckAt,
+    readerSettings: parseJson(mangaReaderSettingsSchema, row.readerSettingsJson),
+    scanlatorPrefs: scanlatorPrefsOf(row),
+    chapterView: parseJson(chapterViewSchema, row.chapterViewJson),
   };
 }
 
@@ -139,6 +166,37 @@ export class MangaRepository {
   setCustomCoverPath(id: number, path: string | null): void {
     this.db.update(manga).set({ customCoverPath: path }).where(eq(manga.id, id)).run();
     this.changes.mark(`manga:${id}`, 'library');
+  }
+
+  /** Reader override for this manga (BRAINSTORM.md §6.1); null goes back to the global settings. */
+  setReaderSettings(id: number, settings: MangaReaderSettings | null): void {
+    const empty = !settings || Object.values(settings).every((value) => value === undefined);
+    this.db
+      .update(manga)
+      .set({ readerSettingsJson: empty ? null : JSON.stringify(settings) })
+      .where(eq(manga.id, id))
+      .run();
+    this.changes.mark(`manga:${id}`);
+  }
+
+  /** Hidden and preferred scanlators change the list, unread counts, history and "continue". */
+  setScanlatorPrefs(id: number, prefs: ScanlatorPrefs): void {
+    const empty = prefs.hidden.length === 0 && prefs.priority.length === 0;
+    this.db
+      .update(manga)
+      .set({ scanlatorPrefsJson: empty ? null : JSON.stringify(prefs) })
+      .where(eq(manga.id, id))
+      .run();
+    this.changes.mark(`manga:${id}`, `chapters:${id}`);
+  }
+
+  setChapterView(id: number, view: ChapterView | null): void {
+    this.db
+      .update(manga)
+      .set({ chapterViewJson: view ? JSON.stringify(view) : null })
+      .where(eq(manga.id, id))
+      .run();
+    this.changes.mark(`manga:${id}`);
   }
 
   updateDetails(id: number, details: MangaDetails, now = Date.now()): MangaRow {

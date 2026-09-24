@@ -256,8 +256,12 @@
       "noScanlator": "(tanpa grup)"
     },
     "sort": {
-      "newest": "Terbaru dulu",
-      "oldest": "Terlama dulu"
+      "title": "Urutkan chapter",
+      "source": "Urutan source",
+      "number": "Nomor chapter",
+      "date": "Tanggal rilis",
+      "descending": "Menurun (terbaru / tertinggi dulu)",
+      "ascending": "Menaik (terlama / terendah dulu)"
     },
     "jump": "Lompat ke ch…",
     "noChapters": "Source ini tidak punya chapter manga ini dalam bahasanya.",
@@ -282,7 +286,22 @@
       "change": "Ganti cover…",
       "reset": "Pakai cover dari source"
     },
-    "moreActions": "Aksi lainnya"
+    "moreActions": "Aksi lainnya",
+    "scanlators": {
+      "button": "Scanlator",
+      "title": "Scanlator",
+      "description": "Sembunyikan grup yang tidak kamu mau, dan urutkan untuk memilih versi chapter yang dibaca kalau beberapa grup merilisnya.",
+      "hiddenCount_other": "{{count}} disembunyikan",
+      "hiddenChapters_other": "{{count}} chapter disembunyikan oleh pengaturan scanlator",
+      "moveUp": "Naikkan",
+      "moveDown": "Turunkan",
+      "show": "Tampilkan {{name}}",
+      "hidden": "Disembunyikan: klik untuk menampilkan",
+      "visible": "Ditampilkan: klik untuk menyembunyikan",
+      "priorityHint": "Grup teratas yang merilis chapter itu dipakai; kalau tidak ada, grup yang terakhir dibaca, lalu rilis terbaru.",
+      "noPriorityHint": "Tanpa urutan: chapter berikutnya memakai grup yang terakhir dibaca, atau rilis terbaru. Pindahkan grup untuk mengatur urutan.",
+      "clearOrder": "Hapus urutan"
+    }
   },
   "reader": {
     "back": "Kembali ke manga",
@@ -353,7 +372,11 @@
         "gray": "Abu-abu",
         "white": "Putih"
       },
-      "globalHint": "Berlaku untuk semua manga. Pengaturan per manga hadir di versi berikutnya."
+      "globalHint": "Pengaturan ini berlaku untuk semua manga yang tidak punya pengaturan sendiri.",
+      "saveForManga": "Simpan sebagai default untuk manga ini",
+      "mangaOverride": "Pengaturan khusus manga ini",
+      "mangaOverrideHint": "Perubahan di sini hanya berlaku untuk manga ini (tap zone tetap global).",
+      "resetManga": "Kembali ke pengaturan global"
     },
     "tapZones": {
       "title": "Zona ketuk: {{preset}}",

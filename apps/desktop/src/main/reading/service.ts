@@ -1,4 +1,5 @@
-import { type ContinueTarget, continueChapter } from '@manga-reader/shared/chapters';
+import type { ScanlatorPrefs } from '@manga-reader/shared';
+import { type ContinueTarget, NO_SCANLATOR_PREFS, continueChapter } from '@manga-reader/shared/chapters';
 import { type ChaptersRepository, toChapterInfo } from '../db/repositories/chapters';
 import type { HistoryRepository } from '../db/repositories/history';
 import type { ProgressRepository, SavedProgress } from '../db/repositories/progress';
@@ -9,6 +10,8 @@ export interface ReadingServiceDeps {
   history: HistoryRepository;
   sessions: SessionRecorder;
   chapters: ChaptersRepository;
+  /** A manga's hidden/preferred scanlators (none when omitted). */
+  scanlatorPrefs?: (mangaId: number) => ScanlatorPrefs;
   /** Current incognito setting. */
   incognito: () => boolean;
   now?: () => number;
@@ -55,6 +58,7 @@ export class ReadingService {
 
   continueTarget(mangaId: number): ContinueTarget | null {
     const list = this.deps.chapters.list(mangaId).map(toChapterInfo);
-    return continueChapter(list, this.deps.history.lastChapterId(mangaId));
+    const prefs = this.deps.scanlatorPrefs?.(mangaId) ?? NO_SCANLATOR_PREFS;
+    return continueChapter(list, this.deps.history.lastChapterId(mangaId), prefs);
   }
 }

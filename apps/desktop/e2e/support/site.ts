@@ -13,6 +13,8 @@ export interface SiteManga {
   status: 'ongoing' | 'completed';
   /** Chapter numbers, oldest first. */
   chapters: number[];
+  /** Scanlator groups per chapter number (default: "Test Scans"); several = several versions. */
+  groups?: Record<number, string[]>;
 }
 
 const PAGES_PER_CHAPTER = 4;
@@ -20,8 +22,18 @@ const PAGES_PER_CHAPTER = 4;
 export const SITE_MANGA: SiteManga[] = [
   { id: 'paged', title: 'Paged Hero', type: 'manga', genres: ['Action'], status: 'ongoing', chapters: [1, 2, 3, 5] },
   { id: 'strip', title: 'Scroll Garden', type: 'manhwa', genres: ['Comedy'], status: 'completed', chapters: [1, 2] },
-  // Filler so the listing has a second page.
-  ...Array.from({ length: 22 }, (_, i) => ({
+  // Several scanlator versions: 1 by Alpha, 2 by Alpha and Beta, 3 by Beta, 4 by Alpha and Beta.
+  {
+    id: 'twin',
+    title: 'Twin Scans',
+    type: 'manga',
+    genres: ['Drama'],
+    status: 'ongoing',
+    chapters: [1, 2, 3, 4],
+    groups: { 1: ['Alpha'], 2: ['Alpha', 'Beta'], 3: ['Beta'], 4: ['Alpha', 'Beta'] },
+  },
+  // Filler so the listing has a second page (24 manga in total).
+  ...Array.from({ length: 21 }, (_, i) => ({
     id: `filler-${i}`,
     title: `Filler Title ${i + 1}`,
     type: 'manga' as const,
@@ -92,7 +104,7 @@ export async function startSite(): Promise<Site> {
     }
     const cover = /^\/img\/cover\/([\w-]+)\.png$/.exec(path);
     if (cover) return { type: 'image/png', body: png(60, 90, [203, 166, 247]) };
-    const page = /^\/img\/page\/([\w-]+)\/(\d+)\/(\d+)\.png$/.exec(path);
+    const page = /^\/img\/page\/([\w-]+)\/([\d-]+)\/(\d+)\.png$/.exec(path);
     if (page) {
       const index = Number(page[3]);
       // Page 2 of every chapter is a two-page spread (landscape).
@@ -164,7 +176,8 @@ export function extensionFiles(origin: string): Record<string, string> {
       },
       async getChapters(manga) {
         const m = await get('/api/manga/' + manga.url);
-        return m.chapters.slice().reverse().map((n) => ({ url: m.id + '/' + n, name: 'Ch. ' + n, number: n, scanlator: 'Test Scans', uploadedAt: Date.UTC(2026, 0, n) }));
+        // Newest first; versions of one number: the later group uploaded a day later.
+        return m.chapters.slice().reverse().flatMap((n) => (m.groups?.[n] ?? ['Test Scans']).map((group, v) => ({ url: m.id + '/' + n + (v ? '-' + v : ''), name: 'Ch. ' + n, number: n, scanlator: group, uploadedAt: Date.UTC(2026, 0, n + v) })).reverse());
       },
       async getPages(chapter) {
         return [0, 1, 2, 3].slice(0, ${PAGES_PER_CHAPTER}).map((index) => ({ index, imageUrl: base + '/img/page/' + chapter.url + '/' + index + '.png' }));

@@ -1,4 +1,4 @@
-import type { ChapterInfo, Page, ReaderSettings } from '@manga-reader/shared';
+import type { ChapterInfo, Page, ReaderSettings, ScanlatorPrefs } from '@manga-reader/shared';
 import { useQueryClient } from '@tanstack/react-query';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Loader2 } from 'lucide-react';
@@ -32,6 +32,7 @@ export function WebtoonView({
   chapter,
   pages,
   chapters,
+  prefs,
   gap,
   settings,
   start,
@@ -43,6 +44,8 @@ export function WebtoonView({
   chapter: ChapterInfo;
   pages: Page[];
   chapters: ChapterInfo[];
+  /** Hidden/preferred scanlators: which version of the next chapter to append. */
+  prefs: ScanlatorPrefs;
   gap: number;
   settings: ReaderSettings;
   start: number | 'last';
@@ -75,11 +78,11 @@ export function WebtoonView({
       segment.pages.forEach((_, index) =>
         list.push({ kind: 'page', chapter: segment.chapter, index, total: segment.pages.length }),
       );
-      const next = segments[i + 1]?.chapter ?? adjacentChapter(chapters, segment.chapter, 1);
+      const next = segments[i + 1]?.chapter ?? adjacentChapter(chapters, segment.chapter, 1, prefs);
       list.push({ kind: 'divider', from: segment.chapter, to: next });
     });
     return list;
-  }, [segments, chapters]);
+  }, [segments, chapters, prefs]);
 
   const estimate = useCallback(
     (i: number) => {
@@ -186,7 +189,7 @@ export function WebtoonView({
       if (item?.kind === 'page') preloadPage(item.chapter.id, item.index);
     }
     const tail = segments.at(-1)!;
-    const next = adjacentChapter(chapters, tail.chapter, 1);
+    const next = adjacentChapter(chapters, tail.chapter, 1, prefs);
     if (!next || loadingNext || lastIndex < items.length - 4) return;
     setLoadingNext(true);
     queryClient
@@ -194,7 +197,7 @@ export function WebtoonView({
       .then(({ pages: nextPages }) => setSegments((list) => [...list, { chapter: next, pages: nextPages }]))
       .catch(() => undefined)
       .finally(() => setLoadingNext(false));
-  }, [lastIndex, items, segments, chapters, loadingNext, queryClient]);
+  }, [lastIndex, items, segments, chapters, prefs, loadingNext, queryClient]);
 
   const scrollByScreen = useCallback((dir: 1 | -1) => {
     const el = scroller.current;

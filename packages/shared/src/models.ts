@@ -1,6 +1,7 @@
 // Shapes of library/source data as the renderer sees it (main-owned, served over IPC).
 import type { Filter, FilterState, Page, Preference } from '@manga-reader/extension-sdk';
 import { z } from 'zod';
+import { mangaReaderSettingsSchema } from './settings';
 
 export type { Filter, FilterState, Page, Preference };
 
@@ -60,6 +61,39 @@ export type BrowseItem = z.infer<typeof browseItemSchema>;
 export const browseResultSchema = z.object({ items: z.array(browseItemSchema), hasNextPage: z.boolean() });
 export type BrowseResult = z.infer<typeof browseResultSchema>;
 
+/**
+ * Per-manga scanlator preferences (BRAINSTORM.md §6.2), by scanlator name ("" = no group). Hidden
+ * groups disappear from the list, unread counts and navigation; `priority` picks the version of a
+ * chapter number when several groups released it.
+ */
+export const scanlatorPrefsSchema = z.object({
+  hidden: z.array(z.string()).catch([]),
+  priority: z.array(z.string()).catch([]),
+});
+export type ScanlatorPrefs = z.infer<typeof scanlatorPrefsSchema>;
+
+export const CHAPTER_SORTS = ['source', 'number', 'date'] as const;
+
+/** How a manga's chapter list is filtered and sorted, remembered per manga. */
+export const chapterViewSchema = z.object({
+  unreadOnly: z.boolean().catch(false),
+  bookmarkedOnly: z.boolean().catch(false),
+  /** One scanlator ("" = no group) or null for all. */
+  scanlator: z.string().nullable().catch(null),
+  sort: z.enum(CHAPTER_SORTS).catch('source'),
+  /** Newest / highest first. */
+  descending: z.boolean().catch(true),
+});
+export type ChapterView = z.infer<typeof chapterViewSchema>;
+
+export const DEFAULT_CHAPTER_VIEW: ChapterView = {
+  unreadOnly: false,
+  bookmarkedOnly: false,
+  scanlator: null,
+  sort: 'source',
+  descending: true,
+};
+
 export const mangaInfoSchema = z.object({
   id: z.number(),
   sourceId: z.string(),
@@ -78,6 +112,11 @@ export const mangaInfoSchema = z.object({
   categoryIds: z.array(z.number()),
   /** When details + chapters were last fetched from the source; null for browse-only rows. */
   lastFetchedAt: z.number().nullable(),
+  /** Reader override for this manga (§6.1); null = follow the global settings. */
+  readerSettings: mangaReaderSettingsSchema.nullable(),
+  scanlatorPrefs: scanlatorPrefsSchema,
+  /** null = default view. */
+  chapterView: chapterViewSchema.nullable(),
 });
 export type MangaInfo = z.infer<typeof mangaInfoSchema>;
 

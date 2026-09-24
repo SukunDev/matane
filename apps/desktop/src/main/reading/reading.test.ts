@@ -105,8 +105,17 @@ describe('ProgressRepository / ReadingService', () => {
     reading.saveProgress({ chapterId: ids['1']!, page: 3, pageEnd: 3, total: 10, offset: null });
     expect(reading.continueTarget(mangaId)).toEqual({ chapterId: ids['1'], kind: 'continue' });
     reading.saveProgress({ chapterId: ids['1']!, page: 9, pageEnd: 9, total: 10, offset: null });
-    // Chapter 2 exists twice; the version of the same scanlator (none here) → the first one.
-    expect(reading.continueTarget(mangaId)?.kind).toBe('next');
+    // Chapter 2 exists twice (A and B); without prefs the newest upload (the source's first).
+    expect(reading.continueTarget(mangaId)).toEqual({ chapterId: ids['2b'], kind: 'next' });
+    const withPrefs = new ReadingService({
+      progress,
+      history,
+      sessions,
+      chapters,
+      scanlatorPrefs: () => ({ hidden: [], priority: ['A'] }),
+      incognito: () => false,
+    });
+    expect(withPrefs.continueTarget(mangaId)).toEqual({ chapterId: ids['2a'], kind: 'next' });
   });
 
   it('writes nothing while incognito', async () => {

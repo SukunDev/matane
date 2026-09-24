@@ -6,6 +6,7 @@ import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { CategoriesRepository } from '../db/repositories/categories';
 import type { HistoryRepository } from '../db/repositories/history';
 import type { LibraryRepository } from '../db/repositories/library';
+import type { MangaRepository } from '../db/repositories/manga';
 import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
 import type { NetworkManager } from '../network/manager';
@@ -26,6 +27,7 @@ export interface IpcDeps {
   library: LibraryService;
   libraryRepo: LibraryRepository;
   categories: CategoriesRepository;
+  manga: MangaRepository;
 }
 
 export function createIpcHandlers({
@@ -40,7 +42,12 @@ export function createIpcHandlers({
   library,
   libraryRepo,
   categories,
+  manga,
 }: IpcDeps): IpcHandlers {
+  const existing = (mangaId: number) => {
+    if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
+    return mangaId;
+  };
   const windowOf = (event: Electron.IpcMainInvokeEvent): BrowserWindow | null =>
     BrowserWindow.fromWebContents(event.sender);
 
@@ -168,6 +175,9 @@ export function createIpcHandlers({
     },
     'manga.resetCover': ({ mangaId }) => library.resetCover(mangaId),
     'manga.findDuplicates': ({ mangaId }) => libraryRepo.findDuplicates(mangaId),
+    'manga.setReaderSettings': ({ mangaId, settings }) => manga.setReaderSettings(existing(mangaId), settings),
+    'manga.setScanlatorPrefs': ({ mangaId, prefs }) => manga.setScanlatorPrefs(existing(mangaId), prefs),
+    'manga.setChapterView': ({ mangaId, view }) => manga.setChapterView(existing(mangaId), view),
     'chapters.setBookmarked': ({ chapterIds, bookmarked }) => chapters.setBookmarked(chapterIds, bookmarked),
   };
 }

@@ -3,6 +3,7 @@ import type { Filter, Page, Preference } from '@manga-reader/extension-sdk';
 import {
   browseResultSchema,
   categorySchema,
+  chapterViewSchema,
   chapterInfoSchema,
   cloudflareStatusSchema,
   continueTargetSchema,
@@ -14,13 +15,14 @@ import {
   libraryItemSchema,
   libraryTabSchema,
   mangaInfoSchema,
+  scanlatorPrefsSchema,
   requestIdSchema,
   sourceCapabilitiesSchema,
   sourceEntrySchema,
   sourceIdSchema,
 } from '../models';
 import type { DbChangeTag } from '../models';
-import { appSettingsSchema } from '../settings';
+import { appSettingsSchema, mangaReaderSettingsSchema } from '../settings';
 import type { EventChannel, InvokeChannel } from './channels';
 
 const invoke = <I extends z.ZodType, O extends z.ZodType>(input: I, output: O) => ({ input, output });
@@ -189,6 +191,15 @@ export const invokeContract = {
   'manga.resetCover': invoke(z.object({ mangaId: idSchema }), z.void()),
   /** Library manga from other sources with the same (normalized) title. */
   'manga.findDuplicates': invoke(z.object({ mangaId: idSchema }), z.array(mangaInfoSchema)),
+  /** Reader override for this manga (BRAINSTORM.md §6.1); null resets it to the global settings. */
+  'manga.setReaderSettings': invoke(
+    z.object({ mangaId: idSchema, settings: mangaReaderSettingsSchema.nullable() }),
+    z.void(),
+  ),
+  /** Hidden scanlators and their priority order (BRAINSTORM.md §6.2). */
+  'manga.setScanlatorPrefs': invoke(z.object({ mangaId: idSchema, prefs: scanlatorPrefsSchema }), z.void()),
+  /** The chapter list's filter and sort for this manga; null = default. */
+  'manga.setChapterView': invoke(z.object({ mangaId: idSchema, view: chapterViewSchema.nullable() }), z.void()),
   'chapters.setBookmarked': invoke(
     z.object({ chapterIds: z.array(idSchema).min(1), bookmarked: z.boolean() }),
     z.void(),

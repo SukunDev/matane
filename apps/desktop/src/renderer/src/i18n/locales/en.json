@@ -260,8 +260,12 @@
       "noScanlator": "(no group)"
     },
     "sort": {
-      "newest": "Newest first",
-      "oldest": "Oldest first"
+      "title": "Sort chapters",
+      "source": "Source order",
+      "number": "Chapter number",
+      "date": "Upload date",
+      "descending": "Descending (newest / highest first)",
+      "ascending": "Ascending (oldest / lowest first)"
     },
     "jump": "Jump to ch…",
     "noChapters": "This source has no chapters for this manga in its language.",
@@ -286,7 +290,24 @@
       "change": "Change cover…",
       "reset": "Use the source's cover"
     },
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "scanlators": {
+      "button": "Scanlators",
+      "title": "Scanlators",
+      "description": "Hide groups you don't want, and order them to choose which version of a chapter to read when several groups released it.",
+      "hiddenCount_one": "{{count}} hidden",
+      "hiddenCount_other": "{{count}} hidden",
+      "hiddenChapters_one": "{{count}} chapter hidden by scanlator settings",
+      "hiddenChapters_other": "{{count}} chapters hidden by scanlator settings",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "show": "Show {{name}}",
+      "hidden": "Hidden: click to show",
+      "visible": "Shown: click to hide",
+      "priorityHint": "The highest group with a release wins; others follow the group you read last, then the newest upload.",
+      "noPriorityHint": "No order: the next chapter uses the group you read last, else the newest upload. Move a group to set an order.",
+      "clearOrder": "Clear order"
+    }
   },
   "reader": {
     "back": "Back to manga",
@@ -358,7 +379,11 @@
         "gray": "Gray",
         "white": "White"
       },
-      "globalHint": "Applies to every manga. Per-manga settings arrive in a later version."
+      "globalHint": "These settings apply to every manga without its own.",
+      "saveForManga": "Save as default for this manga",
+      "mangaOverride": "Custom settings for this manga",
+      "mangaOverrideHint": "Changes here apply to this manga only (tap zones stay global).",
+      "resetManga": "Reset to global settings"
     },
     "tapZones": {
       "title": "Tap zones: {{preset}}",

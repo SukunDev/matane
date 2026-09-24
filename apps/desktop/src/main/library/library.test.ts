@@ -136,6 +136,50 @@ describe('LibraryRepository', () => {
     expect(titles({ sort: 'total', ascending: false })[0]).toBe('Alpha Blade');
   });
 
+  it('leaves hidden scanlators out of the counts and the history', () => {
+    const { alpha, a } = seed();
+    const counts = () => {
+      const item = library.list(query()).find((i) => i.mangaId === alpha)!;
+      return [item.chapterCount, item.unreadCount];
+    };
+    manga.setScanlatorPrefs(alpha, { hidden: ['X'], priority: [] });
+    expect(counts()).toEqual([3, 3]); // chapter 2 still has Y
+    manga.setScanlatorPrefs(alpha, { hidden: ['X', 'Y'], priority: [] });
+    expect(counts()).toEqual([2, 2]);
+    // Chapters without a group are "" in the prefs.
+    manga.setScanlatorPrefs(alpha, { hidden: ['X', 'Y', ''], priority: [] });
+    expect(counts()).toEqual([0, 0]);
+    progress.markRead([a[0]!], true);
+    history.touch(alpha, a[0]!, 60);
+    expect(history.list()[0]).toMatchObject({ mangaId: alpha, hasUnread: false });
+    manga.setScanlatorPrefs(alpha, { hidden: [], priority: [] });
+    expect(history.list()[0]).toMatchObject({ mangaId: alpha, hasUnread: true });
+    expect(manga.info(alpha)?.scanlatorPrefs).toEqual({ hidden: [], priority: [] });
+  });
+
+  it('stores per-manga reader settings and chapter view, and drops invalid JSON', () => {
+    const { alpha } = seed();
+    expect(manga.info(alpha)).toMatchObject({ readerSettings: null, chapterView: null });
+    manga.setReaderSettings(alpha, { mode: 'webtoon', webtoonWidth: 900 });
+    manga.setChapterView(alpha, {
+      unreadOnly: true,
+      bookmarkedOnly: false,
+      scanlator: 'X',
+      sort: 'number',
+      descending: false,
+    });
+    expect(manga.info(alpha)).toMatchObject({
+      readerSettings: { mode: 'webtoon', webtoonWidth: 900 },
+      chapterView: { unreadOnly: true, scanlator: 'X', sort: 'number', descending: false },
+    });
+    manga.setReaderSettings(alpha, {});
+    expect(manga.info(alpha)?.readerSettings).toBeNull();
+    connection.sqlite
+      .prepare("UPDATE manga SET reader_settings_json = '{bad', scanlator_prefs_json = '[1]' WHERE id = ?")
+      .run(alpha);
+    expect(manga.info(alpha)).toMatchObject({ readerSettings: null, scanlatorPrefs: { hidden: [], priority: [] } });
+  });
+
   it('counts per tab and removes manga from the library', () => {
     const { alpha, beta } = seed();
     const cat = categories.create('Reading');

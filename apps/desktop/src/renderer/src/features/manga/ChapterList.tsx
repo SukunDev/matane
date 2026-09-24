@@ -1,20 +1,31 @@
-import type { ChapterInfo } from '@manga-reader/shared';
+import {
+  CHAPTER_SORTS,
+  type ChapterInfo,
+  type ChapterView,
+  DEFAULT_CHAPTER_VIEW,
+  type MangaInfo,
+} from '@manga-reader/shared';
+import { isHiddenScanlator, scanlatorKey } from '@manga-reader/shared/chapters';
 import { Link } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
   Bookmark,
   BookmarkMinus,
+  CalendarDays,
   CheckCheck,
   Circle,
   CircleAlert,
   CircleCheck,
   EllipsisVertical,
   EyeOff,
+  Hash,
   ListChecks,
+  ListOrdered,
   Search,
+  Users,
   X,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
@@ -25,54 +36,51 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
+import { mangaQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../library/selection';
 import { isTyping } from '../reader/PagedView';
+import { activeScanlator, viewChapters } from './chapterView';
+import { ScanlatorDialog } from './ScanlatorDialog';
 
 const ROW_HEIGHT = 48;
 const ALL = '__all__';
 
-export interface ChapterFilters {
-  unreadOnly: boolean;
-  bookmarkedOnly: boolean;
-  scanlator: string;
-  /** Source order is newest first; `oldestFirst` flips it. */
-  oldestFirst: boolean;
-}
-
-export function filterChapters(chapters: ChapterInfo[], filters: ChapterFilters): ChapterInfo[] {
-  const visible = chapters.filter(
-    (c) =>
-      (!filters.unreadOnly || !c.read) &&
-      (!filters.bookmarkedOnly || c.bookmarked) &&
-      (filters.scanlator === ALL || (c.scanlator ?? '') === filters.scanlator),
-  );
-  return filters.oldestFirst ? visible.reverse() : visible;
-}
-
 export function ChapterList({
+  manga,
   chapters,
   newIds,
   scrollElement,
 }: {
+  manga: MangaInfo;
   chapters: ChapterInfo[];
   newIds: ReadonlySet<number>;
   /** The page's scroll container; null until it has mounted. */
   scrollElement: HTMLDivElement | null;
 }) {
   const { t, i18n } = useTranslation();
-  const [filters, setFilters] = useState<ChapterFilters>({
-    unreadOnly: false,
-    bookmarkedOnly: false,
-    scanlator: ALL,
-    oldestFirst: false,
+  const queryClient = useQueryClient();
+  const prefs = manga.scanlatorPrefs;
+  // Filter and sort are remembered per manga (`chapter_view_json`), optimistically.
+  const view = manga.chapterView ?? DEFAULT_CHAPTER_VIEW;
+  const saveView = useMutation({
+    mutationFn: (next: ChapterView) => ipc.invoke('manga.setChapterView', { mangaId: manga.id, view: next }),
+    onMutate: (next) =>
+      queryClient.setQueryData(mangaQuery(manga.id).queryKey, (current: MangaInfo | undefined) =>
+        current ? { ...current, chapterView: next } : current,
+      ),
   });
-  const visible = useMemo(() => filterChapters(chapters, filters), [chapters, filters]);
-  const scanlators = useMemo(
-    () => [...new Set(chapters.map((c) => c.scanlator ?? ''))].sort((a, b) => a.localeCompare(b)),
+  const setView = (patch: Partial<ChapterView>) => saveView.mutate({ ...view, ...patch });
+
+  const visible = useMemo(() => viewChapters(chapters, view, prefs), [chapters, view, prefs]);
+  const allScanlators = useMemo(
+    () => [...new Set(chapters.map(scanlatorKey))].sort((a, b) => a.localeCompare(b)),
     [chapters],
   );
-  const unread = chapters.filter((c) => !c.read && !c.sourceMissing).length;
+  const scanlators = allScanlators.filter((name) => !prefs.hidden.includes(name));
+  const shown = chapters.filter((c) => !isHiddenScanlator(c, prefs));
+  const unread = shown.filter((c) => !c.read && !c.sourceMissing).length;
+  const [scanlatorDialog, setScanlatorDialog] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
@@ -99,7 +107,7 @@ export function ChapterList({
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' });
   };
 
-  const toggle = (key: 'unreadOnly' | 'bookmarkedOnly') => setFilters((f) => ({ ...f, [key]: !f[key] }));
+  const toggle = (key: 'unreadOnly' | 'bookmarkedOnly') => setView({ [key]: !view[key] });
 
   // Multi-select like the library: Ctrl/Shift+click, or click once something is selected; Esc clears.
   const order = useMemo(() => visible.map((c) => c.id), [visible]);
@@ -126,11 +134,11 @@ export function ChapterList({
           {t('manga.chapters')}
           <span className="rounded-md bg-primary/15 px-1.5 text-xs text-primary">{chapters.length}</span>
         </h2>
-        <Chip active={filters.unreadOnly} onClick={() => toggle('unreadOnly')}>
+        <Chip active={view.unreadOnly} onClick={() => toggle('unreadOnly')}>
           {t('manga.filters.unread')}
           <span className="text-muted-foreground">{unread}</span>
         </Chip>
-        <Chip active={filters.bookmarkedOnly} onClick={() => toggle('bookmarkedOnly')}>
+        <Chip active={view.bookmarkedOnly} onClick={() => toggle('bookmarkedOnly')}>
           {t('manga.filters.bookmarked')}
         </Chip>
 
@@ -138,8 +146,8 @@ export function ChapterList({
           {scanlators.length > 1 && (
             <select
               aria-label={t('manga.filters.scanlator')}
-              value={filters.scanlator}
-              onChange={(event) => setFilters((f) => ({ ...f, scanlator: event.target.value }))}
+              value={activeScanlator(view, prefs) ?? ALL}
+              onChange={(event) => setView({ scanlator: event.target.value === ALL ? null : event.target.value })}
               className="h-8 max-w-52 rounded-lg border border-input bg-background px-2 text-xs"
             >
               <option value={ALL}>{t('manga.filters.allScanlators')}</option>
@@ -150,14 +158,23 @@ export function ChapterList({
               ))}
             </select>
           )}
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setFilters((f) => ({ ...f, oldestFirst: !f.oldestFirst }))}
-          >
-            {filters.oldestFirst ? <ArrowUpNarrowWide /> : <ArrowDownWideNarrow />}
-            {filters.oldestFirst ? t('manga.sort.oldest') : t('manga.sort.newest')}
-          </Button>
+          {(allScanlators.length > 1 || prefs.hidden.length > 0) && (
+            <Button
+              variant="secondary"
+              size="sm"
+              title={t('manga.scanlators.title')}
+              onClick={() => setScanlatorDialog(true)}
+            >
+              <Users />
+              {t('manga.scanlators.button')}
+              {prefs.hidden.length > 0 && (
+                <span className="rounded bg-primary/15 px-1 text-[10px] text-primary">
+                  {t('manga.scanlators.hiddenCount', { count: prefs.hidden.length })}
+                </span>
+              )}
+            </Button>
+          )}
+          <SortMenu view={view} onChange={setView} />
           <JumpBox onJump={jump} />
         </div>
       </div>
@@ -191,7 +208,10 @@ export function ChapterList({
       )}
       <p className="px-6 py-4 text-xs text-muted-foreground">
         {t('manga.showing', { shown: visible.length, total: chapters.length })}
+        {shown.length < chapters.length &&
+          ` · ${t('manga.scanlators.hiddenChapters', { count: chapters.length - shown.length })}`}
       </p>
+      <ScanlatorDialog manga={manga} chapters={chapters} open={scanlatorDialog} onOpenChange={setScanlatorDialog} />
       {selected.length > 0 && (
         <ChapterSelectionBar
           chapters={visible.filter((c) => selection.ids.has(c.id))}
@@ -271,6 +291,62 @@ function ChapterRow({
       </Link>
       <BookmarkToggle chapter={chapter} />
       <ChapterMenu chapter={chapter} />
+    </div>
+  );
+}
+
+const SORT_ICONS = { source: ListOrdered, number: Hash, date: CalendarDays } as const;
+
+/** Source order / chapter number / upload date, and the direction (BRAINSTORM.md §6.2). */
+function SortMenu({ view, onChange }: { view: ChapterView; onChange: (patch: Partial<ChapterView>) => void }) {
+  const { t } = useTranslation();
+  const Icon = SORT_ICONS[view.sort];
+  return (
+    <div className="flex">
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <Button variant="secondary" size="sm" className="rounded-r-none" title={t('manga.sort.title')}>
+            <Icon />
+            {t(`manga.sort.${view.sort}`)}
+          </Button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            sideOffset={4}
+            className="z-50 min-w-48 rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl"
+          >
+            <DropdownMenu.RadioGroup
+              value={view.sort}
+              onValueChange={(value) => onChange({ sort: value as ChapterView['sort'] })}
+            >
+              {CHAPTER_SORTS.map((sort) => {
+                const ItemIcon = SORT_ICONS[sort];
+                return (
+                  <DropdownMenu.RadioItem
+                    key={sort}
+                    value={sort}
+                    className="flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-accent data-[state=checked]:text-primary"
+                  >
+                    <ItemIcon className="size-4" />
+                    {t(`manga.sort.${sort}`)}
+                  </DropdownMenu.RadioItem>
+                );
+              })}
+            </DropdownMenu.RadioGroup>
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+      <Button
+        variant="secondary"
+        size="sm"
+        className="rounded-l-none border-l border-background px-2"
+        title={view.descending ? t('manga.sort.descending') : t('manga.sort.ascending')}
+        aria-label={view.descending ? t('manga.sort.descending') : t('manga.sort.ascending')}
+        onClick={() => onChange({ descending: !view.descending })}
+      >
+        {view.descending ? <ArrowDownWideNarrow /> : <ArrowUpNarrowWide />}
+      </Button>
     </div>
   );
 }

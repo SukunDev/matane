@@ -113,14 +113,22 @@ export class LibraryRepository {
     const direction = options.ascending ? sql.raw('ASC') : sql.raw('DESC');
 
     // Chapters count once per number (several scanlator versions of one chapter, §6.2); a number
-    // is read when any of its versions is.
+    // is read when any of its versions is. Hidden scanlators don't count.
     const rows = this.db.all<Row>(sql`
-      WITH counts AS (
+      WITH hidden AS (
+        SELECT m.id AS manga_id, j.value AS name
+        FROM manga m, json_each(m.scanlator_prefs_json, '$.hidden') j
+        WHERE m.in_library = 1 AND m.scanlator_prefs_json IS NOT NULL
+      ),
+      counts AS (
         SELECT manga_id,
           COUNT(DISTINCT coalesce(CAST(number AS TEXT), 'id' || id)) AS total,
           COUNT(DISTINCT CASE WHEN read = 1 THEN coalesce(CAST(number AS TEXT), 'id' || id) END) AS done
-        FROM chapters
+        FROM chapters ch
         WHERE source_missing = 0 AND manga_id IN (SELECT id FROM manga WHERE in_library = 1)
+          AND NOT EXISTS (
+            SELECT 1 FROM hidden h WHERE h.manga_id = ch.manga_id AND h.name = coalesce(ch.scanlator, '')
+          )
         GROUP BY manga_id
       ),
       lib AS (
