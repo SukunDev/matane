@@ -1,6 +1,6 @@
 import type { SourceEntry } from '@manga-reader/shared';
 import { queryOptions } from '@tanstack/react-query';
-import { createLimiter } from './limit';
+import { createLimiter } from '@manga-reader/shared/limit';
 import { invokeCancellable } from './sources';
 
 // Global search and migration share one queue: at most 5 sources are searched at once (§6.2);

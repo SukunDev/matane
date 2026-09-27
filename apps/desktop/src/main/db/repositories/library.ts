@@ -35,6 +35,7 @@ interface Row {
   chapterCount: number;
   readCount: number;
   categoryIds: string | null;
+  downloadedCount: number;
 }
 
 const ORDER: Record<LibrarySortKey, string> = {
@@ -110,6 +111,7 @@ export class LibraryRepository {
     const outer = [sql`1 = 1`];
     if (filters.unread) outer.push(sql`chapterCount > readCount`);
     if (filters.reading) outer.push(sql`lastReadAt IS NOT NULL AND chapterCount > readCount`);
+    if (filters.downloaded) outer.push(sql`downloadedCount > 0`);
     const direction = options.ascending ? sql.raw('ASC') : sql.raw('DESC');
 
     // Chapters count once per number (several scanlator versions of one chapter, §6.2); a number
@@ -137,7 +139,9 @@ export class LibraryRepository {
           m.added_at AS addedAt, m.latest_chapter_at AS latestChapterAt,
           h.read_at AS lastReadAt, hc.name AS lastReadChapter,
           coalesce(c.total, 0) AS chapterCount, coalesce(c.done, 0) AS readCount,
-          (SELECT group_concat(mc.category_id) FROM manga_categories mc WHERE mc.manga_id = m.id) AS categoryIds
+          (SELECT group_concat(mc.category_id) FROM manga_categories mc WHERE mc.manga_id = m.id) AS categoryIds,
+          (SELECT COUNT(*) FROM downloads d JOIN chapters dc ON dc.id = d.chapter_id
+            WHERE dc.manga_id = m.id AND d.status = 'done') AS downloadedCount
         FROM manga m
         LEFT JOIN sources s ON s.id = m.source_id
         LEFT JOIN counts c ON c.manga_id = m.id
@@ -164,6 +168,7 @@ export class LibraryRepository {
       latestChapterAt: row.latestChapterAt,
       addedAt: row.addedAt,
       categoryIds: row.categoryIds ? row.categoryIds.split(',').map(Number) : [],
+      downloadedCount: row.downloadedCount,
     }));
   }
 

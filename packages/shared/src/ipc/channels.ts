@@ -57,6 +57,15 @@ export const INVOKE_CHANNELS = [
   'manga.setChapterView',
   'migration.findCandidates',
   'migration.run',
+  'downloads.enqueue',
+  'downloads.list',
+  'downloads.stats',
+  'downloads.pause',
+  'downloads.resume',
+  'downloads.cancel',
+  'downloads.retry',
+  'downloads.reorder',
+  'downloads.delete',
   'chapters.setBookmarked',
 ] as const;
 export type InvokeChannel = (typeof INVOKE_CHANNELS)[number];
@@ -68,5 +77,6 @@ export const EVENT_CHANNELS = [
   'cloudflare.status',
   'window.fullScreenChanged',
   'migration.progress',
+  'downloads.progress',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

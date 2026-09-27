@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
 import { useCallback } from 'react';
 import { settingsQuery, useIpcEvent } from '../lib/ipc';
+import { useDownloadProgressSync } from '../lib/downloads';
 import { invalidateTags } from '../lib/sources';
 import { LanguageSync } from '../i18n/LanguageSync';
 import { ThemeSync } from '../theme/ThemeSync';
@@ -18,6 +19,7 @@ function RootComponent() {
     'settings.changed',
     useCallback((settings: AppSettings) => queryClient.setQueryData(settingsQuery.queryKey, settings), [queryClient]),
   );
+  useDownloadProgressSync();
   // Main owns the database and says which entities changed (ADR 0010).
   useIpcEvent(
     'db.changed',

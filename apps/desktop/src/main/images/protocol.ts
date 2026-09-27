@@ -3,6 +3,7 @@ import { Readable } from 'node:stream';
 import { toAppErrorData } from '@manga-reader/shared/errors';
 import { protocol } from 'electron';
 import type { CachedImage } from './cache';
+import type { ServedImage } from './service';
 
 export const MANGA_SCHEME = 'manga';
 
@@ -15,12 +16,13 @@ export function registerMangaScheme(): void {
 
 export interface MangaProtocolRoutes {
   cover(mangaId: number): Promise<CachedImage>;
-  page(chapterId: number, index: number): Promise<CachedImage>;
+  page(chapterId: number, index: number): Promise<ServedImage>;
 }
 
 /**
  * `manga://cover/<mangaId>` → the manga's cover; `manga://page/<chapterId>/<index>` → a chapter page.
- * Both come from the image cache and are fetched through the extension's network on a miss.
+ * Pages of downloaded chapters come from the download; everything else from the image cache,
+ * fetched through the extension's network on a miss.
  */
 export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: string) => void): void {
   protocol.handle(MANGA_SCHEME, async (request) => {
@@ -43,8 +45,11 @@ export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: 
   });
 }
 
-function serve(image: CachedImage): Response {
-  const body = Readable.toWeb(createReadStream(image.path)) as ReadableStream<Uint8Array>;
+function serve(image: ServedImage | CachedImage): Response {
+  const body =
+    'data' in image
+      ? new Uint8Array(image.data)
+      : (Readable.toWeb(createReadStream(image.path)) as ReadableStream<Uint8Array>);
   return new Response(body, {
     headers: {
       'content-type': image.contentType ?? 'application/octet-stream',

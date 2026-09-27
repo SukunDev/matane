@@ -254,7 +254,8 @@
       "bookmarked": "Ditandai",
       "scanlator": "Scanlator",
       "allScanlators": "Scanlator: semua",
-      "noScanlator": "(tanpa grup)"
+      "noScanlator": "(tanpa grup)",
+      "downloaded": "Didownload"
     },
     "sort": {
       "title": "Urutkan chapter",
@@ -416,7 +417,6 @@
       "unread": "Belum dibaca",
       "reading": "Sedang dibaca",
       "downloaded": "Didownload",
-      "soon": "Tersedia setelah fitur download hadir",
       "status": "Status",
       "source": "Source",
       "clear": "Hapus filter",
@@ -475,7 +475,8 @@
       "defaultHint": "Tanpa kategori: tampil di \"Default\".",
       "selected_other": "{{count}} kategori",
       "setTitle_other": "Atur kategori untuk {{count}} manga"
-    }
+    },
+    "downloaded_other": "{{count}} chapter didownload"
   },
   "history": {
     "subtitle": "Satu entri per manga · terakhir dibaca di atas",
@@ -587,5 +588,17 @@
     "backToLibrary": "Kembali ke library",
     "emptyTitle": "Tidak ada yang dimigrasi",
     "emptyDescription": "Pilih manga di library (Ctrl+klik) lalu pilih Migrasi."
+  },
+  "downloads": {
+    "download": "Download",
+    "downloaded": "Sudah didownload",
+    "failedRetry": "Download gagal: {{error}} — klik untuk mencoba lagi",
+    "progress": "Mendownload {{percent}}%",
+    "paused": "Download dijeda",
+    "queued": "Menunggu antrean download",
+    "clickToCancel": "klik untuk membatalkan",
+    "delete": "Hapus download",
+    "cancel": "Batalkan download",
+    "deleteCount_other": "Hapus {{count}} download"
   }
 }

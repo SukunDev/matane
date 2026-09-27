@@ -32,7 +32,7 @@ const allLibrary = () =>
     tab: 'all',
     sort: 'title',
     ascending: true,
-    filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
+    filters: { unread: false, reading: false, bookmarked: false, downloaded: false, status: [], sourceIds: [] },
   });
 
 export const libraryIdsQuery = queryOptions({

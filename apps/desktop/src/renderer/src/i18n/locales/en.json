@@ -258,7 +258,8 @@
       "bookmarked": "Bookmarked",
       "scanlator": "Scanlator",
       "allScanlators": "Scanlator: all",
-      "noScanlator": "(no group)"
+      "noScanlator": "(no group)",
+      "downloaded": "Downloaded"
     },
     "sort": {
       "title": "Sort chapters",
@@ -425,7 +426,6 @@
       "unread": "Unread",
       "reading": "Started reading",
       "downloaded": "Downloaded",
-      "soon": "Available once downloads arrive",
       "status": "Status",
       "source": "Source",
       "clear": "Clear filters",
@@ -488,7 +488,9 @@
       "selected_other": "{{count}} categories",
       "setTitle_one": "Set categories",
       "setTitle_other": "Set categories for {{count}} manga"
-    }
+    },
+    "downloaded_one": "{{count}} downloaded chapter",
+    "downloaded_other": "{{count}} downloaded chapters"
   },
   "history": {
     "subtitle": "One entry per manga · last read first",
@@ -608,5 +610,18 @@
     "backToLibrary": "Back to library",
     "emptyTitle": "Nothing to migrate",
     "emptyDescription": "Select manga in the library (Ctrl+click) and choose Migrate."
+  },
+  "downloads": {
+    "download": "Download",
+    "downloaded": "Downloaded",
+    "failedRetry": "Download failed: {{error}} — click to try again",
+    "progress": "Downloading {{percent}}%",
+    "paused": "Download paused",
+    "queued": "Queued for download",
+    "clickToCancel": "click to cancel",
+    "delete": "Delete download",
+    "cancel": "Cancel download",
+    "deleteCount_one": "Delete {{count}} download",
+    "deleteCount_other": "Delete {{count}} downloads"
   }
 }

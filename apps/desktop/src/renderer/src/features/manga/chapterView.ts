@@ -14,6 +14,8 @@ export function viewChapters(
   chapters: readonly ChapterInfo[],
   view: ChapterView,
   prefs: ScanlatorPrefs,
+  /** Chapters with a finished download (for "Downloaded"). */
+  downloaded: ReadonlySet<number> = new Set(),
 ): ChapterInfo[] {
   const scanlator = activeScanlator(view, prefs);
   const visible = chapters.filter(
@@ -21,6 +23,7 @@ export function viewChapters(
       !isHiddenScanlator(c, prefs) &&
       (!view.unreadOnly || !c.read) &&
       (!view.bookmarkedOnly || c.bookmarked) &&
+      (!view.downloadedOnly || downloaded.has(c.id)) &&
       (scanlator === null || scanlatorKey(c) === scanlator),
   );
   if (view.sort === 'source') return view.descending ? visible : visible.reverse();

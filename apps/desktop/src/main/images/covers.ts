@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, open, rm, stat } from 'node:fs/promises';
+import { copyFile, mkdir, open, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { AppError } from '@manga-reader/shared/errors';
 import type { MangaRepository, MangaRow } from '../db/repositories/manga';
@@ -24,12 +24,17 @@ export async function sniffImage(path: string): Promise<{ type: string; ext: str
   const handle = await open(path, 'r');
   try {
     const { buffer, bytesRead } = await handle.read(Buffer.alloc(16), 0, 16, 0);
-    const head = buffer.subarray(0, bytesRead);
-    const match = SIGNATURES.find((s) => s.test(head));
-    return match && { type: match.type, ext: match.ext };
+    return sniffBytes(buffer.subarray(0, bytesRead));
   } finally {
     await handle.close();
   }
+}
+
+/** Image type from the first bytes of a file (the extension or content type can't be trusted). */
+export function sniffBytes(bytes: Uint8Array): { type: string; ext: string } | undefined {
+  const head = Buffer.from(bytes.buffer, bytes.byteOffset, Math.min(bytes.byteLength, 16));
+  const match = SIGNATURES.find((s) => s.test(head));
+  return match && { type: match.type, ext: match.ext };
 }
 
 const shortHash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 10);
@@ -98,6 +103,19 @@ export class CoverStore {
     await copyFile(source, target);
     if (row.customCoverPath) await rm(row.customCoverPath, { force: true });
     this.manga.setCustomCoverPath(mangaId, target);
+  }
+
+  /** A custom cover from bytes (a page of a downloaded chapter). */
+  async setCustomBytes(mangaId: number, bytes: Uint8Array): Promise<void> {
+    const dir = join(this.dir, 'custom');
+    await mkdir(dir, { recursive: true });
+    const temp = join(dir, `.${mangaId}-${Date.now()}.tmp`);
+    await writeFile(temp, bytes);
+    try {
+      await this.setCustom(mangaId, temp);
+    } finally {
+      await rm(temp, { force: true });
+    }
   }
 
   async resetCustom(mangaId: number): Promise<void> {

@@ -78,6 +78,7 @@ export const CHAPTER_SORTS = ['source', 'number', 'date'] as const;
 export const chapterViewSchema = z.object({
   unreadOnly: z.boolean().catch(false),
   bookmarkedOnly: z.boolean().catch(false),
+  downloadedOnly: z.boolean().catch(false),
   /** One scanlator ("" = no group) or null for all. */
   scanlator: z.string().nullable().catch(null),
   sort: z.enum(CHAPTER_SORTS).catch('source'),
@@ -89,6 +90,7 @@ export type ChapterView = z.infer<typeof chapterViewSchema>;
 export const DEFAULT_CHAPTER_VIEW: ChapterView = {
   unreadOnly: false,
   bookmarkedOnly: false,
+  downloadedOnly: false,
   scanlator: null,
   sort: 'source',
   descending: true,
@@ -155,11 +157,18 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "sources" · "library" · "categories" · "history" · "manga:<id>" ·
+ * "extensions" · "sources" · "library" · "categories" · "history" · "downloads" · "manga:<id>" ·
  * "chapters:<mangaId>"
  */
 export type DbChangeTag =
-  'extensions' | 'sources' | 'library' | 'categories' | 'history' | `manga:${number}` | `chapters:${number}`;
+  | 'extensions'
+  | 'sources'
+  | 'library'
+  | 'categories'
+  | 'history'
+  | 'downloads'
+  | `manga:${number}`
+  | `chapters:${number}`;
 
 export const categorySchema = z.object({
   id: z.number(),
@@ -179,6 +188,8 @@ export const libraryFiltersSchema = z.object({
   reading: z.boolean().catch(false),
   /** Has at least one bookmarked chapter (like Mihon's library filter). */
   bookmarked: z.boolean().catch(false),
+  /** Has at least one downloaded chapter. */
+  downloaded: z.boolean().catch(false),
   status: z.array(z.enum(MANGA_STATUSES)).catch([]),
   sourceIds: z.array(z.string()).catch([]),
 });
@@ -204,6 +215,8 @@ export const libraryItemSchema = z.object({
   latestChapterAt: z.number().nullable(),
   addedAt: z.number().nullable(),
   categoryIds: z.array(z.number()),
+  /** Downloaded chapters (finished downloads). */
+  downloadedCount: z.number(),
 });
 export type LibraryItem = z.infer<typeof libraryItemSchema>;
 
@@ -279,3 +292,59 @@ export const migrationProgressSchema = z.object({
   current: z.number().nullable(),
 });
 export type MigrationProgress = z.infer<typeof migrationProgressSchema>;
+
+export const DOWNLOAD_STATUSES = ['queued', 'downloading', 'paused', 'error', 'done'] as const;
+export type DownloadStatus = (typeof DOWNLOAD_STATUSES)[number];
+export const DOWNLOAD_FORMATS = ['cbz', 'folder'] as const;
+export type DownloadFormat = (typeof DOWNLOAD_FORMATS)[number];
+
+/** One chapter in the download queue or on disk (BRAINSTORM.md §6.4). */
+export const downloadItemSchema = z.object({
+  id: z.number(),
+  chapterId: z.number(),
+  mangaId: z.number(),
+  mangaTitle: z.string(),
+  coverKey: z.string().nullable(),
+  sourceId: z.string(),
+  sourceName: z.string().nullable(),
+  chapterName: z.string(),
+  chapterNumber: z.number().nullable(),
+  scanlator: z.string().nullable(),
+  status: z.enum(DOWNLOAD_STATUSES),
+  queueOrder: z.number(),
+  pagesDone: z.number(),
+  pagesTotal: z.number().nullable(),
+  error: z.string().nullable(),
+  format: z.enum(DOWNLOAD_FORMATS),
+  /** The finished file or folder. */
+  path: z.string().nullable(),
+  sizeBytes: z.number().nullable(),
+  createdAt: z.number(),
+  completedAt: z.number().nullable(),
+});
+export type DownloadItem = z.infer<typeof downloadItemSchema>;
+
+export const downloadStatsSchema = z.object({
+  queued: z.number(),
+  downloading: z.number(),
+  paused: z.number(),
+  error: z.number(),
+  done: z.number(),
+  /** Size of the finished downloads on disk. */
+  totalBytes: z.number(),
+});
+export type DownloadStats = z.infer<typeof downloadStatsSchema>;
+
+/** Live progress of the chapters being downloaded, a few times per second. */
+export const downloadProgressSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.number(),
+      chapterId: z.number(),
+      pagesDone: z.number(),
+      pagesTotal: z.number().nullable(),
+      bytesPerSecond: z.number(),
+    }),
+  ),
+});
+export type DownloadProgress = z.infer<typeof downloadProgressSchema>;

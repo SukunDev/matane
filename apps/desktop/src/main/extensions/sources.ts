@@ -6,6 +6,7 @@ import type { ExtensionsRepository, SourceRow } from '../db/repositories/extensi
 import type { MangaRepository } from '../db/repositories/manga';
 import type { ExtensionService } from './service';
 import { validate } from './validate';
+import type { DownloadStore } from '../downloads/store';
 
 /** BRAINSTORM.md §6.5; MangaDex image URLs live ~15 min, so the reader re-fetches on 403 (1d). */
 export const PAGE_LIST_TTL_MS = 60 * 60_000;
@@ -17,6 +18,8 @@ export interface SourceServiceDeps {
   extensionsRepo: ExtensionsRepository;
   manga: MangaRepository;
   chapters: ChaptersRepository;
+  /** Page lists of downloaded chapters (no network needed). */
+  downloads?: Pick<DownloadStore, 'pages'>;
   now?: () => number;
 }
 
@@ -174,10 +177,12 @@ export class SourceService {
   }
 
   /**
-   * Page list of a chapter: fresh cache first, then the source. When the source is unreachable a
-   * stale copy is used, so chapters whose images are cached still open offline.
+   * Page list of a chapter: the download first, then a fresh cache, then the source. When the source
+   * is unreachable a stale copy is used, so chapters whose images are cached still open offline.
    */
   async pages(chapterId: number, signal?: AbortSignal): Promise<{ pages: Page[]; fromCache: boolean }> {
+    const downloaded = await this.deps.downloads?.pages(chapterId);
+    if (downloaded && downloaded.length > 0) return { pages: downloaded, fromCache: true };
     const cached = this.deps.chapters.getCachedPages(chapterId, PAGE_LIST_TTL_MS, this.now());
     if (cached) return { pages: cached, fromCache: true };
     try {

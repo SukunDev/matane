@@ -141,7 +141,10 @@ function FilterPopover({
           >
             {t('library.filter.bookmarked')}
           </FilterToggle>
-          <FilterToggle on={false} disabled title={t('library.filter.soon')}>
+          <FilterToggle
+            on={settings.downloadedOnly}
+            onClick={() => onChange({ downloadedOnly: !settings.downloadedOnly })}
+          >
             {t('library.filter.downloaded')}
           </FilterToggle>
           <p className="mt-2 px-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
@@ -179,7 +182,14 @@ function FilterPopover({
               size="sm"
               className="mt-2"
               onClick={() =>
-                onChange({ unreadOnly: false, readingOnly: false, bookmarkedOnly: false, status: [], sourceIds: [] })
+                onChange({
+                  unreadOnly: false,
+                  readingOnly: false,
+                  bookmarkedOnly: false,
+                  downloadedOnly: false,
+                  status: [],
+                  sourceIds: [],
+                })
               }
             >
               <ListFilter />

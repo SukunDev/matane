@@ -11,6 +11,8 @@ import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
 import type { NetworkManager } from '../network/manager';
 import type { LibraryService } from '../library/service';
+import type { DownloadsRepository } from '../db/repositories/downloads';
+import type { DownloadManager } from '../downloads/manager';
 import type { MigrationService } from '../library/migration';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
@@ -30,6 +32,8 @@ export interface IpcDeps {
   categories: CategoriesRepository;
   manga: MangaRepository;
   migration: MigrationService;
+  downloads: DownloadManager;
+  downloadsRepo: DownloadsRepository;
 }
 
 export function createIpcHandlers({
@@ -46,6 +50,8 @@ export function createIpcHandlers({
   categories,
   manga,
   migration,
+  downloads,
+  downloadsRepo,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
     if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
@@ -181,6 +187,15 @@ export function createIpcHandlers({
     'manga.setReaderSettings': ({ mangaId, settings }) => manga.setReaderSettings(existing(mangaId), settings),
     'manga.setScanlatorPrefs': ({ mangaId, prefs }) => manga.setScanlatorPrefs(existing(mangaId), prefs),
     'manga.setChapterView': ({ mangaId, view }) => manga.setChapterView(existing(mangaId), view),
+    'downloads.enqueue': ({ chapterIds }) => downloads.enqueue(chapterIds),
+    'downloads.list': (input) => downloadsRepo.list(input ?? {}),
+    'downloads.stats': () => downloadsRepo.stats(),
+    'downloads.pause': (input) => downloads.pause(input?.ids),
+    'downloads.resume': (input) => downloads.resume(input?.ids),
+    'downloads.cancel': ({ ids }) => downloads.cancel(ids),
+    'downloads.retry': ({ ids }) => downloads.retry(ids),
+    'downloads.reorder': ({ ids }) => downloads.reorder(ids),
+    'downloads.delete': ({ chapterIds }) => downloads.delete(chapterIds),
     'migration.findCandidates': ({ mangaId, targets, requestId }) =>
       requests.run(requestId, (signal) => migration.findCandidates(mangaId, targets, signal)),
     'migration.run': ({ items, options }) =>

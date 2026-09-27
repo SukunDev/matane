@@ -4,6 +4,8 @@ import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { MangaRepository } from '../db/repositories/manga';
 import type { SourceService } from '../extensions/sources';
+import { readFile } from 'node:fs/promises';
+import type { DownloadStore } from '../downloads/store';
 import type { CachedImage, ImageCache, ImageKind } from './cache';
 import type { CoverStore } from './covers';
 
@@ -13,6 +15,14 @@ export interface ImageFetcher {
 }
 
 const MAX_IMAGE_BYTES = 30 * 1024 * 1024;
+
+/** An image to serve: a file on disk (cache) or bytes read from a downloaded chapter. */
+export type ServedImage = CachedImage | { data: Uint8Array; contentType: string; sizeBytes: number };
+
+export interface ImageBytes {
+  bytes: Uint8Array;
+  contentType: string | null;
+}
 
 /**
  * Serves images to the renderer without it ever touching the network (BRAINSTORM.md §6.5):
@@ -30,6 +40,8 @@ export class ImageService {
       sources: SourceService;
       fetcher: ImageFetcher;
       covers?: CoverStore;
+      /** Pages of downloaded chapters are served from the download first. */
+      downloads?: Pick<DownloadStore, 'page'>;
       log?: (message: string) => void;
     },
   ) {}
@@ -60,15 +72,42 @@ export class ImageService {
    * every visit), so cached pages open without any network. Image URLs can expire (MangaDex@Home
    * ~15 min): on 403/404/410 with a cached page list, the list is fetched again once.
    */
-  page(chapterId: number, index: number): Promise<CachedImage> {
+  async page(chapterId: number, index: number): Promise<ServedImage> {
+    const downloaded = await this.deps.downloads?.page(chapterId, index);
+    if (downloaded) {
+      return { data: downloaded.bytes, contentType: downloaded.contentType, sizeBytes: downloaded.bytes.byteLength };
+    }
+    return this.cachedPage(chapterId, index);
+  }
+
+  /**
+   * The bytes of a page for a download: from the download or cache when there, otherwise fetched
+   * **without** storing it, so a big download doesn't push what was read out of the cache.
+   */
+  async pageBytes(chapterId: number, index: number): Promise<ImageBytes> {
+    const downloaded = await this.deps.downloads?.page(chapterId, index);
+    if (downloaded) return { bytes: downloaded.bytes, contentType: downloaded.contentType };
+    const { key, sourceId } = this.pageKey(chapterId, index);
+    const cached = await this.deps.cache.get(key);
+    if (cached) return { bytes: await readFile(cached.path), contentType: cached.contentType };
+    return this.withPageUrl(chapterId, index, (url) => this.fetchBytes(sourceId, url));
+  }
+
+  private pageKey(chapterId: number, index: number): { key: string; sourceId: string } {
     const chapter = this.deps.chapters.get(chapterId);
-    if (!chapter) return Promise.reject(new AppError('not_found', `Chapter ${chapterId} not found`));
+    if (!chapter) throw new AppError('not_found', `Chapter ${chapterId} not found`);
     const manga = this.deps.manga.get(chapter.mangaId);
-    if (!manga) return Promise.reject(new AppError('not_found', `Manga ${chapter.mangaId} not found`));
+    if (!manga) throw new AppError('not_found', `Manga ${chapter.mangaId} not found`);
     const key = `page:${manga.sourceId}:${createHash('sha1').update(chapter.url).digest('hex')}:${index}`;
+    return { key, sourceId: manga.sourceId };
+  }
+
+  /** A cached page, fetched and stored on a miss. */
+  private cachedPage(chapterId: number, index: number): Promise<CachedImage> {
+    const { key, sourceId } = this.pageKey(chapterId, index);
     let pending = this.inflight.get(key);
     if (!pending) {
-      pending = this.loadPage(key, manga.sourceId, chapterId, index).finally(() => this.inflight.delete(key));
+      pending = this.loadPage(key, sourceId, chapterId, index).finally(() => this.inflight.delete(key));
       this.inflight.set(key, pending);
     }
     return pending;
@@ -77,6 +116,15 @@ export class ImageService {
   private async loadPage(key: string, sourceId: string, chapterId: number, index: number): Promise<CachedImage> {
     const cached = await this.deps.cache.get(key);
     if (cached) return cached;
+    return this.withPageUrl(chapterId, index, (url) => this.fetchAndStore(key, 'page', sourceId, url));
+  }
+
+  /**
+   * Runs `fetch` with the page's image URL. Image URLs can expire (MangaDex@Home ~15 min): on
+   * 403/404/410 with a cached page list, the list is fetched again once.
+   */
+  private async withPageUrl<T>(chapterId: number, index: number, fetch: (url: string) => Promise<T>): Promise<T> {
+    const { sourceId } = this.pageKey(chapterId, index);
     const { pages, fromCache } = await this.deps.sources.pages(chapterId);
     const find = (list: typeof pages) => {
       const page = list.find((p) => p.index === index) ?? list[index];
@@ -84,12 +132,12 @@ export class ImageService {
       return page;
     };
     try {
-      return await this.fetchAndStore(key, 'page', sourceId, await this.deps.sources.imageUrl(sourceId, find(pages)));
+      return await fetch(await this.deps.sources.imageUrl(sourceId, find(pages)));
     } catch (error) {
       const expired = error instanceof AppError && error.code === 'http' && [403, 404, 410].includes(error.status ?? 0);
       if (!expired || !fromCache) throw error;
       const fresh = await this.deps.sources.fetchPages(chapterId);
-      return this.fetchAndStore(key, 'page', sourceId, await this.deps.sources.imageUrl(sourceId, find(fresh)));
+      return fetch(await this.deps.sources.imageUrl(sourceId, find(fresh)));
     }
   }
 
@@ -105,7 +153,12 @@ export class ImageService {
   private async fetchAndStore(key: string, kind: ImageKind, sourceId: string, url: string): Promise<CachedImage> {
     const cached = await this.deps.cache.get(key);
     if (cached) return cached;
+    const { bytes, contentType } = await this.fetchBytes(sourceId, url);
+    return this.deps.cache.put(key, kind, bytes, contentType);
+  }
 
+  /** One image through the extension's network, checked, and reported to the extension. */
+  private async fetchBytes(sourceId: string, url: string): Promise<ImageBytes> {
     const source = this.deps.sources.source(sourceId);
     const headers = await this.deps.sources.imageHeaders(sourceId);
     const started = Date.now();
@@ -128,7 +181,7 @@ export class ImageService {
       bytes = buffer.byteLength;
       if (bytes === 0 || bytes > MAX_IMAGE_BYTES) throw new AppError('parse', `Unexpected image size (${bytes} bytes)`);
       success = true;
-      return await this.deps.cache.put(key, kind, buffer, contentType);
+      return { bytes: buffer, contentType };
     } finally {
       const result: ImageFetchResult = { url, success, bytes, durationMs: Date.now() - started, cached: cachedByCdn };
       this.deps.sources.reportImage(sourceId, result);

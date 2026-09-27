@@ -89,6 +89,7 @@ export const librarySettingsSchema = z.object({
   unreadOnly: z.boolean().catch(false),
   readingOnly: z.boolean().catch(false),
   bookmarkedOnly: z.boolean().catch(false),
+  downloadedOnly: z.boolean().catch(false),
   status: z.array(z.enum(['ongoing', 'completed', 'hiatus', 'cancelled', 'unknown'])).catch([]),
   sourceIds: z.array(z.string()).catch([]),
 });
@@ -102,6 +103,7 @@ export const DEFAULT_LIBRARY_SETTINGS: LibrarySettings = {
   unreadOnly: false,
   readingOnly: false,
   bookmarkedOnly: false,
+  downloadedOnly: false,
   status: [],
   sourceIds: [],
 };
@@ -144,6 +146,16 @@ export const migrationSettingsSchema = z.object({
 });
 export type MigrationSettings = z.infer<typeof migrationSettingsSchema>;
 
+/** Downloads (BRAINSTORM.md §6.4). The rest of the options arrive with the Downloads page. */
+export const downloadSettingsSchema = z.object({
+  /** null = the default, `Documents/Matane`. */
+  folder: z.string().min(1).nullable().catch(null),
+  format: z.enum(['cbz', 'folder']).catch('cbz'),
+  /** Carry on with the queue when the app starts. */
+  resumeOnStart: z.boolean().catch(true),
+});
+export type DownloadSettings = z.infer<typeof downloadSettingsSchema>;
+
 export const appSettingsSchema = z.object({
   theme: z.enum(THEME_MODES),
   accent: z.enum(ACCENTS),
@@ -156,6 +168,7 @@ export const appSettingsSchema = z.object({
   library: librarySettingsSchema,
   globalSearch: globalSearchSettingsSchema,
   migration: migrationSettingsSchema,
+  downloads: downloadSettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -169,4 +182,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   library: DEFAULT_LIBRARY_SETTINGS,
   globalSearch: { sourceIds: null, onlyWithResults: false },
   migration: { targets: [], options: DEFAULT_MIGRATION_OPTIONS },
+  downloads: { folder: null, format: 'cbz', resumeOnStart: true },
 };

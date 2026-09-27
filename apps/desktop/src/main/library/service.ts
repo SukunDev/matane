@@ -56,7 +56,8 @@ export class LibraryService {
   /** "Set as cover" from the reader: the page is already in the image cache. */
   async setCustomCoverFromPage(mangaId: number, chapterId: number, index: number): Promise<void> {
     const image = await this.deps.images.page(chapterId, index);
-    await this.deps.covers.setCustom(mangaId, image.path);
+    if ('data' in image) await this.deps.covers.setCustomBytes(mangaId, image.data);
+    else await this.deps.covers.setCustom(mangaId, image.path);
   }
 
   resetCover(mangaId: number): Promise<void> {

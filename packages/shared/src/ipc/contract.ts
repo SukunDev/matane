@@ -4,6 +4,9 @@ import {
   browseResultSchema,
   categorySchema,
   chapterViewSchema,
+  downloadItemSchema,
+  downloadProgressSchema,
+  downloadStatsSchema,
   chapterInfoSchema,
   cloudflareStatusSchema,
   continueTargetSchema,
@@ -220,6 +223,21 @@ export const invokeContract = {
     }),
     z.array(migrationResultSchema),
   ),
+  /** Queues chapters for download (already queued or downloaded ones are left as they are). */
+  'downloads.enqueue': invoke(z.object({ chapterIds: z.array(idSchema).min(1).max(5000) }), z.void()),
+  /** Downloads of one manga, or all of them; queue order, then newest finished first. */
+  'downloads.list': invoke(z.object({ mangaId: idSchema.optional() }).optional(), z.array(downloadItemSchema)),
+  'downloads.stats': invoke(z.void(), downloadStatsSchema),
+  /** Without ids: the whole queue. */
+  'downloads.pause': invoke(z.object({ ids: z.array(idSchema).optional() }).optional(), z.void()),
+  'downloads.resume': invoke(z.object({ ids: z.array(idSchema).optional() }).optional(), z.void()),
+  /** Removes queued/unfinished downloads (and their partial files). */
+  'downloads.cancel': invoke(z.object({ ids: z.array(idSchema).min(1) }), z.void()),
+  'downloads.retry': invoke(z.object({ ids: z.array(idSchema).min(1) }), z.void()),
+  /** New queue order, first to last. */
+  'downloads.reorder': invoke(z.object({ ids: z.array(idSchema).min(1) }), z.void()),
+  /** Deletes finished downloads from disk (and cancels unfinished ones) of these chapters. */
+  'downloads.delete': invoke(z.object({ chapterIds: z.array(idSchema).min(1) }), z.void()),
   /** The chapter list's filter and sort for this manga; null = default. */
   'manga.setChapterView': invoke(z.object({ mangaId: idSchema, view: chapterViewSchema.nullable() }), z.void()),
   'chapters.setBookmarked': invoke(
@@ -236,6 +254,7 @@ export const eventContract = {
   'cloudflare.status': cloudflareStatusSchema,
   'window.fullScreenChanged': z.boolean(),
   'migration.progress': migrationProgressSchema,
+  'downloads.progress': downloadProgressSchema,
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

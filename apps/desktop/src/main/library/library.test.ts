@@ -31,7 +31,7 @@ const query = (patch: Partial<LibraryQuery> = {}): LibraryQuery => ({
   tab: 'all',
   sort: 'title',
   ascending: true,
-  filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
+  filters: { unread: false, reading: false, bookmarked: false, downloaded: false, status: [], sourceIds: [] },
   ...patch,
 });
 const titles = (patch?: Partial<LibraryQuery>) => library.list(query(patch)).map((i) => i.title);
@@ -118,6 +118,18 @@ describe('LibraryRepository', () => {
     expect(titles({ filters: { ...query().filters, bookmarked: true } })).toEqual(['Alpha Blade']);
   });
 
+  it('counts finished downloads and filters by them', () => {
+    const { alpha, a } = seed();
+    const insert = connection.sqlite.prepare(
+      "INSERT INTO downloads (chapter_id, status, queue_order, format, created_at) VALUES (?, ?, 1, 'cbz', 0)",
+    );
+    insert.run(a[0], 'done');
+    insert.run(a[1], 'queued');
+    const filters = { ...query().filters, downloaded: true };
+    expect(library.list(query()).find((i) => i.mangaId === alpha)?.downloadedCount).toBe(1);
+    expect(titles({ filters })).toEqual(['Alpha Blade']);
+  });
+
   it('searches title, author and genres by word prefix, safely', () => {
     seed();
     expect(titles({ query: 'alp' })).toEqual(['Alpha Blade']);
@@ -164,6 +176,7 @@ describe('LibraryRepository', () => {
     manga.setChapterView(alpha, {
       unreadOnly: true,
       bookmarkedOnly: false,
+      downloadedOnly: false,
       scanlator: 'X',
       sort: 'number',
       descending: false,

@@ -1,4 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
+  // `limit.ts` uses AbortSignal/DOMException and its test timers, which main (Node) and the renderer
+  // (DOM) both provide; Node's types describe them for this package's own check.
+  "compilerOptions": { "types": ["node"] },
   "include": ["src"]
 }

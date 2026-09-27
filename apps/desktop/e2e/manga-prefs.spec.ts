@@ -31,7 +31,7 @@ const unreadBadge = () =>
       tab: 'all',
       sort: 'title',
       ascending: true,
-      filters: { unread: false, reading: false, bookmarked: false, status: [], sourceIds: [] },
+      filters: { unread: false, reading: false, bookmarked: false, downloaded: false, status: [], sourceIds: [] },
     });
     return items.find((i) => i.title === 'Twin Scans')?.unreadCount;
   });

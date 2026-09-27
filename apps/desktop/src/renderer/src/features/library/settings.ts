@@ -15,6 +15,7 @@ export const filtersOf = (settings: LibrarySettings): LibraryFilters => ({
   unread: settings.unreadOnly,
   reading: settings.readingOnly,
   bookmarked: settings.bookmarkedOnly,
+  downloaded: settings.downloadedOnly,
   status: settings.status,
   sourceIds: settings.sourceIds,
 });
@@ -23,5 +24,6 @@ export const filterCount = (settings: LibrarySettings) =>
   Number(settings.unreadOnly) +
   Number(settings.readingOnly) +
   Number(settings.bookmarkedOnly) +
+  Number(settings.downloadedOnly) +
   settings.status.length +
   settings.sourceIds.length;

@@ -172,7 +172,14 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
                   className="mt-2"
                   onClick={() => {
                     setQuery('');
-                    update({ unreadOnly: false, readingOnly: false, bookmarkedOnly: false, status: [], sourceIds: [] });
+                    update({
+                      unreadOnly: false,
+                      readingOnly: false,
+                      bookmarkedOnly: false,
+                      downloadedOnly: false,
+                      status: [],
+                      sourceIds: [],
+                    });
                   }}
                 >
                   {t('library.filter.clear')}
@@ -340,12 +347,24 @@ function LibraryCard({
           )}
         >
           <CoverImage mangaId={item.mangaId} coverKey={item.coverKey} alt={item.title} className="aspect-[2/3]" />
-          {item.unreadCount > 0 && (
-            <span
-              className="absolute top-1.5 left-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground"
-              title={t('library.unread', { count: item.unreadCount })}
-            >
-              {item.unreadCount}
+          {(item.unreadCount > 0 || item.downloadedCount > 0) && (
+            <span className="absolute top-1.5 left-1.5 flex overflow-hidden rounded-full text-[11px] font-semibold">
+              {item.unreadCount > 0 && (
+                <span
+                  className="flex h-5 min-w-5 items-center justify-center bg-primary px-1.5 text-primary-foreground"
+                  title={t('library.unread', { count: item.unreadCount })}
+                >
+                  {item.unreadCount}
+                </span>
+              )}
+              {item.downloadedCount > 0 && (
+                <span
+                  className="flex h-5 min-w-5 items-center justify-center bg-ctp-teal px-1.5 text-ctp-crust"
+                  title={t('library.downloaded', { count: item.downloadedCount })}
+                >
+                  {item.downloadedCount}
+                </span>
+              )}
             </span>
           )}
           {display === 'compact' && (

@@ -33,6 +33,12 @@ import { CloudflareSolver } from './network/cloudflare';
 import { ReadingService } from './reading/service';
 import { SessionRecorder } from './reading/sessions';
 import { NetworkManager } from './network/manager';
+import { DownloadReader } from './downloads/archive';
+import { DownloadManager } from './downloads/manager';
+import { DownloadStore } from './downloads/store';
+import { DownloadsRepository } from './db/repositories/downloads';
+import { effectiveReaderSettings } from '@manga-reader/shared';
+import { resolveDirection } from '@manga-reader/shared/chapters';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
 /** BRAINSTORM.md §6.5; becomes a setting with the Data & storage section. */
@@ -128,6 +134,8 @@ async function bootstrap(): Promise<void> {
     extensionsRepo,
     manga: mangaRepo,
     chapters: chaptersRepo,
+    // Declared further down; only used once requests arrive.
+    downloads: { pages: (chapterId) => downloadStore.pages(chapterId) },
   });
   const installed = await extensions.init();
   extLog.info(
@@ -136,12 +144,15 @@ async function bootstrap(): Promise<void> {
   );
 
   const covers = new CoverStore(join(userData, 'covers'), mangaRepo);
+  const downloadsRepo = new DownloadsRepository(connection.db, changes);
+  const downloadStore = new DownloadStore(downloadsRepo, new DownloadReader());
   const images = new ImageService({
     cache: new ImageCache(connection.db, join(userData, 'cache', 'images'), IMAGE_CACHE_BYTES),
     manga: mangaRepo,
     chapters: chaptersRepo,
     sources,
     covers,
+    downloads: downloadStore,
     log: (message) => log.scope('images').warn(message),
     fetcher: {
       fetchImage: (extensionId, url, headers) => {
@@ -160,6 +171,28 @@ async function bootstrap(): Promise<void> {
   const historyRepo = new HistoryRepository(connection.db, changes);
   const progressRepo = new ProgressRepository(connection.db, changes);
   const libraryRepo = new LibraryRepository(connection.db, changes);
+  const downloads = new DownloadManager({
+    repo: downloadsRepo,
+    store: downloadStore,
+    manga: mangaRepo,
+    chapters: chaptersRepo,
+    source: (sourceId) => extensionsRepo.getSource(sourceId),
+    pages: async (chapterId) => (await sources.pages(chapterId)).pages,
+    pageBytes: (chapterId, index) => images.pageBytes(chapterId, index),
+    settings: () => {
+      const current = settings.getAppSettings().downloads;
+      return { folder: current.folder ?? join(app.getPath('documents'), 'Matane'), format: current.format };
+    },
+    rightToLeft: (mangaId) => {
+      const info = mangaRepo.info(mangaId);
+      if (!info) return false;
+      const reader = effectiveReaderSettings(settings.getAppSettings().reader, info.readerSettings);
+      return resolveDirection(reader.direction, info.type) === 'rtl';
+    },
+    webUrl: (mangaId) => sources.webUrl(mangaId),
+    onProgress: (progress) => broadcast('downloads.progress', progress),
+    log: (message) => log.scope('downloads').warn(message),
+  });
   const library = new LibraryService({
     library: libraryRepo,
     manga: mangaRepo,
@@ -211,10 +244,13 @@ async function bootstrap(): Promise<void> {
       categories: new CategoriesRepository(connection.db, changes),
       manga: mangaRepo,
       migration: sourceMigration,
+      downloads,
+      downloadsRepo,
     }),
   );
 
   let mainWindow = createMainWindow(settings);
+  downloads.start(settings.getAppSettings().downloads.resumeOnStart);
 
   app.on('second-instance', () => {
     if (mainWindow.isMinimized()) mainWindow.restore();
@@ -227,6 +263,8 @@ async function bootstrap(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    downloads.shutdown();
+    void downloadStore.reader.closeAll();
     sessions.end();
     registry.close();
     host.dispose();

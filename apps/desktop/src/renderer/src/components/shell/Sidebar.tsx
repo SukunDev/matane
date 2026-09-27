@@ -4,6 +4,7 @@ import { ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-rea
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
+import { downloadStatsQuery } from '../../lib/downloads';
 import { libraryCountsQuery } from '../../lib/library';
 import logoMark from '../../assets/logo-mark.png';
 import { cn } from '../../lib/utils';
@@ -50,7 +51,11 @@ export function Sidebar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [browseOpen, setBrowseOpen] = useState(true);
   const { data: counts } = useQuery(libraryCountsQuery);
-  const badges: Partial<Record<NavLeaf['to'], number>> = { '/library': counts?.all };
+  const { data: downloadStats } = useQuery(downloadStatsQuery);
+  const queue = downloadStats
+    ? downloadStats.queued + downloadStats.downloading + downloadStats.paused + downloadStats.error
+    : 0;
+  const badges: Partial<Record<NavLeaf['to'], number>> = { '/library': counts?.all, '/downloads': queue };
 
   return (
     <aside

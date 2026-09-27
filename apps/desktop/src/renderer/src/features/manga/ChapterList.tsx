@@ -3,12 +3,13 @@ import {
   type ChapterInfo,
   type ChapterView,
   DEFAULT_CHAPTER_VIEW,
+  type DownloadItem,
   type MangaInfo,
 } from '@manga-reader/shared';
 import { isHiddenScanlator, scanlatorKey } from '@manga-reader/shared/chapters';
 import { Link } from '@tanstack/react-router';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ArrowDownWideNarrow,
   ArrowUpNarrowWide,
@@ -16,6 +17,7 @@ import {
   BookmarkMinus,
   CalendarDays,
   CheckCheck,
+  CircleArrowDown,
   Circle,
   CircleAlert,
   CircleCheck,
@@ -25,6 +27,7 @@ import {
   ListChecks,
   ListOrdered,
   Search,
+  Trash2,
   Users,
   X,
 } from 'lucide-react';
@@ -36,11 +39,13 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
+import { downloadsQuery } from '../../lib/downloads';
 import { mangaQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../library/selection';
 import { isTyping } from '../reader/PagedView';
 import { activeScanlator, viewChapters } from './chapterView';
+import { DownloadButton } from './DownloadButton';
 import { ScanlatorDialog } from './ScanlatorDialog';
 
 const ROW_HEIGHT = 48;
@@ -72,7 +77,13 @@ export function ChapterList({
   });
   const setView = (patch: Partial<ChapterView>) => saveView.mutate({ ...view, ...patch });
 
-  const visible = useMemo(() => viewChapters(chapters, view, prefs), [chapters, view, prefs]);
+  const { data: downloadList } = useQuery(downloadsQuery(manga.id));
+  const downloads = useMemo(() => new Map((downloadList ?? []).map((d) => [d.chapterId, d])), [downloadList]);
+  const downloaded = useMemo(
+    () => new Set((downloadList ?? []).filter((d) => d.status === 'done').map((d) => d.chapterId)),
+    [downloadList],
+  );
+  const visible = useMemo(() => viewChapters(chapters, view, prefs, downloaded), [chapters, view, prefs, downloaded]);
   const allScanlators = useMemo(
     () => [...new Set(chapters.map(scanlatorKey))].sort((a, b) => a.localeCompare(b)),
     [chapters],
@@ -107,7 +118,7 @@ export function ChapterList({
     if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' });
   };
 
-  const toggle = (key: 'unreadOnly' | 'bookmarkedOnly') => setView({ [key]: !view[key] });
+  const toggle = (key: 'unreadOnly' | 'bookmarkedOnly' | 'downloadedOnly') => setView({ [key]: !view[key] });
 
   // Multi-select like the library: Ctrl/Shift+click, or click once something is selected; Esc clears.
   const order = useMemo(() => visible.map((c) => c.id), [visible]);
@@ -140,6 +151,10 @@ export function ChapterList({
         </Chip>
         <Chip active={view.bookmarkedOnly} onClick={() => toggle('bookmarkedOnly')}>
           {t('manga.filters.bookmarked')}
+        </Chip>
+        <Chip active={view.downloadedOnly} onClick={() => toggle('downloadedOnly')}>
+          {t('manga.filters.downloaded')}
+          {downloaded.size > 0 && <span className="text-muted-foreground">{downloaded.size}</span>}
         </Chip>
 
         <div className="ml-auto flex items-center gap-2">
@@ -198,6 +213,7 @@ export function ChapterList({
                   isNew={newIds.has(chapter.id)}
                   language={i18n.language}
                   selected={selection.ids.has(chapter.id)}
+                  download={downloads.get(chapter.id)}
                   onClick={(event) => onRowClick(event, chapter.id)}
                   onToggle={() => setSelection((current) => select(current, order, chapter.id, 'toggle'))}
                 />
@@ -215,6 +231,7 @@ export function ChapterList({
       {selected.length > 0 && (
         <ChapterSelectionBar
           chapters={visible.filter((c) => selection.ids.has(c.id))}
+          downloaded={downloaded}
           onSelectAll={() => setSelection({ ids: new Set(order), anchor: null })}
           onClear={() => setSelection(EMPTY_SELECTION)}
         />
@@ -228,6 +245,7 @@ function ChapterRow({
   isNew,
   language,
   selected,
+  download,
   onClick,
   onToggle,
 }: {
@@ -235,6 +253,7 @@ function ChapterRow({
   isNew: boolean;
   language: string;
   selected: boolean;
+  download: DownloadItem | undefined;
   onClick: (event: MouseEvent) => void;
   onToggle: () => void;
 }) {
@@ -289,8 +308,9 @@ function ChapterRow({
           {chapter.uploadedAt !== null && <span>{formatRelative(chapter.uploadedAt, language)}</span>}
         </span>
       </Link>
+      <DownloadButton chapterId={chapter.id} download={download} />
       <BookmarkToggle chapter={chapter} />
-      <ChapterMenu chapter={chapter} />
+      <ChapterMenu chapter={chapter} download={download} />
     </div>
   );
 }
@@ -378,7 +398,7 @@ function BookmarkToggle({ chapter }: { chapter: ChapterInfo }) {
 }
 
 /** Per-chapter actions (BRAINSTORM.md §6.3): mark read/unread, mark everything before as read. */
-function ChapterMenu({ chapter }: { chapter: ChapterInfo }) {
+function ChapterMenu({ chapter, download }: { chapter: ChapterInfo; download: DownloadItem | undefined }) {
   const { t } = useTranslation();
   const markRead = useMutation({
     mutationFn: (read: boolean) => ipc.invoke('chapters.markRead', { chapterIds: [chapter.id], read }),
@@ -388,6 +408,10 @@ function ChapterMenu({ chapter }: { chapter: ChapterInfo }) {
   });
   const bookmark = useMutation({
     mutationFn: (bookmarked: boolean) => ipc.invoke('chapters.setBookmarked', { chapterIds: [chapter.id], bookmarked }),
+  });
+  const enqueue = useMutation({ mutationFn: () => ipc.invoke('downloads.enqueue', { chapterIds: [chapter.id] }) });
+  const deleteDownload = useMutation({
+    mutationFn: () => ipc.invoke('downloads.delete', { chapterIds: [chapter.id] }),
   });
   const item =
     'flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-accent';
@@ -421,6 +445,17 @@ function ChapterMenu({ chapter }: { chapter: ChapterInfo }) {
             {chapter.bookmarked ? <BookmarkMinus className="size-4" /> : <Bookmark className="size-4" />}
             {chapter.bookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
           </DropdownMenu.Item>
+          {download ? (
+            <DropdownMenu.Item className={`${item} text-destructive`} onSelect={() => deleteDownload.mutate()}>
+              <Trash2 className="size-4" />
+              {download.status === 'done' ? t('downloads.delete') : t('downloads.cancel')}
+            </DropdownMenu.Item>
+          ) : (
+            <DropdownMenu.Item className={item} onSelect={() => enqueue.mutate()}>
+              <CircleArrowDown className="size-4" />
+              {t('downloads.download')}
+            </DropdownMenu.Item>
+          )}
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
@@ -430,10 +465,12 @@ function ChapterMenu({ chapter }: { chapter: ChapterInfo }) {
 /** Actions for the selected chapters, floating at the bottom of the page. */
 function ChapterSelectionBar({
   chapters,
+  downloaded,
   onSelectAll,
   onClear,
 }: {
   chapters: ChapterInfo[];
+  downloaded: ReadonlySet<number>;
   onSelectAll: () => void;
   onClear: () => void;
 }) {
@@ -451,6 +488,15 @@ function ChapterSelectionBar({
     mutationFn: (chapterId: number) => ipc.invoke('chapters.markPreviousRead', { chapterId }),
     onSuccess: onClear,
   });
+  const enqueue = useMutation({
+    mutationFn: () => ipc.invoke('downloads.enqueue', { chapterIds }),
+    onSuccess: onClear,
+  });
+  const deleteDownloads = useMutation({
+    mutationFn: (ids: number[]) => ipc.invoke('downloads.delete', { chapterIds: ids }),
+    onSuccess: onClear,
+  });
+  const downloadedIds = chapterIds.filter((id) => downloaded.has(id));
   const allBookmarked = chapters.every((c) => c.bookmarked);
   const single = chapters.length === 1 ? chapters[0] : undefined;
 
@@ -482,6 +528,21 @@ function ChapterSelectionBar({
           {allBookmarked ? <BookmarkMinus /> : <Bookmark />}
           {allBookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
         </Button>
+        <Button variant="ghost" size="sm" onClick={() => enqueue.mutate()}>
+          <CircleArrowDown />
+          {t('downloads.download')}
+        </Button>
+        {downloadedIds.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive"
+            onClick={() => deleteDownloads.mutate(downloadedIds)}
+          >
+            <Trash2 />
+            {t('downloads.deleteCount', { count: downloadedIds.length })}
+          </Button>
+        )}
         {single && (
           <Button variant="ghost" size="sm" onClick={() => markPrevious.mutate(single.id)}>
             <ListChecks />
