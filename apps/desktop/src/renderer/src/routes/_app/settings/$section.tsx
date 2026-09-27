@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../../components/EmptyState';
 import { AboutSettings } from '../../../features/settings/AboutSettings';
 import { AdvancedSettings } from '../../../features/settings/AdvancedSettings';
+import { DataSettings } from '../../../features/settings/DataSettings';
 import { DownloadSettings } from '../../../features/settings/DownloadSettings';
 import { GeneralSettings } from '../../../features/settings/GeneralSettings';
 import { LibrarySettings } from '../../../features/settings/LibrarySettings';
@@ -58,6 +59,7 @@ function SettingsPage() {
             </div>
           )}
           {current === 'downloads' && <DownloadSettings />}
+          {current === 'data' && <DataSettings />}
           {current === 'advanced' && <AdvancedSettings />}
           {current === 'about' && <AboutSettings />}
           {!READY_SECTIONS.includes(current) && (

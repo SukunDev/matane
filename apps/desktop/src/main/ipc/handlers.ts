@@ -17,6 +17,10 @@ import type { DownloadsRepository } from '../db/repositories/downloads';
 import type { DownloadManager } from '../downloads/manager';
 import type { MigrationService } from '../library/migration';
 import type { UpdateService } from '../library/updates';
+import type { OnlineMonitor } from '../app/online';
+import type { TraySupport } from '../app/tray-support';
+import type { ImageCache } from '../images/cache';
+import type { AppSettings } from '@manga-reader/shared';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
 import type { RequestRegistry } from './requests';
@@ -40,6 +44,12 @@ export interface IpcDeps {
   /** The download folder in effect. */
   downloadFolder: () => string;
   updates: UpdateService;
+  online: Pick<OnlineMonitor, 'isOnline'>;
+  traySupport: () => TraySupport;
+  imageCache: Pick<ImageCache, 'bytesOf' | 'clear'>;
+  paths: { data: string; logs: string };
+  /** After `settings.set`: tray, login item, cache size… follow. */
+  settingsChanged: (patch: Partial<AppSettings>) => void;
 }
 
 /** Settings key (not an app setting): finished downloads before this time are off the Downloads page. */
@@ -63,6 +73,11 @@ export function createIpcHandlers({
   downloadsRepo,
   downloadFolder,
   updates,
+  online,
+  traySupport,
+  imageCache,
+  paths,
+  settingsChanged,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
     if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
@@ -81,6 +96,20 @@ export function createIpcHandlers({
       platform: process.platform,
     }),
     'app.getLocale': () => app.getLocale(),
+    'app.isOnline': () => online.isOnline(),
+    'app.tray': () => traySupport(),
+    'app.openPath': async ({ which }) => {
+      const error = await shell.openPath(which === 'data' ? paths.data : paths.logs);
+      if (error) throw new AppError('unknown', error);
+    },
+    'storage.info': () => ({
+      pageCacheBytes: imageCache.bytesOf('page'),
+      browseCoverBytes: imageCache.bytesOf('browse_cover'),
+      downloadBytes: downloadsRepo.stats().totalBytes,
+      dataPath: paths.data,
+      logPath: paths.logs,
+    }),
+    'storage.clearCache': ({ kind }) => imageCache.clear(kind),
 
     'window.minimize': (_input, event) => {
       windowOf(event)?.minimize();
@@ -108,6 +137,7 @@ export function createIpcHandlers({
       const next = settings.updateAppSettings(patch);
       broadcast('settings.changed', next);
       if (patch.downloads) downloads.settingsChanged();
+      settingsChanged(patch);
       return next;
     },
 

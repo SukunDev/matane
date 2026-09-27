@@ -348,6 +348,33 @@ describe('DownloadManager', () => {
   });
 });
 
+describe('DownloadManager offline', () => {
+  it('puts running chapters back in the queue while offline and carries on once online', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    onFetch = (_chapter, index) => (index >= 2 ? gate : undefined);
+    manager.start(true);
+    manager.enqueue([chapterIds[0]!]);
+    while (fetched.length < 2) await tick();
+
+    const offline = manager.setOnline(false);
+    release();
+    await offline;
+    expect(status(chapterIds[0]!)).toBe('queued');
+    manager.enqueue([chapterIds[1]!]);
+    await tick();
+    expect(status(chapterIds[1]!)).toBe('queued'); // nothing starts offline
+
+    fetched = [];
+    onFetch = () => undefined;
+    await manager.setOnline(true);
+    await manager.idle();
+    expect([status(chapterIds[0]!), status(chapterIds[1]!)]).toEqual(['done', 'done']);
+    // Pages done before going offline were kept.
+    expect(fetched.filter((f) => f.startsWith(`${chapterIds[0]}:`)).map((f) => f.split(':')[1])).not.toContain('0');
+  });
+});
+
 describe('DownloadsRepository.list', () => {
   it('leaves out downloads finished before the page was cleared', () => {
     const [a, b, c] = chapterIds as [number, number, number];

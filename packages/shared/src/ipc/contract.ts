@@ -61,6 +61,24 @@ const idSchema = z.number().int().positive();
 export const invokeContract = {
   'app.getInfo': invoke(z.void(), appInfoSchema),
   'app.getLocale': invoke(z.void(), z.string()),
+  /** Whether the network is up (main watches it; changes arrive on `app.online`). */
+  'app.isOnline': invoke(z.void(), z.boolean()),
+  /** Whether a system tray is there (some Linux desktops have none), and why not. */
+  'app.tray': invoke(z.void(), z.object({ available: z.boolean(), reason: z.string().nullable() })),
+  /** Opens the data folder or the log folder in the file manager. */
+  'app.openPath': invoke(z.object({ which: z.enum(['data', 'logs']) }), z.void()),
+  /** Disk use: page cache, browse covers, downloads; and where data and logs live. */
+  'storage.info': invoke(
+    z.void(),
+    z.object({
+      pageCacheBytes: z.number(),
+      browseCoverBytes: z.number(),
+      downloadBytes: z.number(),
+      dataPath: z.string(),
+      logPath: z.string(),
+    }),
+  ),
+  'storage.clearCache': invoke(z.object({ kind: z.enum(['page', 'browse_cover']) }), z.void()),
   'window.minimize': invoke(z.void(), z.void()),
   'window.toggleMaximize': invoke(z.void(), z.boolean()),
   'window.close': invoke(z.void(), z.void()),
@@ -298,6 +316,7 @@ export const eventContract = {
   'updates.progress': updateProgressSchema,
   /** Main asks the renderer to open a page (a notification was clicked). */
   'app.navigate': z.object({ to: z.string() }),
+  'app.online': z.boolean(),
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

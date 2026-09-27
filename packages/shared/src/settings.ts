@@ -221,6 +221,19 @@ export const categorySettingsSchema = z.object({
 });
 export type CategorySettings = z.infer<typeof categorySettingsSchema>;
 
+/** The app in the system (BRAINSTORM.md §6.4, §6.6): tray and start at login. */
+export const generalSettingsSchema = z.object({
+  /** Closing the window hides it to the tray; downloads and update checks go on. */
+  closeToTray: z.boolean().catch(false),
+  openAtLogin: z.boolean().catch(false),
+  /** Started at login: stay in the tray (needs the tray). */
+  startHidden: z.boolean().catch(false),
+});
+export type GeneralSettings = z.infer<typeof generalSettingsSchema>;
+
+/** Page cache size choices in MB (BRAINSTORM.md §6.5, ADR 0014; default 1 GB). */
+export const CACHE_SIZES_MB = [256, 512, 1024, 2048, 5120, 10240] as const;
+
 export const appSettingsSchema = z.object({
   theme: z.enum(THEME_MODES),
   accent: z.enum(ACCENTS),
@@ -235,6 +248,9 @@ export const appSettingsSchema = z.object({
   migration: migrationSettingsSchema,
   downloads: downloadSettingsSchema,
   updates: updateSettingsSchema,
+  general: generalSettingsSchema,
+  /** Limit of the page image cache (LRU), in MB. */
+  cacheSizeMb: z.number().int().min(100).max(51_200),
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -258,4 +274,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     limitGb: null,
   },
   updates: DEFAULT_UPDATE_SETTINGS,
+  general: { closeToTray: false, openAtLogin: false, startHidden: false },
+  cacheSizeMb: 1024,
 };

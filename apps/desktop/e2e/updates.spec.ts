@@ -1,8 +1,5 @@
-import { execFileSync } from 'node:child_process';
-import { join, resolve } from 'node:path';
 import { type Page, expect, test } from '@playwright/test';
-import electronPath from 'electron';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, writeSetting } from './support/app';
 
 // Phase 3c: the library update checker, the Updates page (mockup 07), skip rules, auto-download
 // per category and the check at start once the interval passed.
@@ -39,19 +36,6 @@ const addToLibrary = async (query: string, title: string, category?: string) => 
   await dialog.getByRole('button', { name: 'Add to library' }).click();
   await expect(page.getByRole('button', { name: 'In library' })).toBeVisible();
 };
-/** The last "check library" time, written straight into the closed app's database. */
-const setLastCheck = (at: number) => {
-  const sqlite = require.resolve('better-sqlite3', { paths: [resolve(__dirname, '..')] });
-  const db = join(t.home, 'config', 'Matane', 'data.db');
-  const script = `const Database = require(${JSON.stringify(sqlite)});
-    const db = new Database(${JSON.stringify(db)});
-    db.prepare("INSERT INTO settings (key, value_json) VALUES ('updates.lastCheckAt', ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json").run(${JSON.stringify(String(at))});
-    db.close();`;
-  execFileSync(electronPath as unknown as string, ['-e', script], {
-    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
-  });
-};
-
 test.beforeAll(async () => {
   t = await launchApp(['demo']);
   page = t.page;
@@ -145,7 +129,7 @@ test('auto-downloads new chapters, except in an excluded category', async () => 
 
 test('checks by itself when the app opens after the interval passed', async () => {
   t.site.addChapter('paged', 8);
-  await t.restart(() => setLastCheck(Date.now() - 13 * 3_600_000));
+  await t.restart(() => writeSetting(t.home, 'updates.lastCheckAt', Date.now() - 13 * 3_600_000));
   page = t.page;
   await goto('#/updates');
   await expect(row('Ch. 8')).toBeVisible({ timeout: 20_000 });

@@ -89,6 +89,8 @@ export class DownloadManager {
   private started = false;
   /** While above 0 (moving the folder), nothing starts. */
   private holds = 0;
+  /** Offline: the queue waits (BRAINSTORM.md §6.5) and goes on once back online. */
+  private offline = false;
   /** Set on app quit: the database is about to close, nothing may touch it any more. */
   private closing = false;
   private progressTimer: ReturnType<typeof setInterval> | undefined;
@@ -108,6 +110,22 @@ export class DownloadManager {
   enqueue(chapterIds: readonly number[]): void {
     this.deps.repo.enqueue(chapterIds, this.deps.settings().format);
     this.pump();
+  }
+
+  /**
+   * Network went away or came back. Offline, running chapters go back to the queue (their pages
+   * stay) instead of failing page after page; online again, the queue carries on.
+   */
+  async setOnline(online: boolean): Promise<void> {
+    if (online !== this.offline) return;
+    this.offline = !online;
+    if (online) {
+      this.pump();
+      return;
+    }
+    for (const job of this.running.values()) job.controller.abort();
+    while (this.running.size > 0) await new Promise((r) => setTimeout(r, 10));
+    if (!this.closing && this.offline) this.deps.repo.resetInterrupted();
   }
 
   /** Settings changed: more chapters may run at once now. */
@@ -297,7 +315,7 @@ export class DownloadManager {
   }
 
   private pump(): void {
-    if (!this.started || this.closing || this.holds > 0) return;
+    if (!this.started || this.closing || this.holds > 0 || this.offline) return;
     const parallel = this.deps.settings().parallel ?? MAX_CHAPTERS;
     while (this.running.size < parallel) {
       const row = this.deps.repo.next([...this.running.keys()]);

@@ -6,6 +6,7 @@ import { settingsQuery, useIpcEvent } from '../lib/ipc';
 import { DownloadLimitDialog } from '../features/downloads/DownloadLimitDialog';
 import { useDownloadProgressSync } from '../lib/downloads';
 import { useUpdateProgressSync } from '../lib/updates';
+import { useOnlineSync } from '../lib/online';
 import { invalidateTags } from '../lib/sources';
 import { LanguageSync } from '../i18n/LanguageSync';
 import { ThemeSync } from '../theme/ThemeSync';
@@ -23,6 +24,7 @@ function RootComponent() {
   );
   useDownloadProgressSync();
   useUpdateProgressSync();
+  useOnlineSync();
   // A clicked notification (new chapters) opens a page.
   const navigate = useNavigate();
   useIpcEvent(

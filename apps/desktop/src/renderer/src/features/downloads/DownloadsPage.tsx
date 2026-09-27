@@ -15,6 +15,7 @@ import {
   Play,
   RotateCcw,
   TriangleAlert,
+  WifiOff,
   X,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
@@ -28,6 +29,7 @@ import { downloadStatsQuery, isOverLimit, limitBytesOf, listedDownloadsQuery } f
 import { formatBytes } from '../../lib/format';
 import { ipc, settingsQuery } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
+import { useUiStore } from '../../stores/ui';
 import { CompletedRow, ErrorDetailsDialog, QueueGroupHeader, QueueRow } from './DownloadRows';
 import { type QueueGroup, applyOrder, groupQueue, inQueue, moveGroup, moveItem } from './queue';
 
@@ -38,6 +40,7 @@ const TABS: Tab[] = ['queue', 'completed', 'errors'];
 export function DownloadsPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('queue');
+  const online = useUiStore((state) => state.online);
   const list = useQuery(listedDownloadsQuery);
   const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
   const [details, setDetails] = useState<DownloadItem | null>(null);
@@ -57,6 +60,15 @@ export function DownloadsPage() {
         <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-5">
           <DownloadsHeader queue={byTab.queue} completed={byTab.completed.length} />
           <LimitBanner />
+          {!online && byTab.queue.some((i) => i.status !== 'error' && i.status !== 'paused') && (
+            <div
+              role="status"
+              className="flex items-center gap-3 rounded-xl border bg-card/40 px-4 py-3 text-sm text-muted-foreground"
+            >
+              <WifiOff className="size-4.5 shrink-0" />
+              {t('downloads.page.offline')}
+            </div>
+          )}
           <div className="flex items-end gap-6 border-b" role="tablist" aria-label={t('nav.downloads')}>
             {TABS.map((key) => (
               <button

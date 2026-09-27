@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -14,16 +15,26 @@ export interface TestApp {
    * Quits and starts the app again on the same profile (`app`/`page` are replaced); `between`
    * runs while it is closed (e.g. to edit the database).
    */
-  restart: (between?: () => void) => Promise<void>;
+  restart: (between?: () => void, env?: Record<string, string>) => Promise<void>;
   close: () => Promise<void>;
 }
 
-async function start(home: string): Promise<{ app: ElectronApplication; page: Page }> {
+async function start(
+  home: string,
+  extraEnv: Record<string, string> = {},
+): Promise<{ app: ElectronApplication; page: Page }> {
   const app = await electron.launch({
     executablePath: electronPath as unknown as string,
     // GitHub's Ubuntu runners forbid the unprivileged user namespaces Chromium's sandbox needs.
     args: [resolve(__dirname, '../..'), ...(process.env['CI'] ? ['--no-sandbox'] : [])],
-    env: { ...process.env, XDG_CONFIG_HOME: join(home, 'config'), ELECTRON_ENABLE_LOGGING: '1' },
+    // MATANE_E2E exposes `globalThis.__matane` in main (e.g. to force offline).
+    env: {
+      ...process.env,
+      XDG_CONFIG_HOME: join(home, 'config'),
+      ELECTRON_ENABLE_LOGGING: '1',
+      MATANE_E2E: '1',
+      ...extraEnv,
+    },
   });
   const page = await app.firstWindow();
   await page.waitForSelector('aside');
@@ -43,10 +54,10 @@ export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']
     site,
     home,
     ...started,
-    restart: async (between) => {
+    restart: async (between, env) => {
       await test.app.close();
       between?.();
-      Object.assign(test, await start(home));
+      Object.assign(test, await start(home, env));
     },
     close: async () => {
       await test.app.close();
@@ -71,4 +82,17 @@ export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']
     await test.page.evaluate((path) => window.api.invoke('extensions.loadDevFolder', { path }), dir);
   }
   return test;
+}
+
+/** Writes a setting straight into the database of a closed app (e.g. the last update check). */
+export function writeSetting(home: string, key: string, value: unknown): void {
+  const sqlite = require.resolve('better-sqlite3', { paths: [resolve(__dirname, '../..')] });
+  const db = join(home, 'config', 'Matane', 'data.db');
+  const script = `const Database = require(${JSON.stringify(sqlite)});
+    const db = new Database(${JSON.stringify(db)});
+    db.prepare("INSERT INTO settings (key, value_json) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json").run(${JSON.stringify(key)}, ${JSON.stringify(JSON.stringify(value))});
+    db.close();`;
+  execFileSync(electronPath as unknown as string, ['-e', script], {
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+  });
 }

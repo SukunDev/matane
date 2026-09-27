@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
+import { SystemSettings } from './SystemSettings';
 
 function SettingRow({ label, description, children }: { label: string; description: string; children: ReactNode }) {
   return (
@@ -139,6 +140,8 @@ export function GeneralSettings() {
           </div>
         </SettingRow>
       </section>
+
+      <SystemSettings />
     </div>
   );
 }

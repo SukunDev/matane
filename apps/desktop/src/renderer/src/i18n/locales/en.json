@@ -29,7 +29,10 @@
     "maximize": "Maximize",
     "restore": "Restore",
     "close": "Close",
-    "offline": "Offline"
+    "offline": "Offline",
+    "checking": "Checking {{done}}/{{total}}",
+    "downloading_one": "Downloading {{count}}",
+    "downloading_other": "Downloading {{count}}"
   },
   "empty": {
     "library": {
@@ -213,6 +216,36 @@
         "include": "Include",
         "exclude": "Exclude"
       }
+    },
+    "system": {
+      "title": "System",
+      "closeToTray": "Close to tray",
+      "closeToTrayHint": "Closing the window keeps Matane running in the tray, so downloads and update checks go on.",
+      "noTray": "Your desktop has no system tray (on GNOME, install the AppIndicator extension).",
+      "openAtLogin": "Start at login",
+      "openAtLoginHint": "Open Matane when you sign in.",
+      "startHidden": "Start hidden in the tray",
+      "startHiddenHint": "At login, stay in the tray without opening the window. Needs close to tray."
+    },
+    "data": {
+      "cache": "Cache",
+      "cacheSize": "Page cache size",
+      "cacheSizeHint": "Pages you read are kept for reading offline; the least recently read go first past the limit.",
+      "pageCache": "Page cache",
+      "usedOf": "{{used}} of {{limit}}",
+      "clearPages": "Clear page cache",
+      "browseCovers": "Browse covers",
+      "browseCoversHint": "{{used}} · covers of manga outside the library",
+      "clearCovers": "Clear covers",
+      "clearPagesTitle": "Clear the page cache?",
+      "clearPagesDescription": "Chapters you read but did not download will need the internet again. Downloads stay.",
+      "clearCoversTitle": "Clear browse covers?",
+      "clearCoversDescription": "They are fetched again when shown. Library covers stay.",
+      "storage": "Storage",
+      "downloads": "Downloads",
+      "dataFolder": "Data folder",
+      "logs": "Logs",
+      "open": "Open"
     }
   },
   "common": {
@@ -771,7 +804,8 @@
           "title": "No errors",
           "description": "Downloads that fail after three tries show up here."
         }
-      }
+      },
+      "offline": "Offline: the queue waits and carries on by itself once you're back online."
     }
   },
   "updates": {
@@ -809,5 +843,9 @@
     "read": "Read",
     "markRead": "Mark as read",
     "readNow": "Read now"
+  },
+  "offline": {
+    "title": "You're offline",
+    "description": "Browsing and searching sources need the internet. Your library, history, downloads and chapters already read keep working."
   }
 }

@@ -1,5 +1,6 @@
 import type { FilterState } from '@manga-reader/shared';
 import { createFileRoute } from '@tanstack/react-router';
+import { OnlineOnly } from '../../../components/OfflineState';
 import { type BrowseSearch, SourceBrowsePage } from '../../../features/browse/SourceBrowsePage';
 
 const TABS = ['popular', 'latest', 'search'] as const;
@@ -23,12 +24,14 @@ function BrowseRoute() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   return (
-    <SourceBrowsePage
-      key={`${extensionId}/${sourceKey}`}
-      extensionId={extensionId}
-      sourceKey={sourceKey}
-      search={search}
-      onSearchChange={(next) => void navigate({ search: next, replace: true })}
-    />
+    <OnlineOnly>
+      <SourceBrowsePage
+        key={`${extensionId}/${sourceKey}`}
+        extensionId={extensionId}
+        sourceKey={sourceKey}
+        search={search}
+        onSearchChange={(next) => void navigate({ search: next, replace: true })}
+      />
+    </OnlineOnly>
   );
 }

@@ -29,7 +29,10 @@
     "maximize": "Perbesar",
     "restore": "Pulihkan",
     "close": "Tutup",
-    "offline": "Offline"
+    "offline": "Offline",
+    "checking": "Mengecek {{done}}/{{total}}",
+    "downloading_one": "Mengunduh {{count}}",
+    "downloading_other": "Mengunduh {{count}}"
   },
   "empty": {
     "library": {
@@ -213,6 +216,36 @@
         "include": "Sertakan",
         "exclude": "Kecualikan"
       }
+    },
+    "system": {
+      "title": "Sistem",
+      "closeToTray": "Tutup ke tray",
+      "closeToTrayHint": "Menutup jendela membiarkan Matane berjalan di tray, jadi download dan cek update tetap jalan.",
+      "noTray": "Desktop kamu tidak punya system tray (di GNOME, pasang ekstensi AppIndicator).",
+      "openAtLogin": "Jalankan saat login",
+      "openAtLoginHint": "Buka Matane saat kamu masuk.",
+      "startHidden": "Mulai tersembunyi di tray",
+      "startHiddenHint": "Saat login, tetap di tray tanpa membuka jendela. Butuh tutup ke tray."
+    },
+    "data": {
+      "cache": "Cache",
+      "cacheSize": "Ukuran cache halaman",
+      "cacheSizeHint": "Halaman yang dibaca disimpan agar bisa dibaca offline; yang paling lama tidak dibaca dihapus dulu setelah melewati batas.",
+      "pageCache": "Cache halaman",
+      "usedOf": "{{used}} dari {{limit}}",
+      "clearPages": "Hapus cache halaman",
+      "browseCovers": "Cover jelajah",
+      "browseCoversHint": "{{used}} · cover manga di luar library",
+      "clearCovers": "Hapus cover",
+      "clearPagesTitle": "Hapus cache halaman?",
+      "clearPagesDescription": "Chapter yang pernah dibaca tapi tidak didownload akan butuh internet lagi. Download tetap ada.",
+      "clearCoversTitle": "Hapus cover jelajah?",
+      "clearCoversDescription": "Cover diambil lagi saat ditampilkan. Cover library tetap ada.",
+      "storage": "Penyimpanan",
+      "downloads": "Download",
+      "dataFolder": "Folder data",
+      "logs": "Log",
+      "open": "Buka"
     }
   },
   "common": {
@@ -748,7 +781,8 @@
           "title": "Tidak ada error",
           "description": "Download yang gagal setelah tiga kali percobaan tampil di sini."
         }
-      }
+      },
+      "offline": "Offline: antrean menunggu dan lanjut sendiri setelah kamu online lagi."
     }
   },
   "updates": {
@@ -786,5 +820,9 @@
     "read": "Dibaca",
     "markRead": "Tandai dibaca",
     "readNow": "Baca sekarang"
+  },
+  "offline": {
+    "title": "Kamu sedang offline",
+    "description": "Menjelajah dan mencari di source butuh internet. Library, riwayat, download, dan chapter yang sudah pernah dibaca tetap bisa dipakai."
   }
 }

@@ -71,6 +71,22 @@ export class ImageCache {
     if (row) await rm(row.path, { force: true });
   }
 
+  /** Bytes used by one kind of image (Settings → Data & storage). */
+  bytesOf(kind: ImageKind): number {
+    const row = this.db
+      .select({ total: sql<number>`coalesce(sum(${imageCache.sizeBytes}), 0)` })
+      .from(imageCache)
+      .where(eq(imageCache.kind, kind))
+      .get();
+    return row?.total ?? 0;
+  }
+
+  /** Empties one kind (reader pages, or browse covers). */
+  async clear(kind: ImageKind): Promise<void> {
+    const rows = this.db.delete(imageCache).where(eq(imageCache.kind, kind)).returning().all();
+    for (const row of rows) await rm(row.path, { force: true });
+  }
+
   totalBytes(): number {
     const row = this.db
       .select({ total: sql<number>`coalesce(sum(${imageCache.sizeBytes}), 0)` })

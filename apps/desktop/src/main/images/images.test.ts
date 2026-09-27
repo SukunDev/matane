@@ -63,6 +63,16 @@ describe('ImageCache', () => {
     expect(cache.totalBytes()).toBeLessThanOrEqual(50);
   });
 
+  it('counts and clears one kind of image, leaving the other', async () => {
+    const page = await cache.put('page-1', 'page', bytes(30), 'image/png');
+    const cover = await cache.put('cover-1', 'browse_cover', bytes(20), 'image/png');
+    expect([cache.bytesOf('page'), cache.bytesOf('browse_cover')]).toEqual([30, 20]);
+    await cache.clear('page');
+    expect([cache.bytesOf('page'), cache.bytesOf('browse_cover')]).toEqual([0, 20]);
+    expect(existsSync(page.path)).toBe(false);
+    expect(existsSync(cover.path)).toBe(true);
+  });
+
   it('forgets rows whose file was deleted', async () => {
     const put = await cache.put('a', 'page', bytes(5), null);
     rmSync(put.path);

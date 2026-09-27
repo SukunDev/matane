@@ -21,7 +21,14 @@ function isVisibleOnSomeDisplay(bounds: WindowState['bounds']): boolean {
   });
 }
 
-export function createMainWindow(settings: SettingsRepository): BrowserWindow {
+export interface MainWindowOptions {
+  /** Start hidden in the tray (started at login with "start hidden"). */
+  hidden?: boolean;
+  /** Whether closing should hide the window instead ("close to tray", and not quitting). */
+  hideOnClose?: () => boolean;
+}
+
+export function createMainWindow(settings: SettingsRepository, options: MainWindowOptions = {}): BrowserWindow {
   const saved = settings.getValue<WindowState | null>(WINDOW_STATE_KEY, null);
   const bounds = saved && isVisibleOnSomeDisplay(saved.bounds) ? saved.bounds : DEFAULT_SIZE;
   const isMac = process.platform === 'darwin';
@@ -45,8 +52,14 @@ export function createMainWindow(settings: SettingsRepository): BrowserWindow {
     },
   });
 
-  if (saved?.maximized) window.maximize();
-  window.once('ready-to-show', () => window.show());
+  // maximize() also shows the window: a hidden start maximizes once it is first shown.
+  if (saved?.maximized) {
+    if (options.hidden) window.once('show', () => window.maximize());
+    else window.maximize();
+  }
+  window.once('ready-to-show', () => {
+    if (!options.hidden) window.show();
+  });
 
   const saveState = (): void => {
     if (window.isDestroyed()) return;
@@ -56,7 +69,13 @@ export function createMainWindow(settings: SettingsRepository): BrowserWindow {
     };
     settings.setValue(WINDOW_STATE_KEY, state);
   };
-  window.on('close', saveState);
+  window.on('close', (event) => {
+    saveState();
+    if (options.hideOnClose?.()) {
+      event.preventDefault();
+      window.hide();
+    }
+  });
 
   window.on('maximize', () => broadcast('window.maximizeChanged', true));
   window.on('unmaximize', () => broadcast('window.maximizeChanged', false));

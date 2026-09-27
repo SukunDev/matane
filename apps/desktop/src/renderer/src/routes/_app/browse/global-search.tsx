@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { OnlineOnly } from '../../../components/OfflineState';
 import { GlobalSearchPage } from '../../../features/search/GlobalSearchPage';
 
 export interface GlobalSearchSearch {
@@ -16,5 +17,9 @@ export const Route = createFileRoute('/_app/browse/global-search')({
 function GlobalSearchRoute() {
   const { q = '' } = Route.useSearch();
   const navigate = Route.useNavigate();
-  return <GlobalSearchPage query={q} onQuery={(next) => void navigate({ search: next ? { q: next } : {} })} />;
+  return (
+    <OnlineOnly>
+      <GlobalSearchPage query={q} onQuery={(next) => void navigate({ search: next ? { q: next } : {} })} />
+    </OnlineOnly>
+  );
 }

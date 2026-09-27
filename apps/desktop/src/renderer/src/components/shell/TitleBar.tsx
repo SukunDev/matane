@@ -9,6 +9,7 @@ import { useUiStore } from '../../stores/ui';
 import { cn } from '../../lib/utils';
 import { IncognitoToggle } from '../IncognitoToggle';
 import { Button } from '../ui/button';
+import { ActivityIndicator } from './ActivityIndicator';
 import { WindowControls } from './WindowControls';
 
 export function TitleBar() {
@@ -70,6 +71,7 @@ export function TitleBar() {
       </button>
 
       <div className="ml-auto flex h-full items-center gap-1">
+        <ActivityIndicator />
         <IncognitoToggle className="mr-1" />
         {!online && (
           <span className="no-drag flex items-center gap-1.5 px-2 text-xs text-ctp-peach" title={t('titlebar.offline')}>

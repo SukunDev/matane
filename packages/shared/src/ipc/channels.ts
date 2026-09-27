@@ -2,6 +2,11 @@
 export const INVOKE_CHANNELS = [
   'app.getInfo',
   'app.getLocale',
+  'app.isOnline',
+  'app.tray',
+  'app.openPath',
+  'storage.info',
+  'storage.clearCache',
   'window.minimize',
   'window.toggleMaximize',
   'window.close',
@@ -92,5 +97,6 @@ export const EVENT_CHANNELS = [
   'downloads.moveProgress',
   'updates.progress',
   'app.navigate',
+  'app.online',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

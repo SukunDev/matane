@@ -384,3 +384,58 @@ Keputusan:
 - "Perbarui detail" yang dimatikan tetap mengambil detail dari source (source membutuhkannya untuk daftar chapter), tapi detail itu tidak disimpan.
 
 Bug yang ditemukan dan diperbaiki: tidak ada bug app baru; yang diperbaiki hanya dua race di test E2E (lihat di atas).
+
+### Milestone 3d: selesai (27 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer, pola lama), `format:check`, `typecheck`, dan `test` hijau (desktop 168, shared 17).
+  - Test baru:
+    - `OnlineMonitor`: listener diberi tahu saat jaringan berubah, dan status paksa (test) menang;
+    - start saat login: isi `.desktop` (path dengan spasi dikutip, `--hidden`), file dibuat dan dihapus di Linux, dan `setLoginItemSettings` di Windows/macOS;
+    - baris status tray EN/ID (offline, mengecek x/y, mengunduh, dijeda, tidak ada yang berjalan);
+    - `DownloadManager.setOnline`: saat offline chapter yang berjalan kembali ke antrean (halamannya tetap) dan tidak ada yang mulai; saat online lagi antrean lanjut;
+    - `ImageCache.bytesOf/clear` per jenis.
+- E2E 53/53 (diulang 3×). Spec baru `e2e/system.spec.ts` (5 test):
+  - tutup ke tray: indikator aktivitas "Downloading 1" di title bar, `window.close` menyembunyikan jendela, download tetap selesai, jendela bisa ditampilkan lagi. Tanpa tray, test memeriksa bahwa setting nonaktif dengan penjelasan;
+  - start saat login: `autostart/matane.desktop` dibuat dengan `Exec`, lalu dihapus;
+  - offline (dipaksa lewat hook test): title bar "Offline", Browse dan Global search menampilkan "Kamu sedang offline", antrean menunggu dengan banner, chapter yang sudah didownload tetap terbaca, lalu setelah online antrean lanjut dan Browse kembali;
+  - app dibuka offline dengan cek update yang sudah jatuh tempo: cek tidak jalan selama offline, lalu jalan sendiri begitu online;
+  - Data & penyimpanan: penggunaan cache halaman setelah membaca, "Hapus cache halaman" → "0 B dari 1 GB", ukuran cache 256 MB tersimpan.
+- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah), di desktop Hyprland dengan StatusNotifierWatcher:
+  - **tray**: menu dibaca dan diklik lewat D-Bus (`com.canonical.dbusmenu`). Menu idle: "Nothing running · Open Matane · Check for updates now · Resume downloads (nonaktif) · Quit". Saat mengunduh dengan jendela tertutup: "Downloading 2 · Pause downloads", dan kedua chapter selesai saat jendela tersembunyi. "Check for updates now" menjalankan cek ("Checking for updates 0/1"), dan "Open Matane" menampilkan jendela lagi. Tooltip ikut status;
+  - **mulai tersembunyi**: dibuka dengan `--hidden` (tutup ke tray + login + mulai tersembunyi aktif) → jendela tidak tampil, dan "Open Matane" dari tray menampilkannya. Awalnya jendela tetap tampil (lihat bug di bawah);
+  - **autostart**: `Exec=<electron> <folder app> --hidden`, lolos `desktop-file-validate`, dan terhapus setelah dimatikan;
+  - **cache**: 5 chapter dimuat ke cache (128,5 MB), batas diturunkan ke 100 MB, lalu LRU memangkas ke 99,7 MB;
+  - **offline** (dipaksa lewat hook; jaringan asli tetap nyala): Browse menampilkan status offline, ch. 2 yang didownload terbaca, ch. 3 yang di-enqueue tetap "Queued" dengan banner, lalu setelah online ch. 3 terunduh sendiri.
+  - **Belum diuji**: tray di KDE dan GNOME + AppIndicator (hanya Hyprland), dan perpindahan online/offline dari jaringan sungguhan (`net.isOnline()`). Keduanya perlu dicoba manual.
+
+Implementasi:
+- **Main:**
+  - `app/online.ts` (`OnlineMonitor`: `net.isOnline()` dibaca tiap 3 detik, dengan listener dan override);
+  - `app/tray-support.ts` (deteksi tray), `app/tray.ts` (`AppTray`: menu dan tooltip EN/ID, dibangun ulang maks 1× per detik saat download/cek berubah);
+  - `app/login-item.ts` (autostart Linux, dan `setLoginItemSettings` di Windows/macOS);
+  - `app/window.ts`: `hidden` dan `hideOnClose`.
+  - `index.ts`:
+    - tray aktif hanya kalau "tutup ke tray" nyala dan tray tersedia; setting diterapkan saat start dan setiap `settings.set`;
+    - saat online: `downloads.setOnline` dan `updates.tick()`; event `app.online`;
+    - klik notifikasi dan instance kedua memakai `showWindow()`.
+  - `DownloadManager.setOnline`, `ImageCache.bytesOf/clear`, dan ukuran cache dari setting (`setMaxBytes` saat berubah).
+  - IPC `app.isOnline`, `app.tray`, `app.openPath`, `storage.info`, `storage.clearCache`, dan event `app.online`.
+  - Hook test: `MATANE_E2E=1` membuka `globalThis.__matane.setOnline`, dan `MATANE_E2E_OFFLINE=1` membuat app mulai dalam keadaan offline.
+- **Shared:** `settings.general` (`closeToTray`, `openAtLogin`, `startHidden`), `cacheSizeMb` (default 1024; pilihan 256 MB–10 GB), dan `CACHE_SIZES_MB`.
+- **Renderer:**
+  - status online dari main (`useOnlineSync`; `navigator.onLine` tidak dipakai lagi);
+  - `OnlineOnly` untuk Browse dan Global search;
+  - `ActivityIndicator` di title bar (cek update, atau download berjalan; klik membuka halamannya);
+  - banner offline di Downloads;
+  - Settings → Umum: bagian "Sistem";
+  - Settings → Data & penyimpanan (`DataSettings`), yang masuk `READY_SECTIONS`.
+
+Keputusan:
+- **Deteksi tray di Linux**: tray dianggap tersedia kalau ada pemilik `org.kde.StatusNotifierWatcher` di session bus (KDE, Cinnamon, XFCE, Hyprland/waybar, GNOME + AppIndicator). Kalau tidak ada, setting dinonaktifkan dengan saran memasang AppIndicator. Kalau tidak ada `gdbus`/`dbus-send` untuk bertanya, tray dianggap ada.
+- **Deteksi offline**: Electron tidak punya event jaringan di main, jadi `net.isOnline()` dibaca tiap 3 detik. Main menjadi satu-satunya sumber status online untuk renderer.
+- **Saat offline, seluruh antrean download menunggu** (termasuk download manual), karena pasti gagal. Chapter yang sedang berjalan kembali ke antrean dengan halamannya.
+- **Mulai tersembunyi** hanya berlaku kalau dibuka dengan `--hidden` dan "tutup ke tray" aktif serta tray tersedia. Kalau tidak, jendela tetap dibuka supaya app tidak "hilang". Di macOS toggle-nya nonaktif, karena login item macOS tidak meneruskan argumen.
+- Teks tray dan notifikasi di main memakai peta kecil EN/ID (main tidak memakai i18next).
+
+Bug yang ditemukan dan diperbaiki:
+- Mulai tersembunyi tetap menampilkan jendela kalau status tersimpannya "maximized" (Hyprland melaporkan jendela tiling sebagai maximized), karena `maximize()` di Electron ikut menampilkan jendela. Sekarang maximize ditunda sampai jendela pertama kali ditampilkan.

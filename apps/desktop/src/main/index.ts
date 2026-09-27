@@ -1,9 +1,14 @@
 import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { BrowserWindow, Notification, app, net } from 'electron';
 import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
 import { initLogging, log } from './app/log';
+import { HIDDEN_ARG, applyLoginItem } from './app/login-item';
+import { OnlineMonitor } from './app/online';
+import { AppTray } from './app/tray';
+import { detectTraySupport } from './app/tray-support';
 import { createMainWindow } from './app/window';
+import icon from '../../resources/icon.png?asset';
 import { DbChanges } from './db/changes';
 import { openDatabase } from './db/client';
 import { runMigrations } from './db/migrate';
@@ -44,8 +49,7 @@ import { effectiveReaderSettings } from '@manga-reader/shared';
 import { resolveDirection } from '@manga-reader/shared/chapters';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
-/** BRAINSTORM.md §6.5; becomes a setting with the Data & storage section. */
-const IMAGE_CACHE_BYTES = 1024 * 1024 * 1024;
+const MB = 1024 * 1024;
 
 // Before anything (logging, the single-instance lock, Chromium) creates the new data folder.
 const legacyUserData = join(app.getPath('appData'), LEGACY_APP_NAME);
@@ -70,6 +74,19 @@ function builtinExtensionsDir(): string {
   return app.isPackaged ? join(process.resourcesPath, 'extensions') : join(app.getAppPath(), '../../extensions');
 }
 
+/** Set once the tray exists; before that there is nothing to refresh. */
+let appTray: AppTray | null = null;
+let trayTimer: ReturnType<typeof setTimeout> | undefined;
+
+/** Rebuilds the tray menu (status lines) at most once a second. */
+function refreshTray(): void {
+  if (!appTray?.enabled || trayTimer) return;
+  trayTimer = setTimeout(() => {
+    trayTimer = undefined;
+    appTray?.refresh();
+  }, 1000);
+}
+
 async function bootstrap(): Promise<void> {
   await app.whenReady();
 
@@ -88,7 +105,10 @@ async function bootstrap(): Promise<void> {
   });
   if (migration.applied > 0) log.info('Applied database migrations', migration);
 
-  const changes = new DbChanges((tags) => broadcast('db.changed', { tags }));
+  const changes = new DbChanges((tags) => {
+    broadcast('db.changed', { tags });
+    if (tags.includes('downloads')) refreshTray();
+  });
   const settings = new SettingsRepository(connection.db);
   const extensionsRepo = new ExtensionsRepository(connection.db, changes);
   const mangaRepo = new MangaRepository(connection.db, changes);
@@ -147,10 +167,20 @@ async function bootstrap(): Promise<void> {
   );
 
   const covers = new CoverStore(join(userData, 'covers'), mangaRepo);
+  const imageCache = new ImageCache(
+    connection.db,
+    join(userData, 'cache', 'images'),
+    settings.getAppSettings().cacheSizeMb * MB,
+  );
+  // Tests force a network state (MATANE_E2E_OFFLINE) and flip it through `globalThis.__matane`.
+  const online = new OnlineMonitor(() => net.isOnline());
+  if (process.env['MATANE_E2E_OFFLINE'] === '1') online.override(false);
+  if (process.env['MATANE_E2E'])
+    Object.assign(globalThis, { __matane: { setOnline: (v: boolean | null) => online.override(v) } });
   const downloadsRepo = new DownloadsRepository(connection.db, changes);
   const downloadStore = new DownloadStore(downloadsRepo, new DownloadReader());
   const images = new ImageService({
-    cache: new ImageCache(connection.db, join(userData, 'cache', 'images'), IMAGE_CACHE_BYTES),
+    cache: imageCache,
     manga: mangaRepo,
     chapters: chaptersRepo,
     sources,
@@ -203,7 +233,10 @@ async function bootstrap(): Promise<void> {
       return resolveDirection(reader.direction, info.type) === 'rtl';
     },
     webUrl: (mangaId) => sources.webUrl(mangaId),
-    onProgress: (progress) => broadcast('downloads.progress', progress),
+    onProgress: (progress) => {
+      broadcast('downloads.progress', progress);
+      refreshTray();
+    },
     log: (message) => log.scope('downloads').warn(message),
   });
   const downloadAutomation = new DownloadAutomation({
@@ -255,19 +288,18 @@ async function bootstrap(): Promise<void> {
       if (!Notification.isSupported()) return;
       const notification = new Notification({ title, body });
       notification.on('click', () => {
-        const window = BrowserWindow.getAllWindows()[0];
-        if (!window) return;
-        if (window.isMinimized()) window.restore();
-        window.show();
-        window.focus();
+        showWindow();
         broadcast('app.navigate', { to: '/updates' });
       });
       notification.show();
     },
     language: () => settings.getAppSettings().language ?? app.getLocale(),
-    isOnline: () => net.isOnline(),
+    isOnline: () => online.isOnline(),
     focused: () => BrowserWindow.getFocusedWindow() !== null,
-    onProgress: (progress) => broadcast('updates.progress', progress),
+    onProgress: (progress) => {
+      broadcast('updates.progress', progress);
+      refreshTray();
+    },
     changed: () => changes.mark('updates'),
     log: (message) => log.scope('updates').warn(message),
   });
@@ -280,6 +312,47 @@ async function bootstrap(): Promise<void> {
     scanlatorPrefs,
     incognito: () => settings.getAppSettings().incognito,
     onProgress: (event) => downloadAutomation.onProgress(event),
+  });
+
+  // System integration (BRAINSTORM.md §6.4): tray, start at login, offline.
+  const language = () => settings.getAppSettings().language ?? app.getLocale();
+  const traySupport = await detectTraySupport();
+  let quitting = false;
+  const tray = new AppTray({
+    iconPath: icon,
+    language,
+    status: () => ({ downloads: downloadsRepo.stats(), update: updates.status().progress, online: online.isOnline() }),
+    open: () => showWindow(),
+    checkUpdates: () => updates.check({ kind: 'all' }),
+    pauseDownloads: () => downloads.pause(),
+    resumeDownloads: () => downloads.resume(),
+    quit: () => app.quit(),
+  });
+  appTray = tray;
+  const applySystem = () => {
+    const { general } = settings.getAppSettings();
+    if (general.closeToTray && traySupport.available) tray.enable();
+    else tray.disable();
+    tray.refresh();
+    void applyLoginItem(
+      {
+        platform: process.platform,
+        command: {
+          executable: process.env['APPIMAGE'] ?? process.execPath,
+          args: app.isPackaged ? [] : [app.getAppPath()],
+        },
+        setLoginItemSettings: (value) => app.setLoginItemSettings(value),
+      },
+      general,
+    ).catch((error: unknown) => log.warn('Could not update the login item', error));
+  };
+  online.onChange((isOnline) => {
+    log.info(isOnline ? 'Back online' : 'Offline');
+    broadcast('app.online', isOnline);
+    void downloads.setOnline(isOnline);
+    // A check that came due while offline runs now.
+    if (isOnline) updates.tick();
+    refreshTray();
   });
 
   registerIpcHandlers(
@@ -301,24 +374,50 @@ async function bootstrap(): Promise<void> {
       downloads,
       downloadsRepo,
       downloadFolder,
+      online,
+      traySupport: () => traySupport,
+      imageCache,
+      paths: { data: userData, logs: dirname(log.transports.file.getFile().path) },
+      settingsChanged: (patch) => {
+        if (patch.general || patch.language) applySystem();
+        if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
+        refreshTray();
+      },
     }),
   );
 
-  let mainWindow = createMainWindow(settings);
+  applySystem();
+  const { general } = settings.getAppSettings();
+  // Started at login with "start hidden": stay in the tray, if there is one.
+  const startHidden =
+    process.argv.includes(HIDDEN_ARG) && general.startHidden && general.closeToTray && traySupport.available;
+  const windowOptions = { hideOnClose: () => !quitting && tray.enabled };
+  let mainWindow = createMainWindow(settings, { ...windowOptions, hidden: startHidden });
+  function showWindow(): void {
+    if (mainWindow.isDestroyed()) mainWindow = createMainWindow(settings, windowOptions);
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.show();
+    mainWindow.focus();
+  }
+  if (!online.isOnline()) void downloads.setOnline(false);
   downloads.start(settings.getAppSettings().downloads.resumeOnStart);
   updates.start();
+  online.start();
 
-  app.on('second-instance', () => {
-    if (mainWindow.isMinimized()) mainWindow.restore();
-    mainWindow.focus();
-  });
+  app.on('second-instance', () => showWindow());
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) mainWindow = createMainWindow(settings);
+    if (BrowserWindow.getAllWindows().length === 0) mainWindow = createMainWindow(settings, windowOptions);
+    else showWindow();
+  });
+  app.on('before-quit', () => {
+    quitting = true;
   });
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    online.stop();
+    tray.disable();
     updates.stop();
     downloads.shutdown();
     void downloadStore.reader.closeAll();
