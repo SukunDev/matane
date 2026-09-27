@@ -46,18 +46,21 @@ async function start(
  * Fake site + a fresh app profile with the site's extensions loaded from dev folders ("e2e-demo",
  * and "e2e-mirror" as a second extension). Dev folders are remembered, so a restart keeps them.
  */
-export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']): Promise<TestApp> {
+export async function launchApp(
+  extensions: SiteExtension[] = ['demo', 'mirror'],
+  env: Record<string, string> = {},
+): Promise<TestApp> {
   const site = await startSite();
   const home = mkdtempSync(join(tmpdir(), 'matane-e2e-'));
-  const started = await start(home);
+  const started = await start(home, env);
   const test: TestApp = {
     site,
     home,
     ...started,
-    restart: async (between, env) => {
+    restart: async (between, restartEnv) => {
       await test.app.close();
       between?.();
-      Object.assign(test, await start(home, env));
+      Object.assign(test, await start(home, { ...env, ...restartEnv }));
     },
     close: async () => {
       await test.app.close();

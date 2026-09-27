@@ -17,6 +17,8 @@ export interface RegisteredExtension {
   manifest: ExtensionManifest | null;
   code: string | null;
   error: string | null;
+  /** `icon.png` next to the bundle. */
+  iconPath: string | null;
 }
 
 const exists = (path: string) =>
@@ -40,6 +42,7 @@ export async function readExtension(path: string, origin: ExtensionOrigin): Prom
     manifest: null,
     code: null,
     error,
+    iconPath: null,
   });
 
   let raw: unknown;
@@ -67,28 +70,41 @@ export async function readExtension(path: string, origin: ExtensionOrigin): Prom
   } catch (error) {
     return broken(`Cannot read index.js: ${(error as Error).message}`, manifest.id);
   }
-  return { id: manifest.id, origin, path: root, bundleDir, manifest, code, error: null };
+  const icon = join(bundleDir, 'icon.png');
+  const iconPath = (await exists(icon)) ? icon : null;
+  return { id: manifest.id, origin, path: root, bundleDir, manifest, code, error: null, iconPath };
 }
 
-/** Every subfolder of `root` is an extension (`extensions/*` in the repo, `resources/extensions` when packaged). */
-export async function readBuiltins(root: string): Promise<RegisteredExtension[]> {
+/**
+ * Every subfolder of `root` is an extension: built-ins (`extensions/*` in the repo,
+ * `resources/extensions` when packaged) or installed ones (`userData/extensions/<id>`). Names with a
+ * dot are an installer's work in progress (`<id>.tmp`, `<id>.old`) and are skipped.
+ */
+export async function readExtensionFolders(root: string, origin: ExtensionOrigin): Promise<RegisteredExtension[]> {
   let names: string[];
   try {
-    names = (await readdir(root, { withFileTypes: true })).filter((d) => d.isDirectory()).map((d) => d.name);
+    names = (await readdir(root, { withFileTypes: true }))
+      .filter((d) => d.isDirectory() && !d.name.includes('.'))
+      .map((d) => d.name);
   } catch {
     return [];
   }
-  return Promise.all(names.sort().map((name) => readExtension(join(root, name), 'builtin')));
+  return Promise.all(names.sort().map((name) => readExtension(join(root, name), origin)));
 }
 
 export interface RegistryOptions {
   builtinDir: string;
+  /** Extensions installed from repositories. */
+  installedDir?: string;
   devFolders: () => string[];
   /** Called (debounced) when a dev extension's bundle changes on disk. */
   onDevChange?: (extensionId: string) => void;
 }
 
-/** In-memory view of installed extensions. Dev folders override built-ins with the same id. */
+/**
+ * In-memory view of installed extensions. With the same id, a dev folder wins over an installed
+ * extension, which wins over a built-in (ADR 0023).
+ */
 export class ExtensionRegistry {
   private entries = new Map<string, RegisteredExtension>();
   private watchers: FSWatcher[] = [];
@@ -96,12 +112,13 @@ export class ExtensionRegistry {
   constructor(private readonly options: RegistryOptions) {}
 
   async load(): Promise<RegisteredExtension[]> {
-    const builtins = await readBuiltins(this.options.builtinDir);
+    const builtins = await readExtensionFolders(this.options.builtinDir, 'builtin');
+    const installed = this.options.installedDir ? await readExtensionFolders(this.options.installedDir, 'repo') : [];
     const dev = await Promise.all(this.options.devFolders().map((folder) => readExtension(folder, 'dev')));
     const next = new Map<string, RegisteredExtension>();
-    for (const entry of [...builtins, ...dev]) {
+    for (const entry of [...builtins, ...installed, ...dev]) {
       const current = next.get(entry.id);
-      // A broken dev copy should not hide a working built-in.
+      // A broken copy should not hide a working one.
       if (current && entry.error && !current.error) continue;
       next.set(entry.id, entry);
     }

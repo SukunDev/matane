@@ -19,6 +19,8 @@ export const APP_ERROR_CODES = [
   'host_crashed',
   'cancelled',
   'not_installed',
+  // Extension repositories and installs
+  'repo',
   'unknown',
 ] as const;
 export type AppErrorCode = (typeof APP_ERROR_CODES)[number];

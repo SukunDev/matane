@@ -9,6 +9,8 @@ import type { CategoriesRepository } from '../db/repositories/categories';
 import type { HistoryRepository } from '../db/repositories/history';
 import type { LibraryRepository } from '../db/repositories/library';
 import type { MangaRepository } from '../db/repositories/manga';
+import type { ExtensionInstaller } from '../extensions/installer';
+import type { RepoService } from '../extensions/repos';
 import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
 import type { NetworkManager } from '../network/manager';
@@ -29,6 +31,8 @@ import type { RequestRegistry } from './requests';
 export interface IpcDeps {
   settings: SettingsRepository;
   extensions: ExtensionService;
+  repos: RepoService;
+  installer: ExtensionInstaller;
   sources: SourceService;
   chapters: ChaptersRepository;
   network: NetworkManager;
@@ -60,6 +64,8 @@ const DOWNLOADS_CLEARED_KEY = 'downloads.clearedAt';
 export function createIpcHandlers({
   settings,
   extensions,
+  repos,
+  installer,
   sources,
   chapters,
   network,
@@ -165,6 +171,18 @@ export function createIpcHandlers({
     'extensions.reload': (input) => extensions.reload(input?.extensionId),
     'extensions.preferences': ({ extensionId }) => extensions.preferences(extensionId),
     'extensions.setPreference': ({ extensionId, key, value }) => extensions.setPreference(extensionId, key, value),
+
+    'repos.list': () => repos.list(),
+    'repos.add': ({ url, confirmUnverified }) => repos.add(url, confirmUnverified),
+    'repos.remove': ({ repoId }) => repos.remove(repoId),
+    'repos.sync': (input) => repos.sync(input?.repoId),
+    'repos.trustKey': ({ repoId }) => repos.trustKey(repoId),
+    'extensions.available': () => installer.available(),
+    'extensions.prepareInstall': ({ repoId, extensionId }) => installer.prepare(repoId, extensionId),
+    'extensions.install': ({ token }) => installer.install(token),
+    'extensions.cancelInstall': ({ token }) => installer.cancel(token),
+    'extensions.updateAll': () => installer.updateAll(),
+    'extensions.uninstall': ({ extensionId }) => installer.uninstall(extensionId),
 
     'sources.list': () => sources.list(),
     'sources.info': ({ sourceId }) => sources.info(sourceId),

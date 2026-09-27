@@ -53,7 +53,7 @@
     },
     "extensions": {
       "title": "No extensions installed",
-      "description": "Load an extension from a folder, or wait for extension repositories in a later version."
+      "description": "Add a repository and install extensions from the Available tab, or load one from a folder."
     },
     "globalSearch": {
       "title": "Search every source at once",
@@ -303,6 +303,7 @@
     "host_crashed": "The extension host restarted, try again",
     "cancelled": "Cancelled",
     "not_installed": "The extension for this source is not installed",
+    "repo": "Problem with the extension repository",
     "unknown": "Something went wrong",
     "verify": "Verify",
     "verifying": "Waiting for the check…"
@@ -351,8 +352,6 @@
     }
   },
   "extensions": {
-    "subtitle_one": "{{count}} installed",
-    "subtitle_other": "{{count}} installed",
     "dev": "Dev",
     "builtin": "Built-in",
     "devLoaded": "Dev mode · loaded from folder",
@@ -360,7 +359,97 @@
     "reloadAll": "Reload all",
     "reload": "Reload",
     "removeFolder": "Remove this folder",
-    "reposSoon": "Extension repositories (install and update) arrive in a later version.",
+    "updatesAvailable_one": "Update available: {{count}}",
+    "updatesAvailable_other": "Updates available: {{count}}",
+    "updateAll": "Update all",
+    "updateTo": "Update to v{{version}}",
+    "versionUpdate": "v{{from}} → v{{to}}",
+    "upToDate": "Up to date",
+    "uninstall": "Uninstall",
+    "uninstallTitle": "Uninstall {{name}}?",
+    "uninstallDescription": "Its settings and saved data are removed. Manga from it stay in your library, marked \"source not installed\", until you install it again.",
+    "repoRemoved": "Its repository was removed (no more updates)",
+    "installedElsewhere": "Installed from another repository",
+    "more": "More",
+    "search": "Search extensions…",
+    "browseAvailable": "Browse available extensions",
+    "tabs": {
+      "installed": "Installed",
+      "available": "Available",
+      "updates": "Updates"
+    },
+    "languages": {
+      "label": "Languages: {{langs}}",
+      "all": "All"
+    },
+    "noRepos": {
+      "title": "No repositories yet",
+      "description": "Extensions come from repositories. Add one by its URL to see what it offers."
+    },
+    "allInstalled": {
+      "title": "Everything is installed",
+      "description": "Every extension your repositories offer is already installed."
+    },
+    "noUpdates": {
+      "title": "Everything is up to date",
+      "description": "Repositories are checked once a day; sync one in the Repositories panel to check now."
+    },
+    "trust": {
+      "verified": "Verified",
+      "trustedKey": "Trusted key",
+      "unverified": "Unverified",
+      "officialLine": "Official · Verified",
+      "trustedLine": "{{repo}} · Trusted key",
+      "unverifiedLine": "{{repo}} · Unverified"
+    },
+    "repos": {
+      "title": "Repositories",
+      "none": "No repositories yet.",
+      "add": "Add repository",
+      "addTitle": "Add a repository",
+      "addDescription": "The URL of an extension repository (the folder with index.json).",
+      "url": "Repository URL",
+      "addButton": "Add",
+      "addAnyway": "Add anyway",
+      "unverifiedTitle_one": "\"{{name}}\" ({{count}} extension) is not verified",
+      "unverifiedTitle_other": "\"{{name}}\" ({{count}} extensions) is not verified",
+      "unverifiedWarning": "Extensions from it can reach the sites they list. Only add repositories you trust.",
+      "count_one": "{{count}} extension",
+      "count_other": "{{count}} extensions",
+      "synced": "Last synced {{when}}",
+      "sync": "Sync now",
+      "more": "More",
+      "copyUrl": "Copy URL",
+      "remove": "Remove",
+      "removeTitle": "Remove {{name}}?",
+      "removeDescription": "Extensions installed from it stay installed but get no more updates.",
+      "trustKey": "Trust this key",
+      "trustTitle": "Trust the key of {{name}}?",
+      "trustDescription": "From now on this repository only syncs when its index is signed with this key:",
+      "problem": {
+        "unsigned": "Not signed.",
+        "unknown-key": "Signed with a key this app does not know.",
+        "bad-signature": "The signature does not match the index."
+      }
+    },
+    "install": {
+      "description": "What this extension can do, before it is installed.",
+      "verifying": "Downloading and verifying…",
+      "updating": "Updating…",
+      "unverifiedWarning": "This repository is not verified. Only install extensions you trust.",
+      "newDomainsWarning": "Version {{to}} can reach sites that {{from}} could not (marked New).",
+      "nsfw": "This extension has adult content.",
+      "canAccess": "This extension can access:",
+      "new": "New",
+      "apiVersion": "API version {{version}}",
+      "shaVerified": "SHA-256 verified",
+      "install": "Install",
+      "update": "Update",
+      "failed": "Cannot install this extension",
+      "repoOfficial": "{{repo}} (official)",
+      "repoTrusted": "{{repo}} (trusted key)",
+      "repoUnverified": "{{repo}} (unverified)"
+    },
     "preferences": {
       "open": "Extension settings",
       "title": "{{name}} settings",

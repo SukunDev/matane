@@ -1,12 +1,18 @@
 import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+/** Extension repositories (BRAINSTORM.md §5.8, ADR 0022). */
 export const extensionRepos = sqliteTable('extension_repos', {
   id: integer().primaryKey({ autoIncrement: true }),
+  /** Base URL, ending in "/". */
   url: text().notNull().unique(),
   name: text(),
+  /** A key the user chose to trust for this repository ("trust this key"), `ed25519:…`. */
   publicKey: text(),
-  trusted: integer({ mode: 'boolean' }).notNull().default(false),
+  /** Exact bytes of the last accepted `index.json` and its signature (trust is re-checked from these). */
+  indexJson: text(),
+  signature: text(),
   lastFetchedAt: integer(),
+  lastError: text(),
 });
 
 export const extensions = sqliteTable('extensions', {

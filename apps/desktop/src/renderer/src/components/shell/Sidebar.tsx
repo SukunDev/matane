@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { downloadStatsQuery } from '../../lib/downloads';
 import { updateStatusQuery } from '../../lib/updates';
+import { availableExtensionsQuery } from '../../lib/extensions';
 import { libraryCountsQuery } from '../../lib/library';
 import logoMark from '../../assets/logo-mark.png';
 import { cn } from '../../lib/utils';
@@ -20,11 +21,14 @@ function SidebarLink({
   collapsed,
   nested,
   badge,
+  dot,
 }: {
   item: NavLeaf;
   collapsed: boolean;
   nested?: boolean;
   badge?: number;
+  /** Something waits there (extension updates). */
+  dot?: string;
 }) {
   const { t } = useTranslation();
   const Icon = item.icon;
@@ -32,13 +36,26 @@ function SidebarLink({
     <Link
       to={item.to}
       title={collapsed ? t(`nav.${item.labelKey}`) : undefined}
-      className={cn(itemClass, nested && !collapsed && 'h-8 pl-4 text-[13px]', collapsed && 'justify-center px-0')}
+      className={cn(
+        'relative',
+        itemClass,
+        nested && !collapsed && 'h-8 pl-4 text-[13px]',
+        collapsed && 'justify-center px-0',
+      )}
       activeProps={{ className: activeClass }}
     >
       <Icon className="size-4 shrink-0" />
       {!collapsed && <span className="flex-1 truncate">{t(`nav.${item.labelKey}`)}</span>}
       {!collapsed && badge !== undefined && badge > 0 && (
         <span className="rounded-md bg-primary/20 px-1.5 text-[11px] font-semibold text-primary">{badge}</span>
+      )}
+      {dot && (
+        <span
+          role="status"
+          aria-label={dot}
+          title={dot}
+          className={cn('size-1.5 shrink-0 rounded-full bg-primary', collapsed && 'absolute top-1.5 right-2.5')}
+        />
       )}
     </Link>
   );
@@ -57,6 +74,12 @@ export function Sidebar() {
     ? downloadStats.queued + downloadStats.downloading + downloadStats.paused + downloadStats.error
     : 0;
   const { data: updateStatus } = useQuery(updateStatusQuery);
+  const { data: available } = useQuery(availableExtensionsQuery);
+  const extensionUpdates = available?.filter((a) => a.update).length ?? 0;
+  const dots: Partial<Record<NavLeaf['to'], string>> = {
+    '/browse/extensions':
+      extensionUpdates > 0 ? t('extensions.updatesAvailable', { count: extensionUpdates }) : undefined,
+  };
   const badges: Partial<Record<NavLeaf['to'], number>> = {
     '/library': counts?.all,
     '/updates': updateStatus?.unseen,
@@ -89,7 +112,9 @@ export function Sidebar() {
           const Icon = item.icon;
           const groupActive = item.children.some((child) => pathname.startsWith(child.to));
           if (collapsed) {
-            return item.children.map((child) => <SidebarLink key={child.to} item={child} collapsed />);
+            return item.children.map((child) => (
+              <SidebarLink key={child.to} item={child} collapsed dot={dots[child.to]} />
+            ));
           }
           return (
             <div key={item.labelKey} className="flex flex-col gap-0.5">
@@ -106,7 +131,7 @@ export function Sidebar() {
               {browseOpen && (
                 <div className="ml-5 flex flex-col gap-0.5 border-l pl-2">
                   {item.children.map((child) => (
-                    <SidebarLink key={child.to} item={child} collapsed={false} nested />
+                    <SidebarLink key={child.to} item={child} collapsed={false} nested dot={dots[child.to]} />
                   ))}
                 </div>
               )}

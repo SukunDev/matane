@@ -53,7 +53,7 @@
     },
     "extensions": {
       "title": "Belum ada extension",
-      "description": "Muat extension dari folder, atau tunggu repository extension di versi berikutnya."
+      "description": "Tambahkan repositori lalu pasang extension dari tab Tersedia, atau muat dari folder."
     },
     "globalSearch": {
       "title": "Cari di semua sumber sekaligus",
@@ -303,6 +303,7 @@
     "host_crashed": "Host extension dimulai ulang, coba lagi",
     "cancelled": "Dibatalkan",
     "not_installed": "Extension untuk source ini tidak terpasang",
+    "repo": "Ada masalah dengan repositori extension",
     "unknown": "Terjadi kesalahan",
     "verify": "Verifikasi",
     "verifying": "Menunggu verifikasi…"
@@ -349,7 +350,6 @@
     }
   },
   "extensions": {
-    "subtitle_other": "{{count}} terpasang",
     "dev": "Dev",
     "builtin": "Bawaan",
     "devLoaded": "Mode dev · dimuat dari folder",
@@ -357,7 +357,94 @@
     "reloadAll": "Muat ulang semua",
     "reload": "Muat ulang",
     "removeFolder": "Hapus folder ini",
-    "reposSoon": "Repository extension (pasang dan update) hadir di versi berikutnya.",
+    "updatesAvailable_other": "Update tersedia: {{count}}",
+    "updateAll": "Update semua",
+    "updateTo": "Update ke v{{version}}",
+    "versionUpdate": "v{{from}} → v{{to}}",
+    "upToDate": "Terbaru",
+    "uninstall": "Hapus",
+    "uninstallTitle": "Hapus {{name}}?",
+    "uninstallDescription": "Pengaturan dan data tersimpannya ikut dihapus. Manga darinya tetap ada di library, ditandai \"source tidak terpasang\", sampai kamu memasangnya lagi.",
+    "repoRemoved": "Repositorinya sudah dihapus (tidak ada update lagi)",
+    "installedElsewhere": "Terpasang dari repositori lain",
+    "more": "Lainnya",
+    "search": "Cari extension…",
+    "browseAvailable": "Lihat extension yang tersedia",
+    "tabs": {
+      "installed": "Terpasang",
+      "available": "Tersedia",
+      "updates": "Update"
+    },
+    "languages": {
+      "label": "Bahasa: {{langs}}",
+      "all": "Semua"
+    },
+    "noRepos": {
+      "title": "Belum ada repositori",
+      "description": "Extension berasal dari repositori. Tambahkan satu lewat URL-nya untuk melihat isinya."
+    },
+    "allInstalled": {
+      "title": "Semua sudah terpasang",
+      "description": "Semua extension dari repositorimu sudah terpasang."
+    },
+    "noUpdates": {
+      "title": "Semua sudah terbaru",
+      "description": "Repositori dicek sekali sehari; sinkronkan di panel Repositori untuk mengecek sekarang."
+    },
+    "trust": {
+      "verified": "Terverifikasi",
+      "trustedKey": "Kunci dipercaya",
+      "unverified": "Tidak terverifikasi",
+      "officialLine": "Resmi · Terverifikasi",
+      "trustedLine": "{{repo}} · Kunci dipercaya",
+      "unverifiedLine": "{{repo}} · Tidak terverifikasi"
+    },
+    "repos": {
+      "title": "Repositori",
+      "none": "Belum ada repositori.",
+      "add": "Tambah repositori",
+      "addTitle": "Tambah repositori",
+      "addDescription": "URL repositori extension (folder yang berisi index.json).",
+      "url": "URL repositori",
+      "addButton": "Tambah",
+      "addAnyway": "Tetap tambahkan",
+      "unverifiedTitle_other": "\"{{name}}\" ({{count}} extension) tidak terverifikasi",
+      "unverifiedWarning": "Extension darinya bisa mengakses situs yang dicantumkannya. Tambahkan hanya repositori yang kamu percaya.",
+      "count_other": "{{count}} extension",
+      "synced": "Terakhir disinkronkan {{when}}",
+      "sync": "Sinkronkan sekarang",
+      "more": "Lainnya",
+      "copyUrl": "Salin URL",
+      "remove": "Hapus",
+      "removeTitle": "Hapus {{name}}?",
+      "removeDescription": "Extension yang dipasang darinya tetap terpasang, tapi tidak mendapat update lagi.",
+      "trustKey": "Percayai kunci ini",
+      "trustTitle": "Percayai kunci {{name}}?",
+      "trustDescription": "Mulai sekarang repositori ini hanya disinkronkan kalau index-nya ditandatangani dengan kunci ini:",
+      "problem": {
+        "unsigned": "Tidak ditandatangani.",
+        "unknown-key": "Ditandatangani dengan kunci yang tidak dikenal app ini.",
+        "bad-signature": "Tanda tangannya tidak cocok dengan index."
+      }
+    },
+    "install": {
+      "description": "Apa yang bisa dilakukan extension ini, sebelum dipasang.",
+      "verifying": "Mengunduh dan memverifikasi…",
+      "updating": "Memperbarui…",
+      "unverifiedWarning": "Repositori ini tidak terverifikasi. Pasang hanya extension yang kamu percaya.",
+      "newDomainsWarning": "Versi {{to}} bisa mengakses situs yang tidak bisa diakses {{from}} (ditandai Baru).",
+      "nsfw": "Extension ini berisi konten dewasa.",
+      "canAccess": "Extension ini bisa mengakses:",
+      "new": "Baru",
+      "apiVersion": "Versi API {{version}}",
+      "shaVerified": "SHA-256 terverifikasi",
+      "install": "Pasang",
+      "update": "Update",
+      "failed": "Extension ini tidak bisa dipasang",
+      "repoOfficial": "{{repo}} (resmi)",
+      "repoTrusted": "{{repo}} (kunci dipercaya)",
+      "repoUnverified": "{{repo}} (tidak terverifikasi)"
+    },
     "preferences": {
       "open": "Pengaturan extension",
       "title": "Pengaturan {{name}}",

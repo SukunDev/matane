@@ -153,6 +153,7 @@ export function keysForTag(tag: DbChangeTag): readonly (readonly unknown[])[] {
     return [queryKeys.extensions, queryKeys.sources, ['sourceInfo'], ['sourceFilters'], ['preferences']];
   }
   if (tag === 'sources') return [queryKeys.sources];
+  if (tag === 'repos') return [['repos'], ['extensions', 'available']];
   // Library rows show unread counts (chapters) and "last read" (history).
   if (tag === 'history') return [['history'], ['continue'], ['library']];
   // The Updates page lists library manga only.

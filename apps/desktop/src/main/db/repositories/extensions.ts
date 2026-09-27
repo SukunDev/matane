@@ -49,6 +49,12 @@ export class ExtensionsRepository {
     this.changes.mark('extensions', 'sources');
   }
 
+  /** Forgets an uninstalled extension: its storage and preferences go with it (cascade), its sources stay (§7). */
+  remove(id: string): void {
+    this.db.delete(extensions).where(eq(extensions.id, id)).run();
+    this.changes.mark('extensions', 'sources');
+  }
+
   list(): ExtensionRow[] {
     return this.db.select().from(extensions).all();
   }

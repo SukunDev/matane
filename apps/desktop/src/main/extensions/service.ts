@@ -80,7 +80,10 @@ export class ExtensionService {
 
   list(): ExtensionEntry[] {
     const rows = new Map(this.deps.repo.list().map((row) => [row.id, row]));
-    return this.deps.registry.list().map((entry) => this.toEntry(entry, rows.get(entry.id)?.enabled ?? true));
+    return this.deps.registry.list().map((entry) => {
+      const row = rows.get(entry.id);
+      return this.toEntry(entry, row?.enabled ?? true, entry.origin === 'repo' ? (row?.repoId ?? null) : null);
+    });
   }
 
   get(extensionId: string): RegisteredExtension | undefined {
@@ -169,19 +172,24 @@ export class ExtensionService {
     return entry as RegisteredExtension & { manifest: ExtensionManifest; code: string };
   }
 
-  private toEntry(entry: RegisteredExtension, enabled: boolean): ExtensionEntry {
+  private toEntry(entry: RegisteredExtension, enabled: boolean, repoId: number | null): ExtensionEntry {
     const manifest = entry.manifest;
     return {
       id: entry.id,
       name: manifest?.name ?? entry.id,
       version: manifest?.version ?? '?',
       apiVersion: manifest?.apiVersion ?? 0,
+      description: manifest?.description ?? null,
       nsfw: manifest?.nsfw ?? false,
       enabled,
       origin: entry.origin,
       path: entry.path,
       error: entry.error,
       sourceIds: manifest?.sources.map((s) => sourceIdOf(entry.id, s.key)) ?? [],
+      langs: [...new Set(manifest?.sources.map((s) => s.lang) ?? [])].sort(),
+      domains: manifest?.domains ?? [],
+      repoId,
+      hasIcon: entry.iconPath !== null,
     };
   }
 }

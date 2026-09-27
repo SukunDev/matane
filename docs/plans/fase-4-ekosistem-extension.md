@@ -265,3 +265,65 @@ Beda dari rencana:
 
 Catatan:
 - Test `RateLimiter` di `cli.test.ts` (sudah ada sejak Fase 1) sekali gagal saat semua paket dites paralel. Tiga kali dijalankan ulang selalu lulus. Test ini bergantung pada timing, jadi mungkin perlu toleransi.
+
+### Milestone 4b: selesai (27 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (desktop 199: +25).
+  - Test baru `extensions/repos.test.ts` (21):
+    - normalisasi URL (HTTPS saja, HTTP hanya loopback, `…/index.json` diterima, login di URL ditolak);
+    - `evaluateTrust`: resmi / kunci dipercaya / kunci tak dikenal / tanpa tanda tangan / tanda tangan palsu (index menyebut kunci resmi, tapi ditandatangani kunci lain);
+    - repo resmi langsung ditambahkan; repo tidak terverifikasi butuh konfirmasi, lalu kuncinya bisa dipercaya; repo tanpa tanda tangan tidak bisa "dipercaya";
+    - sync mengambil index baru. Kalau repo yang dulunya bertanda tangan sekarang berisi index yang diubah atau ditandatangani kunci lain, index lama dipertahankan dan errornya dicatat; setelah diperbaiki, errornya hilang. Sync yang gagal (jaringan) tidak menghapus index;
+    - installer: prepare tidak menulis apa pun; install menulis `manifest.json` + `index.js` + `icon.png`, token hanya sekali pakai; update dari repo yang sama (tanpa domain baru langsung terpasang, dengan domain baru dikembalikan untuk konfirmasi); id yang sama dari repo lain ditolak; zip yang diubah ditolak (sha256) tanpa menulis apa pun;
+    - uninstall menghapus folder, storage, prefs, dan session, sementara source tetap ada; pasang lagi jalan; setelah uninstall, versi bawaan dengan id yang sama aktif lagi;
+    - pemulihan install yang terputus (`.tmp` dihapus, `.old` tanpa folder dikembalikan).
+  - `network/fetch-bytes.test.ts` (4): 404 → null, error HTTP/jaringan, batas ukuran (dengan dan tanpa `content-length`), timeout.
+- E2E 64/64. Spec baru `e2e/extensions.spec.ts` (8 test). Situs palsu menyajikan repo yang dibangun dengan `mr-ext repo build`, dan kunci "resmi" adalah kunci test (`MATANE_E2E_OFFICIAL_KEY`):
+  - tambah repo resmi → badge "Verified" → tab Tersedia → dialog pasang (repo resmi, domain, API version, "SHA-256 verified") → terpasang, "Up to date", ikon tampil;
+  - source dari extension terpasang bisa di-browse, lalu manga masuk library;
+  - update dengan domain baru: titik di sidebar, tab Update, dialog menandai domain "New" dan menampilkan peringatan; update tanpa domain baru lewat "Update all" terpasang tanpa dialog;
+  - zip yang diubah satu byte → dialog "Cannot install this extension … sha256 mismatch", versi tetap;
+  - uninstall → source "tidak terpasang", manga tetap di library, dan halaman source menampilkan "Not installed"; pasang lagi → manga normal (chapter terbaca);
+  - repo tidak terverifikasi: peringatan saat menambah ("Signed with a key this app does not know"), "Add anyway", peringatan di dialog pasang, "Trust this key" (kuncinya ditampilkan) → "Trusted key";
+  - index yang diubah setelah ditandatangani → "The signature does not match the index";
+  - setelah restart, extension terpasang dan repo (beserta tingkat kepercayaannya) tetap ada, dan source-nya jalan.
+- Live check di app hasil build (profil `XDG_CONFIG_HOME` dan folder download terpisah; repo lokal lewat `python -m http.server`; kunci resmi di-override lewat `MATANE_E2E_OFFICIAL_KEY`):
+  - repo resmi berisi **MangaDex asli** (bundle `dist/` + ikon, 1.1.0) dan repo komunitas bertanda tangan kunci lain → dialog tambah repo tidak terverifikasi, tab Tersedia, dialog pasang (09b) untuk keduanya, lalu terpasang;
+  - MangaDex dari repo menggantikan versi bawaan (`origin: repo`, `repoId` 1), dan Popular/Latest MangaDex asli tampil (48 dan 41 manga);
+  - MangaDex 1.2.0 dengan domain tambahan `mangadex.org` → dialog update menandai domain itu "New" → terpasang;
+  - uninstall Nebula dari menu baris → foldernya hilang dan extension muncul lagi di tab Tersedia;
+  - **AppImage** (`pnpm dist:linux`) dengan profil yang sama memuat `mangadex@1.2.0 (repo)` dari `userData/extensions`.
+  - Dibandingkan dengan mockup 09/09b: struktur sama (judul + badge jumlah update, Repositories / Update all, tab dengan jumlah, pencarian + filter bahasa, baris dengan ikon, versi, bahasa, garis kepercayaan, deskripsi, tombol update/setting/menu; panel repositori dengan badge, jumlah, waktu sinkron, sinkron, menu, dan "Add repository"; dialog pasang sama persis susunannya).
+  - Hyprland men-tile jendela (lebar 992 px dan `setSize` diabaikan), jadi tata letak sempit ikut teruji: baris membungkus tombol aksinya ke bawah, dan garis kepercayaan tidak terlipat.
+
+Implementasi:
+- **DB:**
+  - migrasi `0003_extension_repos`: `extension_repos` mendapat `index_json`, `signature`, dan `last_error`. Kolom `trusted` dihapus; kepercayaan sekarang berupa kunci (`public_key` = kunci yang dipercaya pengguna), bukan flag;
+  - `ReposRepository` (repo + asal repo extension); `ExtensionsRepository.remove` (storage/prefs ikut terhapus lewat cascade).
+- **Main:**
+  - `network/fetch-bytes.ts`: `net.fetch` dengan revalidasi cache, timeout, dan batas ukuran yang dicek saat streaming.
+  - `extensions/official.ts`: `OFFICIAL_KEYS` (masih kosong sampai 4e), plus kunci test lewat `MATANE_E2E_OFFICIAL_KEY` (hanya dengan `MATANE_E2E`).
+  - `extensions/repos.ts` (`RepoService`):
+    - `normalizeRepoUrl`, `evaluateTrust`, add/remove/sync/trustKey;
+    - sync terjadwal: 15 detik setelah start, lalu tiap jam untuk repo yang lebih tua dari 24 jam, hanya saat online;
+    - index yang diterima disimpan byte-per-byte bersama tanda tangannya, dan kepercayaan dihitung ulang dari situ;
+    - repo resmi/dipercaya tidak pernah menerima index yang tidak lagi ditandatangani kuncinya.
+  - `extensions/installer.ts` (`ExtensionInstaller`): `available`, `prepare` (unduh ≤ ukuran di index, cek sha256, validasi isi dan manifest), `install` (tulis atomik `<id>.tmp` → `<id>`, dengan `<id>.old` sebagai cadangan), `updateAll`, `uninstall`, `recover`.
+  - `extensions/icons.ts` + protokol `manga://extension-icon/<id>` dan `manga://repo-icon/<repoId>/<id>` (hanya PNG; ikon repo di-cache di memori 24 jam).
+  - `ExtensionRegistry` membaca `userData/extensions` sebagai asal `repo` (prioritas dev > repo > bawaan; folder dengan titik dilewati). `ExtensionEntry` mendapat `description`, `langs`, `domains`, `repoId`, dan `hasIcon`.
+  - IPC `repos.list/add/remove/sync/trustKey` dan `extensions.available/prepareInstall/install/cancelInstall/updateAll/uninstall`, tag `repos`, dan kode error `repo`.
+- **Renderer:**
+  - `features/extensions/ExtensionsPage.tsx` ditulis ulang sesuai mockup 09: tab Terpasang/Tersedia/Update dengan jumlah, pencarian, filter bahasa (lokal; menjadi setting di 4c), "Update all", dan baris per asal (bawaan, repo dengan garis kepercayaan, dev dengan path + Reload);
+  - `RepositoriesPanel.tsx` (panel + dialog tambah repo dengan konfirmasi tidak terverifikasi), `InstallDialog.tsx` (09b), `parts.tsx` (ikon dengan fallback inisial, badge dan garis kepercayaan, badge bahasa);
+  - `lib/extensions.ts`; titik di sidebar saat ada update extension; teks EN/ID.
+- **ADR** 0022 (repo + tanda tangan + model kepercayaan) dan 0023 (siklus pasang/update/hapus + prioritas asal), ditulis sekarang karena keputusannya lahir di 4b (rencana awal: di 4e).
+- **E2E support:** `site.publishRepo()` (membangun dan menyajikan repo), `extensionFiles` dengan override versi/domain/deskripsi, dan `launchApp(extensions, env)`. `@manga-reader/extension-cli` menjadi devDependency desktop.
+
+Beda dari rencana:
+- `extensions` **tidak** mendapat kolom `origin`, `sha256`, dan `domains_json`. Asal dan domain diambil dari registry (folder dan manifest di disk), dan sha256 dicek saat pasang, jadi tidak perlu disimpan. Asal repo tetap di `extensions.repo_id` yang sudah ada.
+- **Tidak ada event progres install.** Arsip paling besar 20 MB (biasanya beberapa KB), jadi dialog cukup menampilkan "Downloading and verifying…".
+- "Id yang sama di dua repo, pengguna memilih satu": repo yang dipasang pertama menang. Repo lain menampilkan "Installed from another repository", dan pengguna bisa uninstall dulu untuk memilih yang lain.
+- Toggle "Show NSFW" di mockup masuk 4c bersama setting-nya.
+
+Catatan:
+- Di satu live run, log mencatat `Unhandled TypeError: This database connection is busy executing a query`. Error ini muncul dari `saveState` jendela, yang dipanggil `app.close()` Playwright lewat `eval` inspector. Inspector bisa menyela JavaScript yang sedang berjalan (misalnya di tengah konversi baris query), jadi ini artefak harness test. Menutup jendela biasa lewat event loop tidak mengalami ini.

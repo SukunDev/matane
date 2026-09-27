@@ -1,6 +1,10 @@
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { type Server, createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join, normalize } from 'node:path';
 import { crc32, deflateSync } from 'node:zlib';
+import { buildRepo } from '@manga-reader/extension-cli';
 
 // A tiny fake manga site for end-to-end tests: JSON API + generated PNG images, on 127.0.0.1.
 // The app reaches it as http://e2e.localhost:<port> (Chromium resolves *.localhost to loopback).
@@ -82,11 +86,27 @@ export interface Site {
   failManga: Set<string>;
   /** Publishes a new chapter (update checks find it). */
   addChapter(mangaId: string, number: number): void;
+  /**
+   * Builds an extension repository with `mr-ext repo build` and serves it at `<origin>/<path>/`;
+   * returns its folder (tests may tamper with the files).
+   */
+  publishRepo(options: RepoOptions): Promise<string>;
   close(): Promise<void>;
+}
+
+export interface RepoOptions {
+  path: string;
+  name: string;
+  /** Signing key (PEM); null publishes an unsigned repository. */
+  privateKeyPem: string | null;
+  extensions: { which: SiteExtension; version: string; domains?: string[]; description?: string }[];
 }
 
 export async function startSite(): Promise<Site> {
   const hits: string[] = [];
+  const scratch = mkdtempSync(join(tmpdir(), 'matane-site-'));
+  /** Served repository folders by URL path prefix. */
+  const repos = new Map<string, string>();
   // A copy per site, so chapters added by one test don't leak into another.
   const catalogue: SiteManga[] = structuredClone(SITE_MANGA);
   const json = (value: unknown) => ({ type: 'application/json', body: Buffer.from(JSON.stringify(value)) });
@@ -141,11 +161,35 @@ export async function startSite(): Promise<Site> {
     failManga: new Set(),
     down: false,
     addChapter: (mangaId, number) => catalogue.find((m) => m.id === mangaId)!.chapters.push(number),
+    publishRepo: async (options) => {
+      const sources = options.extensions.map((ext, i) => {
+        const dir = join(scratch, `src-${options.path}-${Date.now()}-${i}`);
+        mkdirSync(dir);
+        const files = extensionFiles(site.origin, ext.which, {
+          version: ext.version,
+          domains: ext.domains,
+          description: ext.description,
+        });
+        for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, name), content);
+        writeFileSync(join(dir, 'icon.png'), png(48, 48, [250, 179, 135]));
+        return dir;
+      });
+      const out = repos.get(options.path) ?? join(scratch, `repo-${options.path}`);
+      await buildRepo({
+        extensions: sources,
+        outDir: out,
+        name: options.name,
+        privateKeyPem: options.privateKeyPem ?? undefined,
+      });
+      repos.set(options.path, out);
+      return out;
+    },
     // The app keeps connections alive; without dropping them, close() waits for their timeout.
     close: () =>
       new Promise((resolve) => {
         server.close(() => resolve());
         server.closeAllConnections();
+        rmSync(scratch, { recursive: true, force: true });
       }),
   };
   const server: Server = createServer((request, response) => {
@@ -153,6 +197,17 @@ export async function startSite(): Promise<Site> {
     hits.push(url.pathname + url.search);
     if (site.down) {
       response.destroy();
+      return;
+    }
+    const [, prefix, ...rest] = url.pathname.split('/');
+    const repo = prefix ? repos.get(prefix) : undefined;
+    if (repo) {
+      const file = normalize(join(repo, ...rest));
+      if (!file.startsWith(repo) || !existsSync(file) || rest.length === 0) {
+        response.writeHead(404).end();
+        return;
+      }
+      response.writeHead(200, { 'content-type': 'application/octet-stream' }).end(readFileSync(file));
       return;
     }
     const isPage = url.pathname.startsWith('/img/page/');
@@ -189,13 +244,18 @@ const EXTENSIONS = {
 export type SiteExtension = keyof typeof EXTENSIONS;
 
 /** An extension under test, written as a ready bundle (manifest.json + index.js). */
-export function extensionFiles(origin: string, which: SiteExtension = 'demo'): Record<string, string> {
+export function extensionFiles(
+  origin: string,
+  which: SiteExtension = 'demo',
+  overrides: { version?: string; domains?: string[]; description?: string } = {},
+): Record<string, string> {
   const manifest = {
     ...EXTENSIONS[which],
-    version: '1.0.0',
+    version: overrides.version ?? '1.0.0',
     apiVersion: 1,
+    ...(overrides.description ? { description: overrides.description } : {}),
     nsfw: false,
-    domains: ['e2e.localhost'],
+    domains: overrides.domains ?? ['e2e.localhost'],
   };
   const code = `globalThis.__extension = {
   createSource: ({ key }) => {

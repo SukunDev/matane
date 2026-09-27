@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import type { Filter, Page, Preference } from '@manga-reader/extension-sdk';
 import {
+  addRepoResultSchema,
+  availableExtensionSchema,
+  installPreviewSchema,
+  repoInfoSchema,
+  updateAllResultSchema,
   browseResultSchema,
   categorySchema,
   chapterViewSchema,
@@ -113,6 +118,27 @@ export const invokeContract = {
     z.object({ extensionId: z.string(), key: z.string(), value: z.unknown() }),
     z.void(),
   ),
+
+  /** Extension repositories (BRAINSTORM.md §5.8). */
+  'repos.list': invoke(z.void(), z.array(repoInfoSchema)),
+  /** Unverified repositories are only added with `confirmUnverified`. */
+  'repos.add': invoke(
+    z.object({ url: z.string().min(1), confirmUnverified: z.boolean().optional() }),
+    addRepoResultSchema,
+  ),
+  'repos.remove': invoke(z.object({ repoId: idSchema }), z.void()),
+  /** Without an id, every repository. */
+  'repos.sync': invoke(z.object({ repoId: idSchema.optional() }).optional(), z.array(repoInfoSchema)),
+  /** Trusts the key that signed this repository's index. */
+  'repos.trustKey': invoke(z.object({ repoId: idSchema }), repoInfoSchema),
+  'extensions.available': invoke(z.void(), z.array(availableExtensionSchema)),
+  /** Downloads and verifies the archive; nothing is installed until `extensions.install`. */
+  'extensions.prepareInstall': invoke(z.object({ repoId: idSchema, extensionId: z.string() }), installPreviewSchema),
+  'extensions.install': invoke(z.object({ token: z.string() }), extensionEntrySchema),
+  'extensions.cancelInstall': invoke(z.object({ token: z.string() }), z.void()),
+  /** Installs every update that reaches no new domain; the others come back for confirmation. */
+  'extensions.updateAll': invoke(z.void(), updateAllResultSchema),
+  'extensions.uninstall': invoke(z.object({ extensionId: z.string() }), z.void()),
 
   'sources.list': invoke(z.void(), z.array(sourceEntrySchema)),
   'sources.info': invoke(z.object({ sourceId: sourceIdSchema }), sourceCapabilitiesSchema),

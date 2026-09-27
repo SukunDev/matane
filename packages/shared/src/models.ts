@@ -16,16 +16,114 @@ export const extensionEntrySchema = z.object({
   name: z.string(),
   version: z.string(),
   apiVersion: z.number(),
+  description: z.string().nullable(),
   nsfw: z.boolean(),
   enabled: z.boolean(),
-  /** Bundled with the app, or loaded from a folder in developer mode. */
-  origin: z.enum(['builtin', 'dev']),
+  /** Bundled with the app, installed from a repository, or loaded from a folder in developer mode. */
+  origin: z.enum(['builtin', 'repo', 'dev']),
   path: z.string(),
   /** Why the extension could not be loaded (bad manifest, missing bundle, …). */
   error: z.string().nullable(),
   sourceIds: z.array(z.string()),
+  langs: z.array(z.string()),
+  domains: z.array(z.string()),
+  /** The repository it was installed from (updates only come from there); null otherwise or once removed. */
+  repoId: z.number().nullable(),
+  /** Served as `manga://extension-icon/<id>`. */
+  hasIcon: z.boolean(),
 });
 export type ExtensionEntry = z.infer<typeof extensionEntrySchema>;
+
+/**
+ * How far a repository is trusted (BRAINSTORM.md §5.8): signed with the key built into the app,
+ * signed with a key the user chose to trust, or neither.
+ */
+export const repoTrustSchema = z.enum(['official', 'trusted', 'unverified']);
+export type RepoTrust = z.infer<typeof repoTrustSchema>;
+
+/** Why an unverified repository is unverified. */
+export const repoSignatureProblemSchema = z.enum(['unsigned', 'unknown-key', 'bad-signature']);
+export type RepoSignatureProblem = z.infer<typeof repoSignatureProblemSchema>;
+
+export const repoInfoSchema = z.object({
+  id: z.number(),
+  url: z.string(),
+  name: z.string(),
+  trust: repoTrustSchema,
+  problem: repoSignatureProblemSchema.nullable(),
+  /** The key that signed the index (it can be trusted when the repository is unverified). */
+  signedBy: z.string().nullable(),
+  extensionCount: z.number(),
+  lastSyncedAt: z.number().nullable(),
+  /** The last sync failed (the previous index is kept). */
+  lastError: z.string().nullable(),
+});
+export type RepoInfo = z.infer<typeof repoInfoSchema>;
+
+export const addRepoResultSchema = z.discriminatedUnion('status', [
+  z.object({ status: z.literal('added'), repo: repoInfoSchema }),
+  /** Unverified: the user has to accept a warning before it is added. */
+  z.object({
+    status: z.literal('needs-confirmation'),
+    name: z.string(),
+    extensionCount: z.number(),
+    problem: repoSignatureProblemSchema.nullable(),
+  }),
+]);
+export type AddRepoResult = z.infer<typeof addRepoResultSchema>;
+
+/** One extension a repository offers, with what is installed locally. */
+export const availableExtensionSchema = z.object({
+  repoId: z.number(),
+  repoName: z.string(),
+  trust: repoTrustSchema,
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  description: z.string().nullable(),
+  nsfw: z.boolean(),
+  langs: z.array(z.string()),
+  domains: z.array(z.string()),
+  size: z.number(),
+  hasIcon: z.boolean(),
+  /** Installed version (from any origin), or null. */
+  installedVersion: z.string().nullable(),
+  /** Installed from this repository (so updates come from here). */
+  installedHere: z.boolean(),
+  /** Installed from this repository and this version is newer. */
+  update: z.boolean(),
+});
+export type AvailableExtension = z.infer<typeof availableExtensionSchema>;
+
+/** What the install dialog shows (mockup 09b); the archive is already downloaded and verified. */
+export const installPreviewSchema = z.object({
+  token: z.string(),
+  repoId: z.number(),
+  repoName: z.string(),
+  trust: repoTrustSchema,
+  id: z.string(),
+  name: z.string(),
+  version: z.string(),
+  apiVersion: z.number(),
+  nsfw: z.boolean(),
+  langs: z.array(z.string()),
+  domains: z.array(z.string()),
+  /** Domains the installed version could not reach (an update asks again for these). */
+  newDomains: z.array(z.string()),
+  size: z.number(),
+  sha256: z.string(),
+  currentVersion: z.string().nullable(),
+  hasIcon: z.boolean(),
+});
+export type InstallPreview = z.infer<typeof installPreviewSchema>;
+
+export const updateAllResultSchema = z.object({
+  updated: z.array(z.string()),
+  /** Updates that reach new domains: each needs the user's confirmation. */
+  needsConfirmation: z.array(installPreviewSchema),
+  failed: z.array(z.object({ id: z.string(), message: z.string() })),
+});
+export type UpdateAllResult = z.infer<typeof updateAllResultSchema>;
 
 export const sourceEntrySchema = z.object({
   id: z.string(),
@@ -157,11 +255,12 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "sources" · "library" · "categories" · "history" · "downloads" · "updates" · "manga:<id>" ·
+ * "extensions" · "repos" · "sources" · "library" · "categories" · "history" · "downloads" · "updates" · "manga:<id>" ·
  * "chapters:<mangaId>"
  */
 export type DbChangeTag =
   | 'extensions'
+  | 'repos'
   | 'sources'
   | 'library'
   | 'categories'

@@ -24,6 +24,12 @@ import { LibraryRepository } from './db/repositories/library';
 import { ProgressRepository } from './db/repositories/progress';
 import { SettingsRepository } from './db/repositories/settings';
 import { ExtensionHostClient } from './extensions/host-client';
+import { ExtensionIcons } from './extensions/icons';
+import { ExtensionInstaller } from './extensions/installer';
+import { officialKeys } from './extensions/official';
+import { RepoService } from './extensions/repos';
+import { ReposRepository } from './db/repositories/repos';
+import { createFetchBytes } from './network/fetch-bytes';
 import { ExtensionRegistry } from './extensions/registry';
 import { ExtensionService } from './extensions/service';
 import { SourceService } from './extensions/sources';
@@ -132,8 +138,10 @@ async function bootstrap(): Promise<void> {
     env: { MR_APP_NAME: app.getName(), MR_APP_VERSION: app.getVersion() },
     log: (level, message) => extLog[level](message),
   });
+  const installedExtensionsDir = join(userData, 'extensions');
   const registry = new ExtensionRegistry({
     builtinDir: builtinExtensionsDir(),
+    installedDir: installedExtensionsDir,
     devFolders: () => settings.getValue<string[]>(DEV_FOLDERS_KEY, []),
     onDevChange: (extensionId) => {
       extLog.info(`Dev extension ${extensionId} changed on disk, reloading`);
@@ -162,6 +170,36 @@ async function bootstrap(): Promise<void> {
     // Declared further down; only used once requests arrive.
     downloads: { pages: (chapterId) => downloadStore.pages(chapterId) },
   });
+  // Extension repositories and installs (BRAINSTORM.md §5.8). `online` is declared further down.
+  const fetchBytes = createFetchBytes((url, init) => net.fetch(url, init));
+  const reposRepo = new ReposRepository(connection.db, changes);
+  const repos = new RepoService({
+    repo: reposRepo,
+    fetchBytes,
+    officialKeys: () => officialKeys(),
+    isOnline: () => online.isOnline(),
+    log: (message) => extLog.warn(`repos: ${message}`),
+  });
+  const installer = new ExtensionInstaller({
+    dir: installedExtensionsDir,
+    repos,
+    fetchBytes,
+    extensions,
+    origin: { get: (id) => reposRepo.installedFrom(id), set: (id, repoId) => reposRepo.setInstalledFrom(id, repoId) },
+    forget: (id) => extensionsRepo.remove(id),
+    clearSession: async (id) => {
+      const ses = network.sessionFor(id);
+      await ses.clearStorageData();
+      await ses.clearCache();
+    },
+    log: (message) => extLog.info(message),
+  });
+  const extensionIcons = new ExtensionIcons({
+    installedIcon: (id) => extensions.get(id)?.iconPath ?? null,
+    repos,
+    fetchBytes,
+  });
+  await installer.recover();
   const installed = await extensions.init();
   extLog.info(
     'Extensions',
@@ -199,7 +237,12 @@ async function bootstrap(): Promise<void> {
   });
   const imageLog = log.scope('images');
   handleMangaProtocol(
-    { cover: (mangaId) => images.cover(mangaId), page: (chapterId, index) => images.page(chapterId, index) },
+    {
+      cover: (mangaId) => images.cover(mangaId),
+      page: (chapterId, index) => images.page(chapterId, index),
+      extensionIcon: (id) => extensionIcons.installed(id),
+      repoIcon: (repoId, id) => extensionIcons.repo(repoId, id),
+    },
     (message) => imageLog.warn(message),
   );
 
@@ -404,6 +447,8 @@ async function bootstrap(): Promise<void> {
     createIpcHandlers({
       settings,
       extensions,
+      repos,
+      installer,
       sources,
       chapters: chaptersRepo,
       network,
@@ -448,6 +493,7 @@ async function bootstrap(): Promise<void> {
   if (!online.isOnline()) void downloads.setOnline(false);
   downloads.start(settings.getAppSettings().downloads.resumeOnStart);
   updates.start();
+  repos.start();
   online.start();
   appUpdater.start();
 
@@ -467,6 +513,7 @@ async function bootstrap(): Promise<void> {
     online.stop();
     tray.disable();
     updates.stop();
+    repos.stop();
     downloads.shutdown();
     void downloadStore.reader.closeAll();
     sessions.end();

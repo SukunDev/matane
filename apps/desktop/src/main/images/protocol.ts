@@ -17,12 +17,15 @@ export function registerMangaScheme(): void {
 export interface MangaProtocolRoutes {
   cover(mangaId: number): Promise<CachedImage>;
   page(chapterId: number, index: number): Promise<ServedImage>;
+  extensionIcon?(extensionId: string): Promise<ServedImage>;
+  repoIcon?(repoId: number, extensionId: string): Promise<ServedImage>;
 }
 
 /**
  * `manga://cover/<mangaId>` → the manga's cover; `manga://page/<chapterId>/<index>` → a chapter page.
  * Pages of downloaded chapters come from the download; everything else from the image cache,
- * fetched through the extension's network on a miss.
+ * fetched through the extension's network on a miss. `manga://extension-icon/<id>` and
+ * `manga://repo-icon/<repoId>/<id>` are extension icons.
  */
 export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: string) => void): void {
   protocol.handle(MANGA_SCHEME, async (request) => {
@@ -34,6 +37,12 @@ export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: 
       }
       if (url.host === 'page' && parts.length === 2 && parts.every((part) => /^\d+$/.test(part))) {
         return serve(await routes.page(Number(parts[0]), Number(parts[1])));
+      }
+      if (url.host === 'extension-icon' && parts.length === 1 && routes.extensionIcon) {
+        return serve(await routes.extensionIcon(decodeURIComponent(parts[0]!)));
+      }
+      if (url.host === 'repo-icon' && parts.length === 2 && /^\d+$/.test(parts[0]!) && routes.repoIcon) {
+        return serve(await routes.repoIcon(Number(parts[0]), decodeURIComponent(parts[1]!)));
       }
       return new Response('Not found', { status: 404 });
     } catch (error) {
