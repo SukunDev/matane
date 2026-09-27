@@ -60,6 +60,7 @@ export function useEnqueueDownloads(): (chapterIds: number[], onQueued?: () => v
   const ask = useLimitConfirm((state) => state.ask);
   return useCallback(
     (chapterIds, onQueued) => {
+      if (chapterIds.length === 0) return;
       void (async () => {
         const [settings, stats] = await Promise.all([
           queryClient.ensureQueryData(settingsQuery),

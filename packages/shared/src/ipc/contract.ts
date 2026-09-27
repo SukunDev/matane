@@ -14,6 +14,10 @@ import {
   extensionEntrySchema,
   filterStateSchema,
   historyEntrySchema,
+  updateEntrySchema,
+  updateProgressSchema,
+  updateScopeSchema,
+  updateStatusSchema,
   libraryCountsSchema,
   libraryFiltersSchema,
   libraryItemSchema,
@@ -258,6 +262,21 @@ export const invokeContract = {
   'downloads.setFolder': invoke(z.object({ folder: z.string().min(1), move: z.boolean() }), z.void()),
   /** Opens the download folder, or the folder holding a chapter's download. */
   'downloads.openFolder': invoke(z.object({ chapterId: idSchema.optional() }).optional(), z.void()),
+  /** Starts a check (progress on `updates.progress`); false when one is running or offline. */
+  'updates.check': invoke(
+    z.object({ scope: updateScopeSchema }),
+    z.object({ started: z.boolean(), reason: z.enum(['running', 'offline', 'empty']).nullable() }),
+  ),
+  'updates.cancel': invoke(z.void(), z.void()),
+  /** New chapters of library manga, newest first. */
+  'updates.list': invoke(z.object({ categoryId: idSchema.optional() }).optional(), z.array(updateEntrySchema)),
+  'updates.status': invoke(z.void(), updateStatusSchema),
+  /** The Updates page was seen: the sidebar badge starts again from zero. */
+  'updates.markSeen': invoke(z.void(), z.void()),
+  'categories.setAutoDownload': invoke(
+    z.object({ id: idSchema, value: z.enum(['include', 'exclude']).nullable() }),
+    z.void(),
+  ),
   /** The chapter list's filter and sort for this manga; null = default. */
   'manga.setChapterView': invoke(z.object({ mangaId: idSchema, view: chapterViewSchema.nullable() }), z.void()),
   'chapters.setBookmarked': invoke(
@@ -276,6 +295,9 @@ export const eventContract = {
   'migration.progress': migrationProgressSchema,
   'downloads.progress': downloadProgressSchema,
   'downloads.moveProgress': downloadMoveProgressSchema,
+  'updates.progress': updateProgressSchema,
+  /** Main asks the renderer to open a page (a notification was clicked). */
+  'app.navigate': z.object({ to: z.string() }),
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

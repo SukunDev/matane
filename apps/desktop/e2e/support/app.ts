@@ -10,8 +10,11 @@ export interface TestApp {
   app: ElectronApplication;
   page: Page;
   home: string;
-  /** Quits and starts the app again on the same profile (`app`/`page` are replaced). */
-  restart: () => Promise<void>;
+  /**
+   * Quits and starts the app again on the same profile (`app`/`page` are replaced); `between`
+   * runs while it is closed (e.g. to edit the database).
+   */
+  restart: (between?: () => void) => Promise<void>;
   close: () => Promise<void>;
 }
 
@@ -40,8 +43,9 @@ export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']
     site,
     home,
     ...started,
-    restart: async () => {
+    restart: async (between) => {
       await test.app.close();
+      between?.();
       Object.assign(test, await start(home));
     },
     close: async () => {

@@ -1,9 +1,9 @@
 import type { Chapter, Page } from '@manga-reader/extension-sdk';
 import type { ChapterInfo } from '@manga-reader/shared';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
-import { chapters, manga, pageListCache } from '../schema';
+import { chapters, downloads, history, manga, pageListCache, readingSessions } from '../schema';
 
 export type ChapterRow = typeof chapters.$inferSelect;
 
@@ -11,8 +11,10 @@ export interface ChapterSyncResult {
   /** Ids of chapters seen for the first time, newest first. */
   added: number[];
   updated: number;
-  /** Chapters the source no longer lists (kept, flagged `source_missing`). */
+  /** Chapters the source no longer lists, kept and flagged `source_missing` (see `sync`). */
   missing: number;
+  /** Chapters the source no longer lists that nothing referred to, deleted. */
+  removed: number;
 }
 
 export function toChapterInfo(row: ChapterRow): ChapterInfo {
@@ -57,10 +59,12 @@ export class ChaptersRepository {
 
   /**
    * Makes the stored chapter list match the source (which lists newest first). Reading state is
-   * never touched; chapters that vanished stay, flagged, so progress and downloads survive.
+   * never touched. A chapter the source dropped (BRAINSTORM.md §6.4) stays, flagged, when it is
+   * read, bookmarked, has progress, a download, or is in the history or statistics; otherwise it
+   * is deleted. An empty list from the source deletes nothing (more likely a broken source).
    */
   sync(mangaId: number, incoming: readonly Chapter[], now = Date.now()): ChapterSyncResult {
-    const result: ChapterSyncResult = { added: [], updated: 0, missing: 0 };
+    const result: ChapterSyncResult = { added: [], updated: 0, missing: 0, removed: 0 };
     this.db.transaction((tx) => {
       const existing = new Map(
         tx
@@ -103,10 +107,38 @@ export class ChaptersRepository {
           result.updated++;
         }
       }
-      for (const row of existing.values()) {
-        if (seen.has(row.url) || row.sourceMissing) continue;
-        tx.update(chapters).set({ sourceMissing: true }).where(eq(chapters.id, row.id)).run();
-        result.missing++;
+      const gone = [...existing.values()].filter((row) => !seen.has(row.url));
+      const kept =
+        incoming.length === 0 || gone.length === 0
+          ? new Set(gone.map((row) => row.id))
+          : new Set(
+              tx
+                .select({ id: chapters.id })
+                .from(chapters)
+                .where(
+                  and(
+                    inArray(
+                      chapters.id,
+                      gone.map((row) => row.id),
+                    ),
+                    sql`(${chapters.read} = 1 OR ${chapters.bookmarked} = 1 OR ${chapters.lastPage} > 0
+                      OR ${chapters.pageOffset} IS NOT NULL
+                      OR EXISTS (SELECT 1 FROM ${downloads} WHERE ${downloads.chapterId} = ${chapters.id})
+                      OR EXISTS (SELECT 1 FROM ${history} WHERE ${history.chapterId} = ${chapters.id})
+                      OR EXISTS (SELECT 1 FROM ${readingSessions} WHERE ${readingSessions.chapterId} = ${chapters.id}))`,
+                  ),
+                )
+                .all()
+                .map((r) => r.id),
+            );
+      for (const row of gone) {
+        if (!kept.has(row.id)) {
+          tx.delete(chapters).where(eq(chapters.id, row.id)).run();
+          result.removed++;
+        } else if (!row.sourceMissing) {
+          tx.update(chapters).set({ sourceMissing: true }).where(eq(chapters.id, row.id)).run();
+          result.missing++;
+        }
       }
       tx.update(manga)
         .set({
@@ -115,7 +147,9 @@ export class ChaptersRepository {
         .where(eq(manga.id, mangaId))
         .run();
     });
-    if (result.added.length > 0 || result.updated > 0 || result.missing > 0) this.changes.mark(`chapters:${mangaId}`);
+    if (result.added.length > 0 || result.updated > 0 || result.missing > 0 || result.removed > 0) {
+      this.changes.mark(`chapters:${mangaId}`);
+    }
     return result;
   }
 

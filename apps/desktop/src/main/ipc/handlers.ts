@@ -16,6 +16,7 @@ import type { LibraryService } from '../library/service';
 import type { DownloadsRepository } from '../db/repositories/downloads';
 import type { DownloadManager } from '../downloads/manager';
 import type { MigrationService } from '../library/migration';
+import type { UpdateService } from '../library/updates';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
 import type { RequestRegistry } from './requests';
@@ -38,6 +39,7 @@ export interface IpcDeps {
   downloadsRepo: DownloadsRepository;
   /** The download folder in effect. */
   downloadFolder: () => string;
+  updates: UpdateService;
 }
 
 /** Settings key (not an app setting): finished downloads before this time are off the Downloads page. */
@@ -60,6 +62,7 @@ export function createIpcHandlers({
   downloads,
   downloadsRepo,
   downloadFolder,
+  updates,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
     if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
@@ -250,6 +253,12 @@ export function createIpcHandlers({
       const error = await shell.openPath(folder);
       if (error) throw new AppError('unknown', error);
     },
+    'updates.check': ({ scope }) => updates.check(scope),
+    'updates.cancel': () => updates.cancel(),
+    'updates.list': (input) => updates.list(input?.categoryId),
+    'updates.status': () => updates.status(),
+    'updates.markSeen': () => updates.markSeen(),
+    'categories.setAutoDownload': ({ id, value }) => categories.setAutoDownload(id, value),
     'migration.findCandidates': ({ mangaId, targets, requestId }) =>
       requests.run(requestId, (signal) => migration.findCandidates(mangaId, targets, signal)),
     'migration.run': ({ items, options }) =>

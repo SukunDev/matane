@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { BrowserWindow, app } from 'electron';
+import { BrowserWindow, Notification, app, net } from 'electron';
 import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
 import { initLogging, log } from './app/log';
 import { createMainWindow } from './app/window';
@@ -29,6 +29,8 @@ import { handleMangaProtocol, registerMangaScheme } from './images/protocol';
 import { ImageService } from './images/service';
 import { MigrationService } from './library/migration';
 import { LibraryService } from './library/service';
+import { UpdateService } from './library/updates';
+import { UpdatesRepository } from './db/repositories/updates';
 import { CloudflareSolver } from './network/cloudflare';
 import { ReadingService } from './reading/service';
 import { SessionRecorder } from './reading/sessions';
@@ -236,6 +238,39 @@ async function bootstrap(): Promise<void> {
     transaction: (work) => connection.sqlite.transaction(work)(),
     log: (message) => log.scope('migration').warn(message),
   });
+  const categoriesRepo = new CategoriesRepository(connection.db, changes);
+  const updates = new UpdateService({
+    repo: new UpdatesRepository(connection.db),
+    settings: () => settings.getAppSettings().updates,
+    store: {
+      get: (key, fallback) => settings.getValue(key, fallback),
+      set: (key, value) => settings.setValue(key, value),
+    },
+    refresh: (mangaId, signal, metadata) => sources.refreshManga(mangaId, signal, { metadata }),
+    chapters: (mangaId) => chaptersRepo.list(mangaId),
+    hiddenScanlators: (mangaId) => scanlatorPrefs(mangaId).hidden,
+    categories: () => categoriesRepo.settings(),
+    enqueueAuto: (chapterIds) => downloads.enqueueAuto(chapterIds),
+    notify: ({ title, body }) => {
+      if (!Notification.isSupported()) return;
+      const notification = new Notification({ title, body });
+      notification.on('click', () => {
+        const window = BrowserWindow.getAllWindows()[0];
+        if (!window) return;
+        if (window.isMinimized()) window.restore();
+        window.show();
+        window.focus();
+        broadcast('app.navigate', { to: '/updates' });
+      });
+      notification.show();
+    },
+    language: () => settings.getAppSettings().language ?? app.getLocale(),
+    isOnline: () => net.isOnline(),
+    focused: () => BrowserWindow.getFocusedWindow() !== null,
+    onProgress: (progress) => broadcast('updates.progress', progress),
+    changed: () => changes.mark('updates'),
+    log: (message) => log.scope('updates').warn(message),
+  });
   const sessions = new SessionRecorder(connection.db);
   const reading = new ReadingService({
     progress: progressRepo,
@@ -259,7 +294,8 @@ async function bootstrap(): Promise<void> {
       history: historyRepo,
       library,
       libraryRepo,
-      categories: new CategoriesRepository(connection.db, changes),
+      categories: categoriesRepo,
+      updates,
       manga: mangaRepo,
       migration: sourceMigration,
       downloads,
@@ -270,6 +306,7 @@ async function bootstrap(): Promise<void> {
 
   let mainWindow = createMainWindow(settings);
   downloads.start(settings.getAppSettings().downloads.resumeOnStart);
+  updates.start();
 
   app.on('second-instance', () => {
     if (mainWindow.isMinimized()) mainWindow.restore();
@@ -282,6 +319,7 @@ async function bootstrap(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    updates.stop();
     downloads.shutdown();
     void downloadStore.reader.closeAll();
     sessions.end();

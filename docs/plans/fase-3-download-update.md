@@ -331,3 +331,56 @@ Bug yang ditemukan dan diperbaiki:
 - (dari 3a) `downloads.list` mengurutkan download selesai menurut urutan antrean, bukan yang terbaru dulu.
 - (dari 3a) Setelah satu halaman gagal permanen, halaman lain dari chapter itu tetap diunduh di latar belakang sementara chapter berikutnya sudah mulai. Ini ketahuan dari test retry yang flaky. Sekarang sisa halaman dihentikan dan ditunggu sebelum chapter ditandai error.
 - (selama 3b) Alt+↑ yang ditekan dua kali cepat hanya tercatat sekali, dan fokus hilang setelah baris dipindah. Sekarang langkah berikutnya dihitung dari urutan terbaru, dan fokus dikembalikan ke baris yang dipindah.
+
+### Milestone 3c: selesai (27 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer, pola lama), `format:check`, `typecheck`, dan `test` hijau (desktop 162, shared 17).
+  - Test baru:
+    - jadwal (`nextCheckAt`: langsung kalau belum pernah, interval, mati), aturan lewati (tamat, belum mulai, belum dibaca > N), aturan auto-download per kategori (kecualikan menang, sertakan mempersempit, default semua), dan teks notifikasi EN/ID;
+    - `UpdatesRepository`: daftar hanya chapter yang terlihat setelah manga masuk library, terbaru dulu, tanpa scanlator tersembunyi dan manga di luar library; jumlah belum dilihat; target cek beserta data aturan lewati;
+    - `UpdateService`: maks 3 manga sekaligus, progres dan error per manga, cek kedua saat masih berjalan ditolak, aturan lewati tidak berlaku untuk cek per manga, batal (yang berjalan berhenti, sisanya tidak mulai), cek terjadwal hanya kalau sudah waktunya dan online, auto-download + notifikasi setelah cek otomatis, cek manual ditolak saat offline dan hanya memberi notifikasi kalau jendela tidak fokus;
+    - aturan chapter hilang: dihapus kecuali dibaca, bertanda, punya progres, punya download, ada di history, atau ada di statistik; daftar kosong dari source tidak menghapus apa pun;
+    - `flattenGroups` (daftar Updates yang divirtualisasi).
+- E2E 48/48 (diulang 3×). Spec baru `e2e/updates.spec.ts` (5 test):
+  - situs menambah chapter → cek dari halaman lain → badge sidebar Updates "1" → halaman Updates menampilkan "Hari ini · 1 chapter" dan badge hilang; manga tamat dilewati; "Terakhir dicek … · berikutnya dalam 12 jam";
+  - tandai dibaca / belum, "Download 1" per grup, dan baca dari baris;
+  - mematikan "Lewati manga tamat" di Settings → Library membuat manga tamat ikut dicek; satu manga gagal (HTTP 503) → "1 manga gagal dicek" dan dialog detailnya;
+  - auto-download aktif dengan kategori "Weekly" dikecualikan: chapter baru manga tanpa kategori masuk antrean, manga di "Weekly" tidak;
+  - app ditutup, waktu cek terakhir dimundurkan 13 jam di DB, lalu dibuka lagi → cek berjalan sendiri dan chapter baru muncul.
+  - Situs E2E sekarang bisa menambah chapter (`addChapter`) dan menggagalkan detail manga tertentu (`failManga`). `restart` menerima fungsi yang dijalankan saat app tertutup.
+  - Dua test lama yang flaky ikut diperbaiki: di global search, "See all" diperiksa sebelum halaman lama hilang; di Updates, nama tombol "Read" bentrok (tombol baca sekarang bernama "Read now").
+- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah), dengan 10 manga di library:
+  - "Cek library": 4 manga tamat dilewati, 6 dicek dalam 1,8 detik; banner progres "3 / 6 judul · Sedang dicek: One Punch-Man, Sakamoto Days, SPY×FAMILY" (3 paralel); Batal menghentikan cek di 3 dari 6;
+  - simulasi lewat DB saat app tertutup: 3 chapter terbaru Kage no Jitsuryokusha dan 1 chapter Blue Lock dihapus (jadi "baru" lagi), URL One Punch-Man dirusak, dan waktu cek terakhir dimundurkan 13 jam;
+  - app dibuka → cek otomatis berjalan sendiri: 4 chapter baru dari 2 manga, satu error per manga (HTTP 404, One Punch-Man), badge sidebar 4 (hilang setelah Updates dibuka), keempat chapter otomatis masuk antrean download;
+  - notifikasi desktop tertangkap `dbus-monitor`: judul "4 new chapters from 2 manga", isi "Blue Lock, Kage no Jitsuryokusha ni Naritakute!", dengan aksi default. **Klik notifikasi → buka Updates belum diuji langsung** (tidak bisa dipicu dari script), dan perlu dicoba manual;
+  - tampilan dibandingkan dengan mockup 07.
+
+Implementasi:
+- **Main:**
+  - `library/updates.ts`:
+    - `UpdateService` dengan scheduler (lihat 5 detik setelah start, lalu tiap menit; jalan kalau sudah waktunya dan `net.isOnline()`);
+    - cek per scope (semua / kategori / manga), limiter bersama (maks 3), dan batal;
+    - hasil terakhir dan waktu cek/dilihat disimpan di key setting non-app (`updates.lastCheckAt`, `updates.seenAt`, `updates.lastResult`);
+    - auto-download lewat `enqueueAuto` (batas ukuran berlaku) dan notifikasi Electron. Klik notifikasi memfokuskan jendela dan mengirim `app.navigate`.
+  - `db/repositories/updates.ts`: target cek, daftar Updates (`fetched_at > added_at`, maks 2000 terbaru), dan jumlah belum dilihat.
+  - `ChaptersRepository.sync`: aturan chapter hilang (lihat keputusan). `SourceService.refreshManga(…, { metadata })` dan `MangaRepository.touchChecked` untuk "perbarui detail" yang dimatikan.
+  - Kategori: `settings_json` di-parse per field (`categorySettingsOf`), dan `categories.setAutoDownload`.
+  - IPC `updates.check/cancel/list/status/markSeen`, `categories.setAutoDownload`, event `updates.progress` dan `app.navigate`, serta tag `updates`.
+- **Shared:** `settings.updates` (interval, aturan lewati, metadata, notifikasi, auto-download), `categorySettingsSchema`, dan model `UpdateEntry` / `UpdateScope` / `UpdateProgress` / `UpdateResult` / `UpdateStatus`.
+- **Renderer:**
+  - `features/updates/`: header (terakhir/berikutnya, Cek library atau Cek <kategori>, dropdown kategori, menu error dan setting), banner progres + Batal, grup per hari (`groupByDay`) dengan "Download semua N", baris (cover, judul · chapter, scanlator/source · waktu, download / tandai dibaca / baca, redup kalau sudah dibaca), multi-select (`selection.ts`), dan list yang divirtualisasi;
+  - badge sidebar Updates;
+  - "Cek update" di multi-select library (cek per manga, lalu pindah ke Updates);
+  - Settings → Library: bagian "Update library" dan "Download chapter baru" (aturan per kategori). Kontrol setting bersama dipindah ke `features/settings/controls.tsx`.
+
+Keputusan:
+- **Aturan lewati:** default hanya "manga tamat" yang aktif (belum mulai dibaca dan batas belum dibaca mati). Aturan berlaku untuk cek library dan kategori, tidak untuk cek per manga.
+- **Cek otomatis** pertama kali langsung jalan (belum pernah dicek), lalu tiap interval (default 12 jam). Waktu cek dicatat saat cek dimulai, supaya cek yang dibatalkan tidak langsung diulang semenit kemudian. Saat offline, cek terjadwal menunggu, dan cek manual memberi pesan offline.
+- **Notifikasi:** selalu untuk cek otomatis; untuk cek manual hanya kalau jendela tidak fokus, karena hasilnya sudah terlihat di app. Teksnya EN/ID mengikuti bahasa app.
+- **Auto-download** mati secara default. Aturan per kategori: "Kecualikan" selalu menang; kalau ada kategori "Sertakan", hanya manga di kategori itu; kalau tidak ada, semua manga. Chapter yang sudah dibaca dan chapter scanlator tersembunyi tidak diunduh.
+- **Chapter hilang dari source** dipertahankan (bertanda) kalau dibaca, bertanda, punya progres, punya download (status apa pun), ada di history, atau ada di statistik sesi baca. Dua syarat terakhir ditambahkan karena menghapus chapter itu akan ikut menghapus entri history/statistik lewat cascade. Selain itu chapter dihapus. Kalau source mengembalikan daftar chapter kosong, tidak ada yang dihapus (kemungkinan besar source rusak).
+- **Halaman Updates** memakai "chapter yang pertama terlihat setelah manga masuk library", jadi chapter yang baru dilihat saat membuka detail manga (yang sudah di library) juga masuk. Daftarnya dibatasi 2000 terbaru.
+- "Perbarui detail" yang dimatikan tetap mengambil detail dari source (source membutuhkannya untuk daftar chapter), tapi detail itu tidak disimpan.
+
+Bug yang ditemukan dan diperbaiki: tidak ada bug app baru; yang diperbaiki hanya dua race di test E2E (lihat di atas).

@@ -76,11 +76,17 @@ export interface Site {
   pageDelayMs: number;
   /** Page images fail with HTTP 404 (a download error that is not retried). */
   failPages: boolean;
+  /** Manga ids whose details fail with HTTP 503 (an update check error for one manga). */
+  failManga: Set<string>;
+  /** Publishes a new chapter (update checks find it). */
+  addChapter(mangaId: string, number: number): void;
   close(): Promise<void>;
 }
 
 export async function startSite(): Promise<Site> {
   const hits: string[] = [];
+  // A copy per site, so chapters added by one test don't leak into another.
+  const catalogue: SiteManga[] = structuredClone(SITE_MANGA);
   const json = (value: unknown) => ({ type: 'application/json', body: Buffer.from(JSON.stringify(value)) });
   const summary = (m: SiteManga) => ({ id: m.id, title: m.title });
 
@@ -96,7 +102,7 @@ export async function startSite(): Promise<Site> {
       if (url.searchParams.get('lang') === 'broken' && q) {
         return { type: 'text/plain', body: Buffer.from('down'), status: 503 };
       }
-      const all = SITE_MANGA.filter(
+      const all = catalogue.filter(
         (m) =>
           m.title.toLowerCase().includes(q) &&
           include.every((g) => m.genres.includes(g)) &&
@@ -107,7 +113,8 @@ export async function startSite(): Promise<Site> {
     }
     const manga = /^\/api\/manga\/([\w-]+)$/.exec(path);
     if (manga) {
-      const m = SITE_MANGA.find((x) => x.id === manga[1]);
+      if (site.failManga.has(manga[1]!)) return { type: 'text/plain', body: Buffer.from('down'), status: 503 };
+      const m = catalogue.find((x) => x.id === manga[1]);
       if (!m) return { type: 'text/plain', body: Buffer.from('no'), status: 404 };
       // The Indonesian mirror has only chapters up to 3 (migration: later ones can't be matched).
       return json(url.searchParams.get('lang') === 'id' ? { ...m, chapters: m.chapters.filter((n) => n <= 3) } : m);
@@ -129,6 +136,8 @@ export async function startSite(): Promise<Site> {
     hits,
     pageDelayMs: 0,
     failPages: false,
+    failManga: new Set(),
+    addChapter: (mangaId, number) => catalogue.find((m) => m.id === mangaId)!.chapters.push(number),
     // The app keeps connections alive; without dropping them, close() waits for their timeout.
     close: () =>
       new Promise((resolve) => {

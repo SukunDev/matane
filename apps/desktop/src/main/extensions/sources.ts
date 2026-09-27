@@ -160,7 +160,16 @@ export class SourceService {
   }
 
   /** Fetches details and chapters, then syncs both into the DB. */
-  async refreshManga(mangaId: number, signal?: AbortSignal): Promise<{ manga: MangaInfo; newChapterIds: number[] }> {
+  /**
+   * Fetches details and chapters and syncs them. With `metadata: false` (update checks with
+   * metadata updates off) the stored details stay as they are; the source still needs them to list
+   * chapters.
+   */
+  async refreshManga(
+    mangaId: number,
+    signal?: AbortSignal,
+    options: { metadata?: boolean } = {},
+  ): Promise<{ manga: MangaInfo; newChapterIds: number[] }> {
     const row = this.mangaRow(mangaId);
     const source = this.source(row.sourceId);
     const summary: MangaSummary = { url: row.url, title: row.title, thumbnailUrl: row.thumbnailUrl ?? undefined };
@@ -171,9 +180,10 @@ export class SourceService {
     // Extensions identify manga by url; never let details move a row to another url.
     const detailsForChapters = { ...details, url: row.url };
     const chapters = validate.chapters(await call('getChapters', [detailsForChapters]));
-    const updated = this.deps.manga.updateDetails(mangaId, detailsForChapters, this.now());
+    if (options.metadata === false) this.deps.manga.touchChecked(mangaId, this.now());
+    else this.deps.manga.updateDetails(mangaId, detailsForChapters, this.now());
     const sync = this.deps.chapters.sync(mangaId, chapters, this.now());
-    return { manga: this.deps.manga.info(updated.id)!, newChapterIds: sync.added };
+    return { manga: this.deps.manga.info(mangaId)!, newChapterIds: sync.added };
   }
 
   /**

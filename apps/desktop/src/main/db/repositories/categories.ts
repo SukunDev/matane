@@ -1,8 +1,19 @@
-import type { Category } from '@manga-reader/shared';
+import { type Category, type CategorySettings, categorySettingsSchema } from '@manga-reader/shared';
 import { asc, eq, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
 import { categories } from '../schema';
+
+/** A category's settings, each field falling back on its own. */
+export function categorySettingsOf(json: string | null): CategorySettings {
+  let raw: unknown = {};
+  try {
+    raw = json ? JSON.parse(json) : {};
+  } catch {
+    // keep defaults
+  }
+  return categorySettingsSchema.parse(raw && typeof raw === 'object' ? raw : {});
+}
 
 /** User categories; a manga can be in several (§6.2). "Default" is implicit: no category. */
 export class CategoriesRepository {
@@ -17,12 +28,37 @@ export class CategoriesRepository {
         id: categories.id,
         name: categories.name,
         sortOrder: categories.sortOrder,
+        settingsJson: categories.settingsJson,
         count: sql<number>`(SELECT COUNT(*) FROM manga_categories mc JOIN manga m ON m.id = mc.manga_id
           WHERE mc.category_id = ${categories.id} AND m.in_library = 1)`,
       })
       .from(categories)
       .orderBy(asc(categories.sortOrder), asc(categories.id))
-      .all();
+      .all()
+      .map(({ settingsJson, ...row }) => ({ ...row, autoDownload: categorySettingsOf(settingsJson).autoDownload }));
+  }
+
+  /** Settings of every category, by id. */
+  settings(): Map<number, CategorySettings> {
+    return new Map(
+      this.db
+        .select({ id: categories.id, settingsJson: categories.settingsJson })
+        .from(categories)
+        .all()
+        .map((row) => [row.id, categorySettingsOf(row.settingsJson)]),
+    );
+  }
+
+  setAutoDownload(id: number, autoDownload: CategorySettings['autoDownload']): void {
+    const row = this.db
+      .select({ settingsJson: categories.settingsJson })
+      .from(categories)
+      .where(eq(categories.id, id))
+      .get();
+    if (!row) return;
+    const settingsJson = JSON.stringify({ ...categorySettingsOf(row.settingsJson), autoDownload });
+    this.db.update(categories).set({ settingsJson }).where(eq(categories.id, id)).run();
+    this.changes.mark('categories');
   }
 
   create(name: string): Category {
@@ -36,7 +72,7 @@ export class CategoriesRepository {
       .returning()
       .get();
     this.changes.mark('categories');
-    return { id: row.id, name: row.name, sortOrder: row.sortOrder, count: 0 };
+    return { id: row.id, name: row.name, sortOrder: row.sortOrder, count: 0, autoDownload: null };
   }
 
   rename(id: number, name: string): void {

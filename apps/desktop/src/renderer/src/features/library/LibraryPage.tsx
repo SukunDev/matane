@@ -10,6 +10,7 @@ import {
   CircleCheck,
   EyeOff,
   Folder,
+  RefreshCw,
   Globe,
   LibraryBig,
   ListChecks,
@@ -523,6 +524,13 @@ function SelectionBar({
   const markRead = useMutation({
     mutationFn: (read: boolean) => ipc.invoke('library.markRead', { mangaIds: ids, read }),
   });
+  // Per-manga update check (no skip rules); progress shows on the Updates page.
+  const checkUpdates = useMutation({
+    mutationFn: () => ipc.invoke('updates.check', { scope: { kind: 'manga', mangaIds: ids } }),
+    onSuccess: ({ started }) => {
+      if (started) void navigate({ to: '/updates' });
+    },
+  });
   const setCategories = useMutation({
     mutationFn: (categoryIds: number[]) => ipc.invoke('library.setCategories', { mangaIds: ids, categoryIds }),
     onSuccess: onClear,
@@ -560,6 +568,10 @@ function SelectionBar({
       <Button variant="ghost" size="sm" onClick={() => markRead.mutate(false)}>
         <EyeOff />
         {t('library.selection.markUnread')}
+      </Button>
+      <Button variant="ghost" size="sm" onClick={() => checkUpdates.mutate()} disabled={checkUpdates.isPending}>
+        <RefreshCw />
+        {t('library.selection.checkUpdates')}
       </Button>
       <Button variant="ghost" size="sm" onClick={() => setCategoriesOpen(true)}>
         <Folder />

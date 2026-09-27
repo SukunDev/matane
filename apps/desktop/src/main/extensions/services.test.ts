@@ -215,6 +215,8 @@ describe('SourceService', () => {
     expect(first.manga).toMatchObject({ title: 'Details of /a', status: 'ongoing', genres: ['Action'] });
     expect(first.newChapterIds).toHaveLength(2);
 
+    // a-1 is bookmarked, so it stays (flagged) when the source drops it.
+    chaptersRepo.setBookmarked([chaptersRepo.list(a!.mangaId).find((c) => c.url === 'a-1')!.id], true);
     site['https://example.com/chapters/a'] = [
       { url: 'a-3', name: 'Ch. 3', number: 3 },
       { url: 'a-2', name: 'Ch. 2', number: 2 },

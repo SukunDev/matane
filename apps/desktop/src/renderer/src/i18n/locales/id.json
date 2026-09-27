@@ -178,6 +178,41 @@
       "keepBookmarked": "Jangan hapus chapter bertanda",
       "excludeCategories": "Pertahankan download di kategori ini",
       "excludeCategoriesHint": "Manga di kategori yang dipilih tidak pernah kehilangan download-nya."
+    },
+    "updates": {
+      "title": "Update library",
+      "interval": "Cek otomatis",
+      "intervalHint": "Juga dicek saat app dibuka kalau waktunya sudah lewat. Saat offline, menunggu.",
+      "intervals": {
+        "0": "Mati",
+        "6": "6 jam",
+        "12": "12 jam",
+        "24": "24 jam",
+        "48": "48 jam",
+        "168": "Mingguan"
+      },
+      "skipCompleted": "Lewati manga yang sudah tamat",
+      "skipHint": "Aturan lewati berlaku untuk cek library dan kategori, bukan untuk satu manga.",
+      "skipNotStarted": "Lewati manga yang belum mulai dibaca",
+      "skipUnread": "Lewati manga dengan banyak chapter belum dibaca",
+      "moreThan_one": "Lebih dari {{count}}",
+      "moreThan_other": "Lebih dari {{count}}",
+      "metadata": "Perbarui detail juga",
+      "metadataHint": "Cover, deskripsi, dan status; judul di library tetap.",
+      "notify": "Beri tahu chapter baru",
+      "notifyHint": "Selalu untuk cek otomatis; untuk cek manual saat jendela di latar belakang.",
+      "autoDownloadTitle": "Download chapter baru",
+      "autoDownload": "Download chapter baru otomatis",
+      "autoDownloadHint": "Setelah cek, chapter baru yang belum dibaca masuk antrean. Batas ukuran download berlaku.",
+      "onlyReading": "Hanya manga yang sudah mulai dibaca",
+      "categories": "Per kategori",
+      "categoriesHint": "Sertakan: hanya manga di kategori yang disertakan. Kecualikan: manga di kategori ini tidak pernah.",
+      "categoryRule": "Auto-download untuk {{name}}",
+      "rule": {
+        "default": "Default",
+        "include": "Sertakan",
+        "exclude": "Kecualikan"
+      }
     }
   },
   "common": {
@@ -494,7 +529,8 @@
       "open": "Buka",
       "remove": "Keluarkan",
       "clear": "Batalkan pilihan",
-      "migrate": "Migrasi"
+      "migrate": "Migrasi",
+      "checkUpdates": "Cek update"
     },
     "remove": {
       "title_other": "Keluarkan {{count}} manga dari library?",
@@ -714,5 +750,41 @@
         }
       }
     }
+  },
+  "updates": {
+    "lastChecked": "Terakhir dicek {{when}}",
+    "neverChecked": "Belum pernah dicek",
+    "autoOff": "cek otomatis mati",
+    "nextSoon": "cek berikutnya segera",
+    "nextCheck": "cek berikutnya {{when}}",
+    "checkLibrary": "Cek library",
+    "checkCategory": "Cek {{name}}",
+    "category": "Kategori",
+    "allCategories": "Semua kategori",
+    "more": "Aksi lain",
+    "errors_one": "Cek terakhir: {{count}} error",
+    "errors_other": "Cek terakhir: {{count}} error",
+    "settings": "Setting update",
+    "notice": {
+      "offline": "Kamu sedang offline. Pengecekan dilanjutkan setelah online lagi.",
+      "empty": "Tidak ada yang dicek: tidak ada manga library yang cocok (lihat aturan lewati di setting)."
+    },
+    "lastErrors_one": "{{count}} manga gagal dicek",
+    "lastErrors_other": "{{count}} manga gagal dicek",
+    "errorsTitle": "Manga yang gagal dicek",
+    "errorsDescription": "Dari cek terakhir. Akan dicoba lagi di cek berikutnya.",
+    "checking": "Mengecek update",
+    "progress": "{{done}} / {{total}} judul",
+    "current": "Sedang dicek:",
+    "chapters_one": "{{count}} chapter",
+    "chapters_other": "{{count}} chapter",
+    "downloadAll_one": "Download {{count}}",
+    "downloadAll_other": "Download semua {{count}}",
+    "select": "Pilih {{title}} {{chapter}}",
+    "unread": "Belum dibaca",
+    "markUnread": "Tandai belum dibaca",
+    "read": "Dibaca",
+    "markRead": "Tandai dibaca",
+    "readNow": "Baca sekarang"
   }
 }

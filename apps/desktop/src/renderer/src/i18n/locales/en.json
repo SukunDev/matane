@@ -178,6 +178,41 @@
       "keepBookmarked": "Keep bookmarked chapters",
       "excludeCategories": "Keep downloads in these categories",
       "excludeCategoriesHint": "Manga in a selected category never lose their downloads."
+    },
+    "updates": {
+      "title": "Library updates",
+      "interval": "Check automatically",
+      "intervalHint": "Also checks when the app opens if the time has passed. Offline, it waits.",
+      "intervals": {
+        "0": "Off",
+        "6": "6 h",
+        "12": "12 h",
+        "24": "24 h",
+        "48": "48 h",
+        "168": "Weekly"
+      },
+      "skipCompleted": "Skip completed manga",
+      "skipHint": "Skip rules apply to library and category checks, not to a single manga.",
+      "skipNotStarted": "Skip manga not started yet",
+      "skipUnread": "Skip manga with many unread chapters",
+      "moreThan_one": "More than {{count}}",
+      "moreThan_other": "More than {{count}}",
+      "metadata": "Update details too",
+      "metadataHint": "Cover, description and status; your library title stays.",
+      "notify": "Notify about new chapters",
+      "notifyHint": "Always for automatic checks; for manual ones when the window is in the background.",
+      "autoDownloadTitle": "Download new chapters",
+      "autoDownload": "Download new chapters automatically",
+      "autoDownloadHint": "After a check, unread new chapters are queued. The download size limit applies.",
+      "onlyReading": "Only for manga I've started",
+      "categories": "Per category",
+      "categoriesHint": "Include: only manga in included categories. Exclude: never manga in this category.",
+      "categoryRule": "Auto-download for {{name}}",
+      "rule": {
+        "default": "Default",
+        "include": "Include",
+        "exclude": "Exclude"
+      }
     }
   },
   "common": {
@@ -504,7 +539,8 @@
       "open": "Open",
       "remove": "Remove",
       "clear": "Clear selection",
-      "migrate": "Migrate"
+      "migrate": "Migrate",
+      "checkUpdates": "Check for updates"
     },
     "remove": {
       "title_one": "Remove from library?",
@@ -737,5 +773,41 @@
         }
       }
     }
+  },
+  "updates": {
+    "lastChecked": "Last checked {{when}}",
+    "neverChecked": "Never checked",
+    "autoOff": "automatic checks off",
+    "nextSoon": "next check soon",
+    "nextCheck": "next check {{when}}",
+    "checkLibrary": "Check library",
+    "checkCategory": "Check {{name}}",
+    "category": "Category",
+    "allCategories": "All categories",
+    "more": "More actions",
+    "errors_one": "Last check: {{count}} error",
+    "errors_other": "Last check: {{count}} errors",
+    "settings": "Update settings",
+    "notice": {
+      "offline": "You're offline. Checking resumes once you're back online.",
+      "empty": "Nothing to check: no manga in the library matches (see the skip rules in settings)."
+    },
+    "lastErrors_one": "{{count}} manga could not be checked",
+    "lastErrors_other": "{{count}} manga could not be checked",
+    "errorsTitle": "Manga that could not be checked",
+    "errorsDescription": "From the last check. They are tried again next time.",
+    "checking": "Checking for updates",
+    "progress": "{{done}} / {{total}} titles",
+    "current": "Checking:",
+    "chapters_one": "{{count}} chapter",
+    "chapters_other": "{{count}} chapters",
+    "downloadAll_one": "Download {{count}}",
+    "downloadAll_other": "Download all {{count}}",
+    "select": "Select {{title}} {{chapter}}",
+    "unread": "Unread",
+    "markUnread": "Mark as unread",
+    "read": "Read",
+    "markRead": "Mark as read",
+    "readNow": "Read now"
   }
 }

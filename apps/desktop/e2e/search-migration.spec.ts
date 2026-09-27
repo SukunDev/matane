@@ -75,6 +75,8 @@ test('searches every source, row by row, without waiting for a failing one', asy
 
   await english.getByRole('link', { name: 'See all' }).click();
   await expect(page).toHaveURL(/browse\/sources\/e2e-demo\/en\?.*tab=search.*q=hero/);
+  // The URL changes first; wait for the global search page to be gone.
+  await expect(page.getByRole('region', { name: 'E2E Mirror' })).toHaveCount(0);
   await expect(page.getByText('Paged Hero')).toBeVisible();
 });
 

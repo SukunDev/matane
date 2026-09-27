@@ -199,6 +199,11 @@ export class MangaRepository {
     this.changes.mark(`manga:${id}`);
   }
 
+  /** Checked for new chapters without taking the details (metadata updates are off). */
+  touchChecked(id: number, now = Date.now()): void {
+    this.db.update(manga).set({ lastUpdateCheckAt: now }).where(eq(manga.id, id)).run();
+  }
+
   updateDetails(id: number, details: MangaDetails, now = Date.now()): MangaRow {
     const existing = this.get(id);
     if (!existing) throw new Error(`Manga ${id} not found`);

@@ -182,6 +182,45 @@ export const downloadSettingsSchema = z.object({
 });
 export type DownloadSettings = z.infer<typeof downloadSettingsSchema>;
 
+/** Hours between automatic library update checks; 0 = off (BRAINSTORM.md §6.4). */
+export const UPDATE_INTERVALS = [0, 6, 12, 24, 48, 168] as const;
+
+/** The library update checker (BRAINSTORM.md §6.4); per-field fallbacks. */
+export const updateSettingsSchema = z.object({
+  intervalHours: z.literal(UPDATE_INTERVALS).catch(12),
+  /** Skip rules for "check library" (not for a single manga). */
+  skipCompleted: z.boolean().catch(true),
+  skipNotStarted: z.boolean().catch(false),
+  /** Skip manga with more unread chapters than this; null = off. */
+  skipUnreadOver: z.number().int().min(1).max(10_000).nullable().catch(null),
+  /** Also update title-independent details (cover, description, status). */
+  refreshMetadata: z.boolean().catch(true),
+  notify: z.boolean().catch(true),
+  /** Queue new chapters for download (categories can include/exclude themselves). */
+  autoDownload: z.boolean().catch(false),
+  /** Only for manga with at least one chapter read. */
+  autoDownloadOnlyReading: z.boolean().catch(false),
+});
+export type UpdateSettings = z.infer<typeof updateSettingsSchema>;
+
+export const DEFAULT_UPDATE_SETTINGS: UpdateSettings = {
+  intervalHours: 12,
+  skipCompleted: true,
+  skipNotStarted: false,
+  skipUnreadOver: null,
+  refreshMetadata: true,
+  notify: true,
+  autoDownload: false,
+  autoDownloadOnlyReading: false,
+};
+
+/** A category's own settings (`categories.settings_json`). */
+export const categorySettingsSchema = z.object({
+  /** Auto-download of new chapters: include only these categories, or never these; null = default. */
+  autoDownload: z.enum(['include', 'exclude']).nullable().catch(null),
+});
+export type CategorySettings = z.infer<typeof categorySettingsSchema>;
+
 export const appSettingsSchema = z.object({
   theme: z.enum(THEME_MODES),
   accent: z.enum(ACCENTS),
@@ -195,6 +234,7 @@ export const appSettingsSchema = z.object({
   globalSearch: globalSearchSettingsSchema,
   migration: migrationSettingsSchema,
   downloads: downloadSettingsSchema,
+  updates: updateSettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -217,4 +257,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
     deleteAfterRead: DEFAULT_DELETE_AFTER_READ,
     limitGb: null,
   },
+  updates: DEFAULT_UPDATE_SETTINGS,
 };

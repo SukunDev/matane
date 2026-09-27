@@ -71,6 +71,12 @@ export const INVOKE_CHANNELS = [
   'downloads.pickFolder',
   'downloads.setFolder',
   'downloads.openFolder',
+  'updates.check',
+  'updates.cancel',
+  'updates.list',
+  'updates.status',
+  'updates.markSeen',
+  'categories.setAutoDownload',
   'chapters.setBookmarked',
 ] as const;
 export type InvokeChannel = (typeof INVOKE_CHANNELS)[number];
@@ -84,5 +90,7 @@ export const EVENT_CHANNELS = [
   'migration.progress',
   'downloads.progress',
   'downloads.moveProgress',
+  'updates.progress',
+  'app.navigate',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

@@ -157,7 +157,7 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "sources" · "library" · "categories" · "history" · "downloads" · "manga:<id>" ·
+ * "extensions" · "sources" · "library" · "categories" · "history" · "downloads" · "updates" · "manga:<id>" ·
  * "chapters:<mangaId>"
  */
 export type DbChangeTag =
@@ -167,6 +167,7 @@ export type DbChangeTag =
   | 'categories'
   | 'history'
   | 'downloads'
+  | 'updates'
   | `manga:${number}`
   | `chapters:${number}`;
 
@@ -176,6 +177,8 @@ export const categorySchema = z.object({
   sortOrder: z.number(),
   /** Manga in the library with this category. */
   count: z.number(),
+  /** Auto-download of new chapters (see `categorySettingsSchema`). */
+  autoDownload: z.enum(['include', 'exclude']).nullable(),
 });
 export type Category = z.infer<typeof categorySchema>;
 
@@ -360,3 +363,63 @@ export const downloadMoveProgressSchema = z.object({
   finished: z.boolean(),
 });
 export type DownloadMoveProgress = z.infer<typeof downloadMoveProgressSchema>;
+
+/** A new chapter on the Updates page (BRAINSTORM.md §6.4; mockup 07). */
+export const updateEntrySchema = z.object({
+  chapterId: z.number(),
+  mangaId: z.number(),
+  mangaTitle: z.string(),
+  coverKey: z.string().nullable(),
+  sourceId: z.string(),
+  sourceName: z.string().nullable(),
+  chapterName: z.string(),
+  chapterNumber: z.number().nullable(),
+  scanlator: z.string().nullable(),
+  /** When the chapter was first seen (what the page sorts and groups by). */
+  fetchedAt: z.number(),
+  read: z.boolean(),
+  lastPage: z.number(),
+  totalPages: z.number().nullable(),
+});
+export type UpdateEntry = z.infer<typeof updateEntrySchema>;
+
+/** Which manga "check for updates" covers. */
+export const updateScopeSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('all') }),
+  z.object({ kind: z.literal('category'), categoryId: z.number().int().positive() }),
+  z.object({ kind: z.literal('manga'), mangaIds: z.array(z.number().int().positive()).min(1).max(5000) }),
+]);
+export type UpdateScope = z.infer<typeof updateScopeSchema>;
+
+export const updateProgressSchema = z.object({
+  running: z.boolean(),
+  done: z.number(),
+  total: z.number(),
+  /** Titles being checked right now. */
+  current: z.array(z.string()),
+  newChapters: z.number(),
+  errors: z.number(),
+});
+export type UpdateProgress = z.infer<typeof updateProgressSchema>;
+
+export const updateResultSchema = z.object({
+  finishedAt: z.number(),
+  checked: z.number(),
+  newChapters: z.number(),
+  mangaWithNew: z.number(),
+  cancelled: z.boolean(),
+  errors: z.array(z.object({ mangaId: z.number(), title: z.string(), message: z.string() })),
+});
+export type UpdateResult = z.infer<typeof updateResultSchema>;
+
+export const updateStatusSchema = z.object({
+  progress: updateProgressSchema.nullable(),
+  /** Last "check library" (all manga), automatic or not. */
+  lastCheckAt: z.number().nullable(),
+  /** null when automatic checks are off. */
+  nextCheckAt: z.number().nullable(),
+  /** Unread new chapters since the Updates page was last opened (the sidebar badge). */
+  unseen: z.number(),
+  lastResult: updateResultSchema.nullable(),
+});
+export type UpdateStatus = z.infer<typeof updateStatusSchema>;

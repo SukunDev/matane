@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { downloadStatsQuery } from '../../lib/downloads';
+import { updateStatusQuery } from '../../lib/updates';
 import { libraryCountsQuery } from '../../lib/library';
 import logoMark from '../../assets/logo-mark.png';
 import { cn } from '../../lib/utils';
@@ -55,7 +56,12 @@ export function Sidebar() {
   const queue = downloadStats
     ? downloadStats.queued + downloadStats.downloading + downloadStats.paused + downloadStats.error
     : 0;
-  const badges: Partial<Record<NavLeaf['to'], number>> = { '/library': counts?.all, '/downloads': queue };
+  const { data: updateStatus } = useQuery(updateStatusQuery);
+  const badges: Partial<Record<NavLeaf['to'], number>> = {
+    '/library': counts?.all,
+    '/updates': updateStatus?.unseen,
+    '/downloads': queue,
+  };
 
   return (
     <aside

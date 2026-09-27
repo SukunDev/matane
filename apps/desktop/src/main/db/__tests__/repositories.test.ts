@@ -131,6 +131,7 @@ describe('ChaptersRepository', () => {
     expect(first.added).toHaveLength(3);
 
     connection.sqlite.prepare("UPDATE chapters SET read = 1, last_page = 7 WHERE url = 'c1'").run();
+    connection.sqlite.prepare("UPDATE chapters SET bookmarked = 1 WHERE url = 'c2'").run();
     const second = chapters.sync(mangaId, [ch('c4', 4), ch('c3', 3, { scanlator: 'Group' }), ch('c1', 1)]);
     expect(second.added).toHaveLength(1);
     expect(second.missing).toBe(1);
@@ -158,12 +159,46 @@ describe('ChaptersRepository', () => {
     expect(emitted.flat()).toContain(`chapters:${mangaId}`);
   });
 
+  it('deletes dropped chapters nothing refers to, and keeps those with reading traces', () => {
+    const mangaId = manga.ensure('demo/en', { url: '/a', title: 'A' });
+    const ids = chapters.sync(mangaId, [
+      ch('c6', 6),
+      ch('c5', 5),
+      ch('c4', 4),
+      ch('c3', 3),
+      ch('c2', 2),
+      ch('c1', 1),
+    ]).added;
+    const [c6, c5, c4, c3, c2] = ids as [number, number, number, number, number];
+    const run = (query: string, ...params: unknown[]) => connection.sqlite.prepare(query).run(...params);
+    run('UPDATE chapters SET read = 1 WHERE id = ?', c6);
+    run('UPDATE chapters SET last_page = 3 WHERE id = ?', c5);
+    run("INSERT INTO downloads (chapter_id, status, created_at) VALUES (?, 'queued', 0)", c4);
+    run('INSERT INTO history (manga_id, chapter_id, read_at) VALUES (?, ?, 0)', mangaId, c3);
+    run('INSERT INTO reading_sessions (manga_id, chapter_id, started_at) VALUES (?, ?, 0)', mangaId, c2);
+
+    const result = chapters.sync(mangaId, [ch('c7', 7)]);
+    expect(result).toMatchObject({ missing: 5, removed: 1 });
+    expect(chapters.list(mangaId).map((r) => [r.url, r.sourceMissing])).toEqual([
+      ['c7', false],
+      ['c6', true],
+      ['c5', true],
+      ['c4', true],
+      ['c3', true],
+      ['c2', true],
+    ]);
+
+    // An empty list from the source deletes nothing.
+    expect(chapters.sync(mangaId, [])).toMatchObject({ removed: 0 });
+    expect(chapters.list(mangaId)).toHaveLength(6);
+  });
+
   it('does not emit changes for a no-op sync', async () => {
     const mangaId = manga.ensure('demo/en', { url: '/a', title: 'A' });
     chapters.sync(mangaId, [ch('c1', 1)]);
     await flush();
     emitted.length = 0;
-    expect(chapters.sync(mangaId, [ch('c1', 1)])).toEqual({ added: [], updated: 0, missing: 0 });
+    expect(chapters.sync(mangaId, [ch('c1', 1)])).toEqual({ added: [], updated: 0, missing: 0, removed: 0 });
     await flush();
     expect(emitted).toEqual([]);
   });
