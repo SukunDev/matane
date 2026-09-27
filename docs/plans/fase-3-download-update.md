@@ -279,3 +279,55 @@ Keputusan:
 - Retry hanya untuk error yang bisa sembuh (jaringan, timeout, 429, 5xx). Error lain (mis. bukan gambar) langsung jadi `error`.
 - Download tidak berhenti di tengah halaman: pause/batal berlaku di antara halaman.
 - Ruang disk minimal 300 MB sebelum sebuah chapter mulai.
+
+### Milestone 3b: selesai (27 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 6 warning virtualizer, pola lama), `format:check`, `typecheck`, dan `test` hijau (desktop 149, shared 17).
+  - Test baru:
+    - aturan download ahead (chapter belum dibaca berikutnya, satu versi per nomor, chapter hilang dari source dilewati) dan hapus-setelah-dibaca (langsung, tunda N chapter, tidak menghapus kalau ada chapter di antaranya yang belum dibaca, semua versi satu nomor dihitung satu, chapter bertanda dipertahankan);
+    - `DownloadAutomation`: sekali per chapter dibuka, hanya manga library, mati kalau `ahead = 0`; hapus hanya kalau aturan aktif dan manga tidak di kategori yang dikecualikan;
+    - `DownloadManager`: jumlah paralel dari setting; batas ukuran menolak download otomatis tapi tidak download manual; pindah folder (CBZ selesai + halaman `.tmp` chapter yang sedang jalan, path di DB ikut, folder lama dibersihkan, antrean lanjut di folder baru tanpa mengunduh ulang halaman yang sudah ada);
+    - daftar yang "dihapus dari halaman", `movePath`/`rebase`/`isInside`, pengelompokan dan susun ulang antrean, ETA, `formatBytes`/`formatDuration`.
+- E2E 43/43. Spec baru `e2e/downloads-page.spec.ts` (6 test):
+  - antrean per manga: "4 di antrean · 1 aktif", Pause semua → Lanjut semua, Alt+↑ dan drag menyusun ulang, batal per item, lanjut per item, tab Selesai, "Hapus yang selesai" (file tetap);
+  - halaman gagal (HTTP 404) → tab Error, Detail, lalu Coba lagi sampai selesai;
+  - download ahead: membuka ch. 1 memasukkan ch. 2 dan 3;
+  - hapus setelah dibaca diaktifkan dari Settings → Download, membaca ch. 2 sampai habis menghapus file-nya;
+  - ganti folder lewat dialog (pemilih folder dijawab dari main) → "Pindahkan file" → path pindah, file lama hilang, chapter terbaca dengan situs mati;
+  - batas ukuran: download ahead tertahan, banner muncul, download manual meminta konfirmasi.
+  - Situs E2E sekarang bisa memperlambat halaman (`pageDelayMs`) dan menggagalkannya (`failPages`). `launchApp` selalu mengarahkan folder download ke profil test, karena download ahead sekarang aktif secara default.
+- Diverifikasi di app hasil build terhadap MangaDex asli (profil dan folder download terpisah), Kage no Jitsuryokusha:
+  - antrean ch. 1–5 (2 paralel): halaman Downloads menampilkan grup manga, halaman x/y, kecepatan (±3 MB/dtk), ETA, dan ukuran berjalan; Pause semua menjeda di antara halaman (ch. 1 di 16/37, ch. 2 di 14/38), Alt+↑ memindah ch. 5 (di satu run, tekan cepat kedua hilang; lihat bug di bawah, sudah diperbaiki dan dicek ulang di E2E), ch. 4 dibatalkan, Lanjut semua menyelesaikan sisanya (14,7–29,7 MB per chapter) tanpa mengunduh ulang halaman yang sudah ada;
+  - download ahead: membuka ch. 5 memasukkan ch. 6 dan 7;
+  - hapus setelah dibaca dengan tunda 1: selesai membaca ch. 1 → ch. 1 tetap; selesai ch. 2 → ch. 1 dan file-nya terhapus; ch. 3 bertanda tetap ada setelah ch. 4 dibaca;
+  - pindah folder: 4 CBZ (±102 MB) pindah, folder lama bersih, ch. 3 terbaca dari folder baru;
+  - batas ukuran di bawah total: membuka ch. 7 tidak menambah antrean, banner batas tampil;
+  - tampilan dibandingkan mockup 08 (EN dan ID).
+
+Implementasi:
+- **Main:**
+  - `downloads/automation.ts`: `chaptersAhead`, `chaptersToDelete`, dan `DownloadAutomation`, dipicu `ReadingService.saveProgress` (hook `onProgress`). Karena progres tidak disimpan saat incognito, otomatisasi juga tidak jalan saat incognito.
+  - `DownloadManager`: `parallel` dari setting, `overLimit`/`enqueueAuto`, `hold` (antrean berhenti sementara, chapter yang berjalan kembali ke antrean dengan halamannya), `moveTo` (setting folder di-commit di dalam `hold`, sebelum antrean jalan lagi), `settingsChanged`, dan `bytes` di event progres.
+  - `downloads/move.ts`: rename, atau salin lalu hapus kalau beda perangkat (`EXDEV`), tanpa menimpa (akhiran ` (2)`).
+  - `DownloadsRepository`: `relocate`, `touch`, `errorIds`, dan filter `completedAfter`.
+  - IPC baru: `downloads.clearCompleted`, `downloads.folder`, `downloads.pickFolder`, `downloads.setFolder({folder, move})`, `downloads.openFolder({chapterId?})`, `downloads.list({listed})`, dan event `downloads.moveProgress`.
+- **Shared:** `settings.downloads` diperluas (`parallel`, `ahead`, `deleteAfterRead{enabled, delay, keepBookmarked, excludeCategoryIds}`, `limitGb`), dengan fallback per field.
+- **Renderer:**
+  - `features/downloads/`: `DownloadsPage` (header, bar batas, banner batas, tab dengan jumlah, footer), `DownloadRows` (grup, item antrean, item selesai, dialog detail error), `queue.ts` (logika murni), `DownloadLimitDialog`;
+  - `useEnqueueDownloads` menggantikan pemanggilan `downloads.enqueue` langsung di daftar chapter, sehingga konfirmasi batas berlaku di semua tempat;
+  - `features/settings/DownloadSettings.tsx`, dan `downloads` masuk `READY_SECTIONS`;
+  - `formatBytes`, `formatDuration`, dan teks EN/ID.
+
+Keputusan:
+- **Download ahead aktif secara default (2 chapter)**, sesuai BRAINSTORM §6.4 dan footer mockup. Berlaku hanya untuk manga di library, sekali per chapter yang dibuka, dan mengambil chapter berikutnya yang belum dibaca (versi dipilih seperti navigasi reader).
+- **Hapus setelah dibaca mati secara default**, karena menghapus file. Aturan ini berlaku saat chapter selesai dibaca di reader, bukan saat "tandai dibaca" manual. "Tunda N" dihitung per posisi chapter (semua versi satu nomor = satu posisi), dan hanya berlaku kalau chapter-chapter di antaranya juga sudah dibaca.
+- **Batas ukuran** default tanpa batas, dengan preset 5–500 GB. Batas dicek saat download otomatis akan masuk antrean; chapter yang sudah di antrean tetap selesai. Peringatannya berupa banner di halaman Downloads dan dialog konfirmasi untuk download manual. Belum ada toast, karena app belum punya sistem toast.
+- **"Hapus yang selesai"** hanya menyembunyikan download selesai dari tab Selesai, lewat waktu yang disimpan di key setting `downloads.clearedAt`, tanpa perubahan skema. Chapter tetap berstatus terunduh.
+- **Pindah folder**: file selesai dan halaman `.tmp` chapter yang belum selesai ikut dipindah. Kalau gagal di tengah jalan, proses berhenti tanpa mengganti setting; yang sudah pindah tetap valid, dan mencoba lagi memindahkan sisanya. "Jangan pindahkan" membiarkan file di tempatnya (path tersimpan di DB, tetap terbaca).
+- **Susun ulang** berlaku untuk chapter di dalam manga yang sama (drag chapter) atau untuk satu manga utuh (drag header), dengan Alt+↑/↓ sebagai alternatif keyboard. Tab Antrean juga memuat item error (seperti mockup), sedangkan tab Error hanya memuat error.
+- Jumlah chapter paralel 1–4 (default 2); 4 halaman per chapter tetap.
+
+Bug yang ditemukan dan diperbaiki:
+- (dari 3a) `downloads.list` mengurutkan download selesai menurut urutan antrean, bukan yang terbaru dulu.
+- (dari 3a) Setelah satu halaman gagal permanen, halaman lain dari chapter itu tetap diunduh di latar belakang sementara chapter berikutnya sudah mulai. Ini ketahuan dari test retry yang flaky. Sekarang sisa halaman dihentikan dan ditunggu sebelum chapter ditandai error.
+- (selama 3b) Alt+↑ yang ditekan dua kali cepat hanya tercatat sekali, dan fokus hilang setelah baris dipindah. Sekarang langkah berikutnya dihitung dari urutan terbaru, dan fokus dikembalikan ke baris yang dipindah.

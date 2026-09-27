@@ -39,11 +39,11 @@ const zipEntries = (path: string) =>
 test.beforeAll(async () => {
   t = await launchApp(['demo']);
   page = t.page;
-  // Downloads go inside the test profile, not the real Documents folder.
-  await page.evaluate(
-    (folder) => window.api.invoke('settings.set', { downloads: { folder, format: 'cbz', resumeOnStart: true } }),
-    `${t.home}/downloads`,
-  );
+  // Downloads go inside the test profile (launchApp); no download ahead here, only what is asked for.
+  await page.evaluate(async () => {
+    const { downloads } = await window.api.invoke('settings.get');
+    await window.api.invoke('settings.set', { downloads: { ...downloads, ahead: 0 } });
+  });
   await goto('#/browse/sources/e2e-demo/en?tab=search&q=paged');
   await page.getByText('Paged Hero').click();
   await expect(page.getByTestId('chapter-row')).toHaveCount(4);

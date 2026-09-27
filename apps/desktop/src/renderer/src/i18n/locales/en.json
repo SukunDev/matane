@@ -136,13 +136,57 @@
       "delete": "Delete",
       "deleteTitle": "Delete \"{{name}}\"?",
       "deleteDescription": "Its manga stay in your library (under \"Default\" if this was their only category)."
+    },
+    "downloads": {
+      "storage": "Storage",
+      "folder": "Download folder",
+      "folderHint": "Where chapters are saved, as <Source>/<Manga>/<Chapter>.",
+      "change": "Change…",
+      "usage_one": "{{count}} chapter downloaded · {{size}}",
+      "usage_other": "{{count}} chapters downloaded · {{size}}",
+      "moveTitle": "Move existing downloads?",
+      "moveDescription_one": "{{count}} downloaded chapter ({{size}}) is in the current folder. Move it to the new one? Otherwise it stays where it is and can still be read.",
+      "moveDescription_other": "{{count}} downloaded chapters ({{size}}) are in the current folder. Move them to the new one? Otherwise they stay where they are and can still be read.",
+      "moveFiles": "Move files",
+      "dontMove": "Don't move",
+      "moving": "Moving… {{done}} / {{total}}",
+      "moveFailed": "Could not move the downloads",
+      "format": "Format",
+      "formatHint": "CBZ is one file per chapter with ComicInfo.xml; a folder keeps the plain images.",
+      "formats": {
+        "cbz": "CBZ",
+        "folder": "Folder"
+      },
+      "limit": "Size limit",
+      "limitHint": "Past it, automatic downloads stop; you can still download chapters yourself.",
+      "noLimit": "No limit",
+      "queue": "Queue",
+      "parallel": "Chapters at once",
+      "parallelHint": "Each chapter downloads 4 pages at a time; sources' rate limits still apply.",
+      "resumeOnStart": "Resume the queue on start",
+      "resumeOnStartHint": "Otherwise unfinished downloads wait, paused, until you resume them.",
+      "automatic": "Automatic",
+      "ahead": "Download ahead",
+      "aheadHint": "While reading a manga in your library, download the next unread chapters.",
+      "deleteAfterRead": "Delete after reading",
+      "deleteAfterReadHint": "Delete a chapter's download once you finish reading it.",
+      "delay": "When",
+      "delayHint": "Wait until this many later chapters are read too.",
+      "delayNone": "Right away",
+      "delayAfter_one": "After {{count}} more",
+      "delayAfter_other": "After {{count}} more",
+      "keepBookmarked": "Keep bookmarked chapters",
+      "excludeCategories": "Keep downloads in these categories",
+      "excludeCategoriesHint": "Manga in a selected category never lose their downloads."
     }
   },
   "common": {
     "retry": "Try again",
     "close": "Close",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "on": "On",
+    "off": "Off"
   },
   "errors": {
     "network": "Could not reach the source",
@@ -622,6 +666,76 @@
     "delete": "Delete download",
     "cancel": "Cancel download",
     "deleteCount_one": "Delete {{count}} download",
-    "deleteCount_other": "Delete {{count}} downloads"
+    "deleteCount_other": "Delete {{count}} downloads",
+    "limit": {
+      "confirmTitle": "Download size limit reached",
+      "confirmDescription_one": "Your downloads use {{used}} of the {{limit}} limit. Automatic downloads are stopped. Download this chapter anyway?",
+      "confirmDescription_other": "Your downloads use {{used}} of the {{limit}} limit. Automatic downloads are stopped. Download these {{count}} chapters anyway?",
+      "confirm": "Download anyway"
+    },
+    "page": {
+      "subtitle": "Queue management",
+      "summary": "{{queue}} in queue · {{active}} active",
+      "used": "{{used}} used",
+      "usedOfLimit": "{{used}} used of {{limit}} limit",
+      "percent": "{{percent}}% ({{used}} / {{limit}})",
+      "pauseAll": "Pause all",
+      "resumeAll": "Resume all",
+      "clearCompleted": "Clear completed",
+      "more": "More actions",
+      "openFolder": "Open download folder",
+      "cancelAll": "Cancel all",
+      "cancelAllTitle_one": "Cancel {{count}} download?",
+      "cancelAllTitle_other": "Cancel {{count}} downloads?",
+      "cancelAllDescription": "They leave the queue and their partly downloaded pages are deleted. Finished downloads stay.",
+      "retryAll": "Retry all",
+      "tabs": {
+        "queue": "Queue",
+        "completed": "Completed",
+        "errors": "Errors"
+      },
+      "dragHint": "Drag to reorder",
+      "groupCount_one": "{{count}} chapter in queue",
+      "groupCount_other": "{{count}} chapters in queue",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "status": {
+        "downloading": "Downloading ({{percent}}%)",
+        "paused": "Paused",
+        "queued": "Queued",
+        "error": "Error: {{error}}"
+      },
+      "pages": "Page {{done}} / {{total}}",
+      "speed": "{{speed}}/s",
+      "eta": "ETA {{eta}}",
+      "pause": "Pause",
+      "resume": "Resume",
+      "retry": "Retry",
+      "details": "Details",
+      "detailsTitle": "Download failed",
+      "detailsPages": "{{done}} of {{total}} pages were downloaded; retrying fetches only the rest.",
+      "read": "Read",
+      "showInFolder": "Show in folder",
+      "limitReached": "Download size limit reached ({{used}} of {{limit}}). Automatic downloads are stopped; you can still download chapters yourself.",
+      "settings": "Download settings",
+      "ahead": "Download ahead:",
+      "aheadCount_one": "{{count}} chapter",
+      "aheadCount_other": "{{count}} chapters",
+      "deleteAfterRead": "Delete after reading:",
+      "empty": {
+        "queue": {
+          "title": "Nothing in the queue",
+          "description": "Download chapters from a manga's chapter list; they show up here while they download."
+        },
+        "completed": {
+          "title": "No finished downloads",
+          "description": "Chapters appear here once downloaded. \"Clear completed\" hides them here; the files stay."
+        },
+        "errors": {
+          "title": "No errors",
+          "description": "Downloads that fail after three tries show up here."
+        }
+      }
+    }
   }
 }

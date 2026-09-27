@@ -3,6 +3,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext } from '@tanstack/react-router';
 import { useCallback } from 'react';
 import { settingsQuery, useIpcEvent } from '../lib/ipc';
+import { DownloadLimitDialog } from '../features/downloads/DownloadLimitDialog';
 import { useDownloadProgressSync } from '../lib/downloads';
 import { invalidateTags } from '../lib/sources';
 import { LanguageSync } from '../i18n/LanguageSync';
@@ -30,6 +31,7 @@ function RootComponent() {
       <ThemeSync />
       <LanguageSync />
       <Outlet />
+      <DownloadLimitDialog />
     </>
   );
 }

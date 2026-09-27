@@ -72,6 +72,10 @@ export interface Site {
   origin: string;
   /** Requests seen, e.g. to assert an image was served from the app cache. */
   hits: string[];
+  /** Page images answer this much later (downloads in progress, pause/cancel). */
+  pageDelayMs: number;
+  /** Page images fail with HTTP 404 (a download error that is not retried). */
+  failPages: boolean;
   close(): Promise<void>;
 }
 
@@ -119,22 +123,12 @@ export async function startSite(): Promise<Site> {
     return undefined;
   };
 
-  const server: Server = createServer((request, response) => {
-    const url = new URL(request.url ?? '/', 'http://e2e.localhost');
-    hits.push(url.pathname + url.search);
-    const result = route(url);
-    if (!result) {
-      response.writeHead(404).end();
-      return;
-    }
-    response.writeHead(result.status ?? 200, { 'content-type': result.type }).end(result.body);
-  });
-  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
-  const { port } = server.address() as AddressInfo;
-  return {
-    port,
-    origin: `http://e2e.localhost:${port}`,
+  const site: Site = {
+    port: 0,
+    origin: '',
     hits,
+    pageDelayMs: 0,
+    failPages: false,
     // The app keeps connections alive; without dropping them, close() waits for their timeout.
     close: () =>
       new Promise((resolve) => {
@@ -142,6 +136,24 @@ export async function startSite(): Promise<Site> {
         server.closeAllConnections();
       }),
   };
+  const server: Server = createServer((request, response) => {
+    const url = new URL(request.url ?? '/', 'http://e2e.localhost');
+    hits.push(url.pathname + url.search);
+    const isPage = url.pathname.startsWith('/img/page/');
+    const result = isPage && site.failPages ? undefined : route(url);
+    if (!result) {
+      response.writeHead(404).end();
+      return;
+    }
+    const send = () => response.writeHead(result.status ?? 200, { 'content-type': result.type }).end(result.body);
+    if (isPage && site.pageDelayMs > 0) setTimeout(send, site.pageDelayMs);
+    else send();
+  });
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const { port } = server.address() as AddressInfo;
+  site.port = port;
+  site.origin = `http://e2e.localhost:${port}`;
+  return site;
 }
 
 const EXTENSIONS = {

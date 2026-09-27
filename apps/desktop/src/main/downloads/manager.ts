@@ -1,7 +1,7 @@
 import { mkdir, readdir, rename, rm, rmdir, stat, statfs, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { Page } from '@manga-reader/extension-sdk';
-import type { DownloadFormat, DownloadProgress } from '@manga-reader/shared';
+import type { DownloadFormat, DownloadMoveProgress, DownloadProgress } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import { createLimiter } from '@manga-reader/shared/limit';
 import type { ChaptersRepository } from '../db/repositories/chapters';
@@ -11,10 +11,11 @@ import { sniffBytes } from '../images/covers';
 import type { ImageBytes } from '../images/service';
 import { COMIC_INFO, writeCbz } from './archive';
 import { comicInfoXml } from './comicinfo';
+import { exists, freeTarget, isInside, movePath, rebase } from './move';
 import { chapterBasePath, pageFileName } from './paths';
 import type { DownloadStore } from './store';
 
-/** Chapters downloaded at once, and pages at once per chapter (BRAINSTORM.md §6.4). */
+/** Chapters downloaded at once by default, and pages at once per chapter (BRAINSTORM.md §6.4). */
 export const MAX_CHAPTERS = 2;
 export const MAX_PAGES = 4;
 /** Retries per page after the first attempt, with exponential backoff (1 s, 2 s, 4 s). */
@@ -42,8 +43,11 @@ export interface DownloadManagerDeps {
   pages: (chapterId: number) => Promise<Page[]>;
   /** A page's bytes (download, cache or network — never stored in the cache). */
   pageBytes: (chapterId: number, index: number) => Promise<ImageBytes>;
-  /** Download folder and format in effect. */
-  settings: () => { folder: string; format: DownloadFormat };
+  /**
+   * Download folder and format in effect, chapters at once (default `MAX_CHAPTERS`) and the size
+   * limit for automatic downloads (none when null or left out).
+   */
+  settings: () => { folder: string; format: DownloadFormat; parallel?: number; limitBytes?: number | null };
   /** Reading direction of a manga, for `ComicInfo.xml`. */
   rightToLeft: (mangaId: number) => boolean;
   webUrl?: (mangaId: number) => Promise<string>;
@@ -60,13 +64,9 @@ interface Job {
   pagesDone: number;
   pagesTotal: number | null;
   bytes: number;
+  /** Stops the chapter's other pages once one failed for good. */
+  pagesAbort?: AbortController;
 }
-
-const exists = (path: string) =>
-  stat(path).then(
-    () => true,
-    () => false,
-  );
 
 /** Worth another try: network trouble, server errors, rate limits. */
 function retryable(error: unknown): boolean {
@@ -87,6 +87,8 @@ function retryable(error: unknown): boolean {
 export class DownloadManager {
   private readonly running = new Map<number, Job>();
   private started = false;
+  /** While above 0 (moving the folder), nothing starts. */
+  private holds = 0;
   /** Set on app quit: the database is about to close, nothing may touch it any more. */
   private closing = false;
   private progressTimer: ReturnType<typeof setInterval> | undefined;
@@ -106,6 +108,31 @@ export class DownloadManager {
   enqueue(chapterIds: readonly number[]): void {
     this.deps.repo.enqueue(chapterIds, this.deps.settings().format);
     this.pump();
+  }
+
+  /** Settings changed: more chapters may run at once now. */
+  settingsChanged(): void {
+    this.pump();
+  }
+
+  /** Whether the finished downloads reached the size limit (BRAINSTORM.md §6.4). */
+  overLimit(): boolean {
+    const limit = this.deps.settings().limitBytes;
+    return limit != null && this.deps.repo.stats().totalBytes >= limit;
+  }
+
+  /**
+   * Automatic downloads (download ahead, new chapters): refused past the size limit, where only
+   * the user can still queue chapters. Returns whether they were queued.
+   */
+  enqueueAuto(chapterIds: readonly number[]): boolean {
+    if (chapterIds.length === 0) return true;
+    if (this.overLimit()) {
+      this.deps.log?.(`size limit reached, not queueing ${chapterIds.length} chapter(s) automatically`);
+      return false;
+    }
+    this.enqueue(chapterIds);
+    return true;
   }
 
   pause(ids?: readonly number[]): void {
@@ -151,6 +178,72 @@ export class DownloadManager {
     this.started = false;
     for (const job of this.running.values()) job.controller.abort();
     clearInterval(this.progressTimer);
+  }
+
+  /**
+   * Runs `work` with the queue stopped: running chapters go back to the queue (their pages stay in
+   * the temporary folder) and start again afterwards.
+   */
+  async hold<T>(work: () => Promise<T>): Promise<T> {
+    this.holds++;
+    try {
+      for (const job of this.running.values()) job.controller.abort();
+      while (this.running.size > 0) await new Promise((r) => setTimeout(r, 10));
+      if (!this.closing) this.deps.repo.resetInterrupted();
+      return await work();
+    } finally {
+      this.holds--;
+      this.pump();
+    }
+  }
+
+  /**
+   * Moves every download under the current folder to `folder`: finished chapters (their path in
+   * the database follows) and the pages of unfinished ones, then calls `commit` (which makes
+   * `folder` the setting) before the queue starts again. Stops at the first failure without
+   * committing; what moved already stays valid, and running it again moves the rest.
+   */
+  async moveTo(
+    folder: string,
+    onProgress: (progress: DownloadMoveProgress) => void,
+    commit: () => void,
+  ): Promise<void> {
+    const from = this.deps.settings().folder;
+    await this.hold(async () => {
+      const done = this.deps.repo.done().filter((row) => row.path && isInside(from, row.path));
+      const partial: string[] = [];
+      for (const id of [...this.deps.repo.pendingIds(), ...this.deps.repo.errorIds()]) {
+        const row = this.deps.repo.get(id);
+        const base = row && this.basePathOf(row);
+        if (base && (await exists(`${base}.tmp`))) partial.push(`${base}.tmp`);
+      }
+      const total = done.length + partial.length;
+      let moved = 0;
+      const report = (error: string | null = null, finished = false) =>
+        onProgress({ done: moved, total, error, finished });
+      report();
+      try {
+        for (const row of done) {
+          await this.deps.store.reader.close(row.path!);
+          const target = await movePath(row.path!, rebase(from, folder, row.path!));
+          this.deps.repo.relocate(row.id, target);
+          await this.pruneEmpty(dirname(row.path!));
+          moved++;
+          report();
+        }
+        for (const tmp of partial) {
+          await movePath(tmp, rebase(from, folder, tmp));
+          await this.pruneEmpty(dirname(tmp));
+          moved++;
+          report();
+        }
+      } catch (error) {
+        report(toAppErrorData(error).message, true);
+        throw error;
+      }
+      commit();
+      report(null, true);
+    });
   }
 
   /** Waits for running downloads to stop (tests). */
@@ -204,8 +297,9 @@ export class DownloadManager {
   }
 
   private pump(): void {
-    if (!this.started || this.closing) return;
-    while (this.running.size < MAX_CHAPTERS) {
+    if (!this.started || this.closing || this.holds > 0) return;
+    const parallel = this.deps.settings().parallel ?? MAX_CHAPTERS;
+    while (this.running.size < parallel) {
       const row = this.deps.repo.next([...this.running.keys()]);
       if (!row) break;
       const job: Job = { row, controller: new AbortController(), pagesDone: 0, pagesTotal: null, bytes: 0 };
@@ -258,28 +352,37 @@ export class DownloadManager {
       job.pagesDone = present.size;
       this.deps.repo.progress(row.id, job.pagesDone, pages.length);
 
+      // One page failing for good stops the others (they must not keep downloading while the next
+      // chapter starts); pages already written stay for "Try again".
+      const pagesSignal = AbortSignal.any([signal, (job.pagesAbort = new AbortController()).signal]);
+      let failure: { error: unknown } | undefined;
       const limit = createLimiter(MAX_PAGES);
-      await Promise.all(
+      await Promise.allSettled(
         pages
           .map((_, index) => index)
           .filter((index) => !present.has(index))
           .map((index) =>
             limit(async () => {
-              if (signal.aborted) return;
-              const image = await this.fetchPage(row.chapterId, index, signal);
-              if (signal.aborted) return;
-              const ext = sniffBytes(image.bytes)?.ext ?? EXT_BY_TYPE[image.contentType ?? ''] ?? '.jpg';
-              const file = join(tmp, pageFileName(index, ext));
-              await writeFile(`${file}.part`, image.bytes);
-              await rename(`${file}.part`, file);
-              job.pagesDone++;
-              job.bytes += image.bytes.byteLength;
-              this.deps.repo.progress(row.id, job.pagesDone, pages.length);
-            }, signal),
+              if (pagesSignal.aborted) return;
+              try {
+                const image = await this.fetchPage(row.chapterId, index, pagesSignal);
+                if (pagesSignal.aborted) return;
+                const ext = sniffBytes(image.bytes)?.ext ?? EXT_BY_TYPE[image.contentType ?? ''] ?? '.jpg';
+                const file = join(tmp, pageFileName(index, ext));
+                await writeFile(`${file}.part`, image.bytes);
+                await rename(`${file}.part`, file);
+                job.pagesDone++;
+                job.bytes += image.bytes.byteLength;
+                this.deps.repo.progress(row.id, job.pagesDone, pages.length);
+              } catch (error) {
+                failure ??= { error };
+                job.pagesAbort?.abort();
+              }
+            }, pagesSignal),
           ),
-      ).catch((error: unknown) => {
-        if (!signal.aborted) throw error;
-      });
+      );
+      if (signal.aborted) return this.aborted(row, tmp);
+      if (failure) throw failure.error;
       if (signal.aborted) return this.aborted(row, tmp);
 
       await writeFile(
@@ -299,7 +402,7 @@ export class DownloadManager {
           pageCount: pages.length,
         }),
       );
-      const target = await this.freeTarget(row.format === 'cbz' ? `${base}.cbz` : base);
+      const target = await freeTarget(row.format === 'cbz' ? `${base}.cbz` : base);
       let size: number;
       if (row.format === 'cbz') {
         const part = `${target}.part`;
@@ -345,17 +448,6 @@ export class DownloadManager {
     }
   }
 
-  /** `path`, or `path (2)`… when something else is already there. */
-  private async freeTarget(path: string): Promise<string> {
-    if (!(await exists(path))) return path;
-    const ext = path.endsWith('.cbz') ? '.cbz' : '';
-    const stem = ext ? path.slice(0, -ext.length) : path;
-    for (let n = 2; ; n++) {
-      const candidate = `${stem} (${n})${ext}`;
-      if (!(await exists(candidate))) return candidate;
-    }
-  }
-
   private ensureProgressTimer(): void {
     if (this.running.size === 0 || this.progressTimer) return;
     this.lastTick = Date.now();
@@ -381,6 +473,7 @@ export class DownloadManager {
         chapterId: job.row.chapterId,
         pagesDone: job.pagesDone,
         pagesTotal: job.pagesTotal,
+        bytes: job.bytes,
         bytesPerSecond: Math.max(0, Math.round(speed)),
       };
     });

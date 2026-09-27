@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { CircleAlert, CircleArrowDown, CircleCheck, Clock, Pause } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
-import { useDownloadProgress } from '../../lib/downloads';
+import { useDownloadProgress, useEnqueueDownloads } from '../../lib/downloads';
 import { ipc } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
 
@@ -15,7 +15,7 @@ import { cn } from '../../lib/utils';
 export function DownloadButton({ chapterId, download }: { chapterId: number; download: DownloadItem | undefined }) {
   const { t } = useTranslation();
   const live = useDownloadProgress((state) => state.byChapter.get(chapterId));
-  const enqueue = useMutation({ mutationFn: () => ipc.invoke('downloads.enqueue', { chapterIds: [chapterId] }) });
+  const enqueue = useEnqueueDownloads();
   const cancel = useMutation({ mutationFn: (id: number) => ipc.invoke('downloads.cancel', { ids: [id] }) });
   const retry = useMutation({ mutationFn: (id: number) => ipc.invoke('downloads.retry', { ids: [id] }) });
   const base = 'ml-1';
@@ -26,7 +26,7 @@ export function DownloadButton({ chapterId, download }: { chapterId: number; dow
         variant="ghost"
         size="icon-sm"
         title={t('downloads.download')}
-        onClick={() => enqueue.mutate()}
+        onClick={() => enqueue([chapterId])}
         className={cn(base, 'opacity-0 group-hover:opacity-60 hover:opacity-100 focus-visible:opacity-100')}
       >
         <CircleArrowDown />

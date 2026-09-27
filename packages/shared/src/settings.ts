@@ -146,13 +146,39 @@ export const migrationSettingsSchema = z.object({
 });
 export type MigrationSettings = z.infer<typeof migrationSettingsSchema>;
 
-/** Downloads (BRAINSTORM.md §6.4). The rest of the options arrive with the Downloads page. */
+/** "Delete after reading" (BRAINSTORM.md §6.4); off by default, it removes files. */
+export const deleteAfterReadSchema = z.object({
+  enabled: z.boolean().catch(false),
+  /** Wait until this many later chapters are read too (0 = delete as soon as it is read). */
+  delay: z.number().int().min(0).max(5).catch(0),
+  /** Never delete bookmarked chapters. */
+  keepBookmarked: z.boolean().catch(true),
+  /** Manga in these categories keep their downloads. */
+  excludeCategoryIds: z.array(z.number().int()).catch([]),
+});
+export type DeleteAfterRead = z.infer<typeof deleteAfterReadSchema>;
+
+export const DEFAULT_DELETE_AFTER_READ: DeleteAfterRead = {
+  enabled: false,
+  delay: 0,
+  keepBookmarked: true,
+  excludeCategoryIds: [],
+};
+
+/** Downloads (BRAINSTORM.md §6.4); per-field fallbacks like the reader settings. */
 export const downloadSettingsSchema = z.object({
   /** null = the default, `Documents/Matane`. */
   folder: z.string().min(1).nullable().catch(null),
   format: z.enum(['cbz', 'folder']).catch('cbz'),
   /** Carry on with the queue when the app starts. */
   resumeOnStart: z.boolean().catch(true),
+  /** Chapters downloaded at once (each with 4 pages at once). */
+  parallel: z.number().int().min(1).max(4).catch(2),
+  /** While reading a library manga, queue this many next chapters (0 = off). */
+  ahead: z.number().int().min(0).max(10).catch(2),
+  deleteAfterRead: deleteAfterReadSchema.catch(DEFAULT_DELETE_AFTER_READ),
+  /** Total size of the downloads, in GB, past which automatic downloads stop; null = no limit. */
+  limitGb: z.number().positive().max(100_000).nullable().catch(null),
 });
 export type DownloadSettings = z.infer<typeof downloadSettingsSchema>;
 
@@ -182,5 +208,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
   library: DEFAULT_LIBRARY_SETTINGS,
   globalSearch: { sourceIds: null, onlyWithResults: false },
   migration: { targets: [], options: DEFAULT_MIGRATION_OPTIONS },
-  downloads: { folder: null, format: 'cbz', resumeOnStart: true },
+  downloads: {
+    folder: null,
+    format: 'cbz',
+    resumeOnStart: true,
+    parallel: 2,
+    ahead: 2,
+    deleteAfterRead: DEFAULT_DELETE_AFTER_READ,
+    limitGb: null,
+  },
 };

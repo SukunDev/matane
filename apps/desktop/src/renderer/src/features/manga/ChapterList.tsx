@@ -39,7 +39,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
-import { downloadsQuery } from '../../lib/downloads';
+import { downloadsQuery, useEnqueueDownloads } from '../../lib/downloads';
 import { mangaQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../library/selection';
@@ -409,7 +409,7 @@ function ChapterMenu({ chapter, download }: { chapter: ChapterInfo; download: Do
   const bookmark = useMutation({
     mutationFn: (bookmarked: boolean) => ipc.invoke('chapters.setBookmarked', { chapterIds: [chapter.id], bookmarked }),
   });
-  const enqueue = useMutation({ mutationFn: () => ipc.invoke('downloads.enqueue', { chapterIds: [chapter.id] }) });
+  const enqueue = useEnqueueDownloads();
   const deleteDownload = useMutation({
     mutationFn: () => ipc.invoke('downloads.delete', { chapterIds: [chapter.id] }),
   });
@@ -451,7 +451,7 @@ function ChapterMenu({ chapter, download }: { chapter: ChapterInfo; download: Do
               {download.status === 'done' ? t('downloads.delete') : t('downloads.cancel')}
             </DropdownMenu.Item>
           ) : (
-            <DropdownMenu.Item className={item} onSelect={() => enqueue.mutate()}>
+            <DropdownMenu.Item className={item} onSelect={() => enqueue([chapter.id])}>
               <CircleArrowDown className="size-4" />
               {t('downloads.download')}
             </DropdownMenu.Item>
@@ -488,10 +488,7 @@ function ChapterSelectionBar({
     mutationFn: (chapterId: number) => ipc.invoke('chapters.markPreviousRead', { chapterId }),
     onSuccess: onClear,
   });
-  const enqueue = useMutation({
-    mutationFn: () => ipc.invoke('downloads.enqueue', { chapterIds }),
-    onSuccess: onClear,
-  });
+  const enqueue = useEnqueueDownloads();
   const deleteDownloads = useMutation({
     mutationFn: (ids: number[]) => ipc.invoke('downloads.delete', { chapterIds: ids }),
     onSuccess: onClear,
@@ -528,7 +525,7 @@ function ChapterSelectionBar({
           {allBookmarked ? <BookmarkMinus /> : <Bookmark />}
           {allBookmarked ? t('manga.menu.unbookmark') : t('manga.menu.bookmark')}
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => enqueue.mutate()}>
+        <Button variant="ghost" size="sm" onClick={() => enqueue(chapterIds, onClear)}>
           <CircleArrowDown />
           {t('downloads.download')}
         </Button>

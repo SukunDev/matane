@@ -66,6 +66,11 @@ export const INVOKE_CHANNELS = [
   'downloads.retry',
   'downloads.reorder',
   'downloads.delete',
+  'downloads.clearCompleted',
+  'downloads.folder',
+  'downloads.pickFolder',
+  'downloads.setFolder',
+  'downloads.openFolder',
   'chapters.setBookmarked',
 ] as const;
 export type InvokeChannel = (typeof INVOKE_CHANNELS)[number];
@@ -78,5 +83,6 @@ export const EVENT_CHANNELS = [
   'window.fullScreenChanged',
   'migration.progress',
   'downloads.progress',
+  'downloads.moveProgress',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

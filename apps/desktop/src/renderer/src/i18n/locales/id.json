@@ -136,13 +136,57 @@
       "delete": "Hapus",
       "deleteTitle": "Hapus \"{{name}}\"?",
       "deleteDescription": "Manganya tetap di library (masuk \"Default\" kalau ini satu-satunya kategorinya)."
+    },
+    "downloads": {
+      "storage": "Penyimpanan",
+      "folder": "Folder download",
+      "folderHint": "Tempat chapter disimpan, sebagai <Source>/<Manga>/<Chapter>.",
+      "change": "Ganti…",
+      "usage_one": "{{count}} chapter terunduh · {{size}}",
+      "usage_other": "{{count}} chapter terunduh · {{size}}",
+      "moveTitle": "Pindahkan download yang sudah ada?",
+      "moveDescription_one": "Ada {{count}} chapter terunduh ({{size}}) di folder sekarang. Pindahkan ke folder baru? Kalau tidak, file tetap di tempatnya dan tetap bisa dibaca.",
+      "moveDescription_other": "Ada {{count}} chapter terunduh ({{size}}) di folder sekarang. Pindahkan ke folder baru? Kalau tidak, file tetap di tempatnya dan tetap bisa dibaca.",
+      "moveFiles": "Pindahkan file",
+      "dontMove": "Jangan pindahkan",
+      "moving": "Memindahkan… {{done}} / {{total}}",
+      "moveFailed": "Download tidak bisa dipindahkan",
+      "format": "Format",
+      "formatHint": "CBZ berupa satu file per chapter dengan ComicInfo.xml; folder berisi gambar apa adanya.",
+      "formats": {
+        "cbz": "CBZ",
+        "folder": "Folder"
+      },
+      "limit": "Batas ukuran",
+      "limitHint": "Setelah terlewati, download otomatis berhenti; kamu tetap bisa download chapter sendiri.",
+      "noLimit": "Tanpa batas",
+      "queue": "Antrean",
+      "parallel": "Chapter sekaligus",
+      "parallelHint": "Setiap chapter mengunduh 4 halaman sekaligus; rate limit source tetap berlaku.",
+      "resumeOnStart": "Lanjutkan antrean saat app dibuka",
+      "resumeOnStartHint": "Kalau mati, download yang belum selesai menunggu dalam keadaan dijeda sampai kamu melanjutkannya.",
+      "automatic": "Otomatis",
+      "ahead": "Download ahead",
+      "aheadHint": "Saat membaca manga di library, chapter berikutnya yang belum dibaca ikut diunduh.",
+      "deleteAfterRead": "Hapus setelah dibaca",
+      "deleteAfterReadHint": "Download chapter dihapus setelah selesai dibaca.",
+      "delay": "Kapan",
+      "delayHint": "Tunggu sampai sejumlah chapter sesudahnya juga dibaca.",
+      "delayNone": "Langsung",
+      "delayAfter_one": "Setelah {{count}} lagi",
+      "delayAfter_other": "Setelah {{count}} lagi",
+      "keepBookmarked": "Jangan hapus chapter bertanda",
+      "excludeCategories": "Pertahankan download di kategori ini",
+      "excludeCategoriesHint": "Manga di kategori yang dipilih tidak pernah kehilangan download-nya."
     }
   },
   "common": {
     "retry": "Coba lagi",
     "close": "Tutup",
     "cancel": "Batal",
-    "save": "Simpan"
+    "save": "Simpan",
+    "on": "Aktif",
+    "off": "Mati"
   },
   "errors": {
     "network": "Tidak bisa menghubungi source",
@@ -599,6 +643,76 @@
     "clickToCancel": "klik untuk membatalkan",
     "delete": "Hapus download",
     "cancel": "Batalkan download",
-    "deleteCount_other": "Hapus {{count}} download"
+    "deleteCount_other": "Hapus {{count}} download",
+    "limit": {
+      "confirmTitle": "Batas ukuran download tercapai",
+      "confirmDescription_one": "Download kamu memakai {{used}} dari batas {{limit}}. Download otomatis dihentikan. Tetap download chapter ini?",
+      "confirmDescription_other": "Download kamu memakai {{used}} dari batas {{limit}}. Download otomatis dihentikan. Tetap download {{count}} chapter ini?",
+      "confirm": "Tetap download"
+    },
+    "page": {
+      "subtitle": "Kelola antrean",
+      "summary": "{{queue}} di antrean · {{active}} aktif",
+      "used": "{{used}} terpakai",
+      "usedOfLimit": "{{used}} dari batas {{limit}}",
+      "percent": "{{percent}}% ({{used}} / {{limit}})",
+      "pauseAll": "Pause semua",
+      "resumeAll": "Lanjut semua",
+      "clearCompleted": "Hapus yang selesai",
+      "more": "Aksi lain",
+      "openFolder": "Buka folder download",
+      "cancelAll": "Batalkan semua",
+      "cancelAllTitle_one": "Batalkan {{count}} download?",
+      "cancelAllTitle_other": "Batalkan {{count}} download?",
+      "cancelAllDescription": "Semuanya keluar dari antrean dan halaman yang sudah terunduh sebagian dihapus. Download yang sudah selesai tetap ada.",
+      "retryAll": "Coba lagi semua",
+      "tabs": {
+        "queue": "Antrean",
+        "completed": "Selesai",
+        "errors": "Error"
+      },
+      "dragHint": "Seret untuk menyusun ulang",
+      "groupCount_one": "{{count}} chapter di antrean",
+      "groupCount_other": "{{count}} chapter di antrean",
+      "expand": "Buka",
+      "collapse": "Ciutkan",
+      "status": {
+        "downloading": "Mengunduh ({{percent}}%)",
+        "paused": "Dijeda",
+        "queued": "Antre",
+        "error": "Error: {{error}}"
+      },
+      "pages": "Halaman {{done}} / {{total}}",
+      "speed": "{{speed}}/dtk",
+      "eta": "Sisa {{eta}}",
+      "pause": "Jeda",
+      "resume": "Lanjutkan",
+      "retry": "Coba lagi",
+      "details": "Detail",
+      "detailsTitle": "Download gagal",
+      "detailsPages": "{{done}} dari {{total}} halaman sudah terunduh; coba lagi hanya mengambil sisanya.",
+      "read": "Baca",
+      "showInFolder": "Tampilkan di folder",
+      "limitReached": "Batas ukuran download tercapai ({{used}} dari {{limit}}). Download otomatis dihentikan; kamu tetap bisa download chapter sendiri.",
+      "settings": "Setting download",
+      "ahead": "Download ahead:",
+      "aheadCount_one": "{{count}} chapter",
+      "aheadCount_other": "{{count}} chapter",
+      "deleteAfterRead": "Hapus setelah dibaca:",
+      "empty": {
+        "queue": {
+          "title": "Antrean kosong",
+          "description": "Download chapter dari daftar chapter manga; selama diunduh, chapter tampil di sini."
+        },
+        "completed": {
+          "title": "Belum ada download selesai",
+          "description": "Chapter muncul di sini setelah terunduh. \"Hapus yang selesai\" hanya menyembunyikannya di sini; file tetap ada."
+        },
+        "errors": {
+          "title": "Tidak ada error",
+          "description": "Download yang gagal setelah tiga kali percobaan tampil di sini."
+        }
+      }
+    }
   }
 }

@@ -1,9 +1,10 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { COMIC_INFO, DownloadReader, pageNames, writeCbz } from './archive';
 import { comicInfoXml } from './comicinfo';
+import { isInside, movePath, rebase } from './move';
 import { chapterBasePath, pageFileName, sanitizeSegment } from './paths';
 
 let dir: string;
@@ -109,5 +110,27 @@ describe('archives', () => {
     const reader = new DownloadReader();
     expect(await reader.pages(src, 'folder')).toHaveLength(3);
     expect((await reader.read(src, 'folder', 0)).bytes).toEqual(PNG);
+  });
+});
+
+describe('moving downloads', () => {
+  it('knows what lies inside the download folder and where it goes', () => {
+    expect(isInside('/a/Matane', '/a/Matane/S/M/c.cbz')).toBe(true);
+    expect(isInside('/a/Matane', '/a/Matane')).toBe(false);
+    expect(isInside('/a/Matane', '/a/Matane2/c.cbz')).toBe(false);
+    expect(isInside('/a/Matane', '/a/other/c.cbz')).toBe(false);
+    expect(rebase('/a/Matane', '/b/New', '/a/Matane/S/M/c.cbz')).toBe(join('/b/New', 'S', 'M', 'c.cbz'));
+  });
+
+  it('moves a file into new folders and never overwrites what is there', async () => {
+    const from = join(dir, 'a.cbz');
+    writeFileSync(from, 'one');
+    const target = join(dir, 'x', 'y', 'a.cbz');
+    expect(await movePath(from, target)).toBe(target);
+    expect(existsSync(from)).toBe(false);
+
+    writeFileSync(from, 'two');
+    expect(await movePath(from, target)).toBe(join(dir, 'x', 'y', 'a (2).cbz'));
+    expect(readFileSync(target, 'utf8')).toBe('one');
   });
 });

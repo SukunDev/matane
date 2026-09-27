@@ -5,6 +5,7 @@ import {
   categorySchema,
   chapterViewSchema,
   downloadItemSchema,
+  downloadMoveProgressSchema,
   downloadProgressSchema,
   downloadStatsSchema,
   chapterInfoSchema,
@@ -225,8 +226,14 @@ export const invokeContract = {
   ),
   /** Queues chapters for download (already queued or downloaded ones are left as they are). */
   'downloads.enqueue': invoke(z.object({ chapterIds: z.array(idSchema).min(1).max(5000) }), z.void()),
-  /** Downloads of one manga, or all of them; queue order, then newest finished first. */
-  'downloads.list': invoke(z.object({ mangaId: idSchema.optional() }).optional(), z.array(downloadItemSchema)),
+  /**
+   * Downloads of one manga, or all of them; queue order, then newest finished first. `listed`
+   * leaves out finished downloads cleared from the Downloads page (they stay on disk).
+   */
+  'downloads.list': invoke(
+    z.object({ mangaId: idSchema.optional(), listed: z.boolean().optional() }).optional(),
+    z.array(downloadItemSchema),
+  ),
   'downloads.stats': invoke(z.void(), downloadStatsSchema),
   /** Without ids: the whole queue. */
   'downloads.pause': invoke(z.object({ ids: z.array(idSchema).optional() }).optional(), z.void()),
@@ -238,6 +245,19 @@ export const invokeContract = {
   'downloads.reorder': invoke(z.object({ ids: z.array(idSchema).min(1) }), z.void()),
   /** Deletes finished downloads from disk (and cancels unfinished ones) of these chapters. */
   'downloads.delete': invoke(z.object({ chapterIds: z.array(idSchema).min(1) }), z.void()),
+  /** Hides the finished downloads from the Downloads page (the files stay). */
+  'downloads.clearCompleted': invoke(z.void(), z.void()),
+  /** The download folder in effect (the setting, or the default `Documents/Matane`). */
+  'downloads.folder': invoke(z.void(), z.string()),
+  /** Asks for a folder; null when cancelled. */
+  'downloads.pickFolder': invoke(z.void(), z.string().nullable()),
+  /**
+   * Makes `folder` the download folder. With `move`, finished and partial downloads move there
+   * first (progress on `downloads.moveProgress`); the queue waits meanwhile.
+   */
+  'downloads.setFolder': invoke(z.object({ folder: z.string().min(1), move: z.boolean() }), z.void()),
+  /** Opens the download folder, or the folder holding a chapter's download. */
+  'downloads.openFolder': invoke(z.object({ chapterId: idSchema.optional() }).optional(), z.void()),
   /** The chapter list's filter and sort for this manga; null = default. */
   'manga.setChapterView': invoke(z.object({ mangaId: idSchema, view: chapterViewSchema.nullable() }), z.void()),
   'chapters.setBookmarked': invoke(
@@ -255,6 +275,7 @@ export const eventContract = {
   'window.fullScreenChanged': z.boolean(),
   'migration.progress': migrationProgressSchema,
   'downloads.progress': downloadProgressSchema,
+  'downloads.moveProgress': downloadMoveProgressSchema,
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

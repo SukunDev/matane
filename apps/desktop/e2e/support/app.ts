@@ -50,6 +50,14 @@ export async function launchApp(extensions: SiteExtension[] = ['demo', 'mirror']
       rmSync(home, { recursive: true, force: true });
     },
   };
+  // Downloads (manual or download ahead) stay inside the test profile, never in ~/Documents.
+  await test.page.evaluate(
+    async (folder) => {
+      const { downloads } = await window.api.invoke('settings.get');
+      await window.api.invoke('settings.set', { downloads: { ...downloads, folder } });
+    },
+    join(home, 'downloads'),
+  );
   for (const which of extensions) {
     const dir = join(home, `e2e-${which}`);
     mkdirSync(dir);

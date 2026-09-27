@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Download } from 'lucide-react';
-import { PlaceholderPage } from '../../components/PlaceholderPage';
+import { DownloadsPage } from '../../features/downloads/DownloadsPage';
 
 export const Route = createFileRoute('/_app/downloads')({
   staticData: { crumbs: ['downloads'] },
-  component: () => <PlaceholderPage titleKey="downloads" emptyKey="downloads" icon={Download} />,
+  component: DownloadsPage,
 });

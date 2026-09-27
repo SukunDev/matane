@@ -1,3 +1,5 @@
+import { mkdir } from 'node:fs/promises';
+import { isAbsolute, resolve } from 'node:path';
 import { AppError } from '@manga-reader/shared/errors';
 import { toChapterInfo } from '../db/repositories/chapters';
 import { BrowserWindow, app, dialog, shell } from 'electron';
@@ -34,7 +36,12 @@ export interface IpcDeps {
   migration: MigrationService;
   downloads: DownloadManager;
   downloadsRepo: DownloadsRepository;
+  /** The download folder in effect. */
+  downloadFolder: () => string;
 }
+
+/** Settings key (not an app setting): finished downloads before this time are off the Downloads page. */
+const DOWNLOADS_CLEARED_KEY = 'downloads.clearedAt';
 
 export function createIpcHandlers({
   settings,
@@ -52,6 +59,7 @@ export function createIpcHandlers({
   migration,
   downloads,
   downloadsRepo,
+  downloadFolder,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
     if (!manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
@@ -96,6 +104,7 @@ export function createIpcHandlers({
     'settings.set': (patch) => {
       const next = settings.updateAppSettings(patch);
       broadcast('settings.changed', next);
+      if (patch.downloads) downloads.settingsChanged();
       return next;
     },
 
@@ -188,7 +197,11 @@ export function createIpcHandlers({
     'manga.setScanlatorPrefs': ({ mangaId, prefs }) => manga.setScanlatorPrefs(existing(mangaId), prefs),
     'manga.setChapterView': ({ mangaId, view }) => manga.setChapterView(existing(mangaId), view),
     'downloads.enqueue': ({ chapterIds }) => downloads.enqueue(chapterIds),
-    'downloads.list': (input) => downloadsRepo.list(input ?? {}),
+    'downloads.list': (input) =>
+      downloadsRepo.list({
+        mangaId: input?.mangaId,
+        completedAfter: input?.listed ? settings.getValue<number>(DOWNLOADS_CLEARED_KEY, 0) : undefined,
+      }),
     'downloads.stats': () => downloadsRepo.stats(),
     'downloads.pause': (input) => downloads.pause(input?.ids),
     'downloads.resume': (input) => downloads.resume(input?.ids),
@@ -196,6 +209,47 @@ export function createIpcHandlers({
     'downloads.retry': ({ ids }) => downloads.retry(ids),
     'downloads.reorder': ({ ids }) => downloads.reorder(ids),
     'downloads.delete': ({ chapterIds }) => downloads.delete(chapterIds),
+    'downloads.clearCompleted': () => {
+      settings.setValue(DOWNLOADS_CLEARED_KEY, Date.now());
+      downloadsRepo.touch();
+    },
+    'downloads.folder': () => downloadFolder(),
+    'downloads.pickFolder': async (_input, event) => {
+      const window = windowOf(event);
+      const options: Electron.OpenDialogOptions = {
+        properties: ['openDirectory', 'createDirectory'],
+        defaultPath: downloadFolder(),
+      };
+      const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+      return picked.canceled ? null : (picked.filePaths[0] ?? null);
+    },
+    'downloads.setFolder': async ({ folder, move }) => {
+      if (!isAbsolute(folder)) throw new AppError('unknown', 'The download folder must be an absolute path');
+      const target = resolve(folder);
+      const commit = () => {
+        const next = settings.updateAppSettings({
+          downloads: { ...settings.getAppSettings().downloads, folder: target },
+        });
+        broadcast('settings.changed', next);
+      };
+      if (move && target !== resolve(downloadFolder())) {
+        await downloads.moveTo(target, (progress) => broadcast('downloads.moveProgress', progress), commit);
+      } else {
+        commit();
+        downloads.settingsChanged();
+      }
+    },
+    'downloads.openFolder': async (input) => {
+      const path = input?.chapterId === undefined ? null : downloadsRepo.byChapter(input.chapterId)?.path;
+      if (path) {
+        shell.showItemInFolder(path);
+        return;
+      }
+      const folder = downloadFolder();
+      await mkdir(folder, { recursive: true });
+      const error = await shell.openPath(folder);
+      if (error) throw new AppError('unknown', error);
+    },
     'migration.findCandidates': ({ mangaId, targets, requestId }) =>
       requests.run(requestId, (signal) => migration.findCandidates(mangaId, targets, signal)),
     'migration.run': ({ items, options }) =>

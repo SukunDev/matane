@@ -1,5 +1,5 @@
 import type { DownloadFormat, DownloadItem, DownloadStats, DownloadStatus } from '@manga-reader/shared';
-import { and, asc, desc, eq, inArray, notInArray, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, inArray, ne, notInArray, or, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';
 import { chapters, downloads, manga, sources } from '../schema';
@@ -164,13 +164,27 @@ export class DownloadsRepository {
       .all();
   }
 
+  /** The finished download now lives at `path` (the download folder moved). */
+  relocate(id: number, path: string): void {
+    this.db.update(downloads).set({ path }).where(eq(downloads.id, id)).run();
+    this.changes.mark('downloads');
+  }
+
+  /** Something outside the rows changed what lists show (finished downloads cleared from the page). */
+  touch(): void {
+    this.changes.mark('downloads');
+  }
+
   /** Rows with a finished file (moving the download folder, deleting a manga's downloads). */
   done(): DownloadRow[] {
     return this.db.select().from(downloads).where(eq(downloads.status, 'done')).all();
   }
 
-  /** Queue first (in order), then finished downloads, newest first. */
-  list(options: { mangaId?: number } = {}): DownloadItem[] {
+  /**
+   * Queue first (in order), then finished downloads, newest first. `completedAfter` leaves out
+   * downloads finished before it (cleared from the Downloads page).
+   */
+  list(options: { mangaId?: number; completedAfter?: number } = {}): DownloadItem[] {
     const rows = this.db
       .select({
         download: downloads,
@@ -188,11 +202,20 @@ export class DownloadsRepository {
       .innerJoin(chapters, eq(chapters.id, downloads.chapterId))
       .innerJoin(manga, eq(manga.id, chapters.mangaId))
       .leftJoin(sources, eq(sources.id, manga.sourceId))
-      .where(options.mangaId === undefined ? undefined : eq(manga.id, options.mangaId))
+      .where(
+        and(
+          options.mangaId === undefined ? undefined : eq(manga.id, options.mangaId),
+          options.completedAfter === undefined
+            ? undefined
+            : or(ne(downloads.status, 'done'), gt(downloads.completedAt, options.completedAfter)),
+        ),
+      )
       .orderBy(
         sql`CASE WHEN ${downloads.status} = 'done' THEN 1 ELSE 0 END`,
-        asc(downloads.queueOrder),
+        // The queue by its order; finished downloads by completion time only.
+        sql`CASE WHEN ${downloads.status} = 'done' THEN NULL ELSE ${downloads.queueOrder} END`,
         desc(downloads.completedAt),
+        asc(downloads.id),
       )
       .all();
     return rows.map(({ download, thumbnailUrl, customCoverPath, ...row }) => ({
@@ -231,6 +254,15 @@ export class DownloadsRepository {
       done: count('done'),
       totalBytes: counts['done']?.bytes ?? 0,
     };
+  }
+
+  errorIds(): number[] {
+    return this.db
+      .select({ id: downloads.id })
+      .from(downloads)
+      .where(eq(downloads.status, 'error'))
+      .all()
+      .map((r) => r.id);
   }
 
   /** Ids of rows still waiting or running (not finished, not failed). */

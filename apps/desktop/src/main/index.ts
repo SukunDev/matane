@@ -34,6 +34,7 @@ import { ReadingService } from './reading/service';
 import { SessionRecorder } from './reading/sessions';
 import { NetworkManager } from './network/manager';
 import { DownloadReader } from './downloads/archive';
+import { DownloadAutomation } from './downloads/automation';
 import { DownloadManager } from './downloads/manager';
 import { DownloadStore } from './downloads/store';
 import { DownloadsRepository } from './db/repositories/downloads';
@@ -168,6 +169,11 @@ async function bootstrap(): Promise<void> {
     (message) => imageLog.warn(message),
   );
 
+  const downloadFolder = () => settings.getAppSettings().downloads.folder ?? join(app.getPath('documents'), 'Matane');
+  const scanlatorPrefs = (mangaId: number) => {
+    const row = mangaRepo.get(mangaId);
+    return row ? scanlatorPrefsOf(row) : NO_SCANLATOR_PREFS;
+  };
   const historyRepo = new HistoryRepository(connection.db, changes);
   const progressRepo = new ProgressRepository(connection.db, changes);
   const libraryRepo = new LibraryRepository(connection.db, changes);
@@ -181,7 +187,12 @@ async function bootstrap(): Promise<void> {
     pageBytes: (chapterId, index) => images.pageBytes(chapterId, index),
     settings: () => {
       const current = settings.getAppSettings().downloads;
-      return { folder: current.folder ?? join(app.getPath('documents'), 'Matane'), format: current.format };
+      return {
+        folder: downloadFolder(),
+        format: current.format,
+        parallel: current.parallel,
+        limitBytes: current.limitGb === null ? null : current.limitGb * 1024 ** 3,
+      };
     },
     rightToLeft: (mangaId) => {
       const info = mangaRepo.info(mangaId);
@@ -191,6 +202,15 @@ async function bootstrap(): Promise<void> {
     },
     webUrl: (mangaId) => sources.webUrl(mangaId),
     onProgress: (progress) => broadcast('downloads.progress', progress),
+    log: (message) => log.scope('downloads').warn(message),
+  });
+  const downloadAutomation = new DownloadAutomation({
+    settings: () => settings.getAppSettings().downloads,
+    manga: mangaRepo,
+    chapters: chaptersRepo,
+    downloads: downloadsRepo,
+    manager: downloads,
+    scanlatorPrefs,
     log: (message) => log.scope('downloads').warn(message),
   });
   const library = new LibraryService({
@@ -222,11 +242,9 @@ async function bootstrap(): Promise<void> {
     history: historyRepo,
     sessions,
     chapters: chaptersRepo,
-    scanlatorPrefs: (mangaId) => {
-      const row = mangaRepo.get(mangaId);
-      return row ? scanlatorPrefsOf(row) : NO_SCANLATOR_PREFS;
-    },
+    scanlatorPrefs,
     incognito: () => settings.getAppSettings().incognito,
+    onProgress: (event) => downloadAutomation.onProgress(event),
   });
 
   registerIpcHandlers(
@@ -246,6 +264,7 @@ async function bootstrap(): Promise<void> {
       migration: sourceMigration,
       downloads,
       downloadsRepo,
+      downloadFolder,
     }),
   );
 

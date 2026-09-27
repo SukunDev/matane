@@ -343,8 +343,20 @@ export const downloadProgressSchema = z.object({
       chapterId: z.number(),
       pagesDone: z.number(),
       pagesTotal: z.number().nullable(),
+      /** Bytes of the pages fetched so far. */
+      bytes: z.number(),
       bytesPerSecond: z.number(),
     }),
   ),
 });
 export type DownloadProgress = z.infer<typeof downloadProgressSchema>;
+
+/** Moving the downloads to another folder, one chapter at a time. */
+export const downloadMoveProgressSchema = z.object({
+  done: z.number(),
+  total: z.number(),
+  /** Set once the move ended (null while it runs, or when it went fine). */
+  error: z.string().nullable(),
+  finished: z.boolean(),
+});
+export type DownloadMoveProgress = z.infer<typeof downloadMoveProgressSchema>;

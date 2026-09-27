@@ -14,6 +14,8 @@ export interface ReadingServiceDeps {
   scanlatorPrefs?: (mangaId: number) => ScanlatorPrefs;
   /** Current incognito setting. */
   incognito: () => boolean;
+  /** After progress was saved (download ahead, delete after reading). */
+  onProgress?: (event: { mangaId: number; chapterId: number; finished: boolean }) => void;
   now?: () => number;
 }
 
@@ -32,7 +34,9 @@ export class ReadingService {
   saveProgress(progress: SavedProgress): void {
     if (this.deps.incognito()) return;
     const saved = this.deps.progress.save(progress, this.now());
-    if (saved) this.deps.history.touch(saved.mangaId, progress.chapterId, this.now());
+    if (!saved) return;
+    this.deps.history.touch(saved.mangaId, progress.chapterId, this.now());
+    this.deps.onProgress?.({ mangaId: saved.mangaId, chapterId: progress.chapterId, finished: saved.finished });
   }
 
   heartbeat(chapterId: number): void {

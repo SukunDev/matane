@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { DownloadProgress } from '@manga-reader/shared';
+import type { DownloadMoveProgress, DownloadProgress } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DbChanges } from '../db/changes';
@@ -33,7 +33,9 @@ let active: { chapters: Map<number, number>; pages: number; maxPages: number; ma
 let progress: DownloadProgress[];
 let free: number;
 
-function createManager(format: 'cbz' | 'folder' = 'cbz') {
+let limitBytes: number | null;
+
+function createManager(format: 'cbz' | 'folder' = 'cbz', parallel?: number) {
   const changes = new DbChanges(() => undefined);
   const manga = new MangaRepository(connection.db, changes);
   const chapters = new ChaptersRepository(connection.db, changes);
@@ -59,7 +61,7 @@ function createManager(format: 'cbz' | 'folder' = 'cbz') {
         active.chapters.set(chapterId, active.chapters.get(chapterId)! - 1);
       }
     },
-    settings: () => ({ folder, format }),
+    settings: () => ({ folder, format, parallel, limitBytes }),
     rightToLeft: () => true,
     onProgress: (p) => progress.push(p),
     freeBytes: async () => free,
@@ -95,6 +97,7 @@ beforeEach(async () => {
   active = { chapters: new Map(), pages: 0, maxPages: 0, maxChapters: 0 };
   progress = [];
   free = Number.MAX_SAFE_INTEGER;
+  limitBytes = null;
   manager = createManager();
 });
 
@@ -148,8 +151,14 @@ describe('DownloadManager', () => {
     expect(row.status).toBe('error');
     expect(row.error).toContain('503');
     expect(fetched.filter((f) => f.endsWith(':1'))).toHaveLength(1); // succeeded on the third try
-    expect(fetched.length).toBe(5);
+    // Pages 0–3 finished (page 5 too if it started before page 4 gave up). Nothing runs on in
+    // the background of a failed chapter.
+    const saved = fetched.map((f) => Number(f.split(':')[1]));
+    expect(saved).toEqual(expect.arrayContaining([0, 1, 2, 3]));
+    expect(saved).not.toContain(4);
     expect(attemptsOn4).toBe(PAGE_RETRIES + 1);
+    await tick();
+    expect(fetched).toHaveLength(saved.length);
 
     // Retry only fetches what is missing.
     onFetch = () => undefined;
@@ -157,7 +166,8 @@ describe('DownloadManager', () => {
     manager.retry([row.id]);
     await manager.idle();
     expect(status(chapterIds[0]!)).toBe('done');
-    expect(fetched).toEqual([`${chapterIds[0]}:4`]);
+    const missing = [4, 5].filter((i) => !saved.includes(i));
+    expect(fetched.sort()).toEqual(missing.map((i) => `${chapterIds[0]}:${i}`));
   });
 
   it('does not retry errors that will not go away', async () => {
@@ -264,5 +274,87 @@ describe('DownloadManager', () => {
       status: 'error',
       error: expect.stringContaining('disk space'),
     });
+  });
+
+  it('runs as many chapters at once as the setting says', async () => {
+    await manager.stop();
+    manager = createManager('cbz', 1);
+    onFetch = () => new Promise((r) => setTimeout(r, 2));
+    manager.start(true);
+    manager.enqueue(chapterIds);
+    await manager.idle();
+    expect(active.maxChapters).toBe(1);
+    for (const id of chapterIds) expect(status(id)).toBe('done');
+  });
+
+  it('refuses automatic downloads past the size limit, but not manual ones', async () => {
+    manager.start(true);
+    expect(manager.enqueueAuto([chapterIds[0]!])).toBe(true);
+    await manager.idle();
+    const size = repo.byChapter(chapterIds[0]!)!.sizeBytes!;
+
+    limitBytes = size; // reached
+    expect(manager.overLimit()).toBe(true);
+    expect(manager.enqueueAuto([chapterIds[1]!])).toBe(false);
+    expect(repo.byChapter(chapterIds[1]!)).toBeUndefined();
+    manager.enqueue([chapterIds[1]!]);
+    await manager.idle();
+    expect(status(chapterIds[1]!)).toBe('done');
+
+    limitBytes = size * 10;
+    expect(manager.enqueueAuto([chapterIds[2]!])).toBe(true);
+  });
+
+  it('moves finished and partial downloads to another folder, holding the queue meanwhile', async () => {
+    manager.start(true);
+    manager.enqueue([chapterIds[0]!]);
+    await manager.idle();
+    const oldPath = repo.byChapter(chapterIds[0]!)!.path!;
+    await store.page(chapterIds[0]!, 0); // an open archive must not block the move
+
+    // A second chapter stops half way (running when the move starts).
+    let release!: () => void;
+    const gate = new Promise<void>((r) => (release = r));
+    onFetch = (_chapter, index) => (index >= 2 ? gate : undefined);
+    manager.enqueue([chapterIds[1]!]);
+    while (fetched.filter((f) => f.startsWith(`${chapterIds[1]}:`)).length < 2) await tick();
+
+    const target = join(dir, 'Elsewhere');
+    const moves: DownloadMoveProgress[] = [];
+    fetched = [];
+    const moving = manager.moveTo(
+      target,
+      (p) => moves.push(p),
+      () => (folder = target),
+    );
+    release();
+    await moving;
+
+    const newPath = join(target, 'Demo (EN)', 'Demo_ Manga', 'Ch. 3.cbz');
+    expect(repo.byChapter(chapterIds[0]!)!.path).toBe(newPath);
+    expect(existsSync(newPath)).toBe(true);
+    expect(existsSync(oldPath)).toBe(false);
+    expect(existsSync(join(target, 'Demo (EN)', 'Demo_ Manga', 'Ch. 2.tmp'))).toBe(true);
+    expect(existsSync(join(dir, 'Matane', 'Demo (EN)'))).toBe(false);
+    expect(moves.at(-1)).toEqual({ done: 2, total: 2, error: null, finished: true });
+    expect((await store.page(chapterIds[0]!, 0))?.bytes).toEqual(PNG);
+
+    // The queue carries on in the new folder with the pages it already had.
+    await manager.idle();
+    expect(status(chapterIds[1]!)).toBe('done');
+    expect(repo.byChapter(chapterIds[1]!)!.path).toBe(join(target, 'Demo (EN)', 'Demo_ Manga', 'Ch. 2.cbz'));
+    // Pages 1–2 were done before the move and are not fetched again.
+    expect(fetched.some((f) => f.endsWith(':0') || f.endsWith(':1'))).toBe(false);
+  });
+});
+
+describe('DownloadsRepository.list', () => {
+  it('leaves out downloads finished before the page was cleared', () => {
+    const [a, b, c] = chapterIds as [number, number, number];
+    repo.enqueue([a, b, c], 'cbz');
+    repo.complete(repo.byChapter(a)!.id, '/x/a.cbz', 1, 1, 1000);
+    repo.complete(repo.byChapter(b)!.id, '/x/b.cbz', 1, 1, 3000);
+    expect(repo.list().map((d) => d.chapterId)).toEqual([c, b, a]);
+    expect(repo.list({ completedAfter: 2000 }).map((d) => d.chapterId)).toEqual([c, b]);
   });
 });
