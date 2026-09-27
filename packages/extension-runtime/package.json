@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./http-bridge": "./src/http-bridge.ts"
+    "./http-bridge": "./src/http-bridge.ts",
+    "./repo": "./src/repo.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -15,6 +16,12 @@
   "dependencies": {
     "@manga-reader/extension-sdk": "workspace:*",
     "cheerio": "1.2.0",
-    "quickjs-emscripten": "0.32.0"
+    "quickjs-emscripten": "0.32.0",
+    "yauzl": "3.4.0"
+  },
+  "devDependencies": {
+    "@types/yauzl": "3.4.0",
+    "@types/yazl": "3.3.1",
+    "yazl": "3.3.1"
   }
 }

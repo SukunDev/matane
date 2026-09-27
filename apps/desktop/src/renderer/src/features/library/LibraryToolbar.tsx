@@ -128,7 +128,15 @@ function FilterPopover({
         </Button>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Content align="end" sideOffset={6} className={cn(popoverClass, 'flex w-64 flex-col gap-1 p-2')}>
+        <Popover.Content
+          align="end"
+          sideOffset={6}
+          collisionPadding={8}
+          className={cn(
+            popoverClass,
+            'flex max-h-(--radix-popover-content-available-height) w-64 flex-col gap-1 overflow-y-auto p-2',
+          )}
+        >
           <FilterToggle on={settings.unreadOnly} onClick={() => onChange({ unreadOnly: !settings.unreadOnly })}>
             {t('library.filter.unread')}
           </FilterToggle>

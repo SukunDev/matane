@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./manifest": "./src/manifest.ts",
-    "./globals": "./src/globals.ts"
+    "./globals": "./src/globals.ts",
+    "./repo": "./src/repo.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

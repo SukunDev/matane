@@ -3,6 +3,7 @@ import { runBenchmark } from './bench';
 import { buildExtension } from './build';
 import { createExtension } from './create';
 import { CLI_NAME, CLI_VERSION } from './node-host';
+import { KEY_ENV, buildRepo, loadPrivateKey, repoKeygen, verifyRepo } from './repo';
 import { runSmokeTest } from './smoke';
 
 const collect = (value: string, previous: string[]) => [...previous, value];
@@ -119,6 +120,66 @@ program
       });
     },
   );
+
+const repo = program.command('repo').description('build, sign and check an extension repository');
+
+repo
+  .command('keygen')
+  .description('create an ed25519 signing key; prints the public key')
+  .requiredOption('--out <file>', 'where to write the private key (PEM); keep it out of git')
+  .action(async (opts: { out: string }) => {
+    const publicKey = await repoKeygen(opts.out);
+    console.log(`Private key written to ${opts.out} (keep it secret; in CI put it in $${KEY_ENV}).`);
+    console.log(`Public key: ${publicKey}`);
+  });
+
+repo
+  .command('build')
+  .description('zip, hash and index extensions into a repository folder, then sign index.json')
+  .argument('<extensions...>', 'extension folders (sources with src/index.ts, or built with index.js)')
+  .requiredOption('-o, --out <dir>', 'repository folder to (re)write')
+  .option('--name <name>', 'repository name shown in the app', 'Extensions')
+  .option('--key <file>', `private key (PEM); default: $${KEY_ENV}`)
+  .option('--unsigned', 'write no signature (the app will call the repository unverified)')
+  .action(async (extensions: string[], opts: { out: string; name: string; key?: string; unsigned?: boolean }) => {
+    const privateKeyPem = await loadPrivateKey(opts.key);
+    if (!privateKeyPem && !opts.unsigned) {
+      throw new Error(`No signing key: pass --key <file>, set $${KEY_ENV}, or --unsigned`);
+    }
+    const { index, signed } = await buildRepo({
+      extensions,
+      outDir: opts.out,
+      name: opts.name,
+      privateKeyPem: opts.unsigned ? undefined : privateKeyPem,
+    });
+    for (const entry of index.extensions) console.log(`  ${entry.id} ${entry.version}  ${entry.sha256}`);
+    console.log(
+      `Wrote ${index.extensions.length} extension(s) to ${opts.out}, ${signed ? `signed by ${index.publicKey}` : 'unsigned'}`,
+    );
+  });
+
+repo
+  .command('verify')
+  .description('check the signature, index and every archive of a repository')
+  .argument('<source>', 'repository folder or URL')
+  .option('--public-key <key>', 'the ed25519:… key the repository must be signed with')
+  .action(async (source: string, opts: { publicKey?: string }) => {
+    const result = await verifyRepo({ source, publicKey: opts.publicKey });
+    const { signature, index, problems } = result;
+    if (index) console.log(`${index.name}: ${index.extensions.length} extension(s)`);
+    if (signature.valid) {
+      console.log(
+        `Signature valid for ${signature.key}${signature.trusted ? '' : ' (the key named in the index; pass --public-key to check trust)'}`,
+      );
+    }
+    for (const problem of problems) console.error(`  ✗ ${problem}`);
+    if (problems.length > 0) {
+      console.error(`${problems.length} problem(s)`);
+      process.exitCode = 1;
+    } else {
+      console.log('OK');
+    }
+  });
 
 program.parseAsync().catch((error: unknown) => {
   console.error(`${CLI_NAME}: ${error instanceof Error ? error.message : String(error)}`);

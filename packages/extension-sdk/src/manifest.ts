@@ -3,15 +3,17 @@ import { z } from 'zod';
 
 export { SDK_API_VERSION } from './version';
 
-const extensionId = z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'lowercase letters, digits and dashes');
+export const extensionIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'lowercase letters, digits and dashes');
 const domain = z.string().regex(/^(\*\.)?[a-z0-9.-]+\.[a-z]{2,}$/i, 'hostname, optionally prefixed with *.');
 
 export const manifestSchema = z.object({
   /** Stable forever; never includes a language (BRAINSTORM.md §5.2). */
-  id: extensionId,
+  id: extensionIdSchema,
   name: z.string().min(1),
   version: z.string().regex(/^\d+\.\d+\.\d+(-[\w.]+)?$/, 'semver'),
   apiVersion: z.number().int().positive(),
+  /** One line for the Extensions page and repo listings. */
+  description: z.string().max(200).optional(),
   nsfw: z.boolean().default(false),
   /** Allowlist for `http`. Redirects outside the list are refused too. */
   domains: z.array(domain).min(1),
