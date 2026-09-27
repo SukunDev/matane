@@ -1010,11 +1010,17 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Penyesuaian: bookmark cukup per chapter seperti Mihon; bookmark halaman, tab Bookmark, dan halaman global Bookmark dibatalkan (ADR 0018). Nama app ditetapkan **Matane (またね)**. Penilaian kandidat migrasi memakai judul saja karena SDK belum punya judul alternatif.
 - Penutup: E2E alur penuh (termasuk restart app) dengan dua extension tiruan, ukur performa 1.000 manga / 50 ribu chapter, ADR 0015–0018.
 
-**Fase 3: Download & update** → mulai **beta**
+**Fase 3: Download & update** ✅ selesai 27 Sep 2026 → **beta 0.1.0-beta.1** (rincian dan penyesuaian: `docs/plans/fase-3-download-update.md`)
 - Antrean download (persisten, paralel, retry), CBZ + ComicInfo.xml / folder, baca offline, mode offline.
 - Otomatisasi: auto-download chapter baru, download ahead, hapus setelah dibaca, batas ukuran.
 - Update checker + aturan lewati, halaman Updates, notifikasi, tray opsional, jalan saat login.
 - Paket beta: AppImage, NSIS, dmg + auto-update (channel beta).
+- Penyesuaian:
+  - channel beta memakai flag pre-release GitHub (hanya file `latest*.yml`);
+  - "Hapus yang selesai" di halaman Downloads hanya menyembunyikan item, file tetap ada;
+  - chapter yang hilang dari source juga dipertahankan kalau ada di history atau statistik;
+  - build macOS x64 memakai runner `macos-15-intel`.
+- Penutup: E2E alur penuh (download → situs mati → baca offline → chapter baru → Updates → auto-download), ADR 0019–0021, `CHANGELOG.md`, `SECURITY.md`, dan `CONTRIBUTING.md`.
 
 **Fase 4: Ekosistem extension**
 - Repo extension (`index.json`), **signing ed25519**, install/update/uninstall + dialog izin domain, filter NSFW.

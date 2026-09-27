@@ -5,6 +5,8 @@ packages:
 
 allowBuilds:
   better-sqlite3: true
+  # Squirrel.Windows only (we build NSIS): its 7z-picking install script is not needed.
+  electron-winstaller: false
   esbuild: true
 
 minimumReleaseAgeExclude:

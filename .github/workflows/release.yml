@@ -1,0 +1,88 @@
+name: Release
+
+# A `v*` tag builds every OS and publishes a GitHub release: a pre-release when the tag has a
+# suffix (v0.1.0-beta.1). electron-updater reads the latest*.yml files uploaded with it.
+# Native modules (better-sqlite3) are built per OS, so every platform builds on its own runner.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The builds upload into this draft; it is published once all of them succeeded.
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="${TAG#v}"
+          # This version's section of CHANGELOG.md (up to the next "## ").
+          awk -v v="$version" '$0 ~ "^## " v "( |$)" {found=1; next} found && /^## / {exit} found' CHANGELOG.md > notes.md
+          flags=(--draft --title "Matane $version" --notes-file notes.md)
+          if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" "${flags[@]}"
+          fi
+
+  build:
+    needs: draft
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: --linux
+          - os: windows-latest
+            target: --win
+          - os: macos-15-intel
+            target: --mac --x64
+          - os: macos-15
+            target: --mac --arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version comes from "packageManager" in package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      # Also downloads Electron and rebuilds better-sqlite3 for its ABI (postinstall).
+      - run: pnpm install --frozen-lockfile
+      - name: Build the built-in extensions and the app
+        run: |
+          pnpm --filter "./extensions/*" build
+          pnpm --filter @manga-reader/desktop exec electron-vite build
+      - name: Package and upload to the draft release
+        working-directory: apps/desktop
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # No code signing yet (BRAINSTORM.md §10).
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: pnpm exec electron-builder ${{ matrix.target }} --publish always
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: release-${{ matrix.os }}
+          path: apps/desktop/release/*/builder-debug.yml
+          retention-days: 7
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release edit "$TAG" --draft=false

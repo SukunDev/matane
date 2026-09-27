@@ -439,3 +439,62 @@ Keputusan:
 
 Bug yang ditemukan dan diperbaiki:
 - Mulai tersembunyi tetap menampilkan jendela kalau status tersimpannya "maximized" (Hyprland melaporkan jendela tiling sebagai maximized), karena `maximize()` di Electron ikut menampilkan jendela. Sekarang maximize ditunda sampai jendela pertama kali ditampilkan.
+
+### Milestone 3e: selesai (27 Sep 2026), menunggu review — Fase 3 selesai (beta)
+
+- `lint` (tanpa error; 7 warning virtualizer, pola lama), `format:check`, `typecheck`, dan `test` hijau (desktop 174, shared 17).
+  - Test baru:
+    - `compareVersions` (urutan semver termasuk pre-release, awalan `v`) dan `newerRelease` (channel beta/stabil, draft diabaikan);
+    - `AppUpdater` dengan autoUpdater palsu: download otomatis di channel beta lalu pasang saat diminta (`allowPrerelease`, `allowDowngrade` mati), mode "Beri tahu saja" (tidak download sampai diminta), status "terbaru" dan error, instalasi yang hanya diberi tahu (rilis GitHub, notifikasi sekali per versi), dan build pengembangan (mati).
+- E2E 56/56:
+  - `full-flow.spec.ts` diperluas sampai Fase 3: tambah Twin Scans ke library → download ch. 1 → situs mati (`site.down`) → ch. 1 terbaca → auto-download dinyalakan di Settings → situs menambah ch. 5 → "Cek library" → ch. 5 muncul di Updates dan sudah terunduh;
+  - `system.spec.ts`: Tentang menampilkan versi `0.1.0-beta.1`; di build pengembangan updater mati dan "Cek sekarang" nonaktif; mode updater tersimpan.
+- `actionlint` 1.7.12 (binari resmi, checksum dicek) lolos untuk `release.yml` dan `ci.yml`. Integrasi shellcheck-nya tidak ikut jalan karena shellcheck tidak terpasang. Skrip awk catatan rilis dicoba pada `CHANGELOG.md`.
+- **`pnpm dist:linux`** menghasilkan `Matane-0.1.0-beta.1-linux-x86_64.AppImage` (±143 MB). Dijalankan dengan profil terpisah yang berisi folder data lama `MangaReader`:
+  - folder dipindah ke `Matane`, dan DB serta migrasi jalan: library dan 3 download lama terbaca;
+  - MangaDex bawaan (`resources/extensions`) memuat Popular (24 item).
+- **Auto-update diuji lokal**:
+  - AppImage `beta.1` disalin ke folder scratch; `beta.2` dibangun dan disajikan dari server HTTP lokal (`MATANE_UPDATE_FEED`);
+  - `beta.1` menemukan `beta.2`, mengunduhnya (kartu Tentang menampilkan "Matane 0.1.0-beta.2 is ready" + "Restart to update"), lalu "Restart to update" mengganti file AppImage (SHA-512 sama dengan build `beta.2`) dan membuka app lagi;
+  - setelah dibuka ulang, versinya `0.1.0-beta.2`.
+- Cek ke GitHub sungguhan dari AppImage menghasilkan "No published versions on GitHub", karena repo belum punya rilis. Ini hilang setelah tag pertama.
+- **Belum terbukti:** build Windows (NSIS) dan macOS (dmg), serta workflow rilis itu sendiri. Keduanya menunggu kamu push tag `v0.1.0-beta.1`.
+
+Implementasi:
+- **Paket:**
+  - `apps/desktop/electron-builder.yml`: appId `dev.sukun.matane`, AppImage / NSIS x64 / dmg x64 + arm64, `asarUnpack` better-sqlite3, dan `extraResources` untuk `dist/` extension bawaan;
+  - `drizzle/` di dalam asar, publish ke GitHub sebagai draft, `syncDesktopName`, dan `desktopName`;
+  - skrip `pnpm dist` / `pnpm dist:linux` (root dan desktop);
+  - versi `0.1.0-beta.1`, `author` / `homepage` / `repository` di `package.json`.
+- **Updater** (`main/app/updater.ts`):
+  - jenis instalasi: NSIS dan AppImage "auto"; macOS, portable, dan Linux non-AppImage "notify" (API rilis GitHub + tautan); build pengembangan "none";
+  - cek 30 detik setelah start lalu tiap 6 jam (kalau online dan tidak mati);
+  - notifikasi "siap dipasang" / "tersedia" (sekali per versi); klik membuka Setting → Tentang;
+  - IPC `updater.status/check/download/install/openRelease` dan event `updater.changed`;
+  - setting `updater` (mode: otomatis / beri tahu / mati; channel stabil / beta, default beta).
+- **UI:** kartu "Update aplikasi" di Setting → Tentang (status, progres, "Mulai ulang untuk memperbarui", "Download", "Buka halaman rilis", "Cek sekarang", mode, dan channel).
+- **CI rilis** (`.github/workflows/release.yml`), dijalankan oleh tag `v*`:
+  - job `draft` membuat rilis draft (pre-release kalau tag bersufiks) dengan catatan dari `CHANGELOG.md`;
+  - `build` per OS: ubuntu, windows, `macos-15-intel` (x64), `macos-15` (arm64). Masing-masing menjalankan `electron-builder --publish always` tanpa signing;
+  - `publish` mempublikasikan draft setelah semua build berhasil;
+  - `ci.yml` tidak berubah.
+- **Dependensi:**
+  - electron-builder 26.15.3 dan electron-updater 6.8.9, keduanya tag `latest` rilis Juni 2026 dan masih dirawat. Tag `v26` yang baru dirilis sehari sebelumnya tidak dipakai;
+  - di `pnpm-workspace.yaml`, skrip install `electron-winstaller` ditolak, karena hanya dipakai untuk Squirrel.Windows yang tidak kita buat.
+- **Dokumentasi:**
+  - README: status beta, cara install per OS, SmartScreen/Gatekeeper, dan lokasi data;
+  - `CHANGELOG.md`, `SECURITY.md` (laporan privat lewat GitHub), dan `CONTRIBUTING.md`;
+  - ADR 0019 (format download), 0020 (update checker), dan 0021 (paket + auto-update tanpa signing);
+  - `BRAINSTORM.md` §11: Fase 3 ditandai selesai (beta).
+
+Keputusan:
+- **Channel beta = flag pre-release GitHub.** Untuk provider GitHub, electron-builder hanya membuat `latest*.yml` per rilis, sedangkan electron-updater memilih rilis pre-release kalau `allowPrerelease` aktif. Jadi tidak ada file `beta*.yml` (plan awal menyebutnya).
+- **Runner macOS x64: `macos-15-intel`**, karena `macos-13` sudah dihentikan GitHub. Kedua job macOS sama-sama mengunggah `latest-mac.yml`; ini tidak masalah karena macOS hanya diberi tahu.
+- **Rilis dibuat sebagai draft**, lalu dipublikasikan oleh job terakhir, supaya tidak ada rilis setengah jadi kalau satu OS gagal.
+- **Default updater: download otomatis, channel beta** (semua rilis sekarang beta). Instalasi terjadi saat "Mulai ulang untuk memperbarui" atau saat app ditutup.
+- `MATANE_UPDATE_FEED` menjadi hook untuk feed uji lokal, sebagai pengganti `dev-app-update.yml`.
+- release-please ditunda, jadi `CHANGELOG.md` masih ditulis manual (sesuai plan).
+
+Bug yang ditemukan dan diperbaiki: error typecheck di test updater (tipe `on` dari `EventEmitter`) sempat lolos, karena setelah menulis test itu aku hanya menjalankan vitest. Tertangkap di cek final.
+
+**Untuk merilis beta pertama:** commit, lalu `git tag v0.1.0-beta.1 && git push origin main v0.1.0-beta.1`. Pastikan repo `SukunDev/matane` ada dan Actions boleh menulis (Settings → Actions → Workflow permissions: read and write).

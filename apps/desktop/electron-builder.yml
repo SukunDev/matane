@@ -1,0 +1,55 @@
+# Packaging (BRAINSTORM.md §10; docs/adr/0021-packaging-and-auto-update.md). Built by `pnpm dist` /
+# `pnpm dist:linux` locally and by .github/workflows/release.yml on a `v*` tag.
+appId: dev.sukun.matane
+productName: Matane
+copyright: Copyright © 2026 SukunDev
+directories:
+  output: release/${version}
+  buildResources: resources
+files:
+  - out/**
+  # Migrations are read from the app folder at start (inside the asar).
+  - drizzle/**
+  - package.json
+  - '!**/*.map'
+# Native module: it cannot be loaded from inside the asar.
+asarUnpack:
+  - '**/node_modules/better-sqlite3/**'
+# Built-in extensions (their built bundles), read from resources/extensions.
+extraResources:
+  - from: ../../extensions
+    to: extensions
+    filter:
+      - '*/dist/**'
+      - '*/LICENSE'
+icon: resources/icon.png
+artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+linux:
+  target: AppImage
+  category: Graphics;Viewer
+  executableName: matane
+  # WM_CLASS matches the .desktop entry, so docks group the window with its launcher.
+  syncDesktopName: true
+  synopsis: Manga reader with a sandboxed extension system
+win:
+  target:
+    - target: nsis
+      arch: x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  category: public.app-category.books
+  # No code signing for now (BRAINSTORM.md §10): Gatekeeper steps are in the README.
+  identity: null
+publish:
+  provider: github
+  owner: SukunDev
+  repo: matane
+  # The release workflow creates the release as a draft and publishes it once every OS uploaded.
+  releaseType: draft

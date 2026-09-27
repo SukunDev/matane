@@ -231,6 +231,14 @@ export const generalSettingsSchema = z.object({
 });
 export type GeneralSettings = z.infer<typeof generalSettingsSchema>;
 
+/** App updates (BRAINSTORM.md §10): download by itself, only tell, or off; stable or beta releases. */
+export const updaterSettingsSchema = z.object({
+  mode: z.enum(['auto', 'notify', 'off']).catch('auto'),
+  /** Beta = GitHub pre-releases too. Every release is a beta for now. */
+  channel: z.enum(['stable', 'beta']).catch('beta'),
+});
+export type UpdaterSettings = z.infer<typeof updaterSettingsSchema>;
+
 /** Page cache size choices in MB (BRAINSTORM.md §6.5, ADR 0014; default 1 GB). */
 export const CACHE_SIZES_MB = [256, 512, 1024, 2048, 5120, 10240] as const;
 
@@ -251,6 +259,7 @@ export const appSettingsSchema = z.object({
   general: generalSettingsSchema,
   /** Limit of the page image cache (LRU), in MB. */
   cacheSizeMb: z.number().int().min(100).max(51_200),
+  updater: updaterSettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -276,4 +285,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   updates: DEFAULT_UPDATE_SETTINGS,
   general: { closeToTray: false, openAtLogin: false, startHidden: false },
   cacheSizeMb: 1024,
+  updater: { mode: 'auto', channel: 'beta' },
 };

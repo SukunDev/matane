@@ -1,11 +1,13 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { BrowserWindow, Notification, app, net } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
 import { initLogging, log } from './app/log';
 import { HIDDEN_ARG, applyLoginItem } from './app/login-item';
 import { OnlineMonitor } from './app/online';
 import { AppTray } from './app/tray';
+import { AppUpdater, fetchGithubReleases } from './app/updater';
 import { detectTraySupport } from './app/tray-support';
 import { createMainWindow } from './app/window';
 import icon from '../../resources/icon.png?asset';
@@ -355,6 +357,49 @@ async function bootstrap(): Promise<void> {
     refreshTray();
   });
 
+  // App updates (ADR 0021). MATANE_UPDATE_FEED points at a local generic feed for testing.
+  const updateFeed = process.env['MATANE_UPDATE_FEED'];
+  const updaterKind =
+    !app.isPackaged && !updateFeed
+      ? 'none'
+      : process.platform === 'linux'
+        ? process.env['APPIMAGE']
+          ? 'auto'
+          : 'notify'
+        : process.platform === 'win32' && !process.env['PORTABLE_EXECUTABLE_DIR']
+          ? 'auto'
+          : 'notify';
+  const updaterLog = log.scope('updater');
+  const appUpdater = new AppUpdater({
+    kind: updaterKind,
+    version: app.getVersion(),
+    settings: () => settings.getAppSettings().updater,
+    autoUpdater: () => {
+      autoUpdater.logger = updaterLog;
+      if (updateFeed) autoUpdater.setFeedURL({ provider: 'generic', url: updateFeed });
+      return autoUpdater;
+    },
+    fetchReleases: () =>
+      fetchGithubReleases(async (url) => {
+        const response = await net.fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
+        if (!response.ok) throw new Error(`GitHub releases: HTTP ${response.status}`);
+        return response.json();
+      }),
+    isOnline: () => online.isOnline(),
+    notify: ({ title, body }) => {
+      if (!Notification.isSupported()) return;
+      const notification = new Notification({ title, body });
+      notification.on('click', () => {
+        showWindow();
+        broadcast('app.navigate', { to: '/settings/about' });
+      });
+      notification.show();
+    },
+    language,
+    onStatus: (status) => broadcast('updater.changed', status),
+    log: (message) => updaterLog.warn(message),
+  });
+
   registerIpcHandlers(
     createIpcHandlers({
       settings,
@@ -378,6 +423,7 @@ async function bootstrap(): Promise<void> {
       traySupport: () => traySupport,
       imageCache,
       paths: { data: userData, logs: dirname(log.transports.file.getFile().path) },
+      updater: appUpdater,
       settingsChanged: (patch) => {
         if (patch.general || patch.language) applySystem();
         if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
@@ -403,6 +449,7 @@ async function bootstrap(): Promise<void> {
   downloads.start(settings.getAppSettings().downloads.resumeOnStart);
   updates.start();
   online.start();
+  appUpdater.start();
 
   app.on('second-instance', () => showWindow());
   app.on('activate', () => {
@@ -416,6 +463,7 @@ async function bootstrap(): Promise<void> {
     if (process.platform !== 'darwin') app.quit();
   });
   app.on('will-quit', () => {
+    appUpdater.stop();
     online.stop();
     tray.disable();
     updates.stop();

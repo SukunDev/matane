@@ -1,9 +1,10 @@
 import { type Page, expect, test } from '@playwright/test';
 import { type TestApp, launchApp } from './support/app';
 
-// Phase 2 end to end, as a reader would go: library + category → read part of a chapter → quit and
-// reopen → continue on the same page → history → chapter bookmark → incognito → global search →
-// migrate to the second extension, keeping everything.
+// Phases 2–3 end to end, as a reader would go: library + category → read part of a chapter → quit
+// and reopen → continue on the same page → history → chapter bookmark → incognito → global search →
+// migrate to the second extension, keeping everything → download → site down → read offline → the
+// site adds a chapter → check library → Updates → auto-download.
 test.describe.configure({ mode: 'serial' });
 
 let t: TestApp;
@@ -124,4 +125,45 @@ test('migrates to the second extension and keeps reading where it stopped', asyn
   const items = page().getByTestId('library-item');
   await expect(items).toHaveCount(1);
   await expect(items).toContainText('E2E Mirror');
+});
+
+test('downloads a chapter and reads it while the site is down', async () => {
+  await page().evaluate(async () => {
+    const { downloads } = await window.api.invoke('settings.get');
+    await window.api.invoke('settings.set', { downloads: { ...downloads, ahead: 0 } });
+  });
+  await goto('#/browse/sources/e2e-demo/en?tab=search&q=twin');
+  await page().getByText('Twin Scans').click();
+  await page().getByRole('button', { name: 'Add to library' }).click();
+  await page().getByRole('dialog').getByRole('button', { name: 'Add to library' }).click();
+  await expect(page().getByRole('button', { name: 'In library' })).toBeVisible();
+  await chapterRow('Ch. 1').getByRole('button', { name: 'Download' }).click();
+  await expect(chapterRow('Ch. 1').getByTitle('Downloaded')).toBeVisible();
+
+  t.site.down = true;
+  await chapterRow('Ch. 1').getByTestId('chapter-row').click();
+  await expect(page().getByText('1 / 4').first()).toBeVisible();
+  await expect
+    .poll(() =>
+      page().evaluate(
+        () =>
+          [...document.querySelectorAll<HTMLImageElement>('img[src^="manga://page/"]')].filter(
+            (i) => i.complete && i.naturalWidth > 0,
+          ).length,
+      ),
+    )
+    .toBeGreaterThanOrEqual(1);
+  await leaveReader();
+  t.site.down = false;
+});
+
+test('the site adds a chapter: "Check library" shows it on Updates and downloads it', async () => {
+  await goto('#/settings/library');
+  await page().getByRole('switch', { name: 'Download new chapters automatically' }).click();
+  t.site.addChapter('twin', 5);
+  await goto('#/updates');
+  await page().getByRole('button', { name: 'Check library' }).click();
+  const row = page().getByTestId('update-row').filter({ hasText: 'Twin Scans' });
+  await expect(row).toContainText('Ch. 5');
+  await expect(row.getByTitle('Downloaded')).toBeVisible();
 });

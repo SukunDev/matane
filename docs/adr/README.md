@@ -22,3 +22,6 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0016](0016-library-and-custom-covers.md) | Permanent library covers and custom covers |
 | [0017](0017-incognito-boundary.md) | What incognito does and does not record |
 | [0018](0018-chapter-bookmarks-only.md) | Chapter bookmarks only, like Mihon |
+| [0019](0019-download-format.md) | Downloads: CBZ with ComicInfo, written atomically, path stored |
+| [0020](0020-library-update-checker.md) | Library update checker in main, "new" = seen after joining the library |
+| [0021](0021-packaging-and-auto-update.md) | Packaging with electron-builder, auto-update from GitHub releases, no signing yet |

@@ -246,6 +246,37 @@
       "dataFolder": "Data folder",
       "logs": "Logs",
       "open": "Open"
+    },
+    "updater": {
+      "title": "App updates",
+      "dev": "Updates are off in development builds.",
+      "checking": "Checking for a new version…",
+      "latest": "Matane is up to date.",
+      "available": "Matane {{version}} is available.",
+      "downloading": "Downloading Matane {{version}}… {{percent}}%",
+      "downloaded": "Matane {{version}} is ready.",
+      "error": "Could not check for updates: {{error}}",
+      "idle": "Not checked yet.",
+      "notifyOnly": "This installation cannot update itself: download the new version from the release page.",
+      "autoHint": "Updates come from GitHub releases; nothing else is sent.",
+      "checkedAt": "checked {{when}}",
+      "restart": "Restart to update",
+      "download": "Download",
+      "openRelease": "Open release page",
+      "checkNow": "Check now",
+      "mode": "When a new version is out",
+      "modeHint": "Checked at start and every 6 hours.",
+      "modes": {
+        "auto": "Download it",
+        "notify": "Only tell me",
+        "off": "Don't check"
+      },
+      "channel": "Channel",
+      "channelHint": "Beta gets pre-releases too. For now, every release is a beta.",
+      "channels": {
+        "stable": "Stable",
+        "beta": "Beta"
+      }
     }
   },
   "common": {

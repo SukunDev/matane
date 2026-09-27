@@ -1,9 +1,16 @@
 {
   "name": "@manga-reader/desktop",
   "productName": "Matane",
-  "version": "0.0.0",
+  "desktopName": "matane.desktop",
+  "version": "0.1.0-beta.1",
   "private": true,
   "description": "Open-source desktop manga reader",
+  "author": "SukunDev",
+  "homepage": "https://github.com/SukunDev/matane",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SukunDev/matane.git"
+  },
   "license": "GPL-3.0-only",
   "main": "./out/main/index.js",
   "scripts": {
@@ -13,7 +20,9 @@
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json && tsc -p tsconfig.e2e.json",
     "test": "ELECTRON_RUN_AS_NODE=1 electron ../../node_modules/vitest/vitest.mjs run",
     "postinstall": "electron-rebuild -f -o better-sqlite3",
-    "e2e": "electron --version > /dev/null && electron-vite build && playwright test"
+    "e2e": "electron --version > /dev/null && electron-vite build && playwright test",
+    "dist": "electron-vite build && electron-builder --publish never",
+    "dist:linux": "electron-vite build && electron-builder --linux --publish never"
   },
   "devDependencies": {
     "@catppuccin/palette": "1.8.0",
@@ -36,6 +45,7 @@
     "clsx": "^2.1.1",
     "drizzle-kit": "0.31.11",
     "electron": "44.4.5",
+    "electron-builder": "26.15.3",
     "electron-vite": "5.0.0",
     "i18next": "26.4.2",
     "lucide-react": "^1.47.0",
@@ -58,6 +68,7 @@
     "cheerio": "1.2.0",
     "drizzle-orm": "0.45.3",
     "electron-log": "5.4.4",
+    "electron-updater": "6.8.9",
     "quickjs-emscripten": "0.32.0",
     "yauzl": "3.4.0",
     "yazl": "3.3.1",

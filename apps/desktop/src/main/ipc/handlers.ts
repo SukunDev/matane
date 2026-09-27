@@ -18,6 +18,7 @@ import type { DownloadManager } from '../downloads/manager';
 import type { MigrationService } from '../library/migration';
 import type { UpdateService } from '../library/updates';
 import type { OnlineMonitor } from '../app/online';
+import type { AppUpdater } from '../app/updater';
 import type { TraySupport } from '../app/tray-support';
 import type { ImageCache } from '../images/cache';
 import type { AppSettings } from '@manga-reader/shared';
@@ -48,6 +49,7 @@ export interface IpcDeps {
   traySupport: () => TraySupport;
   imageCache: Pick<ImageCache, 'bytesOf' | 'clear'>;
   paths: { data: string; logs: string };
+  updater: AppUpdater;
   /** After `settings.set`: tray, login item, cache size… follow. */
   settingsChanged: (patch: Partial<AppSettings>) => void;
 }
@@ -77,6 +79,7 @@ export function createIpcHandlers({
   traySupport,
   imageCache,
   paths,
+  updater,
   settingsChanged,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
@@ -110,6 +113,11 @@ export function createIpcHandlers({
       logPath: paths.logs,
     }),
     'storage.clearCache': ({ kind }) => imageCache.clear(kind),
+    'updater.status': () => updater.getStatus(),
+    'updater.check': () => updater.check(),
+    'updater.download': () => updater.download(),
+    'updater.install': () => updater.install(),
+    'updater.openRelease': () => shell.openExternal(updater.getStatus().releaseUrl),
 
     'window.minimize': (_input, event) => {
       windowOf(event)?.minimize();

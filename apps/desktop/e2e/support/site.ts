@@ -76,6 +76,8 @@ export interface Site {
   pageDelayMs: number;
   /** Page images fail with HTTP 404 (a download error that is not retried). */
   failPages: boolean;
+  /** The whole site is unreachable (connections are dropped). */
+  down: boolean;
   /** Manga ids whose details fail with HTTP 503 (an update check error for one manga). */
   failManga: Set<string>;
   /** Publishes a new chapter (update checks find it). */
@@ -137,6 +139,7 @@ export async function startSite(): Promise<Site> {
     pageDelayMs: 0,
     failPages: false,
     failManga: new Set(),
+    down: false,
     addChapter: (mangaId, number) => catalogue.find((m) => m.id === mangaId)!.chapters.push(number),
     // The app keeps connections alive; without dropping them, close() waits for their timeout.
     close: () =>
@@ -148,6 +151,10 @@ export async function startSite(): Promise<Site> {
   const server: Server = createServer((request, response) => {
     const url = new URL(request.url ?? '/', 'http://e2e.localhost');
     hits.push(url.pathname + url.search);
+    if (site.down) {
+      response.destroy();
+      return;
+    }
     const isPage = url.pathname.startsWith('/img/page/');
     const result = isPage && site.failPages ? undefined : route(url);
     if (!result) {

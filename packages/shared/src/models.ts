@@ -423,3 +423,22 @@ export const updateStatusSchema = z.object({
   lastResult: updateResultSchema.nullable(),
 });
 export type UpdateStatus = z.infer<typeof updateStatusSchema>;
+
+/**
+ * The app updater (BRAINSTORM.md §10). `kind`: "auto" installs (NSIS, AppImage), "notify" only
+ * tells and links the release (macOS without signing, portable, other Linux packages), "none" in
+ * development.
+ */
+export const updaterStatusSchema = z.object({
+  kind: z.enum(['auto', 'notify', 'none']),
+  state: z.enum(['idle', 'checking', 'latest', 'available', 'downloading', 'downloaded', 'error']),
+  /** The newer version found. */
+  version: z.string().nullable(),
+  /** Download progress, 0–100. */
+  progress: z.number().nullable(),
+  error: z.string().nullable(),
+  checkedAt: z.number().nullable(),
+  /** The release page of the newer version (or of all releases). */
+  releaseUrl: z.string(),
+});
+export type UpdaterStatus = z.infer<typeof updaterStatusSchema>;

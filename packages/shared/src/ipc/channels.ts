@@ -7,6 +7,11 @@ export const INVOKE_CHANNELS = [
   'app.openPath',
   'storage.info',
   'storage.clearCache',
+  'updater.status',
+  'updater.check',
+  'updater.download',
+  'updater.install',
+  'updater.openRelease',
   'window.minimize',
   'window.toggleMaximize',
   'window.close',
@@ -98,5 +103,6 @@ export const EVENT_CHANNELS = [
   'updates.progress',
   'app.navigate',
   'app.online',
+  'updater.changed',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

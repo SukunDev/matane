@@ -160,3 +160,15 @@ test('Data & storage shows the page cache and clears it; the cache size is a set
   await expect(usage).toHaveText('0 B of 256 MB');
   expect(await page.evaluate(async () => (await window.api.invoke('settings.get')).cacheSizeMb)).toBe(256);
 });
+
+test('About shows the version, and app updates are off in development builds', async () => {
+  await goto('#/settings/about');
+  await expect(page.getByTestId('app-version')).toContainText('Version 0.1.0-beta.1');
+  await expect(page.getByTestId('updater-status')).toHaveText('Updates are off in development builds.');
+  await expect(page.getByRole('button', { name: 'Check now' })).toBeDisabled();
+  await page
+    .getByRole('radiogroup', { name: 'When a new version is out' })
+    .getByRole('radio', { name: 'Only tell me' })
+    .click();
+  expect(await page.evaluate(async () => (await window.api.invoke('settings.get')).updater.mode)).toBe('notify');
+});

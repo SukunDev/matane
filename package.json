@@ -25,7 +25,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm -r test",
-    "e2e": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop e2e"
+    "e2e": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop e2e",
+    "dist": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dist",
+    "dist:linux": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dist:linux"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

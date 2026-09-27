@@ -246,6 +246,37 @@
       "dataFolder": "Folder data",
       "logs": "Log",
       "open": "Buka"
+    },
+    "updater": {
+      "title": "Update aplikasi",
+      "dev": "Update mati di build pengembangan.",
+      "checking": "Mencari versi baru…",
+      "latest": "Matane sudah versi terbaru.",
+      "available": "Matane {{version}} tersedia.",
+      "downloading": "Mengunduh Matane {{version}}… {{percent}}%",
+      "downloaded": "Matane {{version}} siap dipasang.",
+      "error": "Tidak bisa mengecek update: {{error}}",
+      "idle": "Belum dicek.",
+      "notifyOnly": "Instalasi ini tidak bisa memperbarui dirinya sendiri: unduh versi baru dari halaman rilis.",
+      "autoHint": "Update diambil dari rilis GitHub; tidak ada data lain yang dikirim.",
+      "checkedAt": "dicek {{when}}",
+      "restart": "Mulai ulang untuk memperbarui",
+      "download": "Download",
+      "openRelease": "Buka halaman rilis",
+      "checkNow": "Cek sekarang",
+      "mode": "Saat ada versi baru",
+      "modeHint": "Dicek saat app dibuka dan tiap 6 jam.",
+      "modes": {
+        "auto": "Download otomatis",
+        "notify": "Beri tahu saja",
+        "off": "Jangan cek"
+      },
+      "channel": "Channel",
+      "channelHint": "Beta juga menerima pre-release. Untuk sekarang semua rilis adalah beta.",
+      "channels": {
+        "stable": "Stabil",
+        "beta": "Beta"
+      }
     }
   },
   "common": {

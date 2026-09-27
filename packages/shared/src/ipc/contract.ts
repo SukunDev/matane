@@ -18,6 +18,7 @@ import {
   updateProgressSchema,
   updateScopeSchema,
   updateStatusSchema,
+  updaterStatusSchema,
   libraryCountsSchema,
   libraryFiltersSchema,
   libraryItemSchema,
@@ -79,6 +80,14 @@ export const invokeContract = {
     }),
   ),
   'storage.clearCache': invoke(z.object({ kind: z.enum(['page', 'browse_cover']) }), z.void()),
+  'updater.status': invoke(z.void(), updaterStatusSchema),
+  /** Looks for a newer app version now (also when automatic checks are off). */
+  'updater.check': invoke(z.void(), updaterStatusSchema),
+  /** "Notify only" found one: download it now. */
+  'updater.download': invoke(z.void(), z.void()),
+  /** Quits, installs the downloaded update and starts again. */
+  'updater.install': invoke(z.void(), z.void()),
+  'updater.openRelease': invoke(z.void(), z.void()),
   'window.minimize': invoke(z.void(), z.void()),
   'window.toggleMaximize': invoke(z.void(), z.boolean()),
   'window.close': invoke(z.void(), z.void()),
@@ -317,6 +326,7 @@ export const eventContract = {
   /** Main asks the renderer to open a page (a notification was clicked). */
   'app.navigate': z.object({ to: z.string() }),
   'app.online': z.boolean(),
+  'updater.changed': updaterStatusSchema,
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;
