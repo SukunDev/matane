@@ -239,6 +239,45 @@ export const updaterSettingsSchema = z.object({
 });
 export type UpdaterSettings = z.infer<typeof updaterSettingsSchema>;
 
+/** How often extension repositories are synced (hours). */
+export const REPO_SYNC_HOURS = [6, 12, 24, 48, 168] as const;
+
+/**
+ * Browse & extensions (BRAINSTORM.md §6.6): adult content stays hidden until turned on, and only
+ * extensions and sources in the content languages are shown.
+ */
+export const browseSettingsSchema = z.object({
+  showNsfw: z.boolean().catch(false),
+  /** Content languages (ISO codes); null = the UI language and English. */
+  languages: z.array(z.string().min(2).max(10)).max(100).nullable().catch(null),
+  /** Updates that reach no new site install by themselves after a repository sync. */
+  autoUpdateExtensions: z.boolean().catch(false),
+  repoSyncHours: z.literal(REPO_SYNC_HOURS).catch(24),
+});
+export type BrowseSettings = z.infer<typeof browseSettingsSchema>;
+
+/** Sources in these "languages" suit every reader. */
+const ANY_LANGUAGE = new Set(['all', 'multi', 'other']);
+
+/** The primary subtag of a UI language or locale ("en-US" → "en"). */
+export const primaryLanguage = (tag: string): string => tag.toLowerCase().split(/[-_]/)[0] ?? tag;
+
+/** Content languages in effect: the chosen ones, or the UI language and English. */
+export function contentLanguages(browse: BrowseSettings, uiLanguage: string): string[] {
+  return browse.languages ?? [...new Set([primaryLanguage(uiLanguage), 'en'])];
+}
+
+/** Whether an extension or source is shown (repositories, Extensions, Sources, browse, global search). */
+export function isContentVisible(
+  item: { langs: readonly string[]; nsfw: boolean },
+  browse: BrowseSettings,
+  uiLanguage: string,
+): boolean {
+  if (item.nsfw && !browse.showNsfw) return false;
+  const wanted = new Set(contentLanguages(browse, uiLanguage).map(primaryLanguage));
+  return item.langs.length === 0 || item.langs.some((l) => ANY_LANGUAGE.has(l) || wanted.has(primaryLanguage(l)));
+}
+
 /** Page cache size choices in MB (BRAINSTORM.md §6.5, ADR 0014; default 1 GB). */
 export const CACHE_SIZES_MB = [256, 512, 1024, 2048, 5120, 10240] as const;
 
@@ -260,6 +299,7 @@ export const appSettingsSchema = z.object({
   /** Limit of the page image cache (LRU), in MB. */
   cacheSizeMb: z.number().int().min(100).max(51_200),
   updater: updaterSettingsSchema,
+  browse: browseSettingsSchema,
 });
 export type AppSettings = z.infer<typeof appSettingsSchema>;
 
@@ -286,4 +326,5 @@ export const DEFAULT_SETTINGS: AppSettings = {
   general: { closeToTray: false, openAtLogin: false, startHidden: false },
   cacheSizeMb: 1024,
   updater: { mode: 'auto', channel: 'beta' },
+  browse: { showNsfw: false, languages: null, autoUpdateExtensions: false, repoSyncHours: 24 },
 };

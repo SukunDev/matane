@@ -277,6 +277,33 @@
         "stable": "Stabil",
         "beta": "Beta"
       }
+    },
+    "browse": {
+      "contentTitle": "Konten",
+      "extensionsTitle": "Extension",
+      "languages": {
+        "label": "Bahasa konten",
+        "hint": "Hanya extension dan source dalam bahasa ini yang ditampilkan. Default: bahasa app dan Inggris.",
+        "reset": "Kembali ke default"
+      },
+      "nsfw": {
+        "label": "Tampilkan konten NSFW",
+        "hint": "Extension dan source dewasa tetap tersembunyi (repositori, browse, global search) sampai ini dinyalakan.",
+        "confirmTitle": "Tampilkan konten dewasa?",
+        "confirmDescription": "Extension dan source bertanda NSFW akan tampil di repositori, browse, dan global search. Nyalakan hanya kalau kamu sudah dewasa dan boleh melihat konten seperti itu.",
+        "confirm": "Tampilkan konten NSFW"
+      },
+      "autoUpdate": {
+        "label": "Update extension otomatis",
+        "hint": "Setelah repositori disinkronkan, update langsung dipasang kecuali mengakses situs baru; yang itu tetap ditanyakan."
+      },
+      "syncEvery": {
+        "label": "Cek repositori",
+        "hint": "Saat online. Sinkronkan sekarang dari kartunya.",
+        "hours_other": "{{count}} jam",
+        "week": "Mingguan"
+      },
+      "reposHint": "Asal extension. Terverifikasi = ditandatangani dengan kunci resmi."
     }
   },
   "common": {
@@ -306,7 +333,8 @@
     "repo": "Ada masalah dengan repositori extension",
     "unknown": "Terjadi kesalahan",
     "verify": "Verifikasi",
-    "verifying": "Menunggu verifikasi…"
+    "verifying": "Menunggu verifikasi…",
+    "nsfw_hidden": "Source dewasa disembunyikan. Aktifkan di Setting → Browse & extension."
   },
   "browse": {
     "inLibrary": "Di library",
@@ -340,7 +368,8 @@
       "pinned": "Disematkan",
       "lastUsed": "dipakai {{when}}",
       "pin": "Sematkan di atas",
-      "unpin": "Lepas sematan"
+      "unpin": "Lepas sematan",
+      "hiddenByContent_other": "{{count}} source disembunyikan oleh pengaturan kontenmu."
     },
     "openUrl": {
       "label": "Buka manga dari link web",
@@ -376,8 +405,7 @@
       "updates": "Update"
     },
     "languages": {
-      "label": "Bahasa: {{langs}}",
-      "all": "Semua"
+      "label": "Bahasa: {{langs}}"
     },
     "noRepos": {
       "title": "Belum ada repositori",
@@ -451,7 +479,27 @@
       "description": "Pengaturan yang disediakan extension.",
       "none": "Extension ini tidak punya pengaturan."
     },
-    "version": "v{{version}}"
+    "version": "v{{version}}",
+    "showNsfw": "Tampilkan NSFW",
+    "hiddenByContent_other": "{{count}} extension disembunyikan oleh pengaturan kontenmu.",
+    "changeContent": "Ubah",
+    "logs": {
+      "open": "Lihat log",
+      "title": "Log {{name}}",
+      "description": "Baris log terbaru, panggilan yang gagal, dan request extension ini.",
+      "filter": "Level",
+      "levels": {
+        "all": "Semua",
+        "info": "Info",
+        "warn": "Peringatan",
+        "error": "Error"
+      },
+      "copy": "Salin",
+      "copied": "Tersalin",
+      "clear": "Bersihkan",
+      "empty": "Belum ada log. Pakai extension-nya (browse, buka manga) dan barisnya muncul di sini.",
+      "lines": "Baris log"
+    }
   },
   "manga": {
     "author": "Penulis: {{name}}",

@@ -21,6 +21,8 @@ export const APP_ERROR_CODES = [
   'not_installed',
   // Extension repositories and installs
   'repo',
+  // Adult sources while they are hidden (BRAINSTORM.md §6.6)
+  'nsfw_hidden',
   'unknown',
 ] as const;
 export type AppErrorCode = (typeof APP_ERROR_CODES)[number];

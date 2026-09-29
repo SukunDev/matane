@@ -21,6 +21,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { librarySourceIdsQuery } from '../../lib/library';
+import { useContentFilter } from '../../lib/content';
 import { defaultSearchSources, sourceSearchQuery } from '../../lib/search';
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
@@ -40,8 +41,11 @@ export function GlobalSearchPage({ query, onQuery }: { query: string; onQuery: (
   const prefs = settings?.globalSearch ?? { sourceIds: null, onlyWithResults: false };
   const savePrefs = (patch: Partial<typeof prefs>) => updateSettings.mutate({ globalSearch: { ...prefs, ...patch } });
 
-  const installed = sources.filter((s) => s.installed);
-  const defaults = defaultSearchSources(sources, librarySources);
+  const content = useContentFilter();
+  // Adult sources and other languages are never searched while hidden (§6.6).
+  const shown = sources.filter((s) => content.visible({ langs: [s.lang], nsfw: s.nsfw }));
+  const installed = shown.filter((s) => s.installed);
+  const defaults = defaultSearchSources(shown, librarySources);
   const selected = prefs.sourceIds === null ? defaults : installed.filter((s) => prefs.sourceIds!.includes(s.id));
   const results = useQueries({
     queries: selected.map((source) => sourceSearchQuery(source.id, query)),

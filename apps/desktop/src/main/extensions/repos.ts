@@ -5,7 +5,7 @@ import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import type { RepoRow, ReposRepository } from '../db/repositories/repos';
 import type { FetchBytes } from '../network/fetch-bytes';
 
-/** Repositories are synced when their index is older than this (and the app is online). */
+/** By default, repositories are synced when their index is older than this (and the app is online). */
 export const REPO_SYNC_INTERVAL_MS = 24 * 3_600_000;
 const SCHEDULE_TICK_MS = 3_600_000;
 const FIRST_TICK_MS = 15_000;
@@ -81,6 +81,10 @@ export interface RepoServiceDeps {
   fetchBytes: FetchBytes;
   officialKeys: () => readonly string[];
   isOnline: () => boolean;
+  /** How old an index may get before the schedule syncs it (default a day; a setting). */
+  intervalMs?: () => number;
+  /** After a repository synced successfully (e.g. to install updates by themselves). */
+  onSynced?: (repoId: number) => void;
   now?: () => number;
   log?: (message: string) => void;
 }
@@ -171,7 +175,7 @@ export class RepoService {
       if (!this.deps.isOnline()) return;
       const stale = this.deps.repo
         .list()
-        .filter((row) => row.lastFetchedAt === null || this.now() - row.lastFetchedAt >= REPO_SYNC_INTERVAL_MS);
+        .filter((row) => row.lastFetchedAt === null || this.now() - row.lastFetchedAt >= this.interval());
       for (const row of stale) void this.syncOne(row.id);
     };
     const first = setTimeout(tick, FIRST_TICK_MS);
@@ -179,6 +183,10 @@ export class RepoService {
     first.unref?.();
     every.unref?.();
     this.timers.push(first, every);
+  }
+
+  private interval(): number {
+    return this.deps.intervalMs?.() ?? REPO_SYNC_INTERVAL_MS;
   }
 
   stop(): void {
@@ -215,6 +223,7 @@ export class RepoService {
         lastFetchedAt: this.now(),
         lastError: null,
       });
+      this.deps.onSynced?.(repoId);
     } catch (error) {
       const { message } = toAppErrorData(error);
       this.deps.log?.(`sync ${row.url}: ${message}`);

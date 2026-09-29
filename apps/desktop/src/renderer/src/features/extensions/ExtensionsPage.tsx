@@ -1,37 +1,40 @@
 import type { AvailableExtension, ExtensionEntry, InstallPreview, RepoInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
+import { Link } from '@tanstack/react-router';
 import {
   AlertTriangle,
   ArrowUpCircle,
   Check,
-  ChevronDown,
   Download,
   EllipsisVertical,
   FolderOpen,
   FolderX,
-  Languages,
   Puzzle,
   RotateCw,
+  ScrollText,
   Server,
   Settings2,
   ShieldCheck,
   Trash2,
 } from 'lucide-react';
 import { DropdownMenu } from 'radix-ui';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNow } from '../../lib/now';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { EmptyState } from '../../components/EmptyState';
 import { SearchField } from '../../components/SearchField';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { useErrorText } from '../../lib/errors';
+import { useContentFilter } from '../../lib/content';
 import { availableExtensionsQuery, extensionIconUrl, repoIconUrl, reposQuery } from '../../lib/extensions';
-import { languageName } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
 import { extensionsQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
+import { ContentLanguagePicker, NsfwToggle } from './ContentControls';
 import { InstallDialog, type InstallRequest } from './InstallDialog';
+import { LogDialog } from './LogDialog';
 import { ExtensionIcon, LangBadges, TrustLine } from './parts';
 import { PreferencesDialog } from './PreferencesDialog';
 import { RepositoriesPanel } from './RepositoriesPanel';
@@ -44,15 +47,6 @@ const menuItem =
 
 export function useLoadDevFolder() {
   return useMutation({ mutationFn: () => ipc.invoke('extensions.loadDevFolder') });
-}
-
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
 }
 
 /**
@@ -70,7 +64,6 @@ export function ExtensionsPage() {
   const [tab, setTab] = useState<Tab>('installed');
   const [panelOpen, setPanelOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [langs, setLangs] = useState<string[]>([]);
   const [install, setInstall] = useState<InstallRequest | null>(null);
   const [confirmQueue, setConfirmQueue] = useState<InstallPreview[]>([]);
   const updateAll = useMutation({
@@ -79,18 +72,23 @@ export function ExtensionsPage() {
     onSuccess: (result) => setConfirmQueue(result.needsConfirmation),
   });
 
-  const updates = available.filter((a) => a.update);
-  const offered = available.filter((a) => !a.installedHere);
+  const content = useContentFilter();
+  // Content settings (§6.6) hide extensions in other languages and adult ones; a developer's own
+  // folders always show.
+  const shownInstalled = extensions.filter((e) => e.origin === 'dev' || content.visible(e));
+  const updates = available.filter((a) => a.update && content.visible(a));
+  const offeredAll = available.filter((a) => !a.installedHere);
+  const offered = offeredAll.filter(content.visible);
+  const hidden: Record<Tab, number> = {
+    installed: extensions.length - shownInstalled.length,
+    available: offeredAll.length - offered.length,
+    updates: available.filter((a) => a.update).length - updates.length,
+  };
   const repoById = useMemo(() => new Map(repos.map((r) => [r.id, r])), [repos]);
-  const allLangs = useMemo(
-    () => [...new Set([...extensions.flatMap((e) => e.langs), ...available.flatMap((a) => a.langs)])].sort(),
-    [extensions, available],
-  );
-  const matches = (item: { id: string; name: string; langs: string[] }) =>
-    (!query || `${item.name} ${item.id}`.toLowerCase().includes(query.toLowerCase())) &&
-    (langs.length === 0 || item.langs.some((l) => langs.includes(l)));
+  const matches = (item: { id: string; name: string }) =>
+    !query || `${item.name} ${item.id}`.toLowerCase().includes(query.toLowerCase());
   const counts: Record<Tab, number> = {
-    installed: extensions.length,
+    installed: shownInstalled.length,
     available: offered.length,
     updates: updates.length,
   };
@@ -166,7 +164,11 @@ export function ExtensionsPage() {
               placeholder={t('extensions.search')}
               className="min-w-48 flex-1"
             />
-            <LanguageFilter all={allLangs} selected={langs} onChange={setLangs} />
+            <ContentLanguagePicker />
+            <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground" htmlFor="toolbar-nsfw">
+              {t('extensions.showNsfw')}
+              <NsfwToggle id="toolbar-nsfw" />
+            </label>
             {tab === 'installed' && (
               <Button variant="ghost" size="sm" onClick={() => reloadAll.mutate()} disabled={reloadAll.isPending}>
                 <RotateCw className={cn(reloadAll.isPending && 'animate-spin')} />
@@ -177,6 +179,14 @@ export function ExtensionsPage() {
           {loadFolder.isError && <InlineError error={loadFolder.error} />}
           {updateAll.data && updateAll.data.failed.length > 0 && (
             <InlineError error={new Error(updateAll.data.failed.map((f) => `${f.id}: ${f.message}`).join('\n'))} />
+          )}
+          {hidden[tab] > 0 && (
+            <p className="mb-3 text-xs text-muted-foreground" data-testid="hidden-by-content">
+              {t('extensions.hiddenByContent', { count: hidden[tab] })}{' '}
+              <Link to="/settings/$section" params={{ section: 'browse' }} className="text-primary hover:underline">
+                {t('extensions.changeContent')}
+              </Link>
+            </p>
           )}
 
           {tab === 'installed' &&
@@ -193,7 +203,7 @@ export function ExtensionsPage() {
               />
             ) : (
               <ul className="flex flex-col gap-2">
-                {extensions.filter(matches).map((extension) => (
+                {shownInstalled.filter(matches).map((extension) => (
                   <InstalledRow
                     key={`${extension.origin}:${extension.path}`}
                     extension={extension}
@@ -213,7 +223,7 @@ export function ExtensionsPage() {
                 description={t('extensions.noRepos.description')}
                 action={<Button onClick={() => setPanelOpen(true)}>{t('extensions.repos.add')}</Button>}
               />
-            ) : offered.length === 0 ? (
+            ) : offeredAll.length === 0 ? (
               <EmptyState
                 icon={Check}
                 title={t('extensions.allInstalled.title')}
@@ -251,56 +261,6 @@ export function ExtensionsPage() {
       {panelOpen && <RepositoriesPanel onClose={() => setPanelOpen(false)} now={now} />}
       <InstallDialog request={dialogRequest} onClose={closeDialog} />
     </div>
-  );
-}
-
-function LanguageFilter({
-  all,
-  selected,
-  onChange,
-}: {
-  all: string[];
-  selected: string[];
-  onChange: (langs: string[]) => void;
-}) {
-  const { t, i18n } = useTranslation();
-  const label = selected.length === 0 ? t('extensions.languages.all') : selected.map((l) => l.toUpperCase()).join(', ');
-  return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <Button variant="secondary" size="sm" disabled={all.length === 0}>
-          <Languages />
-          {t('extensions.languages.label', { langs: label })}
-          <ChevronDown className="size-3.5 opacity-60" />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="start"
-          sideOffset={4}
-          collisionPadding={8}
-          className="z-50 max-h-(--radix-dropdown-menu-content-available-height) min-w-48 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl"
-        >
-          {all.map((lang) => (
-            <DropdownMenu.CheckboxItem
-              key={lang}
-              className={cn(menuItem, 'pl-8 relative')}
-              checked={selected.includes(lang)}
-              onSelect={(event) => event.preventDefault()}
-              onCheckedChange={(checked) =>
-                onChange(checked ? [...selected, lang] : selected.filter((l) => l !== lang))
-              }
-            >
-              <DropdownMenu.ItemIndicator className="absolute left-2">
-                <Check />
-              </DropdownMenu.ItemIndicator>
-              {languageName(lang, i18n.language)}
-              <span className="ml-auto text-xs text-muted-foreground">{lang.toUpperCase()}</span>
-            </DropdownMenu.CheckboxItem>
-          ))}
-        </DropdownMenu.Content>
-      </DropdownMenu.Portal>
-    </DropdownMenu.Root>
   );
 }
 
@@ -345,6 +305,7 @@ function InstalledRow({
   const { t } = useTranslation();
   const [prefsOpen, setPrefsOpen] = useState(false);
   const [confirmUninstall, setConfirmUninstall] = useState(false);
+  const [logsOpen, setLogsOpen] = useState(false);
   const reload = useMutation({ mutationFn: () => ipc.invoke('extensions.reload', { extensionId: extension.id }) });
   const removeFolder = useMutation({
     mutationFn: () => ipc.invoke('extensions.removeDevFolder', { path: extension.path }),
@@ -415,37 +376,48 @@ function InstalledRow({
               <Settings2 />
             </Button>
           )}
-          {extension.origin !== 'builtin' && (
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <Button variant="ghost" size="icon" title={t('extensions.more')}>
-                  <EllipsisVertical />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  align="end"
-                  sideOffset={4}
-                  className="z-50 min-w-48 rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl"
-                >
-                  {extension.origin === 'repo' ? (
-                    <DropdownMenu.Item
-                      className={cn(menuItem, 'text-destructive')}
-                      onSelect={() => setConfirmUninstall(true)}
-                    >
-                      <Trash2 />
-                      {t('extensions.uninstall')}
-                    </DropdownMenu.Item>
-                  ) : (
-                    <DropdownMenu.Item className={menuItem} onSelect={() => removeFolder.mutate()}>
-                      <FolderX />
-                      {t('extensions.removeFolder')}
-                    </DropdownMenu.Item>
-                  )}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+          {extension.origin === 'dev' && (
+            <Button variant="secondary" size="sm" onClick={() => setLogsOpen(true)}>
+              <ScrollText />
+              {t('extensions.logs.open')}
+            </Button>
           )}
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <Button variant="ghost" size="icon" title={t('extensions.more')}>
+                <EllipsisVertical />
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={4}
+                className="z-50 min-w-48 rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl"
+              >
+                {extension.origin !== 'dev' && (
+                  <DropdownMenu.Item className={menuItem} onSelect={() => setLogsOpen(true)}>
+                    <ScrollText />
+                    {t('extensions.logs.open')}
+                  </DropdownMenu.Item>
+                )}
+                {extension.origin === 'repo' && (
+                  <DropdownMenu.Item
+                    className={cn(menuItem, 'text-destructive')}
+                    onSelect={() => setConfirmUninstall(true)}
+                  >
+                    <Trash2 />
+                    {t('extensions.uninstall')}
+                  </DropdownMenu.Item>
+                )}
+                {extension.origin === 'dev' && (
+                  <DropdownMenu.Item className={menuItem} onSelect={() => removeFolder.mutate()}>
+                    <FolderX />
+                    {t('extensions.removeFolder')}
+                  </DropdownMenu.Item>
+                )}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </div>
       </div>
       {broken && (
@@ -463,6 +435,7 @@ function InstalledRow({
           onOpenChange={setPrefsOpen}
         />
       )}
+      <LogDialog extensionId={extension.id} name={extension.name} open={logsOpen} onOpenChange={setLogsOpen} />
       <ConfirmDialog
         open={confirmUninstall}
         onOpenChange={setConfirmUninstall}

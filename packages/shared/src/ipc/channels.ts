@@ -36,6 +36,8 @@ export const INVOKE_CHANNELS = [
   'extensions.cancelInstall',
   'extensions.updateAll',
   'extensions.uninstall',
+  'extensions.logs',
+  'extensions.clearLogs',
   'sources.list',
   'sources.info',
   'sources.filters',
@@ -115,5 +117,6 @@ export const EVENT_CHANNELS = [
   'app.navigate',
   'app.online',
   'updater.changed',
+  'extensions.log',
 ] as const;
 export type EventChannel = (typeof EVENT_CHANNELS)[number];

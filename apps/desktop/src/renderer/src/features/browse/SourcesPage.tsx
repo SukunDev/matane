@@ -8,6 +8,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
+import { useContentFilter } from '../../lib/content';
 import { useErrorText } from '../../lib/errors';
 import { formatRelative, languageName } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
@@ -28,7 +29,11 @@ export function SourcesPage() {
   const { data: sources = [], isPending } = useQuery(sourcesQuery);
   const { data: extensions = [] } = useQuery(extensionsQuery);
   const extensionById = new Map(extensions.map((e) => [e.id, e]));
-  const installed = sources.filter((s) => s.installed);
+  const content = useContentFilter();
+  const allInstalled = sources.filter((s) => s.installed);
+  // Content settings (§6.6): other languages and adult sources are hidden.
+  const installed = allInstalled.filter((s) => content.visible({ langs: [s.lang], nsfw: s.nsfw }));
+  const hidden = allInstalled.length - installed.length;
   const pinned = installed.filter((s) => s.pinned);
   const groups = groupByLanguage(
     installed.filter((s) => !s.pinned),
@@ -46,6 +51,14 @@ export function SourcesPage() {
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
+        {hidden > 0 && (
+          <p className="mx-auto max-w-5xl px-6 pt-4 text-xs text-muted-foreground" data-testid="hidden-by-content">
+            {t('browse.sources.hiddenByContent', { count: hidden })}{' '}
+            <Link to="/settings/$section" params={{ section: 'browse' }} className="text-primary hover:underline">
+              {t('extensions.changeContent')}
+            </Link>
+          </p>
+        )}
         {!isPending && installed.length === 0 ? (
           <EmptyState
             icon={Globe}

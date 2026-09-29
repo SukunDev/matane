@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import type { HttpRequest, HttpResponse, Preference } from '@manga-reader/extension-sdk';
 import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
 import type { ExtensionEntry } from '@manga-reader/shared';
-import { AppError } from '@manga-reader/shared/errors';
+import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import type { ExtensionsRepository } from '../db/repositories/extensions';
 import { sourceIdOf } from '../db/repositories/extensions';
 import type { HostMethods, MainMethods } from '../../extension-host/protocol';
@@ -25,6 +25,13 @@ export interface ExtensionServiceDeps {
   network: ExtensionNetwork;
   devFolders: { get(): string[]; set(folders: string[]): void };
   log(extensionId: string, level: 'debug' | 'info' | 'warn' | 'error', message: string): void;
+  /** The developer log panel: the extension's own lines, failed calls and HTTP traffic. */
+  record?(
+    extensionId: string,
+    level: 'debug' | 'info' | 'warn' | 'error',
+    kind: 'log' | 'call' | 'http',
+    message: string,
+  ): void;
   /** Longest main waits for the host (the runtime enforces its own, tighter limits). */
   hostTimeoutMs?: number;
   /** Called with the ids whose runtimes were dropped by a reload. */
@@ -61,7 +68,20 @@ export class ExtensionService {
       const entry = this.require(extensionId);
       return { code: entry.code, manifest: entry.manifest };
     },
-    http: ({ extensionId, request }) => this.deps.network.request(this.require(extensionId).manifest, request),
+    http: async ({ extensionId, request }) => {
+      const manifest = this.require(extensionId).manifest;
+      const started = Date.now();
+      const what = `${request.method ?? 'GET'} ${request.url}`;
+      try {
+        const response = await this.deps.network.request(manifest, request);
+        const level = response.status >= 400 ? 'warn' : 'debug';
+        this.deps.record?.(extensionId, level, 'http', `${what} → ${response.status} (${Date.now() - started} ms)`);
+        return response;
+      } catch (error) {
+        this.deps.record?.(extensionId, 'error', 'http', `${what} failed: ${toAppErrorData(error).message}`);
+        throw error;
+      }
+    },
     storage: ({ extensionId, op, key, value }) => {
       this.require(extensionId);
       if (op === 'get') return this.deps.repo.getStorage(extensionId, key);
@@ -69,7 +89,10 @@ export class ExtensionService {
       else this.deps.repo.removeStorage(extensionId, key);
       return null;
     },
-    log: ({ extensionId, level, message }) => this.deps.log(extensionId, level, message),
+    log: ({ extensionId, level, message }) => {
+      this.deps.log(extensionId, level, message);
+      this.deps.record?.(extensionId, level, 'log', message);
+    },
   };
 
   async init(): Promise<ExtensionEntry[]> {
@@ -126,13 +149,17 @@ export class ExtensionService {
     await this.reload();
   }
 
-  /** Calls a Source method (or `__info`/`__preferences`) inside the sandbox. */
+  /**
+   * Calls a Source method (or `__info`/`__preferences`) inside the sandbox. `parse` validates the
+   * answer; failed calls and invalid answers go to the extension's log.
+   */
   async call<T = unknown>(
     extensionId: string,
     sourceKey: string,
     method: string,
     args: unknown[] = [],
     signal?: AbortSignal,
+    parse?: (value: unknown) => T,
   ): Promise<T> {
     this.require(extensionId);
     const pending = this.deps.host.request(
@@ -141,8 +168,18 @@ export class ExtensionService {
       { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
     );
     try {
-      return (await withSignal(pending, signal)) as T;
+      const value = await withSignal(pending, signal);
+      return parse ? parse(value) : (value as T);
     } catch (error) {
+      const data = toAppErrorData(error);
+      if (data.code !== 'cancelled') {
+        this.deps.record?.(
+          extensionId,
+          'error',
+          'call',
+          `${method}${sourceKey ? ` (${sourceKey})` : ''}: ${data.message}`,
+        );
+      }
       // A call that timed out while Cloudflare was being solved is really a Cloudflare problem.
       if (error instanceof AppError && error.code === 'timeout' && this.deps.network.isSolving(extensionId)) {
         throw new AppError('cloudflare', 'Waiting for the Cloudflare check to be completed');

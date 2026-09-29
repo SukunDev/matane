@@ -277,6 +277,34 @@
         "stable": "Stable",
         "beta": "Beta"
       }
+    },
+    "browse": {
+      "contentTitle": "Content",
+      "extensionsTitle": "Extensions",
+      "languages": {
+        "label": "Content languages",
+        "hint": "Only extensions and sources in these languages are shown. By default: the app language and English.",
+        "reset": "Back to the default"
+      },
+      "nsfw": {
+        "label": "Show NSFW content",
+        "hint": "Adult extensions and sources stay hidden (repositories, browse, global search) until this is on.",
+        "confirmTitle": "Show adult content?",
+        "confirmDescription": "Extensions and sources marked NSFW will show in repositories, browse and global search. Only turn this on if you are an adult and allowed to see such content.",
+        "confirm": "Show NSFW content"
+      },
+      "autoUpdate": {
+        "label": "Update extensions by themselves",
+        "hint": "After a repository sync, updates install unless they reach new sites; those still ask."
+      },
+      "syncEvery": {
+        "label": "Check repositories",
+        "hint": "While online. Sync one now from its card.",
+        "hours_one": "{{count}} h",
+        "hours_other": "{{count}} h",
+        "week": "Weekly"
+      },
+      "reposHint": "Where extensions come from. Verified = signed with the official key."
     }
   },
   "common": {
@@ -306,7 +334,8 @@
     "repo": "Problem with the extension repository",
     "unknown": "Something went wrong",
     "verify": "Verify",
-    "verifying": "Waiting for the check…"
+    "verifying": "Waiting for the check…",
+    "nsfw_hidden": "Adult sources are hidden. Turn them on in Settings → Browse & extensions."
   },
   "browse": {
     "inLibrary": "In library",
@@ -342,7 +371,9 @@
       "pinned": "Pinned",
       "lastUsed": "used {{when}}",
       "pin": "Pin to top",
-      "unpin": "Unpin"
+      "unpin": "Unpin",
+      "hiddenByContent_one": "{{count}} source hidden by your content settings.",
+      "hiddenByContent_other": "{{count}} sources hidden by your content settings."
     },
     "openUrl": {
       "label": "Open a manga from its web link",
@@ -379,8 +410,7 @@
       "updates": "Updates"
     },
     "languages": {
-      "label": "Languages: {{langs}}",
-      "all": "All"
+      "label": "Languages: {{langs}}"
     },
     "noRepos": {
       "title": "No repositories yet",
@@ -456,7 +486,28 @@
       "description": "Settings provided by the extension.",
       "none": "This extension has no settings."
     },
-    "version": "v{{version}}"
+    "version": "v{{version}}",
+    "showNsfw": "Show NSFW",
+    "hiddenByContent_one": "{{count}} extension hidden by your content settings.",
+    "hiddenByContent_other": "{{count}} extensions hidden by your content settings.",
+    "changeContent": "Change",
+    "logs": {
+      "open": "View logs",
+      "title": "{{name}} log",
+      "description": "Recent log lines, failed calls and requests of this extension.",
+      "filter": "Level",
+      "levels": {
+        "all": "All",
+        "info": "Info",
+        "warn": "Warnings",
+        "error": "Errors"
+      },
+      "copy": "Copy",
+      "copied": "Copied",
+      "clear": "Clear",
+      "empty": "Nothing logged yet. Use the extension (browse, open a manga) and lines appear here.",
+      "lines": "Log lines"
+    }
   },
   "manga": {
     "author": "Author: {{name}}",

@@ -10,6 +10,7 @@ import type { HistoryRepository } from '../db/repositories/history';
 import type { LibraryRepository } from '../db/repositories/library';
 import type { MangaRepository } from '../db/repositories/manga';
 import type { ExtensionInstaller } from '../extensions/installer';
+import type { ExtensionLogs } from '../extensions/logs';
 import type { RepoService } from '../extensions/repos';
 import type { ExtensionService } from '../extensions/service';
 import type { SourceService } from '../extensions/sources';
@@ -33,6 +34,7 @@ export interface IpcDeps {
   extensions: ExtensionService;
   repos: RepoService;
   installer: ExtensionInstaller;
+  extensionLogs: ExtensionLogs;
   sources: SourceService;
   chapters: ChaptersRepository;
   network: NetworkManager;
@@ -66,6 +68,7 @@ export function createIpcHandlers({
   extensions,
   repos,
   installer,
+  extensionLogs,
   sources,
   chapters,
   network,
@@ -183,6 +186,8 @@ export function createIpcHandlers({
     'extensions.cancelInstall': ({ token }) => installer.cancel(token),
     'extensions.updateAll': () => installer.updateAll(),
     'extensions.uninstall': ({ extensionId }) => installer.uninstall(extensionId),
+    'extensions.logs': ({ extensionId }) => extensionLogs.list(extensionId),
+    'extensions.clearLogs': ({ extensionId }) => extensionLogs.clear(extensionId),
 
     'sources.list': () => sources.list(),
     'sources.info': ({ sourceId }) => sources.info(sourceId),

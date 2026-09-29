@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { CoverImage } from '../../components/CoverImage';
 import { EmptyState } from '../../components/EmptyState';
 import { Button } from '../../components/ui/button';
+import { useContentFilter } from '../../lib/content';
 import { useErrorText } from '../../lib/errors';
 import { ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
 import { sourceSearchLimit } from '../../lib/search';
@@ -59,7 +60,9 @@ export function MigrationPage({ ids }: { ids: number[] }) {
   const { data: settings } = useQuery(settingsQuery);
   const updateSettings = useUpdateSettings();
   const migration = settings?.migration ?? { targets: [], options: DEFAULT_MIGRATION_OPTIONS };
-  const installed = sources.filter((s) => s.installed);
+  const content = useContentFilter();
+  // Hidden sources (other languages, adult while off) are not offered as targets (§6.6).
+  const installed = sources.filter((s) => s.installed && content.visible({ langs: [s.lang], nsfw: s.nsfw }));
   const saved = migration.targets.flatMap((id) => installed.find((s) => s.id === id) ?? []);
   const pinned = installed.filter((s) => s.pinned);
   // Saved order, else pinned sources, else every installed source.

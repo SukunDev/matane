@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { Filter, Page, Preference } from '@manga-reader/extension-sdk';
 import {
   addRepoResultSchema,
+  extensionLogEntrySchema,
   availableExtensionSchema,
   installPreviewSchema,
   repoInfoSchema,
@@ -139,6 +140,9 @@ export const invokeContract = {
   /** Installs every update that reaches no new domain; the others come back for confirmation. */
   'extensions.updateAll': invoke(z.void(), updateAllResultSchema),
   'extensions.uninstall': invoke(z.object({ extensionId: z.string() }), z.void()),
+  /** The last 500 log lines of an extension (developer panel). */
+  'extensions.logs': invoke(z.object({ extensionId: z.string() }), z.array(extensionLogEntrySchema)),
+  'extensions.clearLogs': invoke(z.object({ extensionId: z.string() }), z.void()),
 
   'sources.list': invoke(z.void(), z.array(sourceEntrySchema)),
   'sources.info': invoke(z.object({ sourceId: sourceIdSchema }), sourceCapabilitiesSchema),
@@ -353,6 +357,7 @@ export const eventContract = {
   'app.navigate': z.object({ to: z.string() }),
   'app.online': z.boolean(),
   'updater.changed': updaterStatusSchema,
+  'extensions.log': z.object({ extensionId: z.string(), entry: extensionLogEntrySchema }),
 } satisfies Record<EventChannel, z.ZodType>;
 
 export type InvokeInput<C extends InvokeChannel> = z.input<(typeof invokeContract)[C]['input']>;

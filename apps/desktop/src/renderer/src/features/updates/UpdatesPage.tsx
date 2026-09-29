@@ -18,6 +18,7 @@ import {
 import { Dialog, DropdownMenu } from 'radix-ui';
 import { type MouseEvent, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNow } from '../../lib/now';
 import { CoverImage } from '../../components/CoverImage';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
@@ -96,14 +97,6 @@ export function UpdatesPage() {
 }
 
 /** Re-renders every half minute, for "12 minutes ago" / "in 11 hours". */
-function useNow(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 30_000);
-    return () => clearInterval(timer);
-  }, []);
-  return now;
-}
 
 function UpdatesHeader({
   categoryId,

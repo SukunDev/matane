@@ -66,7 +66,7 @@ export function RepositoriesPanel({ onClose, now }: { onClose: () => void; now: 
   );
 }
 
-function RepoCard({ repo, now }: { repo: RepoInfo; now: number }) {
+export function RepoCard({ repo, now }: { repo: RepoInfo; now: number }) {
   const { t, i18n } = useTranslation();
   const sync = useSyncRepos();
   const trust = useMutation({ mutationFn: () => ipc.invoke('repos.trustKey', { repoId: repo.id }) });
@@ -176,7 +176,7 @@ function MutationError({ error }: { error: unknown }) {
 }
 
 /** Asks for a URL; an unverified repository is only added after a warning is accepted. */
-function AddRepoDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function AddRepoDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const { t } = useTranslation();
   const [url, setUrl] = useState('');
   const [pending, setPending] = useState<Extract<AddRepoResult, { status: 'needs-confirmation' }> | null>(null);

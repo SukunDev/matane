@@ -20,6 +20,8 @@ export interface SourceServiceDeps {
   chapters: ChaptersRepository;
   /** Page lists of downloaded chapters (no network needed). */
   downloads?: Pick<DownloadStore, 'pages'>;
+  /** Adult sources can be browsed (Settings → Browse & extensions). */
+  showNsfw?: () => boolean;
   now?: () => number;
 }
 
@@ -35,18 +37,31 @@ export class SourceService {
   }
 
   list(): SourceEntry[] {
+    const extensionRows = new Map(this.deps.extensionsRepo.list().map((row) => [row.id, row]));
     return this.deps.extensionsRepo.listSources().map((row) => ({
       id: row.id,
       extensionId: row.extensionId,
       key: row.key,
       name: row.name,
       lang: row.lang,
+      nsfw: this.isNsfw(row.extensionId, extensionRows.get(row.extensionId)?.nsfw),
       pinned: row.pinned,
       lastUsedAt: row.lastUsedAt,
       installed:
         this.deps.extensions.isInstalled(row.extensionId) &&
         (this.deps.extensions.get(row.extensionId)?.manifest?.sources.some((s) => s.key === row.key) ?? false),
     }));
+  }
+
+  private isNsfw(extensionId: string, stored?: boolean): boolean {
+    return this.deps.extensions.get(extensionId)?.manifest?.nsfw ?? stored ?? false;
+  }
+
+  /** Adult sources are not browsed or searched while they are hidden (BRAINSTORM.md §6.6). */
+  private assertVisible(extensionId: string): void {
+    if (this.deps.showNsfw && !this.deps.showNsfw() && this.isNsfw(extensionId)) {
+      throw new AppError('nsfw_hidden', 'Adult sources are hidden; turn them on in Settings → Browse & extensions');
+    }
   }
 
   /** Forget cached `__info` after a reload (capabilities may change). */
@@ -63,8 +78,13 @@ export class SourceService {
     const cached = this.infoCache.get(sourceId);
     if (cached) return cached;
     const source = this.source(sourceId);
-    const info = validate.capabilities(
-      await this.deps.extensions.call(source.extensionId, source.key, '__info', [], signal),
+    const info = await this.deps.extensions.call(
+      source.extensionId,
+      source.key,
+      '__info',
+      [],
+      signal,
+      validate.capabilities,
     );
     this.infoCache.set(sourceId, info);
     return info;
@@ -74,7 +94,7 @@ export class SourceService {
     const { capabilities } = await this.info(sourceId, signal);
     if (!capabilities.includes('getFilters')) return [];
     const source = this.source(sourceId);
-    return validate.filters(await this.deps.extensions.call(source.extensionId, source.key, 'getFilters', [], signal));
+    return this.deps.extensions.call(source.extensionId, source.key, 'getFilters', [], signal, validate.filters);
   }
 
   async browse(
@@ -82,14 +102,20 @@ export class SourceService {
     signal?: AbortSignal,
   ): Promise<BrowseResult> {
     const source = this.source(input.sourceId);
+    this.assertVisible(source.extensionId);
     const [method, args]: [string, unknown[]] =
       input.kind === 'popular'
         ? ['getPopular', [input.page]]
         : input.kind === 'latest'
           ? ['getLatest', [input.page]]
           : ['search', [input.query ?? '', input.page, input.filters ?? {}]];
-    const page = validate.mangaPage(
-      await this.deps.extensions.call(source.extensionId, source.key, method, args, signal),
+    const page = await this.deps.extensions.call(
+      source.extensionId,
+      source.key,
+      method,
+      args,
+      signal,
+      validate.mangaPage,
     );
     const items = this.deps.manga.upsertSummaries(source.id, page.items, this.now());
     this.deps.extensionsRepo.touchSource(source.id, this.now());
@@ -99,11 +125,16 @@ export class SourceService {
   /** Asks each installed source that supports it to recognise a pasted web URL. */
   async resolveUrl(url: string, signal?: AbortSignal): Promise<{ sourceId: string; mangaId: number } | null> {
     for (const entry of this.list()) {
-      if (!entry.installed) continue;
+      if (!entry.installed || (entry.nsfw && this.deps.showNsfw && !this.deps.showNsfw())) continue;
       const { capabilities } = await this.info(entry.id, signal).catch(() => ({ capabilities: [] as string[] }));
       if (!capabilities.includes('resolveUrl')) continue;
-      const summary = validate.summaryOrNull(
-        await this.deps.extensions.call(entry.extensionId, entry.key, 'resolveUrl', [url], signal),
+      const summary = await this.deps.extensions.call(
+        entry.extensionId,
+        entry.key,
+        'resolveUrl',
+        [url],
+        signal,
+        validate.summaryOrNull,
       );
       if (summary) return { sourceId: entry.id, mangaId: this.deps.manga.ensure(entry.id, summary, this.now()) };
     }
@@ -118,8 +149,14 @@ export class SourceService {
     let headers: Record<string, string> = {};
     if (capabilities.includes('imageHeaders')) {
       const source = this.source(sourceId);
-      const value = await this.deps.extensions.call(source.extensionId, source.key, 'imageHeaders');
-      headers = validate.headers(value);
+      headers = await this.deps.extensions.call(
+        source.extensionId,
+        source.key,
+        'imageHeaders',
+        [],
+        undefined,
+        validate.headers,
+      );
     }
     this.headersCache.set(sourceId, headers);
     return headers;
@@ -173,13 +210,13 @@ export class SourceService {
     const row = this.mangaRow(mangaId);
     const source = this.source(row.sourceId);
     const summary: MangaSummary = { url: row.url, title: row.title, thumbnailUrl: row.thumbnailUrl ?? undefined };
-    const call = (method: string, args: unknown[]) =>
-      this.deps.extensions.call(source.extensionId, source.key, method, args, signal);
+    const call = <T>(method: string, args: unknown[], parse: (value: unknown) => T) =>
+      this.deps.extensions.call(source.extensionId, source.key, method, args, signal, parse);
 
-    const details = validate.mangaDetails(await call('getMangaDetails', [summary]));
+    const details = await call('getMangaDetails', [summary], validate.mangaDetails);
     // Extensions identify manga by url; never let details move a row to another url.
     const detailsForChapters = { ...details, url: row.url };
-    const chapters = validate.chapters(await call('getChapters', [detailsForChapters]));
+    const chapters = await call('getChapters', [detailsForChapters], validate.chapters);
     if (options.metadata === false) this.deps.manga.touchChecked(mangaId, this.now());
     else this.deps.manga.updateDetails(mangaId, detailsForChapters, this.now());
     const sync = this.deps.chapters.sync(mangaId, chapters, this.now());
@@ -217,8 +254,13 @@ export class SourceService {
       scanlator: chapter.scanlator ?? undefined,
       uploadedAt: chapter.uploadedAt ?? undefined,
     };
-    const pages = validate.pages(
-      await this.deps.extensions.call(source.extensionId, source.key, 'getPages', [arg], signal),
+    const pages = await this.deps.extensions.call(
+      source.extensionId,
+      source.key,
+      'getPages',
+      [arg],
+      signal,
+      validate.pages,
     );
     this.deps.chapters.cachePages(chapterId, pages, this.now());
     return pages;

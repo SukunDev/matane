@@ -125,12 +125,25 @@ export const updateAllResultSchema = z.object({
 });
 export type UpdateAllResult = z.infer<typeof updateAllResultSchema>;
 
+/** One line of an extension's log (developer panel): its own `log.*`, failed calls, HTTP traffic. */
+export const extensionLogEntrySchema = z.object({
+  /** Increases per extension; lets the renderer merge live lines with a fetched list. */
+  seq: z.number(),
+  at: z.number(),
+  level: z.enum(['debug', 'info', 'warn', 'error']),
+  kind: z.enum(['log', 'call', 'http']),
+  message: z.string(),
+});
+export type ExtensionLogEntry = z.infer<typeof extensionLogEntrySchema>;
+
 export const sourceEntrySchema = z.object({
   id: z.string(),
   extensionId: z.string(),
   key: z.string(),
   name: z.string(),
   lang: z.string(),
+  /** The extension is marked adult (hidden unless turned on). */
+  nsfw: z.boolean(),
   pinned: z.boolean(),
   lastUsedAt: z.number().nullable(),
   /** False when the extension is gone; its manga stay in the library. */

@@ -26,6 +26,8 @@ import { SettingsRepository } from './db/repositories/settings';
 import { ExtensionHostClient } from './extensions/host-client';
 import { ExtensionIcons } from './extensions/icons';
 import { ExtensionInstaller } from './extensions/installer';
+import { initialContentLanguages } from './extensions/content';
+import { ExtensionLogs } from './extensions/logs';
 import { officialKeys } from './extensions/official';
 import { RepoService } from './extensions/repos';
 import { ReposRepository } from './db/repositories/repos';
@@ -53,7 +55,7 @@ import { DownloadAutomation } from './downloads/automation';
 import { DownloadManager } from './downloads/manager';
 import { DownloadStore } from './downloads/store';
 import { DownloadsRepository } from './db/repositories/downloads';
-import { effectiveReaderSettings } from '@manga-reader/shared';
+import { contentLanguages, effectiveReaderSettings } from '@manga-reader/shared';
 import { resolveDirection } from '@manga-reader/shared/chapters';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
@@ -118,12 +120,22 @@ async function bootstrap(): Promise<void> {
     if (tags.includes('downloads')) refreshTray();
   });
   const settings = new SettingsRepository(connection.db);
+  // Content languages arrived in 4c: keep the sources an existing profile already uses visible
+  // (a fresh profile keeps the default, which follows the UI language).
+  if (settings.getValue<unknown>('browse', null) === null) {
+    const uiLanguage = settings.getAppSettings().language ?? app.getLocale();
+    const languages = initialContentLanguages(connection.sqlite, uiLanguage);
+    const browse = settings.getAppSettings().browse;
+    const byDefault = contentLanguages(browse, uiLanguage);
+    if (languages.some((l) => !byDefault.includes(l))) settings.updateAppSettings({ browse: { ...browse, languages } });
+  }
   const extensionsRepo = new ExtensionsRepository(connection.db, changes);
   const mangaRepo = new MangaRepository(connection.db, changes);
   const chaptersRepo = new ChaptersRepository(connection.db, changes);
 
   const network = new NetworkManager(new CloudflareSolver((status) => broadcast('cloudflare.status', status)));
   const extLog = log.scope('ext');
+  const extensionLogs = new ExtensionLogs((extensionId, entry) => broadcast('extensions.log', { extensionId, entry }));
 
   // The service answers the host's requests and the host client carries the service's calls;
   // the closures below bind to consts declared further down.
@@ -158,6 +170,7 @@ async function bootstrap(): Promise<void> {
       set: (folders) => settings.setValue(DEV_FOLDERS_KEY, folders),
     },
     log: (extensionId, level, message) => extLog[level](`[${extensionId}] ${message}`),
+    record: (extensionId, level, kind, message) => extensionLogs.append(extensionId, level, kind, message),
     onReload: (ids) => {
       for (const id of ids) sources.clearCache(id);
     },
@@ -169,6 +182,7 @@ async function bootstrap(): Promise<void> {
     chapters: chaptersRepo,
     // Declared further down; only used once requests arrive.
     downloads: { pages: (chapterId) => downloadStore.pages(chapterId) },
+    showNsfw: () => settings.getAppSettings().browse.showNsfw,
   });
   // Extension repositories and installs (BRAINSTORM.md §5.8). `online` is declared further down.
   const fetchBytes = createFetchBytes((url, init) => net.fetch(url, init));
@@ -178,8 +192,24 @@ async function bootstrap(): Promise<void> {
     fetchBytes,
     officialKeys: () => officialKeys(),
     isOnline: () => online.isOnline(),
+    intervalMs: () => settings.getAppSettings().browse.repoSyncHours * 3_600_000,
+    onSynced: () => {
+      if (settings.getAppSettings().browse.autoUpdateExtensions) autoUpdateExtensions();
+    },
     log: (message) => extLog.warn(`repos: ${message}`),
   });
+  // Updates that reach no new site install by themselves (the others wait for the user).
+  let autoUpdating: Promise<void> | null = null;
+  const autoUpdateExtensions = () => {
+    autoUpdating ??= installer
+      .updateAll()
+      .then((result) => {
+        if (result.updated.length > 0) extLog.info('Updated extensions by themselves', result.updated);
+        for (const failed of result.failed) extLog.warn(`Automatic update of ${failed.id} failed: ${failed.message}`);
+      })
+      .catch((error: unknown) => extLog.error('Automatic extension updates failed', error))
+      .finally(() => (autoUpdating = null));
+  };
   const installer = new ExtensionInstaller({
     dir: installedExtensionsDir,
     repos,
@@ -449,6 +479,7 @@ async function bootstrap(): Promise<void> {
       extensions,
       repos,
       installer,
+      extensionLogs,
       sources,
       chapters: chaptersRepo,
       network,

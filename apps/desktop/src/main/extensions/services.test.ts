@@ -75,6 +75,7 @@ let ports: MessagePort[];
 let site: Record<string, unknown>;
 let requests: HttpRequest[];
 let devFolders: string[];
+let recorded: string[];
 let extensions: ExtensionService;
 let sources: SourceService;
 let extensionsRepo: ExtensionsRepository;
@@ -111,6 +112,7 @@ beforeEach(async () => {
   };
   requests = [];
   devFolders = [];
+  recorded = [];
 
   const { port1, port2 } = new MessageChannel();
   ports = [port1, port2];
@@ -146,6 +148,7 @@ beforeEach(async () => {
     },
     devFolders: { get: () => devFolders, set: (folders) => (devFolders = folders) },
     log: () => undefined,
+    record: (extensionId, level, kind, message) => recorded.push(`${extensionId} ${level} ${kind} ${message}`),
   });
   extensions = service;
   sources = new SourceService({ extensions, extensionsRepo, manga: mangaRepo, chapters: chaptersRepo });
@@ -192,6 +195,34 @@ describe('ExtensionService', () => {
 });
 
 describe('SourceService', () => {
+  it('refuses to browse an adult source while adult content is hidden, and records calls in the log', async () => {
+    const folder = join(dir, 'builtin', 'demo');
+    writeFileSync(join(folder, 'manifest.json'), JSON.stringify({ ...manifest(), nsfw: true }));
+    await extensions.reload('demo');
+    let showNsfw = false;
+    const guarded = new SourceService({
+      extensions,
+      extensionsRepo,
+      manga: new MangaRepository(connection.db, new DbChanges(() => undefined)),
+      chapters: chaptersRepo,
+      showNsfw: () => showNsfw,
+    });
+    expect(guarded.list()).toEqual([expect.objectContaining({ id: 'demo/en', nsfw: true })]);
+    await expect(guarded.browse({ sourceId: 'demo/en', kind: 'popular', page: 1 })).rejects.toMatchObject({
+      code: 'nsfw_hidden',
+    });
+    await expect(guarded.resolveUrl('https://example.com/manga/x')).resolves.toBeNull();
+    showNsfw = true;
+    await expect(guarded.browse({ sourceId: 'demo/en', kind: 'popular', page: 1 })).resolves.toMatchObject({
+      hasNextPage: true,
+    });
+    expect(
+      recorded.filter((line) => line.startsWith('demo debug http GET https://example.com/popular?page=1 → 200')),
+    ).toHaveLength(1);
+    await guarded.browse({ sourceId: 'demo/en', kind: 'search', page: 1, query: 'broken' }).catch(() => undefined);
+    expect(recorded).toContainEqual(expect.stringMatching(/^demo error call search \(en\): /));
+  });
+
   it('browses, stores manga rows and persists extension storage', async () => {
     const result = await sources.browse({ sourceId: 'demo/en', kind: 'popular', page: 1 });
     expect(result.hasNextPage).toBe(true);

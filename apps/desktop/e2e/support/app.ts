@@ -68,11 +68,15 @@ export async function launchApp(
       rmSync(home, { recursive: true, force: true });
     },
   };
-  // Downloads (manual or download ahead) stay inside the test profile, never in ~/Documents.
+  // Downloads (manual or download ahead) stay inside the test profile, never in ~/Documents. The
+  // mirror extension is Indonesian: content languages include it (content.spec.ts tests the default).
   await test.page.evaluate(
     async (folder) => {
-      const { downloads } = await window.api.invoke('settings.get');
-      await window.api.invoke('settings.set', { downloads: { ...downloads, folder } });
+      const { downloads, browse } = await window.api.invoke('settings.get');
+      await window.api.invoke('settings.set', {
+        downloads: { ...downloads, folder },
+        browse: { ...browse, languages: ['en', 'id'] },
+      });
     },
     join(home, 'downloads'),
   );

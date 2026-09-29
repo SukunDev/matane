@@ -240,6 +240,8 @@ const EXTENSIONS = {
   // A second extension on the same site: same catalogue in Indonesian, chapters only up to 3.
   // Global search and migration work across extensions with it.
   mirror: { id: 'e2e-mirror', name: 'E2E Mirror', sources: [{ key: 'id', lang: 'id', name: 'E2E Mirror' }] },
+  // Adult content: hidden until Settings → Browse & extensions allows it. Its requests say lang=nsfw.
+  adult: { id: 'e2e-adult', name: 'E2E Adult', nsfw: true, sources: [{ key: 'nsfw', lang: 'en', name: 'E2E Adult' }] },
 } as const;
 export type SiteExtension = keyof typeof EXTENSIONS;
 
@@ -254,7 +256,7 @@ export function extensionFiles(
     version: overrides.version ?? '1.0.0',
     apiVersion: 1,
     ...(overrides.description ? { description: overrides.description } : {}),
-    nsfw: false,
+    nsfw: 'nsfw' in EXTENSIONS[which],
     domains: overrides.domains ?? ['e2e.localhost'],
   };
   const code = `globalThis.__extension = {
@@ -265,7 +267,10 @@ export function extensionFiles(
     const toPage = (data) => ({ items: data.items.map((m) => ({ url: m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png' })), hasNextPage: data.more });
     return {
       baseUrl: base,
-      getPopular: async (page) => toPage(await get('/api/list?page=' + page)),
+      getPopular: async (page) => {
+        log.info('popular page ' + page);
+        return toPage(await get('/api/list?page=' + page));
+      },
       getLatest: async (page) => toPage(await get('/api/list?page=' + page)),
       getFilters: () => [{ type: 'group', id: 'genres', label: 'Genres', filters: [
         { type: 'tristate', id: 'genre.Action', label: 'Action' },

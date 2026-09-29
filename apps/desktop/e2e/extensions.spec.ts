@@ -225,3 +225,20 @@ test('installed extensions and repositories survive a restart', async () => {
   await goto('#/browse/sources/e2e-demo/en?tab=popular');
   await expect(page.getByText('Paged Hero')).toBeVisible();
 });
+
+test('with automatic updates on, a sync installs updates that reach no new site', async () => {
+  await page.evaluate(async () => {
+    const { browse } = await window.api.invoke('settings.get');
+    await window.api.invoke('settings.set', { browse: { ...browse, autoUpdateExtensions: true } });
+  });
+  await publishOfficial('1.4.0', ['e2e.localhost', 'img.e2e.localhost']);
+  await syncRepos();
+  await expect.poll(installedVersion).toBe('1.4.0');
+
+  // A new site still waits for the user.
+  await publishOfficial('1.5.0', ['e2e.localhost', 'img.e2e.localhost', 'cdn.e2e.localhost']);
+  await syncRepos();
+  await goto('#/browse/extensions');
+  await expect(installedRow().getByRole('button', { name: 'Update to v1.5.0' })).toBeVisible();
+  expect(await installedVersion()).toBe('1.4.0');
+});

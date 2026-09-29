@@ -327,3 +327,54 @@ Beda dari rencana:
 
 Catatan:
 - Di satu live run, log mencatat `Unhandled TypeError: This database connection is busy executing a query`. Error ini muncul dari `saveState` jendela, yang dipanggil `app.close()` Playwright lewat `eval` inspector. Inspector bisa menyela JavaScript yang sedang berjalan (misalnya di tengah konversi baris query), jadi ini artefak harness test. Menutup jendela biasa lewat event loop tidak mengalami ini.
+
+### Milestone 4c: selesai (29 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (shared 21: +4, desktop 202: +3). E2E 71/71.
+- Test baru:
+  - **shared** `content.test.ts`: bahasa konten default (bahasa UI + EN), subtag (`pt-br` cocok dengan `pt`), `all`/`multi` selalu tampil, NSFW tersembunyi sampai dinyalakan, nilai tersimpan yang rusak kembali ke default.
+  - **desktop**:
+    - `logs.test.ts`: ring buffer 500 baris per extension, pesan dipotong di 2000 karakter, nomor urut, dan clear;
+    - `content.test.ts`: bahasa awal untuk profil lama (source yang di-pin, pernah dipakai, atau punya manga di library);
+    - `services.test.ts`: source NSFW ditolak (`nsfw_hidden`) di browse dan `resolveUrl` selama tersembunyi, lalu jalan setelah dinyalakan; request HTTP dan jawaban extension yang tidak valid tercatat di log.
+- E2E: spec baru `e2e/content.spec.ts` (6 test), plus 1 test di `extensions.spec.ts`. Extension baru di situs palsu: **E2E Adult** (NSFW, request-nya membawa `lang=nsfw`).
+  - default: hanya EN, sementara 3 source tersembunyi (MangaDex ID, Mirror ID, Adult) beserta keterangan jumlahnya; tab Tersedia menyembunyikan 2 extension;
+  - bahasa konten dipilih dari toolbar Extensions (menjadi setting `['en','id']`), lalu Mirror muncul di Tersedia dan Sources;
+  - selama NSFW mati: source Adult tidak ada di Sources, URL langsung menampilkan "Adult sources are hidden", dan global search tidak pernah mengirim request `lang=nsfw`;
+  - menyalakan NSFW meminta konfirmasi (Cancel tidak mengubah apa pun); setelah dinyalakan, source Adult ada di Sources, bisa di-browse, ikut dicari global search, dan extension-nya tampil di Tersedia dengan badge 18+;
+  - Settings → Browse & extensions berisi kartu repositori ("Verified"), toggle update otomatis, dan interval sinkron (12 jam tersimpan);
+  - dialog log extension dev: baris `log.info` extension, `GET … → 200`, `→ 404`, dan error panggilan `search (en): …` tampil live; filter "Errors" menyisakan 1 baris; Clear mengosongkan;
+  - update otomatis: sinkron memasang 1.4.0 sendiri, sedangkan 1.5.0 yang menambah domain tetap menunggu tombol "Update to v1.5.0".
+- Live check di app hasil build (profil terpisah, MangaDex asli):
+  - profil lama tanpa setting `browse` yang pernah memakai MangaDex ID → saat start, bahasa konten diisi `["en","id"]`;
+  - dengan default, Sources menampilkan MangaDex EN dan "1 source hidden by your content settings";
+  - Settings → Browse & extensions dan pemilih bahasa (bahasa umum + bahasa source/repo, dengan satu bahasa minimal tetap aktif) tampil rapi;
+  - dialog log MangaDex menampilkan request API asli (`GET https://api.mangadex.org/manga?… → 200 (176 ms)`) secara live.
+
+Implementasi:
+- **Shared:**
+  - `settings.browse`: `showNsfw` (false), `languages` (null = bahasa UI + EN), `autoUpdateExtensions` (false), dan `repoSyncHours` (6/12/24/48/168, default 24);
+  - `contentLanguages`, `isContentVisible`, `primaryLanguage`;
+  - `SourceEntry.nsfw`, `ExtensionLogEntry`, kode error `nsfw_hidden`, IPC `extensions.logs/clearLogs`, dan event `extensions.log`.
+- **Main:**
+  - `SourceService` menolak browse/search source NSFW selama tersembunyi, dan `resolveUrl` melewatinya. Ini penjaga di main, jadi URL langsung atau pemanggil lain tetap tertolak.
+  - `extensions/logs.ts` (`ExtensionLogs`): ring buffer di memori yang didorong live ke renderer. Isinya:
+    - `log.*` extension;
+    - setiap request HTTP (`debug`, atau `warn` untuk ≥ 400, `error` kalau gagal) beserta durasinya;
+    - panggilan yang gagal;
+    - jawaban extension yang tidak lolos validasi. `ExtensionService.call` sekarang menerima parser, jadi validasi dan pencatatannya ada di satu tempat.
+  - `RepoService`: interval sinkron dari setting, dan `onSynced`. Dengan `autoUpdateExtensions`, update tanpa domain baru dipasang sendiri (satu proses pada satu waktu), sementara sisanya tetap ditandai.
+  - Profil lama tanpa setting `browse`: bahasa awal = bahasa UI + EN + bahasa source yang sudah dipakai (`extensions/content.ts`). Profil baru tetap memakai default yang mengikuti bahasa UI.
+- **Renderer:**
+  - `lib/content.ts` (`useContentFilter`);
+  - `ContentControls.tsx`: pemilih bahasa konten dan toggle NSFW dengan konfirmasi, dipakai di toolbar Extensions (sesuai mockup 09) dan di Settings;
+  - filter diterapkan di tab Terpasang/Tersedia/Update (extension dev selalu tampil), Sources, Global search, dan target Migrasi, dengan keterangan "N hidden by your content settings · Change";
+  - `features/settings/BrowseSettings.tsx` (masuk `READY_SECTIONS`): konten, extension (update otomatis, interval), dan repositori (kartu yang sama dengan panel);
+  - `LogDialog.tsx`: tail live, filter level (All/Info/Warnings/Errors), Copy, dan Clear. Tombol "View logs" ada di baris dev (seperti mockup 09) dan di menu baris lainnya;
+  - `lib/now.ts` (`useNow` dipakai bersama Updates dan Extensions). Teks EN/ID.
+- **E2E support:** extension `adult`, `log.info` di `getPopular` extension test, dan `launchApp` menyetel bahasa konten `['en','id']` supaya spec lama yang memakai Mirror (ID) tetap berjalan.
+
+Beda dari rencana:
+- Filter bahasa berlaku juga di Global search dan target Migrasi, tidak hanya di daftar source, supaya hasilnya konsisten di semua tempat.
+- Extension dev tidak ikut disaring, karena pembuat extension harus selalu melihat extension yang sedang dikerjakannya.
+- Profil lama mendapat bahasa awal dari source yang sudah dipakai. Ini tidak ada di rencana; tujuannya supaya update tidak menyembunyikan source yang sedang dibaca pengguna beta.
