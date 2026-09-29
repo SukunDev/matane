@@ -1,0 +1,10 @@
+node_modules/
+dist/
+# The repository built by `pnpm repo:build` (published by CI, never committed)
+public/
+# Pages restored by transformImage during `mr-ext test`
+.mr-ext/
+# Recorded HTTP responses of extension tests (third-party content; record with `MR_RECORD=1 pnpm test`)
+extensions/*/test/fixtures/
+*.pem
+.DS_Store

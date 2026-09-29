@@ -1028,6 +1028,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Repo extension terpisah + smoke test harian.
 - `transformImage` (dekripsi byte + tile shuffle), `migrateUrl`.
 - Publikasi `extension-sdk` ke npm + panduan membuat extension.
+- **Ditunda (keputusan 29 Sep 2026):** peluncuran repo resmi `matane-extensions`, kunci tanda tangan resmi, dan terbit ke npm dikerjakan setelah semua fase app selesai (Milestone 4f). Sampai saat itu MangaDex tetap bawaan. Panduannya ada di [`docs/matane-extensions/`](docs/matane-extensions/README.md).
 
 **Fase 5: Polish & rilis v1.0**
 - Reader: crop border, split gambar tinggi, filter warna, auto-scroll, remap keyboard, gesture sentuh.

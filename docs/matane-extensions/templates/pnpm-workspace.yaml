@@ -1,0 +1,11 @@
+packages:
+  - extensions/*
+
+# One version of the Matane SDK, runtime and CLI for every extension ("catalog:" in package.json).
+catalog:
+  '@matane/extension-cli': ^0.1.0
+  '@matane/extension-runtime': ^0.1.0
+  '@matane/extension-sdk': ^0.1.0
+
+allowBuilds:
+  esbuild: true

@@ -134,31 +134,45 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
 
 ---
 
-## Milestone 4e: Repo resmi, SDK di npm, panduan, dan MangaDex keluar dari app
+## Milestone 4e: Paket npm siap terbit, repo resmi dan handoff siap pakai, panduan
 
-- **Paket npm** `@matane/extension-sdk`, `-runtime`, dan `-cli` (MIT):
+> **Perubahan rencana (29 Sep 2026):** kamu belum punya repo `matane-extensions`, kunci tanda tangan, maupun organisasi npm, dan memutuskan menyiapkannya **setelah semua fase app selesai**. Karena itu 4e hanya berisi pekerjaan yang tidak butuh akun atau rahasia. Peluncurannya (membuat repo, kunci, terbit ke npm, dan MangaDex keluar dari app) pindah ke **Milestone 4f**, yang dikerjakan setelah Fase 5. Panduan lengkap untuk membangun repo itu sudah disiapkan di [`docs/matane-extensions/`](../matane-extensions/README.md).
+
+- **Paket npm** `@matane/extension-sdk`, `-runtime`, dan `-cli` (MIT), disiapkan tapi **belum diterbitkan**:
   - ganti nama tiga paket ini di monorepo;
   - build ke `dist/` (sekarang mengekspor sumber TS), `exports`/`types`, README, dan versi `0.1.0`;
-  - `npm pack --dry-run` dicek;
-  - workflow `publish-sdk.yml` (tag `sdk-v*`, `NPM_TOKEN`, provenance).
-- **Repo `matane-extensions`**: kuscaffold di folder terpisah yang kamu tentukan, lalu kamu push. Isinya:
-  - MangaDex dipindah dari `extensions/mangadex` (beserta test fixture-nya);
-  - workflow `ci` (lint/test/build), `publish` (push ke main → `mr-ext repo build` dengan secret kunci → GitHub Pages), dan `smoke` (cron harian `mr-ext test` ke situs asli; membuka issue kalau gagal).
-- **App:**
-  - URL + kunci publik repo resmi ditanam, dan repo resmi ditambahkan otomatis;
-  - `extensions/` bawaan dan `extraResources`-nya dihapus;
-  - empty state Sources/Library mengarah ke Extensions → Tersedia;
-  - **handoff** untuk pengguna beta lama: saat start, kalau library memakai extension yang tidak terpasang dan repo resmi menyediakannya, extension itu dipasang otomatis sekali (dengan notifikasi). Kalau offline atau gagal, muncul banner dengan tombol pasang.
+  - `npm pack --dry-run` dicek, dan paket hasil pack dipasang di proyek kosong untuk membuktikan `mr-ext create/build/test` jalan dari npm;
+  - workflow `publish-sdk.yml` (tag `sdk-v*`, `NPM_TOKEN`, provenance) sudah ada, tapi baru dipakai di 4f.
+- **App, siap untuk repo resmi** (aktif begitu 4f mengisi URL dan kunci):
+  - `OFFICIAL_REPO_URL` di samping `OFFICIAL_KEYS` (masih kosong); repo resmi ditambahkan otomatis sekali saat start, dan tidak dipaksakan lagi kalau pengguna menghapusnya;
+  - **handoff**: extension yang dipakai library, tidak terpasang, dan ditawarkan repo resmi dipasang otomatis sekali (dengan notifikasi). Kalau offline atau gagal, muncul banner dengan tombol pasang;
+  - semua itu diuji E2E dengan repo resmi test (kunci + URL lewat variabel `MATANE_E2E_*`);
+  - **MangaDex tetap bawaan** sampai 4f.
+- **UI:** empty state Sources/Library mengarah ke Extensions → Tersedia.
 - **Dokumentasi:**
-  - `docs/extensions.md` menjadi panduan lengkap: SDK dari npm, create/test, repo sendiri + signing, transformImage/migrateUrl;
-  - ADR 0022 (repo + signing + model kepercayaan), 0023 (siklus pasang/update/hapus + prioritas asal), dan 0024 (transformImage dengan `sharp`);
-  - README, CHANGELOG `0.2.0-beta.1`, dan `BRAINSTORM.md` §11 (Fase 4 selesai).
+  - `docs/extensions.md` menjadi panduan lengkap: SDK dari npm (dengan catatan belum terbit), create/test, repo sendiri + signing, transformImage/migrateUrl;
+  - README, CHANGELOG `0.2.0-beta.1`, dan `BRAINSTORM.md` §11 (Fase 4 selesai kecuali peluncuran repo resmi).
 
 **Checkpoint 4e:**
-- Repo resmi hidup di GitHub Pages (setelah kamu push dan mengisi secret).
-- App hasil build memasang MangaDex dari repo itu, dengan tanda tangan resmi terverifikasi.
+- `npm pack` ketiga paket berhasil, dan paket hasil pack jalan di proyek kosong.
+- E2E: repo resmi test ditambahkan otomatis, handoff memasang extension "bawaan" dari repo, dan extension yang dihapus pengguna tidak dipasang ulang.
+- Suite lengkap hijau dan AppImage jalan.
+
+---
+
+## Milestone 4f: Peluncuran repo resmi (setelah semua fase app selesai)
+
+Mengikuti [`docs/matane-extensions/README.md`](../matane-extensions/README.md):
+
+- 🧑 Organisasi npm + `NPM_TOKEN`, repo GitHub `matane-extensions` + Pages, dan kunci `mr-ext repo keygen` (`MR_REPO_KEY`, `MR_REPO_PUBLIC_KEY`, dan `REPO_URL`).
+- Terbitkan SDK (tag `sdk-v0.1.0`), lalu isi repo dari `docs/matane-extensions/templates/` + `extensions/mangadex`, dan push → Publish ke Pages.
+- Isi `OFFICIAL_KEYS` + `OFFICIAL_REPO_URL`, hapus `extensions/` bawaan dan `extraResources`-nya (lihat [`perubahan-di-app.md`](../matane-extensions/perubahan-di-app.md)).
+
+**Checkpoint 4f:**
+- Repo resmi hidup di GitHub Pages.
+- App hasil build memasang MangaDex dari repo itu dengan status "Official · Verified".
 - Profil `0.1.0-beta.1` dengan manga MangaDex dibuka di build baru: MangaDex terpasang otomatis dan library utuh.
-- `npm pack` tiga paket berhasil. Publikasi npm dilakukan oleh CI setelah token kamu isi.
+- SDK tersedia di npm.
 
 ---
 
@@ -202,7 +216,9 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
    - dibandingkan dengan mockup 09/09b.
 4. **Paket:** AppImage dengan `sharp` jalan, `npm pack --dry-run` ketiga paket berhasil, dan `actionlint` lolos untuk workflow baru.
 
-## Yang perlu kamu siapkan (paling lambat di 4e)
+## Yang perlu kamu siapkan (untuk 4f, setelah semua fase app selesai)
+
+Langkah lengkapnya ada di [`docs/matane-extensions/setup-akun-dan-kunci.md`](../matane-extensions/setup-akun-dan-kunci.md):
 
 - Repo GitHub `matane-extensions` + GitHub Pages.
 - Kunci ed25519: kamu menjalankan `mr-ext repo keygen` sendiri, memasukkan kunci privat ke secret `MR_REPO_KEY`, dan memberiku kunci publiknya.
@@ -431,3 +447,18 @@ Beda dari rencana:
 
 Catatan:
 - Cache halaman memakai kunci dari url chapter. Setelah `migrateUrl`, halaman yang hanya ada di cache (tidak didownload) diambil sekali lagi dari situs. Download tidak terpengaruh.
+
+### Perubahan rencana: peluncuran repo resmi ditunda (29 Sep 2026)
+
+- **Keputusanmu:** repo `matane-extensions`, kunci tanda tangan, dan organisasi npm disiapkan setelah semua fase app selesai. Sebelum 4e dilanjutkan, siapkan dulu dokumen yang membantu membangun repo itu.
+- Rencana diubah: 4e hanya berisi pekerjaan tanpa akun atau rahasia, dan milestone baru **4f** (peluncuran repo resmi) dikerjakan setelah Fase 5. `BRAINSTORM.md` §11 ikut diperbarui.
+- **Dokumen yang disiapkan** di `docs/matane-extensions/`:
+  - `README.md`: gambaran (repo matane → npm → matane-extensions → GitHub Pages → app), urutan kerja sebagai checklist (🧑 kamu / 🤖 aku), dan keputusan yang tersisa (scope npm, pemilik repo, custom domain);
+  - `setup-akun-dan-kunci.md`: organisasi dan token npm (granular, 2FA, provenance), repo + Pages (sumber GitHub Actions, proteksi branch, custom domain), pembuatan kunci di komputer sendiri, tempat setiap nilai (secret `MR_REPO_KEY` / `NPM_TOKEN`, variable `MR_REPO_PUBLIC_KEY` / `REPO_URL`), serta cara mengganti kunci yang hilang atau bocor tanpa memutus pengguna;
+  - `struktur-repo.md`: tata letak repo, aturan setiap extension (id, versi, domain, NSFW, rate limit, url stabil, ikon), kebijakan fixture, versi `@matane/*` lewat `catalog:`, dan cara kerja workflow CI / Publish / Smoke;
+  - `perubahan-di-app.md`: checklist sisi Matane untuk 4e/4f (kunci + URL resmi, repo default, handoff MangaDex, MangaDex keluar dari app, verifikasi);
+  - `templates/` (siap salin ke repo baru): `package.json` (skrip `repo:build`, `repo:build:unsigned`, `repo:verify`), `pnpm-workspace.yaml` (catalog `@matane/*`), `tsconfig.base.json`, `.node-version`, `.gitignore` (termasuk `public/`, fixture, dan `*.pem`), `LICENSE`, `README.md`, `CONTRIBUTING.md` (dengan checklist PR), `scripts/check-versions.mjs`, workflow `ci.yml`, `publish.yml`, dan `smoke.yml`, serta kerangka `extension/` (package.json + tsconfig).
+- **Dicek:**
+  - ketiga workflow template lolos `actionlint` 1.7;
+  - `check-versions.mjs` diuji terhadap server lokal: belum ada yang terbit → dilewati, isi berubah tanpa naik versi → gagal, versi naik → OK, versi turun → gagal, tanpa URL → dilewati;
+  - Prettier dan lint bersih.
