@@ -1,4 +1,4 @@
-import { generateRepoKey } from '@manga-reader/extension-runtime/repo';
+import { generateRepoKey } from '@matane/extension-runtime/repo';
 import { type Page, expect, test } from '@playwright/test';
 import { type TestApp, launchApp } from './support/app';
 

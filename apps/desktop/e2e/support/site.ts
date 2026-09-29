@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, normalize } from 'node:path';
 import { createCipheriv } from 'node:crypto';
 import { crc32, deflateSync } from 'node:zlib';
-import { buildRepo } from '@manga-reader/extension-cli';
+import { buildRepo } from '@matane/extension-cli';
 
 // A tiny fake manga site for end-to-end tests: JSON API + generated PNG images, on 127.0.0.1.
 // The app reaches it as http://e2e.localhost:<port> (Chromium resolves *.localhost to loopback).

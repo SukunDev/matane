@@ -1,4 +1,4 @@
-import { archivePath, iconPath, type RepoEntry } from '@manga-reader/extension-sdk/repo';
+import { archivePath, iconPath, type RepoEntry } from '@matane/extension-sdk/repo';
 import { describe, expect, it } from 'vitest';
 import yazl from 'yazl';
 import {
@@ -14,7 +14,7 @@ import {
   signIndex,
   signerOf,
   verifyIndexSignature,
-} from './repo';
+} from './repo.js';
 
 const manifest = {
   id: 'demo',

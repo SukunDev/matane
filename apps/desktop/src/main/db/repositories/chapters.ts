@@ -1,4 +1,4 @@
-import type { Chapter, Page } from '@manga-reader/extension-sdk';
+import type { Chapter, Page } from '@matane/extension-sdk';
 import type { ChapterInfo } from '@manga-reader/shared';
 import { and, asc, eq, inArray, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../client';

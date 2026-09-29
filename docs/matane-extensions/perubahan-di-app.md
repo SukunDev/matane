@@ -1,26 +1,26 @@
 # Perubahan di app setelah repo resmi hidup
 
-Checklist sisi Matane untuk menyambungkan app ke `matane-extensions`. Kode dasarnya sudah ada sejak Fase 4a–4d. Yang tersisa adalah mengisi nilai resmi, menambahkan repo default, dan memindahkan MangaDex keluar dari app.
+Checklist sisi Matane untuk menyambungkan app ke `matane-extensions`. Bagian 2, 3, dan 5 **sudah dibuat di Milestone 4e** dan diuji dengan repo resmi test (`e2e/official.spec.ts`, `MATANE_E2E_OFFICIAL_KEY` + `MATANE_E2E_OFFICIAL_REPO`). Semuanya diam selama `OFFICIAL_REPO_URL` masih `null`. Yang tersisa untuk 4f adalah bagian 1, 4, 6, dan 7.
 
 ## 1. Kunci dan URL resmi
 
 - `apps/desktop/src/main/extensions/official.ts`:
   - `OFFICIAL_KEYS`: isi dengan kunci publik `ed25519:…` dari [`setup-akun-dan-kunci.md`](setup-akun-dan-kunci.md);
-  - tambahkan `OFFICIAL_REPO_URL` (URL Pages atau custom domain, diakhiri `/`).
+  - `OFFICIAL_REPO_URL`: URL Pages atau custom domain, diakhiri `/` (sekarang `null`).
 - Test: repo yang ditandatangani kunci itu berstatus `official`, dan index yang ditandatangani kunci lain tidak (unit test `repos.test.ts` sudah menguji logikanya dengan kunci test).
 
-## 2. Repo resmi ditambahkan otomatis
+## 2. Repo resmi ditambahkan otomatis (sudah ada)
 
-- Saat start, kalau belum ada repo dengan `OFFICIAL_REPO_URL`, repo itu ditambahkan (tanpa dialog, karena resmi). Pengguna boleh menghapusnya, jadi app mengingat bahwa repo resmi sudah pernah ditambahkan (setting) dan tidak memaksakannya lagi.
-- Sinkron pertama berjalan begitu online. Selama offline, repo muncul tanpa index dan dengan pesan "belum disinkronkan".
+- `RepoService.ensureOfficial`: saat start, kalau belum ada repo dengan `OFFICIAL_REPO_URL`, repo itu ditambahkan tanpa dialog dan tanpa jaringan. Setting `extensions.officialRepo` mengingat URL yang pernah ditambahkan, jadi repo yang dihapus pengguna tidak kembali (tapi URL resmi baru di rilis berikutnya ditambahkan lagi).
+- Sinkron pertama berjalan saat start (kalau online) atau begitu kembali online. Sebelum itu kartu repo menampilkan "Not synced yet".
 
-## 3. Handoff MangaDex untuk pengguna lama
+## 3. Handoff MangaDex untuk pengguna lama (sudah ada)
 
 Pengguna `0.1.0-beta.x` punya MangaDex **bawaan**. Begitu extension bawaan dihapus dari app, source-nya menjadi "tidak terpasang". Handoff mencegah itu:
 
-- Saat start (setelah sinkron repo resmi), untuk setiap extension yang dipakai library (`sources` dengan manga `in_library`), yang **tidak terpasang**, dan yang **ditawarkan repo resmi**: pasang otomatis **sekali**, lewat alur installer biasa (SHA-256 dicek, tulis atomik), tanpa dialog. Izin domain dianggap sudah diberikan karena extension itu sebelumnya bawaan app.
-- Tandai selesai per extension di setting, supaya extension yang sengaja dihapus pengguna tidak dipasang lagi.
-- Berhasil → notifikasi "MangaDex sekarang dipasang dari repo resmi". Offline atau gagal → banner di Library dan Sources dengan tombol **Pasang**, dan dicoba lagi saat start berikutnya.
+- `extensions/handoff.ts`: saat start dan setiap kali repo resmi selesai sinkron, untuk setiap extension yang **catatannya masih ada** di DB (pernah terpasang dan tidak pernah di-uninstall; uninstall menghapus catatannya), yang dipakai library (manga `in_library`), yang **tidak terpasang**, dan yang **ditawarkan repo resmi**: pasang otomatis **sekali** lewat alur installer biasa (SHA-256 dicek, tulis atomik), tanpa dialog. Izin domain dianggap sudah diberikan karena extension itu sebelumnya bawaan app.
+- Setting `extensions.handoffDone` mencatat extension yang sudah dipindahkan, jadi tidak ada pemasangan kedua.
+- Berhasil → notifikasi "MangaDex now comes from the official repository". Repo belum tersinkron → banner "akan dipasang"; pemasangan gagal → banner dengan alasannya. Keduanya punya tombol **Install now** dan dicoba lagi saat start berikutnya.
 - Storage dan preferensi extension ikut terbawa, karena id-nya sama dan data per extension tidak dihapus oleh handoff.
 - `migrateUrl` tidak diperlukan kalau format `url` MangaDex tetap sama.
 
@@ -31,9 +31,9 @@ Pengguna `0.1.0-beta.x` punya MangaDex **bawaan**. Begitu extension bawaan dihap
 - Skrip root `dev`, `e2e`, `dist` tidak lagi menjalankan `pnpm --filter './extensions/*' build`.
 - CI matane tidak lagi menjalankan test MangaDex (pindah ke CI `matane-extensions`).
 
-## 5. Tampilan
+## 5. Tampilan (sudah ada)
 
-- Empty state Library dan Sources mengarah ke **Extensions → Tersedia**, bukan hanya ke Extensions.
+- Empty state Sources, dan Library kalau belum ada source, mengarah ke **Extensions → Tersedia** (`/browse/extensions?tab=available`).
 - Onboarding (Fase 5) memakai daftar dari repo resmi untuk langkah "pilih source".
 
 ## 6. Verifikasi

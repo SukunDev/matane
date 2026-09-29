@@ -1,6 +1,6 @@
 import { MessageChannel, type MessagePort } from 'node:worker_threads';
-import type { HttpRequest } from '@manga-reader/extension-sdk';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { HttpRequest } from '@matane/extension-sdk';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 import { AppError } from '@manga-reader/shared/errors';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ExtensionHost } from './host';

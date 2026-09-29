@@ -1,6 +1,6 @@
 import { access, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 import {
   REPO_FORMAT_VERSION,
   REPO_INDEX_FILE,
@@ -10,7 +10,7 @@ import {
   type RepoIndex,
   archivePath,
   iconPath,
-} from '@manga-reader/extension-sdk/repo';
+} from '@matane/extension-sdk/repo';
 import {
   RepoError,
   checkArchiveHash,
@@ -22,9 +22,9 @@ import {
   sha256Hex,
   signIndex,
   verifyIndexSignature,
-} from '@manga-reader/extension-runtime/repo';
+} from '@matane/extension-runtime/repo';
 import yazl from 'yazl';
-import { buildExtension, readManifest } from './build';
+import { buildExtension, readManifest } from './build.js';
 
 /** Env var holding the PEM private key in CI (a secret), instead of `--key <file>`. */
 export const KEY_ENV = 'MR_REPO_KEY';

@@ -1,6 +1,6 @@
-import type { MigratedUrls, RawImageTransform } from '@manga-reader/extension-runtime';
-import type { HttpRequest, HttpResponse, Page, UrlKind } from '@manga-reader/extension-sdk';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { MigratedUrls, RawImageTransform } from '@matane/extension-runtime';
+import type { HttpRequest, HttpResponse, Page, UrlKind } from '@matane/extension-sdk';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 
 /** Methods the extension host serves (main → host). */
 export type HostMethods = {

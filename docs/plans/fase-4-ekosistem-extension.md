@@ -462,3 +462,64 @@ Catatan:
   - ketiga workflow template lolos `actionlint` 1.7;
   - `check-versions.mjs` diuji terhadap server lokal: belum ada yang terbit → dilewati, isi berubah tanpa naik versi → gagal, versi naik → OK, versi turun → gagal, tanpa URL → dilewati;
   - Prettier dan lint bersih.
+
+### Milestone 4e: selesai (29 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (desktop 211: +4). E2E 78/78. `actionlint` bersih untuk semua workflow, termasuk `publish-sdk.yml` yang baru.
+- Test baru:
+  - **desktop** `repos.test.ts` (+4):
+    - repo resmi ditambahkan sekali tanpa jaringan, tidak kembali setelah dihapus pengguna, dan URL resmi baru ditambahkan lagi;
+    - handoff menunggu index resmi, memasang extension bekas bawaan sekali, lalu tidak menyentuhnya lagi setelah di-uninstall;
+    - pemasangan gagal (zip diubah) ditampilkan beserta alasannya, dan berhasil saat dicoba ulang;
+    - tidak ada apa-apa tanpa repo resmi, atau kalau repo resmi tidak menawarkan extension itu.
+  - **E2E** `official.spec.ts` (4 test). Extension "bawaan" disimulasikan dengan folder dev yang lalu dilepas, dengan manga tetap di library.
+    - saat start dengan situs mati: repo resmi ditambahkan (`official: true`, `synced: false`), dan Library menampilkan banner "E2E Demo will be installed from the official repository";
+    - zip diubah → "Install now" → banner "could not be installed" + `sha256 mismatch`; setelah zip diperbaiki → "Install now" → terpasang dari repo ("Official · Verified") dan manga library membuka chapter-nya lagi;
+    - extension yang di-uninstall tidak dipasang ulang setelah restart, dan repo resmi yang dihapus tidak kembali;
+    - profil kedua yang dibuka online: pindah sendiri tanpa klik, tanpa banner, dan chapter terbaca.
+- **Paket npm** (belum diterbitkan, sesuai rencana):
+  - `pnpm pack` ketiga paket: tarball berisi `dist/` (JS ESM + `.d.ts` + source map dengan sumber inline), README, dan LICENSE. `exports`/`bin` menunjuk ke `dist/`, dan `workspace:*` berubah menjadi `0.1.0`;
+  - `pnpm --filter "@matane/extension-cli..." publish --dry-run` mem-build dan menerbitkan (simulasi) dengan urutan sdk → runtime → cli;
+  - **dipasang dengan npm biasa di proyek kosong di luar workspace**, lalu dari sana:
+    - `mr-ext --version`, `create demo` (layout standalone, dependensi `^0.1.0`), `build`, dan `tsc` atas scaffold dengan tipe dari `dist/` → OK;
+    - `repo keygen/build/verify` → OK;
+    - skrip Node yang mengimpor `ExtensionRuntime`, `createFixtureHost`, `/image` (`applyTiles` dengan sharp), dan `/repo` → OK;
+    - `mr-ext test` terhadap situs E2E, termasuk `transformImage` AES + tile → halaman pulih benar.
+- **Live check** (AppImage hasil build, profil terpisah, MangaDex asli):
+  - profil "lama" dengan MangaDex bawaan + "Na Honjaman Level-Up" di library;
+  - salinan AppImage tanpa `resources/extensions/mangadex` (menyimulasikan build 4f) dengan repo resmi lokal bertanda tangan kunci scratch;
+  - repo belum terjangkau → banner "MangaDex will be installed from the official repository" di Library;
+  - repo terjangkau → `handoff: installed mangadex from the official repository`, `mangadex@1.0.0 repo`, banner hilang, repo "Verified", baris "Official · Verified", dan chapter asli "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1 terbaca (`200 image/jpeg`).
+
+Implementasi:
+- **Paket `@matane/*`:**
+  - rename dari `@manga-reader/extension-*` di semua kode, konfigurasi, dan dokumen yang masih berlaku (plan doc lama tidak diubah, karena catatan sejarah);
+  - import relatif memakai `.js`, supaya hasil `tsc` jalan langsung di Node ESM;
+  - `tsconfig.build.json` per paket, skrip `build`/`prepack`, dan metadata npm (description, keywords, repository.directory, `files`, `engines`);
+  - `publishConfig`: access public, provenance, dan `exports`/`bin` ke `dist/`. Di workspace, paket tetap mengekspor sumber TS, jadi app, test, dan bin dev tidak berubah;
+  - `tsx` pindah ke devDependencies (hanya untuk bin dev);
+  - `mr-ext create --layout standalone | catalog | workspace`. Standalone menulis tsconfig lengkap dan dependensi `^0.1.0`;
+  - README per paket, dan LICENSE atas nama "Matane contributors".
+- **Workflow** `.github/workflows/publish-sdk.yml`: tag `sdk-v*` → install hanya paket SDK → cek versi tag = versi paket → typecheck dan test → `pnpm publish` dengan `NPM_TOKEN` + provenance. Dipakai di 4f.
+- **App:**
+  - `official.ts`: `OFFICIAL_REPO_URL` (masih `null`) dan `officialRepoUrl()` (override test lewat `MATANE_E2E_OFFICIAL_REPO`);
+  - `RepoService.ensureOfficial/official`, dan `RepoInfo.synced/official`;
+  - `extensions/handoff.ts` (`Handoff`) dengan setting `extensions.officialRepo` dan `extensions.handoffDone`;
+  - saat start: repo resmi ditambahkan, disinkronkan kalau belum pernah (lalu handoff jalan, berhasil atau tidak); saat kembali online: sinkron ulang; setiap sinkron repo resmi: handoff;
+  - IPC `extensions.handoff` dan `extensions.retryHandoff`.
+- **Renderer:**
+  - `HandoffBanner` (Library dan Sources);
+  - kartu repo menampilkan "Not synced yet";
+  - route `/browse/extensions?tab=…`; empty state Sources dan Library (kalau belum ada source) → "Get extensions" (tab Tersedia); teks EN/ID.
+- **Dokumentasi:**
+  - `docs/extensions.md`: quick start dari npm dengan catatan belum terbit, layout `create`, View logs, dan `--out`;
+  - `docs/matane-extensions/`: checklist dan bagian yang sudah dikerjakan ditandai, dan template CONTRIBUTING memakai `--layout catalog`;
+  - README (status Fase 4 dan struktur), CHANGELOG `0.2.0-beta.1 — unreleased`, dan `BRAINSTORM.md` §11 (Fase 4 selesai kecuali 4f, plus penyesuaiannya).
+
+Beda dari rencana:
+- Handoff hanya berlaku untuk extension yang **catatannya masih ada** di DB, yaitu pernah terpasang dan tidak pernah di-uninstall. Uninstall menghapus catatan itu, jadi pilihan pengguna untuk membuang extension dihormati tanpa daftar tambahan.
+- Versi app **tidak** dinaikkan ke `0.2.0-beta.1`. CHANGELOG ditulis sebagai "unreleased", karena menaikkan versi dan push tag adalah langkah rilis yang kamu lakukan.
+- Paket yang siap terbit dibuktikan dengan memasangnya di proyek npm kosong, bukan hanya `npm pack --dry-run`.
+
+Catatan:
+- `node_modules/.bin/npm` tidak ada di PATH lingkungan ini (pnpm-only). Uji npm memakai npm 11.19 dari instalasi nvm lain, dengan Node 24 proyek.

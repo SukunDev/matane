@@ -1,12 +1,12 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ExtensionRuntime } from '@manga-reader/extension-runtime';
+import { ExtensionRuntime } from '@matane/extension-runtime';
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildExtension } from './build';
-import { createExtension } from './create';
-import { createFixtureHost, hasFixtures } from './fixtures';
-import { RateLimiter } from './node-host';
+import { buildExtension } from './build.js';
+import { createExtension } from './create.js';
+import { createFixtureHost, hasFixtures } from './fixtures.js';
+import { RateLimiter } from './node-host.js';
 
 // Scratch dirs live inside the package so the scaffold resolves the workspace SDK.
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

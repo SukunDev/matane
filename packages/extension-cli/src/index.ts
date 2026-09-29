@@ -1,9 +1,9 @@
-export { buildExtension, readManifest, type BuildResult } from './build';
-export { createExtension, type CreateOptions } from './create';
-export { createNodeHost, nodeFetch, RateLimiter } from './node-host';
-export { runSmokeTest, type SmokeOptions } from './smoke';
-export { createFixtureHost, fixtureKey, hasFixtures, type FixtureHost, type FixtureHostOptions } from './fixtures';
-export { percentile, runBenchmark, type BenchOptions, type Sample } from './bench';
+export { buildExtension, readManifest, type BuildResult } from './build.js';
+export { createExtension, type CreateOptions } from './create.js';
+export { createNodeHost, nodeFetch, RateLimiter } from './node-host.js';
+export { runSmokeTest, type SmokeOptions } from './smoke.js';
+export { createFixtureHost, fixtureKey, hasFixtures, type FixtureHost, type FixtureHostOptions } from './fixtures.js';
+export { percentile, runBenchmark, type BenchOptions, type Sample } from './bench.js';
 export {
   buildRepo,
   deterministicZip,
@@ -13,4 +13,4 @@ export {
   type BuildRepoResult,
   type VerifyRepoOptions,
   type VerifyRepoResult,
-} from './repo';
+} from './repo.js';

@@ -202,15 +202,15 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@manga-reader/extension-runtime':
-        specifier: workspace:*
-        version: link:../../packages/extension-runtime
-      '@manga-reader/extension-sdk':
-        specifier: workspace:*
-        version: link:../../packages/extension-sdk
       '@manga-reader/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@matane/extension-runtime':
+        specifier: workspace:*
+        version: link:../../packages/extension-runtime
+      '@matane/extension-sdk':
+        specifier: workspace:*
+        version: link:../../packages/extension-sdk
       better-sqlite3:
         specifier: 13.0.3
         version: 13.0.3
@@ -254,7 +254,7 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
-      '@manga-reader/extension-cli':
+      '@matane/extension-cli':
         specifier: workspace:*
         version: link:../../packages/extension-cli
       '@playwright/test':
@@ -350,22 +350,22 @@ importers:
 
   extensions/mangadex:
     devDependencies:
-      '@manga-reader/extension-cli':
+      '@matane/extension-cli':
         specifier: workspace:*
         version: link:../../packages/extension-cli
-      '@manga-reader/extension-runtime':
+      '@matane/extension-runtime':
         specifier: workspace:*
         version: link:../../packages/extension-runtime
-      '@manga-reader/extension-sdk':
+      '@matane/extension-sdk':
         specifier: workspace:*
         version: link:../../packages/extension-sdk
 
   packages/extension-cli:
     dependencies:
-      '@manga-reader/extension-runtime':
+      '@matane/extension-runtime':
         specifier: workspace:*
         version: link:../extension-runtime
-      '@manga-reader/extension-sdk':
+      '@matane/extension-sdk':
         specifier: workspace:*
         version: link:../extension-sdk
       commander:
@@ -374,9 +374,6 @@ importers:
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
-      tsx:
-        specifier: 4.23.15
-        version: 4.23.15
       yazl:
         specifier: 3.3.1
         version: 3.3.1
@@ -384,10 +381,13 @@ importers:
       '@types/yazl':
         specifier: 3.3.1
         version: 3.3.1
+      tsx:
+        specifier: 4.23.15
+        version: 4.23.15
 
   packages/extension-runtime:
     dependencies:
-      '@manga-reader/extension-sdk':
+      '@matane/extension-sdk':
         specifier: workspace:*
         version: link:../extension-sdk
       cheerio:
@@ -421,7 +421,7 @@ importers:
 
   packages/shared:
     dependencies:
-      '@manga-reader/extension-sdk':
+      '@matane/extension-sdk':
         specifier: workspace:*
         version: link:../extension-sdk
       zod:

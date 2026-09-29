@@ -1,5 +1,5 @@
-import type { MigratedUrls } from '@manga-reader/extension-runtime';
-import type { UrlKind } from '@manga-reader/extension-sdk';
+import type { MigratedUrls } from '@matane/extension-runtime';
+import type { UrlKind } from '@matane/extension-sdk';
 import type Database from 'better-sqlite3';
 
 /** Settings key: per extension, the version whose urls are stored in the database. */

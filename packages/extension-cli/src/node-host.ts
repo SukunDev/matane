@@ -1,5 +1,5 @@
-import type { ExtensionManifest, HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
-import { type HostApi, type LogLevel, fromFetchResponse, toFetchParts } from '@manga-reader/extension-runtime';
+import type { ExtensionManifest, HttpRequest, HttpResponse } from '@matane/extension-sdk';
+import { type HostApi, type LogLevel, fromFetchResponse, toFetchParts } from '@matane/extension-runtime';
 
 export const CLI_NAME = 'mr-ext';
 export const CLI_VERSION = '0.1.0';

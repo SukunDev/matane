@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
-import type { MigratedUrls, RawImageTransform } from '@manga-reader/extension-runtime';
-import type { HttpRequest, HttpResponse, Page, Preference, UrlKind } from '@manga-reader/extension-sdk';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { MigratedUrls, RawImageTransform } from '@matane/extension-runtime';
+import type { HttpRequest, HttpResponse, Page, Preference, UrlKind } from '@matane/extension-sdk';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 import type { ExtensionEntry } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import type { ExtensionsRepository } from '../db/repositories/extensions';

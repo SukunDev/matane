@@ -9,6 +9,7 @@ import type { CategoriesRepository } from '../db/repositories/categories';
 import type { HistoryRepository } from '../db/repositories/history';
 import type { LibraryRepository } from '../db/repositories/library';
 import type { MangaRepository } from '../db/repositories/manga';
+import type { Handoff } from '../extensions/handoff';
 import type { ExtensionInstaller } from '../extensions/installer';
 import type { ExtensionLogs } from '../extensions/logs';
 import type { RepoService } from '../extensions/repos';
@@ -34,6 +35,7 @@ export interface IpcDeps {
   extensions: ExtensionService;
   repos: RepoService;
   installer: ExtensionInstaller;
+  handoff: Handoff;
   extensionLogs: ExtensionLogs;
   sources: SourceService;
   chapters: ChaptersRepository;
@@ -68,6 +70,7 @@ export function createIpcHandlers({
   extensions,
   repos,
   installer,
+  handoff,
   extensionLogs,
   sources,
   chapters,
@@ -186,6 +189,12 @@ export function createIpcHandlers({
     'extensions.cancelInstall': ({ token }) => installer.cancel(token),
     'extensions.updateAll': () => installer.updateAll(),
     'extensions.uninstall': ({ extensionId }) => installer.uninstall(extensionId),
+    'extensions.handoff': () => handoff.status(),
+    'extensions.retryHandoff': async () => {
+      const official = repos.official();
+      if (official && !official.synced) await repos.sync(official.id);
+      return handoff.run();
+    },
     'extensions.logs': ({ extensionId }) => extensionLogs.list(extensionId),
     'extensions.clearLogs': ({ extensionId }) => extensionLogs.clear(extensionId),
 

@@ -39,7 +39,8 @@ import { ExtensionIcon, LangBadges, TrustLine } from './parts';
 import { PreferencesDialog } from './PreferencesDialog';
 import { RepositoriesPanel } from './RepositoriesPanel';
 
-type Tab = 'installed' | 'available' | 'updates';
+export type ExtensionsTab = 'installed' | 'available' | 'updates';
+type Tab = ExtensionsTab;
 const TABS: Tab[] = ['installed', 'available', 'updates'];
 
 const menuItem =
@@ -53,7 +54,7 @@ export function useLoadDevFolder() {
  * Extensions (mockup 09): installed ones, what the repositories offer, updates, and the
  * Repositories panel. Installs and updates go through the install dialog (mockup 09b).
  */
-export function ExtensionsPage() {
+export function ExtensionsPage({ initialTab = 'installed' }: { initialTab?: ExtensionsTab }) {
   const { t } = useTranslation();
   const now = useNow();
   const { data: extensions = [], isPending } = useQuery(extensionsQuery);
@@ -61,7 +62,7 @@ export function ExtensionsPage() {
   const { data: repos = [] } = useQuery(reposQuery);
   const loadFolder = useLoadDevFolder();
   const reloadAll = useMutation({ mutationFn: () => ipc.invoke('extensions.reload') });
-  const [tab, setTab] = useState<Tab>('installed');
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [panelOpen, setPanelOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [install, setInstall] = useState<InstallRequest | null>(null);

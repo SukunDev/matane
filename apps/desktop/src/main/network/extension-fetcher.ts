@@ -1,6 +1,6 @@
-import { fromFetchResponse, toFetchParts } from '@manga-reader/extension-runtime/http-bridge';
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
-import { isAllowedHost } from '@manga-reader/extension-sdk/manifest';
+import { fromFetchResponse, toFetchParts } from '@matane/extension-runtime/http-bridge';
+import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
+import { isAllowedHost } from '@matane/extension-sdk/manifest';
 import { AppError } from '@manga-reader/shared/errors';
 import type { TokenBucket } from './token-bucket';
 

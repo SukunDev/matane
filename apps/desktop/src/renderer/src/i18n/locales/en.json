@@ -460,7 +460,8 @@
         "unsigned": "Not signed.",
         "unknown-key": "Signed with a key this app does not know.",
         "bad-signature": "The signature does not match the index."
-      }
+      },
+      "notSynced": "Not synced yet"
     },
     "install": {
       "description": "What this extension can do, before it is installed.",
@@ -507,6 +508,15 @@
       "clear": "Clear",
       "empty": "Nothing logged yet. Use the extension (browse, open a manga) and lines appear here.",
       "lines": "Log lines"
+    },
+    "getExtensions": "Get extensions",
+    "handoff": {
+      "failed_one": "{{names}} could not be installed from the official repository",
+      "failed_other": "{{names}} could not be installed from the official repository",
+      "waiting_one": "{{names}} will be installed from the official repository",
+      "waiting_other": "{{names}} will be installed from the official repository",
+      "waitingHint": "It used to come with Matane. It installs by itself once Matane is online; your library stays as it is.",
+      "install": "Install now"
     }
   },
   "manga": {

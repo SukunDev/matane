@@ -1,4 +1,4 @@
-import type { Chapter, MangaDetails, MangaStatus, MangaSummary, MangaType } from '@manga-reader/extension-sdk';
+import type { Chapter, MangaDetails, MangaStatus, MangaSummary, MangaType } from '@matane/extension-sdk';
 import { COVERS_URL, type ChapterData, type LocalizedString, type MangaData } from './api';
 
 /** Preferred localisation: the source language, then English, then whatever exists. */

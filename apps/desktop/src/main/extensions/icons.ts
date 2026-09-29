@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { REPO_LIMITS } from '@manga-reader/extension-sdk/repo';
+import { REPO_LIMITS } from '@matane/extension-sdk/repo';
 import { AppError } from '@manga-reader/shared/errors';
 import type { ServedImage } from '../images/service';
 import type { FetchBytes } from '../network/fetch-bytes';

@@ -1,5 +1,5 @@
-import { ExtensionRuntime, ExtensionRuntimeError, type HostApi, HostError } from '@manga-reader/extension-runtime';
-import { type Preference, SDK_API_VERSION } from '@manga-reader/extension-sdk';
+import { ExtensionRuntime, ExtensionRuntimeError, type HostApi, HostError } from '@matane/extension-runtime';
+import { type Preference, SDK_API_VERSION } from '@matane/extension-sdk';
 import { AppError, type AppErrorCode, codeForExtensionError } from '@manga-reader/shared/errors';
 import type { HostInfo, HostMethods, MainMethods } from './protocol';
 import type { RpcHandlers, RpcPeer } from './rpc';

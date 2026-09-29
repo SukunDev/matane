@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
 
 // Workspace packages ship TypeScript sources, so they must be bundled instead of externalized.
-const bundledWorkspaceDeps = ['@manga-reader/shared', '@manga-reader/extension-runtime', '@manga-reader/extension-sdk'];
+const bundledWorkspaceDeps = ['@manga-reader/shared', '@matane/extension-runtime', '@matane/extension-sdk'];
 
 export default defineConfig({
   main: {

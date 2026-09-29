@@ -1,6 +1,6 @@
 import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { type ExtensionManifest, SDK_API_VERSION, manifestSchema } from '@manga-reader/extension-sdk/manifest';
+import { type ExtensionManifest, SDK_API_VERSION, manifestSchema } from '@matane/extension-sdk/manifest';
 import { build as esbuild } from 'esbuild';
 
 export interface BuildResult {

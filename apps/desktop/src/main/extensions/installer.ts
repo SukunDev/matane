@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { type ExtensionArchive, checkArchiveHash, readExtensionArchive } from '@manga-reader/extension-runtime/repo';
-import { REPO_LIMITS, type RepoEntry } from '@manga-reader/extension-sdk/repo';
+import { type ExtensionArchive, checkArchiveHash, readExtensionArchive } from '@matane/extension-runtime/repo';
+import { REPO_LIMITS, type RepoEntry } from '@matane/extension-sdk/repo';
 import type { AvailableExtension, ExtensionEntry, InstallPreview, UpdateAllResult } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import { compareVersions } from '../app/updater';

@@ -1,8 +1,22 @@
 {
-  "name": "@manga-reader/extension-sdk",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@matane/extension-sdk",
+  "version": "0.1.0",
+  "description": "Types and helpers for writing Matane extensions",
+  "keywords": [
+    "matane",
+    "manga",
+    "extension",
+    "sdk"
+  ],
   "license": "MIT",
+  "author": "SukunDev",
+  "homepage": "https://github.com/SukunDev/matane/blob/main/docs/extensions.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SukunDev/matane.git",
+    "directory": "packages/extension-sdk"
+  },
+  "bugs": "https://github.com/SukunDev/matane/issues",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -10,9 +24,41 @@
     "./globals": "./src/globals.ts",
     "./repo": "./src/repo.ts"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./manifest": {
+        "types": "./dist/manifest.d.ts",
+        "default": "./dist/manifest.js"
+      },
+      "./globals": {
+        "types": "./dist/globals.d.ts",
+        "default": "./dist/globals.js"
+      },
+      "./repo": {
+        "types": "./dist/repo.d.ts",
+        "default": "./dist/repo.js"
+      }
+    }
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "zod": "4.6.5"

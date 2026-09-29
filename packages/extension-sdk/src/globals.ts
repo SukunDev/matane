@@ -1,7 +1,7 @@
 // Ambient declarations for the globals the host injects into the sandbox (BRAINSTORM.md §5.5).
-// Extensions get them with `import '@manga-reader/extension-sdk/globals'` (types only).
+// Extensions get them with `import '@matane/extension-sdk/globals'` (types only).
 
-import type { HtmlElement, HttpRequest, HttpResponse } from './http';
+import type { HtmlElement, HttpRequest, HttpResponse } from './http.js';
 
 declare global {
   const http: {

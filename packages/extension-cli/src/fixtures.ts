@@ -2,9 +2,9 @@ import { createHash } from 'node:crypto';
 import { readdirSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
-import type { HostApi, LogLevel } from '@manga-reader/extension-runtime';
-import { nodeFetch } from './node-host';
+import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
+import type { HostApi, LogLevel } from '@matane/extension-runtime';
+import { nodeFetch } from './node-host.js';
 
 export interface FixtureHostOptions {
   dir: string;

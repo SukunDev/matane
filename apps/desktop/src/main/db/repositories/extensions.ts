@@ -1,4 +1,4 @@
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 import { and, eq } from 'drizzle-orm';
 import type { AppDatabase } from '../client';
 import type { DbChanges } from '../changes';

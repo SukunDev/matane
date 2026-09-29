@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { buildRepo } from '@manga-reader/extension-cli';
-import { generateRepoKey, signIndex } from '@manga-reader/extension-runtime/repo';
+import { buildRepo } from '@matane/extension-cli';
+import { generateRepoKey, signIndex } from '@matane/extension-runtime/repo';
 import { AppError } from '@manga-reader/shared/errors';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { DbChanges } from '../db/changes';
@@ -11,6 +11,7 @@ import { runMigrations } from '../db/migrate';
 import { ExtensionsRepository } from '../db/repositories/extensions';
 import { ReposRepository } from '../db/repositories/repos';
 import type { FetchBytes } from '../network/fetch-bytes';
+import { Handoff } from './handoff';
 import { ExtensionInstaller } from './installer';
 import { ExtensionRegistry } from './registry';
 import { RepoService, evaluateTrust, normalizeRepoUrl } from './repos';
@@ -34,6 +35,7 @@ let extensions: ExtensionService;
 let extensionsRepo: ExtensionsRepository;
 let clearedSessions: string[];
 let unloaded: string[];
+let officialUrl: string | null;
 
 function writeExtension(folder: string, version: string, domains = ['demo.example'], extra: object = {}) {
   mkdirSync(folder, { recursive: true });
@@ -87,6 +89,7 @@ beforeEach(async () => {
   fetched = [];
   clearedSessions = [];
   unloaded = [];
+  officialUrl = null;
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   const changes = new DbChanges(() => undefined);
@@ -115,6 +118,7 @@ beforeEach(async () => {
     repo: reposRepo,
     fetchBytes,
     officialKeys: () => [official.publicKey],
+    officialUrl: () => officialUrl,
     isOnline: () => true,
   });
   installer = new ExtensionInstaller({
@@ -373,5 +377,120 @@ describe('ExtensionInstaller', () => {
     writeExtension(join(installed, 'kept.old'), '0.1.0');
     await installer.recover();
     expect(readdirSync(installed).sort()).toEqual(['demo', 'kept']);
+  });
+});
+
+describe('official repository and handoff', () => {
+  const added = () => {
+    let value: string | null = null;
+    return { get: () => value, set: (url: string) => (value = url) };
+  };
+
+  it('adds the official repository once, without the network, and not again after a removal', () => {
+    const store = added();
+    expect(repos.ensureOfficial(store)).toBeNull();
+    officialUrl = REPO_URL;
+    const repo = repos.ensureOfficial(store)!;
+    expect(repo).toMatchObject({ url: REPO_URL, official: true, synced: false, extensionCount: 0 });
+    expect(fetched).toEqual([]);
+    expect(repos.ensureOfficial(store)?.id).toBe(repo.id);
+    repos.remove(repo.id);
+    expect(repos.ensureOfficial(store)).toBeNull();
+    // A new official URL (a later app version) is added again.
+    officialUrl = OTHER_URL;
+    expect(repos.ensureOfficial(store)).toMatchObject({ url: OTHER_URL, official: true });
+  });
+
+  /** "demo" used to be built in and has a manga in the library; now the app no longer has it. */
+  async function formerBuiltin() {
+    writeExtension(join(dir, 'builtin', 'demo'), '0.9.0');
+    await extensions.reload();
+    connection.sqlite
+      .prepare(
+        "INSERT INTO manga (source_id, url, title, in_library, created_at, updated_at) VALUES ('demo/en', '/a', 'A', 1, 0, 0)",
+      )
+      .run();
+    rmSync(join(dir, 'builtin', 'demo'), { recursive: true });
+    await extensions.reload();
+    expect(extensions.isInstalled('demo')).toBe(false);
+  }
+
+  function handoff(notified: string[][] = []) {
+    let done: string[] = [];
+    return new Handoff({
+      sqlite: connection.sqlite,
+      official: () => {
+        const repo = repos.official();
+        if (!repo) return null;
+        const index = repos.index(repo.id);
+        return { id: repo.id, offers: index ? (id) => index.extensions.some((e) => e.id === id) : null };
+      },
+      isInstalled: (id) => extensions.isInstalled(id),
+      install: async (repoId, id) => {
+        await installer.install((await installer.prepare(repoId, id)).token);
+      },
+      done: { get: () => done, set: (ids) => (done = ids) },
+      notify: (names) => notified.push(names),
+      log: () => undefined,
+      changed: () => undefined,
+    });
+  }
+
+  it('waits for the official index, installs a former built-in once, and leaves it alone afterwards', async () => {
+    await formerBuiltin();
+    officialUrl = REPO_URL;
+    const repo = repos.ensureOfficial(added())!;
+    const notified: string[][] = [];
+    const run = handoff(notified);
+    await expect(run.run()).resolves.toEqual([{ id: 'demo', name: 'Demo', state: 'waiting', error: null }]);
+
+    await publish(REPO_URL, '1.0.0', official);
+    await repos.sync(repo.id);
+    await expect(run.run()).resolves.toEqual([]);
+    expect(extensions.list()).toEqual([expect.objectContaining({ id: 'demo', origin: 'repo', repoId: repo.id })]);
+    expect(notified).toEqual([['Demo']]);
+
+    // Uninstalled by the user: its record goes, so it is never installed by itself again.
+    await installer.uninstall('demo');
+    await expect(handoff().run()).resolves.toEqual([]);
+    expect(extensions.isInstalled('demo')).toBe(false);
+  });
+
+  it('shows a failed install, and succeeds on a retry once the archive is fine', async () => {
+    await formerBuiltin();
+    officialUrl = REPO_URL;
+    const repo = repos.ensureOfficial(added())!;
+    const folder = await publish(REPO_URL, '1.0.0', official);
+    await repos.sync(repo.id);
+    const zip = join(folder, 'extensions', 'demo-1.0.0.zip');
+    const good = readFileSync(zip);
+    const bad = Buffer.from(good);
+    bad[bad.length - 50]! ^= 1;
+    writeFileSync(zip, bad);
+    const run = handoff();
+    await expect(run.run()).resolves.toEqual([
+      { id: 'demo', name: 'Demo', state: 'failed', error: expect.stringMatching(/sha256 mismatch/) },
+    ]);
+    writeFileSync(zip, good);
+    await expect(run.run()).resolves.toEqual([]);
+    expect(extensions.isInstalled('demo')).toBe(true);
+  });
+
+  it('does nothing without an official repository, or when it does not offer the extension', async () => {
+    await formerBuiltin();
+    await expect(handoff().run()).resolves.toEqual([]);
+    officialUrl = OTHER_URL;
+    const repo = repos.ensureOfficial(added())!;
+    await publish(OTHER_URL, '1.0.0', official);
+    const indexFile = join(served.get(OTHER_URL)!, 'index.json');
+    // An official index without "demo".
+    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { extensions: unknown[] };
+    index.extensions = [];
+    const bytes = Buffer.from(`${JSON.stringify(index, null, 2)}\n`);
+    writeFileSync(indexFile, bytes);
+    writeFileSync(join(served.get(OTHER_URL)!, 'index.json.sig'), signIndex(bytes, official.privateKeyPem));
+    await repos.sync(repo.id);
+    await expect(handoff().run()).resolves.toEqual([]);
+    expect(extensions.isInstalled('demo')).toBe(false);
   });
 });

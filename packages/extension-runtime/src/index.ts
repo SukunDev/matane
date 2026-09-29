@@ -1,4 +1,4 @@
-export { DEFAULT_LIMITS, ExtensionRuntime, aesDecrypt } from './runtime';
+export { DEFAULT_LIMITS, ExtensionRuntime, aesDecrypt } from './runtime.js';
 export type {
   CallOptions,
   CreateRuntimeOptions,
@@ -7,7 +7,7 @@ export type {
   MigratedUrls,
   RawImageTransform,
   RuntimeLimits,
-} from './runtime';
-export { ExtensionRuntimeError, HostError } from './errors';
-export type { RuntimeErrorCode, SerializedExtensionError } from './errors';
-export { fromFetchResponse, toFetchParts, type FetchParts } from './http-bridge';
+} from './runtime.js';
+export { ExtensionRuntimeError, HostError } from './errors.js';
+export type { RuntimeErrorCode, SerializedExtensionError } from './errors.js';
+export { fromFetchResponse, toFetchParts, type FetchParts } from './http-bridge.js';

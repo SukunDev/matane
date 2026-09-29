@@ -1,8 +1,8 @@
 import { type FSWatcher, watch } from 'node:fs';
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { basename, join, resolve } from 'node:path';
-import { SDK_API_VERSION } from '@manga-reader/extension-sdk';
-import { type ExtensionManifest, manifestSchema } from '@manga-reader/extension-sdk/manifest';
+import { SDK_API_VERSION } from '@matane/extension-sdk';
+import { type ExtensionManifest, manifestSchema } from '@matane/extension-sdk/manifest';
 import type { ExtensionEntry } from '@manga-reader/shared';
 
 export type ExtensionOrigin = ExtensionEntry['origin'];

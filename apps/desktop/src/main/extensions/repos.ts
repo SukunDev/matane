@@ -1,5 +1,5 @@
-import { REPO_INDEX_FILE, REPO_LIMITS, REPO_SIGNATURE_FILE, type RepoIndex } from '@manga-reader/extension-sdk/repo';
-import { RepoError, parseRepoIndex, verifyIndexSignature } from '@manga-reader/extension-runtime/repo';
+import { REPO_INDEX_FILE, REPO_LIMITS, REPO_SIGNATURE_FILE, type RepoIndex } from '@matane/extension-sdk/repo';
+import { RepoError, parseRepoIndex, verifyIndexSignature } from '@matane/extension-runtime/repo';
 import type { AddRepoResult, RepoInfo, RepoSignatureProblem, RepoTrust } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import type { RepoRow, ReposRepository } from '../db/repositories/repos';
@@ -81,6 +81,8 @@ export interface RepoServiceDeps {
   fetchBytes: FetchBytes;
   officialKeys: () => readonly string[];
   isOnline: () => boolean;
+  /** The official repository's URL (added by itself; null while there is none). */
+  officialUrl?: () => string | null;
   /** How old an index may get before the schedule syncs it (default a day; a setting). */
   intervalMs?: () => number;
   /** After a repository synced successfully (e.g. to install updates by themselves). */
@@ -143,6 +145,45 @@ export class RepoService {
       lastError: null,
     });
     return { status: 'added', repo: this.info(row) };
+  }
+
+  /** The official repository, if it exists and is added. */
+  official(): RepoInfo | null {
+    const url = this.officialUrl();
+    const row = url ? this.deps.repo.byUrl(url) : undefined;
+    return row ? this.info(row) : null;
+  }
+
+  /**
+   * Adds the official repository once (Milestone 4e/4f): no dialog (its key is built into the
+   * app) and no network needed; it syncs when online. `alreadyAdded` remembers that it was added,
+   * so a user who removes it is not given it back.
+   */
+  ensureOfficial(alreadyAdded: { get(): string | null; set(url: string): void }): RepoInfo | null {
+    const url = this.officialUrl();
+    if (!url) return null;
+    const existing = this.deps.repo.byUrl(url);
+    if (existing) {
+      if (alreadyAdded.get() !== url) alreadyAdded.set(url);
+      return this.info(existing);
+    }
+    if (alreadyAdded.get() === url) return null;
+    const row = this.deps.repo.insert({
+      url,
+      name: null,
+      publicKey: null,
+      indexJson: null,
+      signature: null,
+      lastFetchedAt: null,
+      lastError: null,
+    });
+    alreadyAdded.set(url);
+    return this.info(row);
+  }
+
+  private officialUrl(): string | null {
+    const url = this.deps.officialUrl?.();
+    return url ? normalizeRepoUrl(url) : null;
   }
 
   remove(repoId: number): void {
@@ -270,13 +311,15 @@ export class RepoService {
     const index = row.indexJson === null ? null : this.parse(row.id, row.indexJson);
     const trust: TrustResult = index
       ? this.trustOf(Buffer.from(row.indexJson!, 'utf8'), row.signature, row.publicKey, index)
-      : { trust: 'unverified', problem: 'unsigned', signedBy: null };
+      : { trust: 'unverified', problem: null, signedBy: null };
     return {
       id: row.id,
       url: row.url,
       name: row.name ?? row.url,
       ...trust,
       extensionCount: index?.extensions.length ?? 0,
+      synced: index !== null,
+      official: row.url === this.officialUrl(),
       lastSyncedAt: row.lastFetchedAt,
       lastError: row.lastError,
     };

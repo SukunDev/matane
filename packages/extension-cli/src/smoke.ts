@@ -9,13 +9,13 @@ import {
   type Page,
   type Preference,
   SDK_API_VERSION,
-} from '@manga-reader/extension-sdk';
+} from '@matane/extension-sdk';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ExtensionRuntime, type RawImageTransform } from '@manga-reader/extension-runtime';
-import { restoreImage, sniffImageType } from '@manga-reader/extension-runtime/image';
-import { buildOrLoad } from './build';
-import { CLI_NAME, CLI_VERSION, createNodeHost, nodeFetch } from './node-host';
+import { ExtensionRuntime, type RawImageTransform } from '@matane/extension-runtime';
+import { restoreImage, sniffImageType } from '@matane/extension-runtime/image';
+import { buildOrLoad } from './build.js';
+import { CLI_NAME, CLI_VERSION, createNodeHost, nodeFetch } from './node-host.js';
 
 export interface SmokeOptions {
   dir: string;

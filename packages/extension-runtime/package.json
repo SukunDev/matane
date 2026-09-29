@@ -1,8 +1,22 @@
 {
-  "name": "@manga-reader/extension-runtime",
-  "version": "0.0.0",
-  "private": true,
+  "name": "@matane/extension-runtime",
+  "version": "0.1.0",
+  "description": "The sandboxed QuickJS runtime that runs Matane extensions, shared by the app and mr-ext",
+  "keywords": [
+    "matane",
+    "extension",
+    "quickjs",
+    "sandbox"
+  ],
   "license": "MIT",
+  "author": "SukunDev",
+  "homepage": "https://github.com/SukunDev/matane/blob/main/docs/extensions.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SukunDev/matane.git",
+    "directory": "packages/extension-runtime"
+  },
+  "bugs": "https://github.com/SukunDev/matane/issues",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -10,12 +24,44 @@
     "./repo": "./src/repo.ts",
     "./image": "./src/image.ts"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./http-bridge": {
+        "types": "./dist/http-bridge.d.ts",
+        "default": "./dist/http-bridge.js"
+      },
+      "./repo": {
+        "types": "./dist/repo.d.ts",
+        "default": "./dist/repo.js"
+      },
+      "./image": {
+        "types": "./dist/image.d.ts",
+        "default": "./dist/image.js"
+      }
+    }
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@manga-reader/extension-sdk": "workspace:*",
+    "@matane/extension-sdk": "workspace:*",
     "cheerio": "1.2.0",
     "quickjs-emscripten": "0.32.0",
     "sharp": "0.35.5",

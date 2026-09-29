@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { Chapter } from '@manga-reader/extension-sdk';
+import type { Chapter } from '@matane/extension-sdk';
 import { DEFAULT_MIGRATION_OPTIONS, type MigrationProgress } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';

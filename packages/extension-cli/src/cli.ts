@@ -1,10 +1,11 @@
+#!/usr/bin/env node
 import { Command, InvalidArgumentError } from 'commander';
-import { runBenchmark } from './bench';
-import { buildExtension } from './build';
-import { createExtension } from './create';
-import { CLI_NAME, CLI_VERSION } from './node-host';
-import { KEY_ENV, buildRepo, loadPrivateKey, repoKeygen, verifyRepo } from './repo';
-import { runSmokeTest } from './smoke';
+import { runBenchmark } from './bench.js';
+import { buildExtension } from './build.js';
+import { type CreateLayout, createExtension } from './create.js';
+import { CLI_NAME, CLI_VERSION } from './node-host.js';
+import { KEY_ENV, buildRepo, loadPrivateKey, repoKeygen, verifyRepo } from './repo.js';
+import { runSmokeTest } from './smoke.js';
 
 const collect = (value: string, previous: string[]) => [...previous, value];
 
@@ -27,7 +28,7 @@ function parseKeyValues(pairs: string[]): Record<string, unknown> {
 
 const program = new Command()
   .name(CLI_NAME)
-  .description('Create, build and test Manga Reader extensions')
+  .description('Create, build, test and publish Matane extensions')
   .version(CLI_VERSION);
 
 program
@@ -38,8 +39,22 @@ program
   .option('--domain <domain>', 'site domain', 'example.com')
   .option('--lang <lang>', 'source language', 'en')
   .option('--dir <dir>', 'parent directory', '.')
-  .action(async (id: string, opts: { name?: string; domain: string; lang: string; dir: string }) => {
-    const dir = await createExtension(opts.dir, { id, name: opts.name, domain: opts.domain, lang: opts.lang });
+  .option(
+    '--layout <layout>',
+    'standalone (dependencies from npm), catalog (a pnpm workspace like matane-extensions) or workspace',
+    'standalone',
+  )
+  .action(async (id: string, opts: { name?: string; domain: string; lang: string; dir: string; layout: string }) => {
+    if (!['standalone', 'catalog', 'workspace'].includes(opts.layout)) {
+      throw new InvalidArgumentError(`--layout must be standalone, catalog or workspace, not ${opts.layout}`);
+    }
+    const dir = await createExtension(opts.dir, {
+      id,
+      name: opts.name,
+      domain: opts.domain,
+      lang: opts.lang,
+      layout: opts.layout as CreateLayout,
+    });
     console.log(`Created ${dir}`);
   });
 

@@ -290,7 +290,7 @@ type ImageTransform = {
 ### 5.7 Contoh extension (imperatif)
 
 ```ts
-import { defineExtension, type Source } from '@manga-reader/extension-sdk';
+import { defineExtension, type Source } from '@matane/extension-sdk';
 
 const BASE = 'https://example-manga.com';
 
@@ -358,7 +358,7 @@ repo/
 
 ### 5.9 Developer experience (SDK)
 
-- **`@manga-reader/extension-sdk`**: tipe TS, `defineExtension`, deklarasi global (`http`, `html`, …) untuk autocomplete.
+- **`@matane/extension-sdk`**: tipe TS, `defineExtension`, deklarasi global (`http`, `html`, …) untuk autocomplete.
 - **CLI `mr-ext`**:
   - `mr-ext create`: scaffold extension baru.
   - `mr-ext build`: bundle dengan esbuild ke ES2020 lalu validasi (tidak boleh ada `import` yang tersisa, manifest harus valid).
@@ -1022,13 +1022,17 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - build macOS x64 memakai runner `macos-15-intel`.
 - Penutup: E2E alur penuh (download → situs mati → baca offline → chapter baru → Updates → auto-download), ADR 0019–0021, `CHANGELOG.md`, `SECURITY.md`, dan `CONTRIBUTING.md`.
 
-**Fase 4: Ekosistem extension**
+**Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026, kecuali peluncuran repo resmi (Milestone 4f, setelah Fase 5) → **0.2.0-beta.1** (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
 - Repo extension (`index.json`), **signing ed25519**, install/update/uninstall + dialog izin domain, filter NSFW.
 - Mode dev: load dari folder, hot reload, panel log. `mr-ext repo`.
 - Repo extension terpisah + smoke test harian.
 - `transformImage` (dekripsi byte + tile shuffle), `migrateUrl`.
 - Publikasi `extension-sdk` ke npm + panduan membuat extension.
 - **Ditunda (keputusan 29 Sep 2026):** peluncuran repo resmi `matane-extensions`, kunci tanda tangan resmi, dan terbit ke npm dikerjakan setelah semua fase app selesai (Milestone 4f). Sampai saat itu MangaDex tetap bawaan. Panduannya ada di [`docs/matane-extensions/`](docs/matane-extensions/README.md).
+- Penyesuaian:
+  - paket SDK/runtime/CLI bernama `@matane/*` dan siap terbit (`publishConfig` → `dist/`); penambahan repo resmi otomatis dan handoff extension bawaan sudah ada, aktif begitu URL dan kunci resmi diisi;
+  - bahasa konten juga menyaring Global search dan target migrasi, dan profil lama mendapat bahasa awal dari source yang sudah dipakai;
+  - pixel kerja `transformImage` ada di `@matane/extension-runtime/image` (dipakai app dan `mr-ext test`); `migrateUrl` jalan per batch dalam satu transaksi, dengan versi tersimpan di setting.
 
 **Fase 5: Polish & rilis v1.0**
 - Reader: crop border, split gambar tinggi, filter warna, auto-scroll, remap keyboard, gesture sentuh.

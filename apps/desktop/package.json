@@ -29,7 +29,7 @@
     "@catppuccin/tailwindcss": "1.0.0",
     "@electron/rebuild": "4.2.0",
     "@fontsource-variable/inter": "^5.3.0",
-    "@manga-reader/extension-cli": "workspace:*",
+    "@matane/extension-cli": "workspace:*",
     "@playwright/test": "1.63.0",
     "@tailwindcss/vite": "4.3.3",
     "@tanstack/react-query": "5.103.2",
@@ -62,8 +62,8 @@
     "zustand": "5.0.15"
   },
   "dependencies": {
-    "@manga-reader/extension-runtime": "workspace:*",
-    "@manga-reader/extension-sdk": "workspace:*",
+    "@matane/extension-runtime": "workspace:*",
+    "@matane/extension-sdk": "workspace:*",
     "@manga-reader/shared": "workspace:*",
     "better-sqlite3": "13.0.3",
     "cheerio": "1.2.0",

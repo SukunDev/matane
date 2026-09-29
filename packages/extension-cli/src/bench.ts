@@ -1,17 +1,10 @@
-import type {
-  Chapter,
-  HttpRequest,
-  HttpResponse,
-  MangaDetails,
-  MangaPage,
-  MangaSummary,
-} from '@manga-reader/extension-sdk';
-import { SDK_API_VERSION } from '@manga-reader/extension-sdk';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
-import { DEFAULT_LIMITS, ExtensionRuntime, type HostApi } from '@manga-reader/extension-runtime';
-import { buildExtension } from './build';
-import { createFixtureHost } from './fixtures';
-import { CLI_NAME, CLI_VERSION, createNodeHost } from './node-host';
+import type { Chapter, HttpRequest, HttpResponse, MangaDetails, MangaPage, MangaSummary } from '@matane/extension-sdk';
+import { SDK_API_VERSION } from '@matane/extension-sdk';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
+import { DEFAULT_LIMITS, ExtensionRuntime, type HostApi } from '@matane/extension-runtime';
+import { buildExtension } from './build.js';
+import { createFixtureHost } from './fixtures.js';
+import { CLI_NAME, CLI_VERSION, createNodeHost } from './node-host.js';
 
 export interface BenchOptions {
   dir: string;

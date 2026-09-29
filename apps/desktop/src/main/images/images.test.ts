@@ -1,7 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { ImageFetchResult } from '@manga-reader/extension-sdk';
+import type { ImageFetchResult } from '@matane/extension-sdk';
 import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DbChanges } from '../db/changes';

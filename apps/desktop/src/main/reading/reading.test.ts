@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import type { Chapter } from '@manga-reader/extension-sdk';
+import type { Chapter } from '@matane/extension-sdk';
 import type { DbChangeTag } from '@manga-reader/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DbChanges } from '../db/changes';

@@ -1,4 +1,4 @@
-import type { MangaDetails, MangaSummary } from '@manga-reader/extension-sdk';
+import type { MangaDetails, MangaSummary } from '@matane/extension-sdk';
 import {
   type BrowseItem,
   type ChapterView,

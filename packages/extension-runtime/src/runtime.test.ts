@@ -1,8 +1,8 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
-import type { ExtensionManifest, HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
+import type { ExtensionManifest, HttpRequest, HttpResponse } from '@matane/extension-sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ExtensionRuntimeError } from './errors';
-import { ExtensionRuntime, type HostApi, type RuntimeLimits } from './runtime';
+import { ExtensionRuntimeError } from './errors.js';
+import { ExtensionRuntime, type HostApi, type RuntimeLimits } from './runtime.js';
 
 const manifest: ExtensionManifest = {
   id: 'test',

@@ -1,5 +1,5 @@
 // Shapes of library/source data as the renderer sees it (main-owned, served over IPC).
-import type { Filter, FilterState, Page, Preference } from '@manga-reader/extension-sdk';
+import type { Filter, FilterState, Page, Preference } from '@matane/extension-sdk';
 import { z } from 'zod';
 import { mangaReaderSettingsSchema } from './settings';
 
@@ -54,6 +54,10 @@ export const repoInfoSchema = z.object({
   /** The key that signed the index (it can be trusted when the repository is unverified). */
   signedBy: z.string().nullable(),
   extensionCount: z.number(),
+  /** An index was fetched at least once (a repository added offline has none yet). */
+  synced: z.boolean(),
+  /** The official repository built into the app (added by itself). */
+  official: z.boolean(),
   lastSyncedAt: z.number().nullable(),
   /** The last sync failed (the previous index is kept). */
   lastError: z.string().nullable(),
@@ -116,6 +120,19 @@ export const installPreviewSchema = z.object({
   hasIcon: z.boolean(),
 });
 export type InstallPreview = z.infer<typeof installPreviewSchema>;
+
+/**
+ * An extension that used to be built into the app and is now installed from the official
+ * repository by itself, once ("handoff", Milestone 4e/4f).
+ */
+export const handoffItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  /** Waiting for the official repository (offline), or the install failed (it is retried). */
+  state: z.enum(['waiting', 'failed']),
+  error: z.string().nullable(),
+});
+export type HandoffItem = z.infer<typeof handoffItemSchema>;
 
 export const updateAllResultSchema = z.object({
   updated: z.array(z.string()),

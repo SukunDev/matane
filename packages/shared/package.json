@@ -19,6 +19,6 @@
   },
   "dependencies": {
     "zod": "4.6.5",
-    "@manga-reader/extension-sdk": "workspace:*"
+    "@matane/extension-sdk": "workspace:*"
   }
 }

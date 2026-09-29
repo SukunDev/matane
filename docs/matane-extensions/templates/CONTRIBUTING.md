@@ -14,10 +14,10 @@ pnpm repo:build:unsigned  # build the whole repository into public/, as it would
 
 ```sh
 cd extensions
-pnpm exec mr-ext create my-site --name "My Site" --domain my-site.example --lang en
+pnpm exec mr-ext create my-site --name "My Site" --domain my-site.example --lang en --layout catalog
 ```
 
-Then in `extensions/my-site/package.json` use `"catalog:"` for the three `@matane/*` packages (see an existing extension), and `pnpm install` from the root.
+`--layout catalog` takes the `@matane/*` versions from the workspace catalog and extends the root `tsconfig.base.json`. Then run `pnpm install` from the root.
 
 Develop with the app: Extensions → **Load from folder** → `extensions/my-site` (after `pnpm build`; it hot-reloads on every build), and **View logs** for its requests and errors. Check the whole reading flow against the real site with `pnpm exec mr-ext test extensions/my-site`.
 

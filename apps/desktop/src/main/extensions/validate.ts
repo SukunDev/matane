@@ -1,4 +1,4 @@
-import type { Chapter, Filter, MangaDetails, MangaPage, Page } from '@manga-reader/extension-sdk';
+import type { Chapter, Filter, MangaDetails, MangaPage, Page } from '@matane/extension-sdk';
 import { MANGA_STATUSES, MANGA_TYPES } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import { z } from 'zod';

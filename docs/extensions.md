@@ -1,22 +1,35 @@
 # Writing extensions
 
-> Draft for extension API version **1** (Phase 1). Repositories, signing and installing from a URL arrive in Phase 4; until then extensions are either built in (`extensions/*`) or loaded from a folder.
+> Extension API version **1**. Users install extensions from signed repositories (Extensions → Repositories), developers load them from a folder.
+>
+> **Not on npm yet:** the `@matane/*` packages are ready (`pnpm pack` builds them) but are published together with the official repository, after the app's remaining phases ([Milestone 4f](plans/fase-4-ekosistem-extension.md)). Until then, develop inside this repository (`extensions/<id>`, with `--layout workspace`).
 
 An extension is a small JavaScript bundle plus a `manifest.json`. It turns a website into one or more **sources**: lists of manga, details, chapters and page images. Extensions run in a **QuickJS sandbox** (ADR 0003): no Node.js, no `fetch`, no DOM. Everything that touches the outside world goes through a few host APIs (`http`, `html`, `storage`, …) that the app controls.
 
-The SDK (`@manga-reader/extension-sdk`), the runtime and the `mr-ext` CLI are MIT-licensed (ADR 0011), so your extension can use any license.
+The SDK (`@matane/extension-sdk`), the runtime and the `mr-ext` CLI are MIT-licensed (ADR 0011), so your extension can use any license.
 
 ## Quick start
 
+With the packages from npm (once published):
+
 ```sh
-pnpm exec mr-ext create my-site --domain example.com --lang en --dir extensions
-cd extensions/my-site
-pnpm install
-pnpm exec mr-ext build           # → dist/index.js + dist/manifest.json
-pnpm exec mr-ext test            # popular → details → chapters → pages → first image, against the real site
+npx @matane/extension-cli create my-site --domain example.com --lang en
+cd my-site
+npm install
+npx mr-ext build                 # → dist/index.js + dist/manifest.json
+npx mr-ext test                  # popular → details → chapters → pages → first image, against the real site
 ```
 
-Try it in the app: **Settings → Advanced → Load from folder** and pick the extension folder. The app watches `dist/` and reloads the extension every time `mr-ext build` rewrites it. A folder that is not built yet is listed with an error until you build it.
+Inside this repository (or a workspace such as matane-extensions), pick the layout that matches: `--layout workspace` here (dependencies `workspace:*`), `--layout catalog` in matane-extensions (versions from the workspace catalog). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
+
+```sh
+pnpm exec mr-ext create my-site --domain example.com --lang en --dir extensions --layout workspace
+pnpm install && pnpm --filter my-site exec mr-ext build
+```
+
+Try it in the app: **Extensions → Load from folder** (or Settings → Advanced) and pick the extension folder. The app watches `dist/` and reloads the extension every time `mr-ext build` rewrites it; **View logs** on its row shows its log lines, requests and failed calls live. A folder that is not built yet is listed with an error until you build it.
+
+`mr-ext test` also accepts an already built folder (`manifest.json` + `index.js`).
 
 ## Project layout
 
@@ -27,7 +40,7 @@ my-site/
 ├─ package.json
 ├─ tsconfig.json
 └─ src/
-   ├─ env.d.ts        # import '@manga-reader/extension-sdk/globals' (types for http, html, …)
+   ├─ env.d.ts        # import '@matane/extension-sdk/globals' (types for http, html, …)
    └─ index.ts        # export default defineExtension({ … })
 ```
 
@@ -61,7 +74,7 @@ my-site/
 ## The source interface
 
 ```ts
-import { type MangaPage, defineExtension } from '@manga-reader/extension-sdk';
+import { type MangaPage, defineExtension } from '@matane/extension-sdk';
 
 export default defineExtension({
   preferences: () => [{ type: 'switch', key: 'hd', label: 'HD images', default: true }],
@@ -98,7 +111,7 @@ Required: `getPopular`, `search`, `getMangaDetails`, `getChapters`, `getPages`. 
 
 ## Host APIs
 
-These globals are the only way out of the sandbox (types come from `@manga-reader/extension-sdk/globals`):
+These globals are the only way out of the sandbox (types come from `@matane/extension-sdk/globals`):
 
 | Global | API |
 |---|---|
@@ -182,11 +195,13 @@ QuickJS is roughly 50× slower than V8 on tight loops, so keep heavy work (HTML 
 
 ## Testing
 
-- `mr-ext test [dir]`: runs the reading flow against the real site and prints a summary. Options: `-s <source>`, `-q <query>`, `-u <web url>` (tests `resolveUrl`), `--pref key=value`, `--filter id=value`, `--no-image`, `-v` (every request).
-- **Fixture tests** (what CI runs): use `createFixtureHost` from `@manga-reader/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. See `extensions/mangadex/test/`.
+- `mr-ext test [dir]`: runs the reading flow against the real site and prints a summary. Options: `-s <source>`, `-q <query>`, `-u <web url>` (tests `resolveUrl`), `--pref key=value`, `--filter id=value`, `--no-image`, `--out <dir>` (where a page restored by `transformImage` is written), `-v` (every request).
+- **Fixture tests** (what CI runs): use `createFixtureHost` from `@matane/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. See `extensions/mangadex/test/`.
 - `mr-ext bench [dir]`: call times (sandbox vs network), heap after each call, and synthetic worst cases. `--fixtures <dir> --manga <url>` makes it repeatable offline.
 
 ## Publishing a repository
+
+The official repository (matane-extensions) is set up from [`docs/matane-extensions/`](matane-extensions/README.md): accounts, keys, the workflows that build, sign and publish it, and a daily smoke test. The same templates work for a repository of your own.
 
 Extensions reach users through a repository: a static folder (GitHub Pages works) with a signed index.
 

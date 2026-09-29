@@ -13,6 +13,7 @@ import {
   RefreshCw,
   Globe,
   LibraryBig,
+  Puzzle,
   ListChecks,
   SearchX,
   X,
@@ -27,7 +28,9 @@ import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ipc } from '../../lib/ipc';
 import { categoriesQuery, libraryCountsQuery, libraryQuery } from '../../lib/library';
+import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
+import { HandoffBanner } from '../extensions/HandoffBanner';
 import { isTyping } from '../reader/PagedView';
 import { CategoryDialog } from './CategoryDialog';
 import { LibraryToolbar } from './LibraryToolbar';
@@ -97,6 +100,8 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
 
   const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
   const empty = counts?.all === 0;
+  const { data: sources = [] } = useQuery(sourcesQuery);
+  const hasSources = sources.some((source) => source.installed);
   const filtered = debounced !== '' || filterCount(settings) > 0;
 
   return (
@@ -142,6 +147,7 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
         </nav>
       )}
 
+      <HandoffBanner className="mx-6 mt-4" />
       <div ref={setScrollElement} className="min-h-0 flex-1 overflow-y-auto" data-testid="library-scroll">
         {empty ? (
           <EmptyState
@@ -149,12 +155,22 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
             title={t('empty.library.title')}
             description={t('empty.library.description')}
             action={
-              <Button asChild className="mt-2">
-                <Link to="/browse/sources">
-                  <Globe />
-                  {t('library.browseSources')}
-                </Link>
-              </Button>
+              hasSources ? (
+                <Button asChild className="mt-2">
+                  <Link to="/browse/sources">
+                    <Globe />
+                    {t('library.browseSources')}
+                  </Link>
+                </Button>
+              ) : (
+                // Nothing to browse yet: extensions come first.
+                <Button asChild className="mt-2">
+                  <Link to="/browse/extensions" search={{ tab: 'available' }}>
+                    <Puzzle />
+                    {t('extensions.getExtensions')}
+                  </Link>
+                </Button>
+              )
             }
           />
         ) : library.isError ? (

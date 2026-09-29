@@ -1,10 +1,10 @@
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generateRepoKey, readExtensionArchive, sha256Hex } from '@manga-reader/extension-runtime/repo';
+import { generateRepoKey, readExtensionArchive, sha256Hex } from '@matane/extension-runtime/repo';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createExtension } from './create';
-import { buildRepo, repoKeygen, verifyRepo } from './repo';
+import { createExtension } from './create.js';
+import { buildRepo, repoKeygen, verifyRepo } from './repo.js';
 
 // Scratch dirs live inside the package so the scaffold resolves the workspace SDK.
 const packageDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

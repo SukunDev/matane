@@ -1,4 +1,4 @@
-import type { Filter, FilterOption, FilterState, SortValue } from '@manga-reader/extension-sdk';
+import type { Filter, FilterOption, FilterState, SortValue } from '@matane/extension-sdk';
 import { type Collection, type QueryValue, type Tag, apiGet } from './api';
 
 const TAG_CACHE_KEY = 'tags';

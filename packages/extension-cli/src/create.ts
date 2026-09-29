@@ -1,13 +1,40 @@
 import { mkdir, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { SDK_API_VERSION } from '@manga-reader/extension-sdk';
+import { SDK_API_VERSION } from '@matane/extension-sdk';
+import { CLI_VERSION } from './node-host.js';
+
+/**
+ * Where the extension lives: on its own (dependencies from npm, a complete tsconfig), or inside a
+ * pnpm workspace whose root has `tsconfig.base.json` (matane-extensions: `catalog:` versions; the
+ * Matane monorepo itself: `workspace:*`).
+ */
+export type CreateLayout = 'standalone' | 'catalog' | 'workspace';
 
 export interface CreateOptions {
   id: string;
   name?: string;
   domain?: string;
   lang?: string;
+  layout?: CreateLayout;
 }
+
+/** A tsconfig for an extension outside any workspace (same rules as the Matane packages). */
+const STANDALONE_TSCONFIG = {
+  compilerOptions: {
+    target: 'ES2020',
+    lib: ['ES2020'],
+    module: 'ESNext',
+    moduleResolution: 'Bundler',
+    types: [],
+    strict: true,
+    noUncheckedIndexedAccess: true,
+    verbatimModuleSyntax: true,
+    isolatedModules: true,
+    skipLibCheck: true,
+    noEmit: true,
+  },
+  include: ['src'],
+};
 
 /** Scaffolds an HTML-scraping extension in `<parent>/<id>`. */
 export async function createExtension(parent: string, options: CreateOptions): Promise<string> {
@@ -19,6 +46,8 @@ export async function createExtension(parent: string, options: CreateOptions): P
   const name = options.name ?? options.id;
   const domain = options.domain ?? 'example.com';
   const lang = options.lang ?? 'en';
+  const layout = options.layout ?? 'standalone';
+  const dependency = layout === 'standalone' ? `^${CLI_VERSION}` : layout === 'catalog' ? 'catalog:' : 'workspace:*';
   const files: Record<string, string> = {
     'manifest.json': json({
       id: options.id,
@@ -37,17 +66,18 @@ export async function createExtension(parent: string, options: CreateOptions): P
       type: 'module',
       scripts: { build: 'mr-ext build', test: 'mr-ext test', typecheck: 'tsc -p tsconfig.json' },
       devDependencies: {
-        '@manga-reader/extension-cli': 'workspace:*',
-        '@manga-reader/extension-sdk': 'workspace:*',
+        '@matane/extension-cli': dependency,
+        '@matane/extension-sdk': dependency,
+        ...(layout === 'standalone' ? { typescript: '^6.0.0' } : {}),
       },
     }),
-    'tsconfig.json': json({
-      extends: '../../tsconfig.base.json',
-      compilerOptions: { lib: ['ES2020'], types: [] },
-      include: ['src'],
-    }),
+    'tsconfig.json': json(
+      layout === 'standalone'
+        ? STANDALONE_TSCONFIG
+        : { extends: '../../tsconfig.base.json', compilerOptions: { lib: ['ES2020'], types: [] }, include: ['src'] },
+    ),
     'src/env.d.ts':
-      "// Sandbox globals (http, html, storage, prefs, …) injected by the host.\nimport '@manga-reader/extension-sdk/globals';\n",
+      "// Sandbox globals (http, html, storage, prefs, …) injected by the host.\nimport '@matane/extension-sdk/globals';\n",
     'src/index.ts': template(domain),
     '.gitignore': 'node_modules/\ndist/\n# Pages restored by transformImage during `mr-ext test`\n.mr-ext/\n',
   };
@@ -62,7 +92,7 @@ const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
 
 const template = (
   domain: string,
-) => `import { type MangaPage, type HtmlElement, defineExtension } from '@manga-reader/extension-sdk';
+) => `import { type MangaPage, type HtmlElement, defineExtension } from '@matane/extension-sdk';
 
 const BASE_URL = 'https://${domain}';
 

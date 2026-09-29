@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { ImageFetchResult, Page } from '@manga-reader/extension-sdk';
+import type { ImageFetchResult, Page } from '@matane/extension-sdk';
 import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { MangaRepository } from '../db/repositories/manga';
@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import type { DownloadStore } from '../downloads/store';
 import type { CachedImage, ImageCache, ImageKind } from './cache';
 import type { CoverStore } from './covers';
-import { ImageTransformError, restoreImage, sniffImageType } from '@manga-reader/extension-runtime/image';
+import { ImageTransformError, restoreImage, sniffImageType } from '@matane/extension-runtime/image';
 
 export interface ImageFetcher {
   /** Fetches an image through the extension's session and allowlist; returns the raw response. */

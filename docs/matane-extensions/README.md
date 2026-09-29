@@ -40,7 +40,7 @@ Kerjakan dari atas ke bawah. Langkah bertanda 🧑 dikerjakan olehmu (akun dan r
    - [ ] 🧑 Token npm "granular, publish" → secret `NPM_TOKEN` di repo **matane**.
    - [ ] 🧑 Repo GitHub kosong `matane-extensions` (publik), dengan Pages bersumber "GitHub Actions".
 2. **Terbitkan SDK ke npm** (bagian dari Milestone 4e):
-   - [ ] 🤖 Paket di-rename ke `@matane/*`, di-build ke `dist/`, dan dicek dengan `npm pack --dry-run`, beserta workflow `publish-sdk.yml`.
+   - [x] 🤖 Paket di-rename ke `@matane/*`, di-build ke `dist/`, dicek dengan `pnpm pack` dan dipasang di proyek kosong, beserta workflow `.github/workflows/publish-sdk.yml` (sudah di Milestone 4e).
    - [ ] 🧑 Push tag `sdk-v0.1.0` → workflow menerbitkan ketiga paket.
 3. **Kunci tanda tangan:**
    - [ ] 🧑 `npx @matane/extension-cli repo keygen --out matane-repo-key.pem` di komputermu.
@@ -51,7 +51,8 @@ Kerjakan dari atas ke bawah. Langkah bertanda 🧑 dikerjakan olehmu (akun dan r
    - [ ] 🧑 Push ke `main` → workflow **Publish** membangun, menandatangani, memverifikasi, lalu menerbitkan ke `https://<akun>.github.io/matane-extensions/`.
    - [ ] 🧑 Isi variable `REPO_URL` dengan URL itu (dipakai cek versi di CI).
 5. **Sambungkan app** (lihat [`perubahan-di-app.md`](perubahan-di-app.md)):
-   - [ ] 🤖 Kunci publik + URL resmi ditanam, repo resmi otomatis ditambahkan, handoff MangaDex dibuat, dan extension bawaan dihapus.
+   - [x] 🤖 Repo resmi ditambahkan otomatis dan handoff dibuat (Milestone 4e; aktif begitu URL + kunci diisi).
+   - [ ] 🤖 Kunci publik + URL resmi ditanam, dan extension bawaan dihapus.
    - [ ] 🤖 Live check: build app memasang MangaDex dari repo resmi ("Official · Verified"); profil `0.1.0-beta.1` mendapat MangaDex otomatis dengan library utuh.
 
 ## Yang perlu diputuskan saat itu

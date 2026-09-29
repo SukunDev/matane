@@ -36,6 +36,8 @@ export const INVOKE_CHANNELS = [
   'extensions.cancelInstall',
   'extensions.updateAll',
   'extensions.uninstall',
+  'extensions.handoff',
+  'extensions.retryHandoff',
   'extensions.logs',
   'extensions.clearLogs',
   'sources.list',

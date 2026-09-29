@@ -1,5 +1,5 @@
 import { stat } from 'node:fs/promises';
-import type { Page } from '@manga-reader/extension-sdk';
+import type { Page } from '@matane/extension-sdk';
 import type { DownloadFormat } from '@manga-reader/shared';
 import type { DownloadsRepository } from '../db/repositories/downloads';
 import type { DownloadReader } from './archive';

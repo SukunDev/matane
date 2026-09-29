@@ -1,7 +1,7 @@
 // Host side of the extension repository format (BRAINSTORM.md §5.8): ed25519 signatures over
 // `index.json`, sha256 of archives and reading an archive safely. Used by `mr-ext repo` and the app.
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify } from 'node:crypto';
-import { type ExtensionManifest, SDK_API_VERSION, manifestSchema } from '@manga-reader/extension-sdk/manifest';
+import { type ExtensionManifest, SDK_API_VERSION, manifestSchema } from '@matane/extension-sdk/manifest';
 import {
   ARCHIVE_FILES,
   type ArchiveFile,
@@ -10,7 +10,7 @@ import {
   type RepoIndex,
   publicKeySchema,
   repoIndexSchema,
-} from '@manga-reader/extension-sdk/repo';
+} from '@matane/extension-sdk/repo';
 import yauzl from 'yauzl';
 
 export type RepoErrorCode = 'bad-key' | 'bad-index' | 'bad-signature' | 'hash-mismatch' | 'bad-archive';

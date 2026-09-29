@@ -453,7 +453,8 @@
         "unsigned": "Tidak ditandatangani.",
         "unknown-key": "Ditandatangani dengan kunci yang tidak dikenal app ini.",
         "bad-signature": "Tanda tangannya tidak cocok dengan index."
-      }
+      },
+      "notSynced": "Belum disinkronkan"
     },
     "install": {
       "description": "Apa yang bisa dilakukan extension ini, sebelum dipasang.",
@@ -499,6 +500,13 @@
       "clear": "Bersihkan",
       "empty": "Belum ada log. Pakai extension-nya (browse, buka manga) dan barisnya muncul di sini.",
       "lines": "Baris log"
+    },
+    "getExtensions": "Cari extension",
+    "handoff": {
+      "failed_other": "{{names}} tidak bisa dipasang dari repositori resmi",
+      "waiting_other": "{{names}} akan dipasang dari repositori resmi",
+      "waitingHint": "Dulu ikut terpasang bersama Matane. Akan terpasang sendiri begitu Matane online; library-mu tetap seperti sekarang.",
+      "install": "Pasang sekarang"
     }
   },
   "manga": {

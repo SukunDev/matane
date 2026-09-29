@@ -1,0 +1,43 @@
+name: Publish SDK
+
+# Publishes @matane/extension-sdk, -runtime and -cli to npm when a tag like sdk-v0.1.0 is pushed.
+# The three packages share one version, which must equal the tag. Needs the NPM_TOKEN secret
+# (docs/matane-extensions/setup-akun-dan-kunci.md); npm provenance links each package to this run.
+on:
+  push:
+    tags: ['sdk-v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      # Only the SDK packages and what they depend on (no Electron app).
+      - run: pnpm install --frozen-lockfile --filter "@matane/extension-cli..."
+      - name: Tag and package versions agree
+        run: |
+          tag="${GITHUB_REF_NAME#sdk-v}"
+          for pkg in extension-sdk extension-runtime extension-cli; do
+            version=$(node -p "require('./packages/$pkg/package.json').version")
+            if [ "$version" != "$tag" ]; then
+              echo "::error::packages/$pkg is $version, the tag says $tag"
+              exit 1
+            fi
+          done
+      - run: pnpm --filter "@matane/extension-cli..." typecheck
+      - run: pnpm --filter "@matane/extension-cli..." test
+      # prepack builds dist/; publishConfig points the published manifests at it.
+      - run: pnpm --filter "@matane/extension-cli..." publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

@@ -2,9 +2,9 @@
 // after deleting the stale files (only missing fixtures are fetched).
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type FixtureHost, buildExtension, createFixtureHost, hasFixtures } from '@manga-reader/extension-cli';
-import { ExtensionRuntime } from '@manga-reader/extension-runtime';
-import type { Chapter, Filter, HttpResponse, MangaDetails, MangaPage, Page } from '@manga-reader/extension-sdk';
+import { type FixtureHost, buildExtension, createFixtureHost, hasFixtures } from '@matane/extension-cli';
+import { ExtensionRuntime } from '@matane/extension-runtime';
+import type { Chapter, Filter, HttpResponse, MangaDetails, MangaPage, Page } from '@matane/extension-sdk';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

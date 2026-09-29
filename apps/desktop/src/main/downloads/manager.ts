@@ -1,6 +1,6 @@
 import { mkdir, readdir, rename, rm, rmdir, stat, statfs, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import type { Page } from '@manga-reader/extension-sdk';
+import type { Page } from '@matane/extension-sdk';
 import type { DownloadFormat, DownloadMoveProgress, DownloadProgress } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import { createLimiter } from '@manga-reader/shared/limit';

@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { MessageChannel, type MessagePort } from 'node:worker_threads';
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
+import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ExtensionHost } from '../../extension-host/host';
 import type { HostMethods, MainMethods } from '../../extension-host/protocol';

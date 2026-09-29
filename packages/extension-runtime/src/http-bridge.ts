@@ -1,4 +1,4 @@
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
+import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
 
 // Converts between the sandbox's JSON-friendly HttpRequest/HttpResponse and WHATWG fetch.
 // Shared by every embedder (app network layer, mr-ext) so body/response handling is identical.

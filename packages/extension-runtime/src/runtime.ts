@@ -1,6 +1,6 @@
 import { createDecipheriv, createHash } from 'node:crypto';
-import type { ExtensionManifest, HttpRequest, HttpResponse, Page, UrlKind } from '@manga-reader/extension-sdk';
-import { isAllowedHost, manifestSchema } from '@manga-reader/extension-sdk/manifest';
+import type { ExtensionManifest, HttpRequest, HttpResponse, Page, UrlKind } from '@matane/extension-sdk';
+import { isAllowedHost, manifestSchema } from '@matane/extension-sdk/manifest';
 import {
   type QuickJSContext,
   type QuickJSDeferredPromise,
@@ -9,9 +9,9 @@ import {
   getQuickJS,
   shouldInterruptAfterDeadline,
 } from 'quickjs-emscripten';
-import { ExtensionRuntimeError, HostError, type SerializedExtensionError } from './errors';
-import { HtmlStore } from './html-store';
-import { PRELUDE } from './prelude';
+import { ExtensionRuntimeError, HostError, type SerializedExtensionError } from './errors.js';
+import { HtmlStore } from './html-store.js';
+import { PRELUDE } from './prelude.js';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 

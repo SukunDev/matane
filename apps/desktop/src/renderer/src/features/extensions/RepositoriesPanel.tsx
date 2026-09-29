@@ -23,6 +23,7 @@ import { reposQuery, useSyncRepos } from '../../lib/extensions';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
+import { Badge } from '../../components/ui/badge';
 import { TrustBadge } from './parts';
 
 const menuItem =
@@ -80,7 +81,11 @@ export function RepoCard({ repo, now }: { repo: RepoInfo; now: number }) {
         <h3 className="min-w-0 truncate font-medium" title={repo.url}>
           {repo.name}
         </h3>
-        <TrustBadge trust={repo.trust} />
+        {repo.synced ? (
+          <TrustBadge trust={repo.trust} />
+        ) : (
+          <Badge variant="outline">{t('extensions.repos.notSynced')}</Badge>
+        )}
         <span className="flex-1" />
         <Button
           variant="ghost"

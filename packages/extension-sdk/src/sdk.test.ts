@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { parseRelativeDate } from './date';
-import { HttpError, NotFoundError } from './errors';
-import { isAllowedHost, manifestSchema } from './manifest';
+import { parseRelativeDate } from './date.js';
+import { HttpError, NotFoundError } from './errors.js';
+import { isAllowedHost, manifestSchema } from './manifest.js';
 
 describe('isAllowedHost', () => {
   const domains = ['mangadex.org', '*.mangadex.network'];

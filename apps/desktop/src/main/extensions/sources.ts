@@ -1,4 +1,4 @@
-import type { Chapter, FilterState, ImageFetchResult, MangaSummary, Page } from '@manga-reader/extension-sdk';
+import type { Chapter, FilterState, ImageFetchResult, MangaSummary, Page } from '@matane/extension-sdk';
 import type { BrowseResult, MangaInfo, SourceCapabilities, SourceEntry } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';

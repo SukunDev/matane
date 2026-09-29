@@ -1,7 +1,7 @@
-// Host/tooling only: imported via `@manga-reader/extension-sdk/manifest` so zod never lands in extension bundles.
+// Host/tooling only: imported via `@matane/extension-sdk/manifest` so zod never lands in extension bundles.
 import { z } from 'zod';
 
-export { SDK_API_VERSION } from './version';
+export { SDK_API_VERSION } from './version.js';
 
 export const extensionIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'lowercase letters, digits and dashes');
 const domain = z.string().regex(/^(\*\.)?[a-z0-9.-]+\.[a-z]{2,}$/i, 'hostname, optionally prefixed with *.');

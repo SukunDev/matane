@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import type { Filter, Page, Preference } from '@manga-reader/extension-sdk';
+import type { Filter, Page, Preference } from '@matane/extension-sdk';
 import {
   addRepoResultSchema,
   extensionLogEntrySchema,
+  handoffItemSchema,
   availableExtensionSchema,
   installPreviewSchema,
   repoInfoSchema,
@@ -140,6 +141,9 @@ export const invokeContract = {
   /** Installs every update that reaches no new domain; the others come back for confirmation. */
   'extensions.updateAll': invoke(z.void(), updateAllResultSchema),
   'extensions.uninstall': invoke(z.object({ extensionId: z.string() }), z.void()),
+  /** Extensions still waiting to move from the app to the official repository. */
+  'extensions.handoff': invoke(z.void(), z.array(handoffItemSchema)),
+  'extensions.retryHandoff': invoke(z.void(), z.array(handoffItemSchema)),
   /** The last 500 log lines of an extension (developer panel). */
   'extensions.logs': invoke(z.object({ extensionId: z.string() }), z.array(extensionLogEntrySchema)),
   'extensions.clearLogs': invoke(z.object({ extensionId: z.string() }), z.void()),

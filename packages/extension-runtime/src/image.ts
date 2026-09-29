@@ -1,6 +1,6 @@
 // Host-side pixel work for `transformImage` (BRAINSTORM.md §5.6, ADR 0024), shared by the app and
-// `mr-ext test`. Imported via `@manga-reader/extension-runtime/image` (it needs sharp).
-import type { ImageTransform } from '@manga-reader/extension-sdk';
+// `mr-ext test`. Imported via `@matane/extension-runtime/image` (it needs sharp).
+import type { ImageTransform } from '@matane/extension-sdk';
 import sharp, { type FormatEnum, type OutputInfo } from 'sharp';
 
 type Tiles = NonNullable<ImageTransform['tiles']>;

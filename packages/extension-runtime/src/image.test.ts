@@ -1,6 +1,6 @@
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
-import { applyTiles, sniffImageType } from './image';
+import { applyTiles, sniffImageType } from './image.js';
 
 /** A 4×2 picture: left half red, right half blue. */
 const picture = (format: 'png' | 'jpeg' | 'webp') => {

@@ -5,7 +5,7 @@ import {
   type MangaSummary,
   type Page,
   defineExtension,
-} from '@manga-reader/extension-sdk';
+} from '@matane/extension-sdk';
 import {
   type AtHome,
   type ChapterData,

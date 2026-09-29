@@ -1,7 +1,7 @@
 // Host/tooling only: the extension repository format (BRAINSTORM.md §5.8), shared by `mr-ext repo`
-// and the app. Imported via `@manga-reader/extension-sdk/repo`.
+// and the app. Imported via `@matane/extension-sdk/repo`.
 import { z } from 'zod';
-import { extensionIdSchema, manifestSchema } from './manifest';
+import { extensionIdSchema, manifestSchema } from './manifest.js';
 
 export const REPO_FORMAT_VERSION = 1;
 export const REPO_INDEX_FILE = 'index.json';

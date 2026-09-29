@@ -1,5 +1,5 @@
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
-import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
+import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
+import type { ExtensionManifest } from '@matane/extension-sdk/manifest';
 import { type Session, session } from 'electron';
 import type { ExtensionNetwork } from '../extensions/service';
 import type { CloudflareSolver } from './cloudflare';
