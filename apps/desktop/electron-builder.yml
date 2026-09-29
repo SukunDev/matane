@@ -15,6 +15,9 @@ files:
 # Native module: it cannot be loaded from inside the asar.
 asarUnpack:
   - '**/node_modules/better-sqlite3/**'
+  # sharp loads its native addon and libvips from @img/sharp-<platform> packages (ADR 0024).
+  - '**/node_modules/sharp/**'
+  - '**/node_modules/@img/**'
 # Built-in extensions (their built bundles), read from resources/extensions.
 extraResources:
   - from: ../../extensions

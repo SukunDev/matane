@@ -1,4 +1,5 @@
-import type { HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
+import type { MigratedUrls, RawImageTransform } from '@manga-reader/extension-runtime';
+import type { HttpRequest, HttpResponse, Page, UrlKind } from '@manga-reader/extension-sdk';
 import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
 
 /** Methods the extension host serves (main → host). */
@@ -11,6 +12,21 @@ export type HostMethods = {
     /** Stored preference values; the host fills in defaults. */
     prefs: Record<string, unknown>;
   }): unknown;
+  /** `transformImage` with the fetched bytes (sent as binary, not JSON). */
+  transformImage(params: {
+    extensionId: string;
+    sourceKey: string;
+    page: Page;
+    bytes: Uint8Array;
+    prefs: Record<string, unknown>;
+  }): RawImageTransform;
+  migrateUrls(params: {
+    extensionId: string;
+    sourceKey: string;
+    items: { url: string; kind: UrlKind }[];
+    fromVersion: string;
+    prefs: Record<string, unknown>;
+  }): MigratedUrls;
   unload(params: { extensionId: string }): void;
   stats(params: Record<string, never>): { extensionId: string; memoryBytes: number }[];
 };

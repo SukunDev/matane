@@ -57,7 +57,9 @@ program
 
 program
   .command('test')
-  .description('build, then run popular → details → chapters → pages against the real site')
+  .description(
+    'build (or load a built bundle), then run popular → details → chapters → pages (→ transformImage) against the real site',
+  )
   .argument('[dir]', 'extension directory', '.')
   .option('-s, --source <key>', 'source key to test (repeatable; default: all)', collect, [])
   .option('-q, --query <text>', 'search instead of listing popular')
@@ -66,6 +68,7 @@ program
   .option('--pref <key=value>', 'preference override (repeatable)', collect, [])
   .option('--filter <id=value>', 'search filter value, JSON allowed (repeatable)', collect, [])
   .option('--no-image', 'skip fetching the first page image')
+  .option('--out <dir>', 'where a page restored by transformImage is written (default: <dir>/.mr-ext)')
   .option('-v, --verbose', 'print every request')
   .action(
     async (
@@ -78,6 +81,7 @@ program
         pref: string[];
         filter: string[];
         image: boolean;
+        out?: string;
         verbose?: boolean;
       },
     ) => {
@@ -90,6 +94,7 @@ program
         prefs: parseKeyValues(opts.pref),
         filters: parseKeyValues(opts.filter) as never,
         image: opts.image,
+        outDir: opts.out,
         verbose: opts.verbose,
       });
       process.exitCode = ok ? 0 : 1;

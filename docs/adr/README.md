@@ -27,3 +27,4 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0021](0021-packaging-and-auto-update.md) | Packaging with electron-builder, auto-update from GitHub releases, no signing yet |
 | [0022](0022-extension-repositories-and-trust.md) | Extension repositories: signed index, trust by key |
 | [0023](0023-extension-install-lifecycle.md) | Installing, updating and removing extensions |
+| [0024](0024-image-transform-with-sharp.md) | Scrambled images: the extension describes, the host restores with sharp |

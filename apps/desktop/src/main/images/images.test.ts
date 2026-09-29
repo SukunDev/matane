@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { ImageFetchResult } from '@manga-reader/extension-sdk';
+import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DbChanges } from '../db/changes';
 import { type DatabaseConnection, openDatabase } from '../db/client';
@@ -136,7 +137,10 @@ describe('ImageService', () => {
 });
 
 describe('ImageService pages', () => {
-  function setup(respond: (url: string) => Response) {
+  function setup(
+    respond: (url: string) => Response,
+    transformImage?: (page: { index: number }, bytes: Uint8Array) => Promise<object>,
+  ) {
     const changes = new DbChanges(() => undefined);
     const manga = new MangaRepository(connection.db, changes);
     const chapters = new ChaptersRepository(connection.db, changes);
@@ -159,6 +163,8 @@ describe('ImageService pages', () => {
       pages: pagesCall,
       fetchPages,
       imageUrl: async (_id: string, page: { imageUrl?: string }) => page.imageUrl!,
+      hasImageTransform: async () => transformImage !== undefined,
+      transformImage: async (_id: string, page: { index: number }, bytes: Uint8Array) => transformImage!(page, bytes),
     } as unknown as SourceService;
     const service = new ImageService({ cache, manga, chapters, sources, fetcher: { fetchImage } });
     return { service, chapterId: chapterId!, fetchImage, fetchPages, pagesCall };
@@ -183,6 +189,39 @@ describe('ImageService pages', () => {
       'https://s1.example.com/0.jpg',
       'https://s2.example.com/0.jpg',
     ]);
+  });
+
+  it('restores protected pages before caching them, and checks what comes back', async () => {
+    const png = await sharp({ create: { width: 2, height: 2, channels: 3, background: '#00ff00' } })
+      .png()
+      .toBuffer();
+    const xored = png.map((b) => b ^ 0x5a);
+    const seen: number[] = [];
+    const { service, chapterId, fetchImage } = setup(
+      () => new Response(xored, { headers: { 'content-type': 'application/octet-stream' } }),
+      async (page, bytes) => {
+        seen.push(page.index);
+        return { bytes: bytes.map((b) => b ^ 0x5a) };
+      },
+    );
+    const served = await service.page(chapterId, 1);
+    expect(served).toMatchObject({ contentType: 'image/png', sizeBytes: png.byteLength });
+    expect(readFileSync((served as { path: string }).path)).toEqual(png);
+    // Cached restored: no second fetch or transform.
+    await service.page(chapterId, 1);
+    expect(fetchImage).toHaveBeenCalledTimes(1);
+    expect(seen).toEqual([1]);
+    await expect(service.pageBytes(chapterId, 1)).resolves.toMatchObject({ contentType: 'image/png' });
+
+    const broken = setup(
+      () => new Response(xored, { headers: { 'content-type': 'application/octet-stream' } }),
+      async () => ({}),
+    );
+    // Same chapter (its page 0 is not cached yet), another extension answer.
+    await expect(broken.service.page(chapterId, 0)).rejects.toMatchObject({
+      code: 'parse',
+      message: 'The restored page is not an image',
+    });
   });
 
   it('reports pages that do not exist', async () => {

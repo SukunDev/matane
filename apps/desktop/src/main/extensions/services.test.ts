@@ -126,6 +126,8 @@ beforeEach(async () => {
   });
   const hostPeer: RpcPeer<HostMethods, MainMethods> = new RpcPeer(transport(port2), {
     call: (p) => host.handlers.call(p),
+    transformImage: (p) => host.handlers.transformImage(p),
+    migrateUrls: (p) => host.handlers.migrateUrls(p),
     unload: (p) => host.handlers.unload(p),
     stats: (p) => host.handlers.stats(p),
   });

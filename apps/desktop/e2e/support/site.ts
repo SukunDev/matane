@@ -3,6 +3,7 @@ import { type Server, createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, normalize } from 'node:path';
+import { createCipheriv } from 'node:crypto';
 import { crc32, deflateSync } from 'node:zlib';
 import { buildRepo } from '@manga-reader/extension-cli';
 
@@ -47,7 +48,9 @@ export const SITE_MANGA: SiteManga[] = [
   })),
 ];
 
-function png(width: number, height: number, rgb: [number, number, number]): Buffer {
+type Rgb = [number, number, number];
+
+function png(width: number, height: number, rgb: Rgb | ((x: number, y: number) => Rgb)): Buffer {
   const chunk = (type: string, data: Buffer) => {
     const length = Buffer.alloc(4);
     length.writeUInt32BE(data.length);
@@ -60,15 +63,54 @@ function png(width: number, height: number, rgb: [number, number, number]): Buff
   header.writeUInt32BE(width, 0);
   header.writeUInt32BE(height, 4);
   header.set([8, 2, 0, 0, 0], 8); // 8-bit RGB
-  const row = Buffer.alloc(1 + width * 3);
-  for (let x = 0; x < width; x++) row.set(rgb, 1 + x * 3);
-  const raw = Buffer.concat(Array.from({ length: height }, () => row));
+  const color = typeof rgb === 'function' ? rgb : () => rgb;
+  const raw = Buffer.concat(
+    Array.from({ length: height }, (_, y) => {
+      const row = Buffer.alloc(1 + width * 3);
+      for (let x = 0; x < width; x++) row.set(color(x, y), 1 + x * 3);
+      return row;
+    }),
+  );
   return Buffer.concat([
     Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
     chunk('IHDR', header),
     chunk('IDAT', deflateSync(raw)),
     chunk('IEND', Buffer.alloc(0)),
   ]);
+}
+
+/** Quadrant colours of a restored "secure" page: top-left, top-right, bottom-left, bottom-right. */
+export const QUADRANTS: Record<'tl' | 'tr' | 'bl' | 'br', Rgb> = {
+  tl: [243, 139, 168],
+  tr: [166, 227, 161],
+  bl: [137, 180, 250],
+  br: [249, 226, 175],
+};
+const SECURE_SIZE = { width: 120, height: 180 };
+/** AES-128-CBC key and iv of the "aes" pages (the extension knows them too). */
+export const SECURE_KEY = 'matane-e2e-key16';
+export const SECURE_IV = 'matane-e2e-iv-16';
+
+/** The four quadrants; `scrambled` swaps them diagonally (what the extension undoes with tiles). */
+function quadrants(scrambled: boolean): Buffer {
+  const { width, height } = SECURE_SIZE;
+  return png(width, height, (x, y) => {
+    const right = x >= width / 2;
+    const bottom = y >= height / 2;
+    const key = `${bottom !== scrambled ? 'b' : 't'}${right !== scrambled ? 'r' : 'l'}` as keyof typeof QUADRANTS;
+    return QUADRANTS[key];
+  });
+}
+
+/** How page `index` of the "secure" extension is protected. */
+export const SECURE_MODES = ['xor', 'tiles', 'aes-tiles', 'plain'] as const;
+
+function securePage(mode: (typeof SECURE_MODES)[number]): Buffer {
+  if (mode === 'plain') return quadrants(false);
+  if (mode === 'xor') return Buffer.from(quadrants(false).map((b) => b ^ 0x5a));
+  if (mode === 'tiles') return quadrants(true);
+  const cipher = createCipheriv('aes-128-cbc', Buffer.from(SECURE_KEY), Buffer.from(SECURE_IV));
+  return Buffer.concat([cipher.update(quadrants(true)), cipher.final()]);
 }
 
 export interface Site {
@@ -148,6 +190,13 @@ export async function startSite(): Promise<Site> {
       const index = Number(page[3]);
       // Page 2 of every chapter is a two-page spread (landscape).
       return { type: 'image/png', body: index === 2 ? png(240, 160, [137, 180, 250]) : png(120, 180, [166, 227, 161]) };
+    }
+    // Protected pages of the "secure" extension; encrypted ones are not even labelled as images.
+    const secure = /^\/img\/secure\/([\w-]+)\/[\w/-]+\/\d+\.png$/.exec(path);
+    if (secure && (SECURE_MODES as readonly string[]).includes(secure[1]!)) {
+      const mode = secure[1] as (typeof SECURE_MODES)[number];
+      const encrypted = mode === 'xor' || mode === 'aes-tiles';
+      return { type: encrypted ? 'application/octet-stream' : 'image/png', body: securePage(mode) };
     }
     return undefined;
   };
@@ -242,15 +291,52 @@ const EXTENSIONS = {
   mirror: { id: 'e2e-mirror', name: 'E2E Mirror', sources: [{ key: 'id', lang: 'id', name: 'E2E Mirror' }] },
   // Adult content: hidden until Settings → Browse & extensions allows it. Its requests say lang=nsfw.
   adult: { id: 'e2e-adult', name: 'E2E Adult', nsfw: true, sources: [{ key: 'nsfw', lang: 'en', name: 'E2E Adult' }] },
+  // Protected images (BRAINSTORM.md §5.6): page i is SECURE_MODES[i]; transformImage restores them.
+  secure: { id: 'e2e-secure', name: 'E2E Secure', sources: [{ key: 'en', lang: 'en', name: 'E2E Secure' }] },
 } as const;
 export type SiteExtension = keyof typeof EXTENSIONS;
+
+// Undoes SECURE_MODES: XOR 0x5a, AES-128-CBC (host crypto), and a diagonal swap of the quadrants
+// (the size comes from the PNG header, as a real extension would read it).
+const SECURE_TRANSFORM = `
+      transformImage(page, bytes) {
+        const mode = page.imageUrl.split('/img/secure/')[1].split('/')[0];
+        if (mode === 'plain') return {};
+        let data = bytes;
+        if (mode === 'xor') {
+          data = new Uint8Array(bytes.length);
+          for (let i = 0; i < bytes.length; i++) data[i] = bytes[i] ^ 0x5a;
+          return { bytes: data };
+        }
+        if (mode === 'aes-tiles') {
+          data = crypto.aesDecrypt(bytes, ${JSON.stringify(SECURE_KEY)}, { mode: 'cbc', iv: ${JSON.stringify(SECURE_IV)} });
+        }
+        const view = new DataView(data.buffer, data.byteOffset);
+        const width = view.getUint32(16);
+        const height = view.getUint32(20);
+        const w = width / 2, h = height / 2;
+        const ops = [
+          { sx: 0, sy: 0, w, h, dx: w, dy: h },
+          { sx: w, sy: h, w, h, dx: 0, dy: 0 },
+          { sx: w, sy: 0, w, h, dx: 0, dy: h },
+          { sx: 0, sy: h, w, h, dx: w, dy: 0 },
+        ];
+        return mode === 'aes-tiles' ? { bytes: data, tiles: { width, height, ops } } : { tiles: { width, height, ops } };
+      },`;
 
 /** An extension under test, written as a ready bundle (manifest.json + index.js). */
 export function extensionFiles(
   origin: string,
   which: SiteExtension = 'demo',
-  overrides: { version?: string; domains?: string[]; description?: string } = {},
+  overrides: {
+    version?: string;
+    domains?: string[];
+    description?: string;
+    /** v2 stores manga as "m:<id>" and chapters as "c:<id>/<n>", and migrates v1 urls. */
+    urlScheme?: 'v1' | 'v2';
+  } = {},
 ): Record<string, string> {
+  const v2 = overrides.urlScheme === 'v2';
   const manifest = {
     ...EXTENSIONS[which],
     version: overrides.version ?? '1.0.0',
@@ -264,7 +350,10 @@ export function extensionFiles(
     const base = ${JSON.stringify(origin)};
     const get = async (path) =>
       (await http.get(base + path + (path.includes('?') ? '&' : '?') + 'lang=' + key, { responseType: 'json' })).body;
-    const toPage = (data) => ({ items: data.items.map((m) => ({ url: m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png' })), hasNextPage: data.more });
+    const M = ${JSON.stringify(v2 ? 'm:' : '')};
+    const C = ${JSON.stringify(v2 ? 'c:' : '')};
+    const strip = (url, prefix) => (url.startsWith(prefix) ? url.slice(prefix.length) : url);
+    const toPage = (data) => ({ items: data.items.map((m) => ({ url: M + m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png' })), hasNextPage: data.more });
     return {
       baseUrl: base,
       getPopular: async (page) => {
@@ -285,18 +374,30 @@ export function extensionFiles(
         return toPage(await get(path));
       },
       async getMangaDetails(manga) {
-        const m = await get('/api/manga/' + manga.url);
-        return { url: m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png', genres: m.genres, status: m.status, type: m.type, author: 'E2E Author', description: 'A manga that only exists in tests.' };
+        const m = await get('/api/manga/' + strip(manga.url, M));
+        return { url: M + m.id, title: m.title, thumbnailUrl: base + '/img/cover/' + m.id + '.png', genres: m.genres, status: m.status, type: m.type, author: 'E2E Author', description: 'A manga that only exists in tests.' };
       },
       async getChapters(manga) {
-        const m = await get('/api/manga/' + manga.url);
+        const m = await get('/api/manga/' + strip(manga.url, M));
         // Newest first; versions of one number: the later group uploaded a day later.
-        return m.chapters.slice().reverse().flatMap((n) => (m.groups?.[n] ?? ['Test Scans']).map((group, v) => ({ url: m.id + '/' + n + (v ? '-' + v : ''), name: 'Ch. ' + n, number: n, scanlator: group, uploadedAt: Date.UTC(2026, 0, n + v) })).reverse());
+        return m.chapters.slice().reverse().flatMap((n) => (m.groups?.[n] ?? ['Test Scans']).map((group, v) => ({ url: C + m.id + '/' + n + (v ? '-' + v : ''), name: 'Ch. ' + n, number: n, scanlator: group, uploadedAt: Date.UTC(2026, 0, n + v) })).reverse());
       },
       async getPages(chapter) {
-        return [0, 1, 2, 3].slice(0, ${PAGES_PER_CHAPTER}).map((index) => ({ index, imageUrl: base + '/img/page/' + chapter.url + '/' + index + '.png' }));
+        return [0, 1, 2, 3].slice(0, ${PAGES_PER_CHAPTER}).map((index) => ({ index, imageUrl: ${
+          which === 'secure'
+            ? `base + '/img/secure/' + ${JSON.stringify(SECURE_MODES)}[index] + '/' + strip(chapter.url, C) + '/' + index + '.png'`
+            : `base + '/img/page/' + strip(chapter.url, C) + '/' + index + '.png'`
+        } }));
       },
-      resolveUrl: (url) => (url.startsWith(base + '/manga/') ? { url: url.slice(base.length + 7), title: '' } : null),
+      resolveUrl: (url) => (url.startsWith(base + '/manga/') ? { url: M + url.slice(base.length + 7), title: '' } : null),${
+        v2
+          ? `
+      migrateUrl(url, kind, fromVersion) {
+        if (!fromVersion.startsWith('1.')) return null;
+        return (kind === 'manga' ? M : C) + url;
+      },`
+          : ''
+      }${which === 'secure' ? SECURE_TRANSFORM : ''}
     };
   },
 };`;

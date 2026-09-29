@@ -1,13 +1,16 @@
-// Runs inside the QuickJS sandbox before the extension bundle. It turns the two raw host primitives
-// (`__hostSync`, `__hostAsync`: string op + JSON args → JSON result) into the documented globals
-// (BRAINSTORM.md §5.5), then hides the primitives. Plain ES2020, no imports.
+// Runs inside the QuickJS sandbox before the extension bundle. It turns the raw host primitives
+// (`__hostSync`, `__hostAsync`: string op + JSON args → JSON result; `__hostBytes`: the same plus
+// ArrayBuffers, for binary data) into the documented globals (BRAINSTORM.md §5.5), then hides the
+// primitives. Plain ES2020, no imports.
 export const PRELUDE = String.raw`
 (() => {
   'use strict';
   const hostSync = globalThis.__hostSync;
   const hostAsync = globalThis.__hostAsync;
+  const hostBytes = globalThis.__hostBytes;
   delete globalThis.__hostSync;
   delete globalThis.__hostAsync;
+  delete globalThis.__hostBytes;
 
   const toError = (e) => {
     const error = new Error(e.message);
@@ -22,6 +25,18 @@ export const PRELUDE = String.raw`
   };
   const callSync = (op, args) => unwrap(hostSync(op, JSON.stringify(args)));
   const callAsync = (op, args) => hostAsync(op, JSON.stringify(args)).then(unwrap);
+
+  // Binary data crosses as ArrayBuffers (no JSON), so images of several MB stay cheap.
+  const toBytes = (value, what) => {
+    if (value instanceof Uint8Array) return value;
+    if (value instanceof ArrayBuffer) return new Uint8Array(value);
+    if (Array.isArray(value)) return new Uint8Array(value);
+    if (typeof value === 'string') return new Uint8Array(callSync('utf8.encode', [value]));
+    throw new TypeError(what + ' must be a Uint8Array, an array of numbers or a string');
+  };
+  const bufferOf = (bytes) =>
+    bytes.byteOffset === 0 && bytes.byteLength === bytes.buffer.byteLength ? bytes.buffer : bytes.slice().buffer;
+  const callBytes = (op, args, ...buffers) => hostBytes(op, JSON.stringify(args), ...buffers);
 
   class HtmlElement {
     constructor(id) { this.__id = id; }
@@ -75,10 +90,19 @@ export const PRELUDE = String.raw`
     md5: (text) => callSync('crypto.hash', ['md5', String(text)]),
     sha1: (text) => callSync('crypto.hash', ['sha1', String(text)]),
     sha256: (text) => callSync('crypto.hash', ['sha256', String(text)]),
+    aesDecrypt: (data, key, options) => {
+      const o = options || {};
+      const iv = o.iv === undefined || o.iv === null ? undefined : bufferOf(toBytes(o.iv, 'iv'));
+      return new Uint8Array(
+        callBytes('aes.decrypt', [o.mode, o.padding !== false], bufferOf(toBytes(data, 'data')), bufferOf(toBytes(key, 'key')), iv),
+      );
+    },
   });
   define('base64', {
     encode: (text) => callSync('base64.encode', [String(text)]),
     decode: (text) => callSync('base64.decode', [String(text)]),
+    decodeBytes: (text) => new Uint8Array(callBytes('base64.decodeBytes', [String(text)])),
+    encodeBytes: (bytes) => callBytes('base64.encodeBytes', [], bufferOf(toBytes(bytes, 'bytes'))),
   });
   define('utf8', {
     encode: (text) => callSync('utf8.encode', [String(text)]),
@@ -86,7 +110,37 @@ export const PRELUDE = String.raw`
   });
   define('timers', { sleep: (ms) => callAsync('sleep', [Number(ms) || 0]).then(() => undefined) });
 
-  const OPTIONAL = ['getLatest', 'getFilters', 'getImageUrl', 'imageHeaders', 'resolveUrl', 'getWebUrl', 'reportImage', 'transformImage'];
+  const OPTIONAL = ['getLatest', 'getFilters', 'getImageUrl', 'imageHeaders', 'resolveUrl', 'getWebUrl', 'reportImage', 'transformImage', 'migrateUrl'];
+
+  // transformImage: the fetched bytes come from the host by id; restored bytes go back the same way.
+  const transformImage = async (source, ioId, page) => {
+    if (typeof source.transformImage !== 'function') throw new Error('Source does not implement transformImage');
+    const input = new Uint8Array(callBytes('image.take', [ioId]));
+    const result = await source.transformImage(page, input);
+    if (!result || typeof result !== 'object') throw new TypeError('transformImage must return an object');
+    let bytes = false;
+    if (result.bytes !== undefined && result.bytes !== null) {
+      callBytes('image.put', [ioId], bufferOf(toBytes(result.bytes, 'transformImage bytes')));
+      bytes = true;
+    }
+    return { bytes, tiles: result.tiles === undefined ? null : result.tiles };
+  };
+
+  // migrateUrl for a batch, so an update does not cost one host round trip per manga or chapter.
+  const migrateUrls = (source, items, fromVersion) => {
+    if (typeof source.migrateUrl !== 'function') return { urls: items.map(() => null), errors: [] };
+    const errors = [];
+    const urls = items.map((item) => {
+      try {
+        const next = source.migrateUrl(item.url, item.kind, fromVersion);
+        return typeof next === 'string' && next !== item.url ? next : null;
+      } catch (e) {
+        if (errors.length < 5) errors.push(item.url + ': ' + (e && e.message ? e.message : String(e)));
+        return null;
+      }
+    });
+    return { urls, errors };
+  };
   const created = new Map();
   const sourceFor = (key) => {
     const extension = globalThis.__extension;
@@ -113,6 +167,8 @@ export const PRELUDE = String.raw`
       if (method === '__info') {
         return JSON.stringify({ baseUrl: source.baseUrl, capabilities: OPTIONAL.filter((m) => typeof source[m] === 'function') });
       }
+      if (method === '__transformImage') return JSON.stringify(await transformImage(source, ...JSON.parse(argsJson)));
+      if (method === '__migrateUrls') return JSON.stringify(migrateUrls(source, ...JSON.parse(argsJson)));
       const fn = source[method];
       if (typeof fn !== 'function') {
         const error = new Error('Source does not implement ' + method);

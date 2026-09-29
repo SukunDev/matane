@@ -13,8 +13,9 @@ coverage/
 .env.*
 !.env.example
 
-# mr-ext test scratch dirs
+# mr-ext test scratch dirs, and pages it restores with transformImage
 packages/extension-cli/.test-*/
+.mr-ext/
 
 # Playwright output
 test-results/

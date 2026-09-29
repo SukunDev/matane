@@ -106,8 +106,9 @@ These globals are the only way out of the sandbox (types come from `@manga-reade
 | `html` | `html.load(body, { baseUrl, xml })` → element with `select(css)`, `selectFirst(css)`, `text()`, `html()`, `attr(name)`, `absUrl(name)`. Parsing happens on the host (cheerio); handles are only valid during the current call. |
 | `storage` | `get/set/remove` of JSON values, per extension, persisted (tokens, cached tag lists). |
 | `prefs` | `prefs.get(key)`: current value of a preference (default applied). |
-| `log`, `console` | Messages go to the app log (`[ext] [my-site] …`). |
-| `crypto`, `base64`, `utf8` | `md5/sha1/sha256` (hex), encode/decode helpers. |
+| `log`, `console` | Messages go to the app log (`[ext] [my-site] …`) and the extension's log panel (Extensions → ⋮ → View logs), next to every request it makes and every failed call. |
+| `crypto` | `md5/sha1/sha256` (hex); `aesDecrypt(data, key, { mode: 'cbc' \| 'ctr' \| 'ecb', iv, padding })` → `Uint8Array`, done by the host (key of 16/24/32 bytes; bytes may be a `Uint8Array`, a number array or a UTF-8 string). |
+| `base64`, `utf8` | `encode/decode` for text; `base64.decodeBytes(text)` → `Uint8Array` and `base64.encodeBytes(bytes)` for binary data (e.g. an `http` response with `responseType: 'bytes'`). |
 | `timers` | `timers.sleep(ms)` (max 30 s). There is no `setTimeout`. |
 | `host` | `{ appName, appVersion, apiVersion }`, e.g. for a descriptive User-Agent. |
 
@@ -126,6 +127,42 @@ Throw the SDK's error classes when you can; the app turns them into messages and
 | `ParseError` | "The source returned something unexpected" (use it when the page layout changed) |
 
 Anything else becomes a generic extension error with your message.
+
+## Scrambled or encrypted images
+
+Some sites encrypt their image files or cut pages into shuffled tiles. Implement `transformImage(page, bytes)`: it receives the fetched bytes of a page and returns **instructions**; the host does the pixel work (decoding pixels in the sandbox would be far too slow).
+
+```ts
+transformImage(page, bytes) {
+  // 1. Encrypted file: return the real bytes (XOR in JS is fine; use crypto.aesDecrypt for AES).
+  const data = crypto.aesDecrypt(bytes, KEY, { mode: 'cbc', iv: IV });
+  // 2. Shuffled tiles: say where each rectangle of the (decrypted) image goes.
+  const { width, height } = readPngSize(data);
+  return { bytes: data, tiles: { width, height, ops: [{ sx: 0, sy: 0, w: 100, h: 100, dx: 100, dy: 0 } /* … */] } };
+}
+```
+
+- Return `{}` to keep an image as it is; `bytes` and `tiles` can be used alone or together (tiles apply to `bytes` when both are given).
+- `tiles.ops` copies rectangles from the source image (`sx`, `sy`, `w`, `h`) to a new `width` × `height` canvas (`dx`, `dy`); rectangles outside either are an error. The result keeps the original format (JPEG, PNG, WebP, AVIF; GIF becomes PNG).
+- Only sources that define `transformImage` go through it. Encrypted responses may have any content type; the restored image is checked instead.
+- The restored image is what gets cached and downloaded, so reading offline never needs your extension again.
+- `mr-ext test` calls it for the first page and writes the restored page to `.mr-ext/<source>-page-1.<ext>` so you can look at it.
+
+## Changing how urls look
+
+`url` values are stored in the user's library, history and downloads, so they must stay stable. When a new version has to change them anyway (the site moved to new ids, or you want a prefix), implement `migrateUrl(url, kind, fromVersion)`:
+
+```ts
+migrateUrl(url, kind, fromVersion) {
+  if (!fromVersion.startsWith('1.')) return null; // already in the new form
+  return kind === 'manga' ? `/series${url}` : `/read${url}`;
+}
+```
+
+- The host calls it once after the version changes, for every stored manga and chapter of your sources (in batches), and writes all answers in one transaction. If the app closes midway, nothing is changed and it runs again at the next start.
+- Return `null` or the same url to keep one; a url that would collide with another row is kept too. Both show in the log panel (`migrateUrl 1.2.0 → 2.0.0: 12 manga and 340 chapters updated, 0 kept`).
+- `fromVersion` is the version whose urls are stored, which may be several releases back: handle every older form, and never touch urls that are already new.
+- It must be synchronous and fast (it runs under the same CPU limit as other calls).
 
 ## Filters and preferences
 

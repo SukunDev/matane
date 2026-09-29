@@ -141,6 +141,18 @@ export class SourceService {
     return null;
   }
 
+  /** Whether this source restores its images with `transformImage` (BRAINSTORM.md §5.6). */
+  async hasImageTransform(sourceId: string): Promise<boolean> {
+    return (await this.info(sourceId)).capabilities.includes('transformImage');
+  }
+
+  /** How to restore a fetched page image: checked instructions from the extension. */
+  async transformImage(sourceId: string, page: Page, bytes: Uint8Array, signal?: AbortSignal) {
+    const source = this.source(sourceId);
+    const raw = await this.deps.extensions.transformImage(source.extensionId, source.key, page, bytes, signal);
+    return validate.imageTransform(raw);
+  }
+
   /** Extra request headers for this source's images (e.g. Referer, or MangaDex's own User-Agent). */
   async imageHeaders(sourceId: string): Promise<Record<string, string>> {
     const cached = this.headersCache.get(sourceId);

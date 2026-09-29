@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { ImageFetchResult } from '@manga-reader/extension-sdk';
+import type { ImageFetchResult, Page } from '@manga-reader/extension-sdk';
 import { AppError } from '@manga-reader/shared/errors';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { MangaRepository } from '../db/repositories/manga';
@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises';
 import type { DownloadStore } from '../downloads/store';
 import type { CachedImage, ImageCache, ImageKind } from './cache';
 import type { CoverStore } from './covers';
+import { ImageTransformError, restoreImage, sniffImageType } from '@manga-reader/extension-runtime/image';
 
 export interface ImageFetcher {
   /** Fetches an image through the extension's session and allowlist; returns the raw response. */
@@ -90,7 +91,7 @@ export class ImageService {
     const { key, sourceId } = this.pageKey(chapterId, index);
     const cached = await this.deps.cache.get(key);
     if (cached) return { bytes: await readFile(cached.path), contentType: cached.contentType };
-    return this.withPageUrl(chapterId, index, (url) => this.fetchBytes(sourceId, url));
+    return this.withPageUrl(chapterId, index, (url, page) => this.fetchPage(sourceId, page, url));
   }
 
   private pageKey(chapterId: number, index: number): { key: string; sourceId: string } {
@@ -116,14 +117,43 @@ export class ImageService {
   private async loadPage(key: string, sourceId: string, chapterId: number, index: number): Promise<CachedImage> {
     const cached = await this.deps.cache.get(key);
     if (cached) return cached;
-    return this.withPageUrl(chapterId, index, (url) => this.fetchAndStore(key, 'page', sourceId, url));
+    return this.withPageUrl(chapterId, index, async (url, page) => {
+      const { bytes, contentType } = await this.fetchPage(sourceId, page, url);
+      return this.deps.cache.put(key, 'page', bytes, contentType);
+    });
+  }
+
+  /**
+   * A page image from the source, restored when the extension scrambles or encrypts its images
+   * (BRAINSTORM.md §5.6): the extension says how, the host does the pixel work. What is returned is
+   * what gets cached and downloaded, so reading offline never needs the extension again.
+   */
+  private async fetchPage(sourceId: string, page: Page, url: string): Promise<ImageBytes> {
+    const transforms = await this.deps.sources.hasImageTransform(sourceId);
+    const fetched = await this.fetchBytes(sourceId, url, transforms);
+    if (!transforms) return fetched;
+    const transform = await this.deps.sources.transformImage(sourceId, page, fetched.bytes);
+    let bytes: Uint8Array;
+    try {
+      bytes = await restoreImage(fetched.bytes, transform);
+    } catch (error) {
+      if (error instanceof ImageTransformError) throw new AppError('parse', error.message);
+      throw error;
+    }
+    const contentType = sniffImageType(bytes);
+    if (!contentType) throw new AppError('parse', 'The restored page is not an image');
+    return { bytes, contentType };
   }
 
   /**
    * Runs `fetch` with the page's image URL. Image URLs can expire (MangaDex@Home ~15 min): on
    * 403/404/410 with a cached page list, the list is fetched again once.
    */
-  private async withPageUrl<T>(chapterId: number, index: number, fetch: (url: string) => Promise<T>): Promise<T> {
+  private async withPageUrl<T>(
+    chapterId: number,
+    index: number,
+    fetch: (url: string, page: Page) => Promise<T>,
+  ): Promise<T> {
     const { sourceId } = this.pageKey(chapterId, index);
     const { pages, fromCache } = await this.deps.sources.pages(chapterId);
     const find = (list: typeof pages) => {
@@ -132,12 +162,13 @@ export class ImageService {
       return page;
     };
     try {
-      return await fetch(await this.deps.sources.imageUrl(sourceId, find(pages)));
+      const page = find(pages);
+      return await fetch(await this.deps.sources.imageUrl(sourceId, page), page);
     } catch (error) {
       const expired = error instanceof AppError && error.code === 'http' && [403, 404, 410].includes(error.status ?? 0);
       if (!expired || !fromCache) throw error;
-      const fresh = await this.deps.sources.fetchPages(chapterId);
-      return fetch(await this.deps.sources.imageUrl(sourceId, find(fresh)));
+      const page = find(await this.deps.sources.fetchPages(chapterId));
+      return fetch(await this.deps.sources.imageUrl(sourceId, page), page);
     }
   }
 
@@ -157,8 +188,11 @@ export class ImageService {
     return this.deps.cache.put(key, kind, bytes, contentType);
   }
 
-  /** One image through the extension's network, checked, and reported to the extension. */
-  private async fetchBytes(sourceId: string, url: string): Promise<ImageBytes> {
+  /**
+   * One image through the extension's network, checked, and reported to the extension. Encrypted
+   * images (`anyType`) may come with any content type; they are checked after restoring.
+   */
+  private async fetchBytes(sourceId: string, url: string, anyType = false): Promise<ImageBytes> {
     const source = this.deps.sources.source(sourceId);
     const headers = await this.deps.sources.imageHeaders(sourceId);
     const started = Date.now();
@@ -173,7 +207,7 @@ export class ImageService {
         await response.body?.cancel();
         throw new AppError('http', `Image request failed with HTTP ${response.status}`, response.status);
       }
-      if (contentType && !/^image\//i.test(contentType)) {
+      if (!anyType && contentType && !/^image\//i.test(contentType)) {
         await response.body?.cancel();
         throw new AppError('parse', `Expected an image but got ${contentType}`);
       }

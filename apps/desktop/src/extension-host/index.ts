@@ -25,6 +25,8 @@ const peer: RpcPeer<HostMethods, MainMethods> = new RpcPeer(
   },
   {
     call: (params) => host.handlers.call(params),
+    transformImage: (params) => host.handlers.transformImage(params),
+    migrateUrls: (params) => host.handlers.migrateUrls(params),
     unload: (params) => host.handlers.unload(params),
     stats: (params) => host.handlers.stats(params),
   },

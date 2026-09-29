@@ -88,3 +88,17 @@ async function exists(file: string): Promise<boolean> {
     () => false,
   );
 }
+
+/**
+ * An extension folder for testing: sources (`src/index.ts`, built into `dist/`) or an already built
+ * bundle (`manifest.json` + `index.js`, e.g. a `dist/` or what the app loads).
+ */
+export async function buildOrLoad(dir: string): Promise<Pick<BuildResult, 'manifest' | 'code' | 'bytes'>> {
+  const root = path.resolve(dir);
+  if (await exists(path.join(root, 'src/index.ts'))) return buildExtension(root);
+  if (await exists(path.join(root, 'index.js'))) {
+    const code = await readFile(path.join(root, 'index.js'), 'utf8');
+    return { manifest: await readManifest(root), code, bytes: Buffer.byteLength(code) };
+  }
+  throw new Error(`${dir}: neither src/index.ts nor a built index.js`);
+}

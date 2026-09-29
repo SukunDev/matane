@@ -378,3 +378,56 @@ Beda dari rencana:
 - Filter bahasa berlaku juga di Global search dan target Migrasi, tidak hanya di daftar source, supaya hasilnya konsisten di semua tempat.
 - Extension dev tidak ikut disaring, karena pembuat extension harus selalu melihat extension yang sedang dikerjakannya.
 - Profil lama mendapat bahasa awal dari source yang sudah dipakai. Ini tidak ada di rencana; tujuannya supaya update tidak menyembunyikan source yang sedang dibaca pengguna beta.
+
+### Milestone 4d: selesai (29 Sep 2026), menunggu review
+
+- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (runtime 43: +8, desktop 207: +5). E2E 74/74.
+- Test baru:
+  - **runtime** `runtime.test.ts`:
+    - `crypto.aesDecrypt` (CBC, lalu CTR) dengan kunci/iv dari `base64.decodeBytes`, dan hasilnya kembali lewat `base64.encodeBytes`;
+    - kunci AES yang salah menjadi error extension yang jelas;
+    - `transformImage` atas 300 KB byte (XOR + tiles) yang menyeberang sebagai ArrayBuffer, dan `capabilities` yang memuatnya;
+    - `migrateUrls` per batch: satu url yang error dibiarkan dan dilaporkan, dan tanpa hook tidak ada yang berubah.
+  - **runtime** `image.test.ts`: tukar tile PNG/WebP (format dipertahankan), JPEG tetap JPEG, tile di luar gambar sumber/hasil ditolak, byte yang bukan gambar ditolak, dan `sniffImageType`.
+  - **desktop**:
+    - `url-migration.test.ts`: versi dicatat saat extension pertama kali terlihat; update mengubah url manga + chapter, sementara bentrok unik dibiarkan dan dicatat, dan source lain tidak tersentuh; kalau extension gagal, tidak ada yang berubah dan migrasi diulang lain kali; source tanpa hook tetap dicatat versinya;
+    - `images.test.ts`: halaman terenkripsi (`application/octet-stream`) dipulihkan sebelum masuk cache, lalu dibaca lagi tanpa fetch/transform ulang, `pageBytes` (download) mendapat versi pulih, dan hasil yang bukan gambar ditolak (`parse`).
+- E2E: spec baru `e2e/transform.spec.ts` (3 test) dengan extension **E2E Secure**. Situs palsu menyajikan halaman 1 ter-XOR, halaman 2 dengan 2×2 tile tertukar diagonal, halaman 3 AES-128-CBC + tile, dan halaman 4 polos; yang terenkripsi bahkan tidak berlabel gambar.
+  - reader membuka keempatnya, dan pixel keempat kuadran sama persis dengan aslinya;
+  - CBZ hasil download berisi keempat halaman yang sudah pulih, dan halaman yang hanya pernah dibaca (cache) tetap terbuka saat situs mati;
+  - extension demo v1 → v2 (manga `m:<id>`, chapter `c:<id>/<n>`, lewat hot reload folder dev): url 1 manga + 4 chapter dimigrasi, refresh dengan v2 tidak menambah atau menghapus chapter (id sama, status dibaca tetap), chapter yang didownload tetap terbuka tanpa jaringan, chapter lain diambil lewat skema baru, dan log extension mencatat `migrateUrl 1.0.0 → 2.0.0: 1 manga and 4 chapters updated, 0 kept`.
+- Live check:
+  - **AppImage** (`pnpm dist:linux`, di-extract): `sharp` dan `@img/sharp-linux-x64` + `sharp-libvips-linux-x64` ada di `app.asar.unpacked`. Dengan E2E Secure dimuat dari folder, keempat mode kembali ke warna aslinya persis (termasuk tile yang disusun `sharp`), dan reader menampilkannya.
+  - MangaDex asli di AppImage yang sama tetap normal: "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1, halaman 1 `200 image/jpeg` 376 KB. Run pertama sempat gagal di browse MangaDex, dan run ulang langsung berhasil.
+  - `mr-ext test` terhadap E2E Secure: langkah `transformImage` menulis `.mr-ext/en-page-1.png`, dan hasilnya benar saat dilihat.
+
+Implementasi:
+- **SDK:**
+  - `TileOp`, `ImageTransform` (didokumentasikan), `UrlKind`;
+  - `Source.transformImage` boleh sinkron atau async; `Source.migrateUrl(url, kind, fromVersion)` ditambahkan (opsional, jadi `apiVersion` tetap 1);
+  - global `crypto.aesDecrypt(data, key, { mode, iv, padding })`, `base64.decodeBytes`, dan `base64.encodeBytes`.
+- **Runtime:**
+  - primitive baru `__hostBytes` (argumen JSON + ArrayBuffer masuk, ArrayBuffer/string keluar). Byte gambar tidak pernah lewat JSON: `image.take`/`image.put` per id panggilan;
+  - `ExtensionRuntime.transformImage` dan `migrateUrls`, plus `aesDecrypt` (`node:crypto`, AES-128/192/256, CBC/CTR/ECB);
+  - prelude: `__transformImage`, `__migrateUrls` (batch; error per item tidak menggagalkan batch), dan `migrateUrl` di `capabilities`;
+  - `@manga-reader/extension-runtime/image`: `applyTiles` (decode sekali ke pixel mentah, salin per baris, encode ulang dalam format asli), `restoreImage`, dan `sniffImageType`. `sharp` 0.35.5 menjadi dependensi runtime dan desktop.
+- **Extension host:** method RPC `transformImage` dan `migrateUrls`. `ExtensionService` punya jalur yang sama, dengan pencatatan ke log extension.
+- **Main:**
+  - `SourceService.hasImageTransform/transformImage`, dengan validasi zod: byte 1 B–30 MB, ukuran ≤ 20 000 px, dan 1–10 000 persegi;
+  - `ImageService.fetchPage`: hanya source dengan `transformImage` yang lewat sandbox, content type bebas untuk respons terenkripsi, dan hasil pulih wajib berupa gambar yang dikenali. Hasil pulih itulah yang masuk cache dan download;
+  - `extensions/url-migration.ts` (`UrlMigration`): jalan saat start dan setiap kali extension di-reload, install, atau update. Semua jawaban dikumpulkan dulu, lalu ditulis dalam satu transaksi bersama versi barunya.
+- **Paket:** `asarUnpack` untuk `sharp` dan `@img/*`.
+- **CLI:**
+  - `mr-ext test` memanggil `transformImage` untuk halaman pertama dan menulis hasilnya ke `.mr-ext/` (atau `--out`);
+  - `mr-ext test` juga menerima bundle jadi (`manifest.json` + `index.js`), seperti `mr-ext repo build`;
+  - scaffold `mr-ext create` sekarang punya `.gitignore`, dan `.mr-ext/` di-ignore di repo ini.
+- **Dokumentasi:** `docs/extensions.md` (bagian "Scrambled or encrypted images" dan "Changing how urls look", plus `crypto`/`base64` di tabel Host APIs) dan ADR 0024.
+
+Beda dari rencana:
+- Pixel di reader diperiksa dari byte yang disajikan `manga://` (diambil lewat `net.fetch` di main, lalu di-decode `sharp` di test), tidak lewat canvas. Gambar `manga://` lintas-origin menodai canvas, dan CSP renderer tidak mengizinkan `fetch` ke `manga:`. Byte-nya sama dengan yang ditampilkan `<img>` reader, dan reader memang menampilkannya (dicek di E2E dan di screenshot AppImage).
+- Tanda tangan `crypto.aesDecrypt(data, key, { mode, iv, padding })` memakai objek opsi, bukan `(bytes, key, iv, mode)`, supaya ECB tanpa iv dan opsi padding tetap jelas.
+- `migratedVersion` disimpan di setting `extensions.urlVersions`, tidak di kolom tabel `extensions`, supaya tetap ada setelah uninstall. Kalau extension dipasang lagi dengan versi lebih baru, url lama tetap dimigrasi.
+- `applyTiles` ada di paket runtime (bukan hanya di app), supaya `mr-ext test` memulihkan halaman dengan kode yang sama.
+
+Catatan:
+- Cache halaman memakai kunci dari url chapter. Setelah `migrateUrl`, halaman yang hanya ada di cache (tidak didownload) diambil sekali lagi dari situs. Download tidak terpengaruh.

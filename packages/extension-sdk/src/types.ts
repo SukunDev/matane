@@ -93,14 +93,33 @@ export type Preference =
 
 // ------------------------------------------------------------------ images
 
+/** One rectangle copied from the source image (`sx`, `sy`) to the result (`dx`, `dy`). */
+export interface TileOp {
+  sx: number;
+  sy: number;
+  w: number;
+  h: number;
+  dx: number;
+  dy: number;
+}
+
+/**
+ * What `transformImage` asks the host to do (BRAINSTORM.md §5.6): replace the bytes (decrypted or
+ * de-XORed), and/or rebuild the picture from tiles. Pixel work runs in the host, not the sandbox.
+ */
 export interface ImageTransform {
+  /** The real image file, when the fetched one was encrypted. */
   bytes?: Uint8Array;
+  /** Rebuild a `width` × `height` picture by copying rectangles of the (decrypted) image. */
   tiles?: {
     width: number;
     height: number;
-    ops: { sx: number; sy: number; w: number; h: number; dx: number; dy: number }[];
+    ops: TileOp[];
   };
 }
+
+/** What an entity url stands for, for `migrateUrl`. */
+export type UrlKind = 'manga' | 'chapter';
 
 /** Outcome of an image fetch, passed to `Source.reportImage` (e.g. MangaDex@Home reporting). */
 export interface ImageFetchResult {
@@ -144,8 +163,17 @@ export interface Source {
 
   /** Called by the host after every image fetch; fire-and-forget. */
   reportImage?(result: ImageFetchResult): Promise<void> | void;
-  /** Designed in API v1, implemented by the host in a later phase (BRAINSTORM.md §5.6). */
-  transformImage?(page: Page, bytes: Uint8Array): Promise<ImageTransform>;
+  /**
+   * Scrambled or encrypted images (BRAINSTORM.md §5.6): gets the fetched bytes of a page and says how
+   * to restore them. Only called when defined; the result is cached and downloaded restored.
+   */
+  transformImage?(page: Page, bytes: Uint8Array): ImageTransform | Promise<ImageTransform>;
+  /**
+   * After an update changes how `url` looks, maps a stored url (written by `fromVersion`) to the new
+   * form; return null (or the same url) to keep it. Called by the host once per update, for every
+   * manga and chapter of this source in the library and history.
+   */
+  migrateUrl?(url: EntityUrl, kind: UrlKind, fromVersion: string): EntityUrl | null;
 }
 
 export interface ExtensionDefinition {

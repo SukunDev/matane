@@ -108,6 +108,8 @@ function setup(mainOverrides: Partial<RpcHandlers<MainMethods>> = {}) {
   let now = 0;
   const hostPeer: RpcPeer<HostMethods, MainMethods> = new RpcPeer(hostSide, {
     call: (p) => host.handlers.call(p),
+    transformImage: (p) => host.handlers.transformImage(p),
+    migrateUrls: (p) => host.handlers.migrateUrls(p),
     unload: (p) => host.handlers.unload(p),
     stats: (p) => host.handlers.stats(p),
   });

@@ -1,3 +1,4 @@
+import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import type { ExtensionManifest, HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ExtensionRuntimeError } from './errors';
@@ -252,5 +253,86 @@ describe('ExtensionRuntime', () => {
 
   it('rejects bundles that do not register an extension', async () => {
     await expect(load('globalThis.nothing = 1;')).rejects.toThrow(/did not register/);
+  });
+});
+
+describe('binary data and Phase 4 hooks', () => {
+  it('decrypts AES in the host and moves bytes as base64', async () => {
+    const key = randomBytes(16);
+    const iv = randomBytes(16);
+    const cipher = createCipheriv('aes-128-cbc', key, iv);
+    const secret = Buffer.concat([cipher.update('hello from the host'), cipher.final()]);
+    const runtime = await load(
+      bundle(`async search(input) {
+        const [data, key, iv] = input.split(':').map((b) => base64.decodeBytes(b));
+        const plain = crypto.aesDecrypt(data, key, { mode: 'cbc', iv });
+        const ctr = crypto.aesDecrypt(plain, key, { mode: 'ctr', iv });
+        return { items: [{ url: utf8.decode(plain), title: base64.encodeBytes(ctr) }], hasNextPage: plain instanceof Uint8Array };
+      }`),
+    );
+    const input = [secret, key, iv].map((b) => b.toString('base64')).join(':');
+    const result = await runtime.call<{ items: { url: string; title: string }[]; hasNextPage: boolean }>(
+      'en',
+      'search',
+      [input],
+    );
+    expect(result.items[0]?.url).toBe('hello from the host');
+    expect(result.hasNextPage).toBe(true);
+    const ctr = createDecipheriv('aes-128-ctr', key, iv);
+    expect(result.items[0]?.title).toBe(
+      Buffer.concat([ctr.update(Buffer.from('hello from the host')), ctr.final()]).toString('base64'),
+    );
+  });
+
+  it('reports bad AES input as an extension error', async () => {
+    const runtime = await load(
+      bundle(
+        `async getPopular() { crypto.aesDecrypt([1, 2, 3], 'short key', { mode: 'cbc', iv: new Uint8Array(16) }); }`,
+      ),
+    );
+    const error = await expectRuntimeError(runtime.call('en', 'getPopular', [1]), 'extension');
+    expect(error.message).toMatch(/key must be 16, 24 or 32 bytes/);
+  });
+
+  it('runs transformImage on bytes that cross as ArrayBuffers', async () => {
+    const runtime = await load(
+      bundle(`transformImage(page, bytes) {
+        const out = new Uint8Array(bytes.length);
+        for (let i = 0; i < bytes.length; i++) out[i] = bytes[i] ^ 0x5a;
+        return { bytes: out, tiles: { width: 2, height: 1, ops: [{ sx: 1, sy: 0, w: 1, h: 1, dx: 0, dy: 0 }] }, index: page.index };
+      }`),
+    );
+    const input = Uint8Array.from({ length: 300_000 }, (_, i) => i % 251);
+    const result = await runtime.transformImage('en', { index: 3, imageUrl: 'https://example.com/3.jpg' }, input);
+    expect(result.bytes).toHaveLength(input.length);
+    expect(result.bytes![1000]).toBe(input[1000]! ^ 0x5a);
+    expect(result.tiles).toEqual({ width: 2, height: 1, ops: [{ sx: 1, sy: 0, w: 1, h: 1, dx: 0, dy: 0 }] });
+    await expect(runtime.call('en', '__info')).resolves.toMatchObject({ capabilities: ['transformImage'] });
+  });
+
+  it('migrates urls in batches, keeping the ones it fails on', async () => {
+    const runtime = await load(
+      bundle(`migrateUrl(url, kind, from) {
+        if (url === '/bad') throw new Error('cannot read ' + url);
+        if (kind === 'chapter') return null;
+        return from === '1.0.0' ? '/series' + url : url;
+      }`),
+    );
+    const result = await runtime.migrateUrls(
+      'en',
+      [
+        { url: '/a', kind: 'manga' },
+        { url: '/bad', kind: 'manga' },
+        { url: '/a/1', kind: 'chapter' },
+      ],
+      '1.0.0',
+    );
+    expect(result).toEqual({ urls: ['/series/a', null, null], errors: ['/bad: cannot read /bad'] });
+    // Without the hook, nothing changes.
+    const plain = await load(bundle(`async getPopular() { return null; }`));
+    await expect(plain.migrateUrls('en', [{ url: '/a', kind: 'manga' }], '1.0.0')).resolves.toEqual({
+      urls: [null],
+      errors: [],
+    });
   });
 });

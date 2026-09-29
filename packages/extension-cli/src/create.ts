@@ -49,6 +49,7 @@ export async function createExtension(parent: string, options: CreateOptions): P
     'src/env.d.ts':
       "// Sandbox globals (http, html, storage, prefs, …) injected by the host.\nimport '@manga-reader/extension-sdk/globals';\n",
     'src/index.ts': template(domain),
+    '.gitignore': 'node_modules/\ndist/\n# Pages restored by transformImage during `mr-ext test`\n.mr-ext/\n',
   };
   for (const [file, content] of Object.entries(files)) {
     await mkdir(path.dirname(path.join(dir, file)), { recursive: true });

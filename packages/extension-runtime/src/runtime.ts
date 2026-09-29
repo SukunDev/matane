@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
-import type { ExtensionManifest, HttpRequest, HttpResponse } from '@manga-reader/extension-sdk';
+import { createDecipheriv, createHash } from 'node:crypto';
+import type { ExtensionManifest, HttpRequest, HttpResponse, Page, UrlKind } from '@manga-reader/extension-sdk';
 import { isAllowedHost, manifestSchema } from '@manga-reader/extension-sdk/manifest';
 import {
   type QuickJSContext,
@@ -49,6 +49,46 @@ export const DEFAULT_LIMITS: RuntimeLimits = {
 };
 
 const MAX_SLEEP_MS = 30_000;
+/** Largest binary value crossing the sandbox boundary (an image, a decrypted file). */
+const MAX_BYTES = 30 * 1024 * 1024;
+
+/** What `transformImage` returned: restored bytes (if any) and unchecked tile instructions. */
+export interface RawImageTransform {
+  bytes?: Uint8Array;
+  tiles?: unknown;
+}
+
+export interface MigratedUrls {
+  /** Per item: the new url, or null to keep it. */
+  urls: (string | null)[];
+  /** The first few items the extension failed on (kept unchanged). */
+  errors: string[];
+}
+
+/** AES decryption for `crypto.aesDecrypt` (key of 16/24/32 bytes; `cbc`/`ctr` need a 16-byte iv). */
+export function aesDecrypt(
+  data: Uint8Array,
+  key: Uint8Array,
+  mode: unknown,
+  iv: Uint8Array | null,
+  padding: boolean,
+): Uint8Array {
+  if (mode !== 'cbc' && mode !== 'ctr' && mode !== 'ecb') {
+    throw new HostError('ExtensionError', `aesDecrypt: mode must be cbc, ctr or ecb, not ${String(mode)}`);
+  }
+  if (![16, 24, 32].includes(key.byteLength)) {
+    throw new HostError('ExtensionError', `aesDecrypt: the key must be 16, 24 or 32 bytes, not ${key.byteLength}`);
+  }
+  if (mode !== 'ecb' && iv?.byteLength !== 16)
+    throw new HostError('ExtensionError', `aesDecrypt: ${mode} needs a 16-byte iv`);
+  try {
+    const decipher = createDecipheriv(`aes-${key.byteLength * 8}-${mode}`, key, mode === 'ecb' ? null : iv);
+    decipher.setAutoPadding(padding && mode !== 'ctr');
+    return Buffer.concat([decipher.update(data), decipher.final()]);
+  } catch (error) {
+    throw new HostError('ExtensionError', `aesDecrypt failed: ${(error as Error).message}`);
+  }
+}
 
 export interface CreateRuntimeOptions {
   /** The bundled `index.js` produced by `mr-ext build`. */
@@ -70,6 +110,9 @@ export class ExtensionRuntime {
   private readonly html = new HtmlStore();
   private readonly deferreds = new Set<QuickJSDeferredPromise>();
   private prefs: Record<string, unknown> = {};
+  /** Binary input/output of running `transformImage` calls, by id. */
+  private readonly imageIO = new Map<number, { input: Uint8Array; output: Uint8Array | null }>();
+  private ioSeq = 0;
   private activeCalls = 0;
   private disposed = false;
 
@@ -154,6 +197,45 @@ export class ExtensionRuntime {
     }
   }
 
+  /**
+   * `source.transformImage(page, bytes)` (BRAINSTORM.md §5.6). The bytes cross as an ArrayBuffer, not
+   * JSON; the tiles come back unchecked (the embedder validates them before doing pixel work).
+   */
+  async transformImage(
+    sourceKey: string,
+    page: Page,
+    bytes: Uint8Array,
+    options: CallOptions = {},
+  ): Promise<RawImageTransform> {
+    const id = ++this.ioSeq;
+    this.imageIO.set(id, { input: bytes, output: null });
+    try {
+      const result = await this.call<{ bytes: boolean; tiles: unknown }>(
+        sourceKey,
+        '__transformImage',
+        [id, page],
+        options,
+      );
+      const output = this.imageIO.get(id)?.output;
+      return {
+        ...(result.bytes && output ? { bytes: output } : {}),
+        ...(result.tiles !== null && result.tiles !== undefined ? { tiles: result.tiles } : {}),
+      };
+    } finally {
+      this.imageIO.delete(id);
+    }
+  }
+
+  /** `source.migrateUrl` over a batch of stored urls (BRAINSTORM.md §5.10). */
+  migrateUrls(
+    sourceKey: string,
+    items: { url: string; kind: UrlKind }[],
+    fromVersion: string,
+    options: CallOptions = {},
+  ): Promise<MigratedUrls> {
+    return this.call<MigratedUrls>(sourceKey, '__migrateUrls', [items, fromVersion], options);
+  }
+
   /** Current QuickJS heap usage in bytes (for the benchmark and diagnostics). */
   memoryUsage(): number {
     // Parsed from the text dump on purpose: computeMemoryUsage() allocates in a hidden "system
@@ -201,6 +283,53 @@ export class ExtensionRuntime {
     });
     context.setProp(context.global, '__hostAsync', hostAsync);
     hostAsync.dispose();
+
+    // Binary ops: JSON args plus ArrayBuffers in, an ArrayBuffer or a string out. Errors thrown
+    // here become exceptions in the guest (name and message).
+    const hostBytes = context.newFunction('__hostBytes', (opHandle, argsHandle, ...bufferHandles) => {
+      const op = context.getString(opHandle);
+      const args = JSON.parse(context.getString(argsHandle)) as unknown[];
+      const buffers = bufferHandles.map((handle) => {
+        if (context.typeof(handle) === 'undefined') return null;
+        const lifetime = context.getArrayBuffer(handle);
+        const copy = Uint8Array.from(lifetime.value);
+        lifetime.dispose();
+        if (copy.byteLength > MAX_BYTES) throw new HostError('ExtensionError', 'Binary value is too large');
+        return copy;
+      });
+      const result = this.bytesOp(op, args, buffers);
+      if (typeof result === 'string') return context.newString(result);
+      if (result.byteLength > MAX_BYTES) throw new HostError('ExtensionError', 'Binary value is too large');
+      return context.newArrayBuffer(result.buffer.slice(result.byteOffset, result.byteOffset + result.byteLength));
+    });
+    context.setProp(context.global, '__hostBytes', hostBytes);
+    hostBytes.dispose();
+  }
+
+  private bytesOp(op: string, args: unknown[], buffers: (Uint8Array | null)[]): Uint8Array | string {
+    const [data, key, iv] = buffers;
+    switch (op) {
+      case 'aes.decrypt':
+        if (!data || !key) throw new HostError('ExtensionError', 'aesDecrypt needs data and a key');
+        return aesDecrypt(data, key, args[0], iv ?? null, args[1] !== false);
+      case 'base64.decodeBytes':
+        return Buffer.from(String(args[0]), 'base64');
+      case 'base64.encodeBytes':
+        return Buffer.from(data ?? new Uint8Array()).toString('base64');
+      case 'image.take': {
+        const io = this.imageIO.get(Number(args[0]));
+        if (!io) throw new HostError('ExtensionError', 'No image for this call');
+        return io.input;
+      }
+      case 'image.put': {
+        const io = this.imageIO.get(Number(args[0]));
+        if (!io || !data) throw new HostError('ExtensionError', 'No image for this call');
+        io.output = data;
+        return '';
+      }
+      default:
+        throw new HostError('ExtensionError', `Unknown host operation ${op}`);
+    }
   }
 
   private settle(deferred: QuickJSDeferredPromise, json: string): void {

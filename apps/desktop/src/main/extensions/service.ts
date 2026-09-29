@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import type { HttpRequest, HttpResponse, Preference } from '@manga-reader/extension-sdk';
+import type { MigratedUrls, RawImageTransform } from '@manga-reader/extension-runtime';
+import type { HttpRequest, HttpResponse, Page, Preference, UrlKind } from '@manga-reader/extension-sdk';
 import type { ExtensionManifest } from '@manga-reader/extension-sdk/manifest';
 import type { ExtensionEntry } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
@@ -167,6 +168,51 @@ export class ExtensionService {
       { extensionId, sourceKey, method, args, prefs: this.deps.repo.getPrefs(extensionId) },
       { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
     );
+    return this.settle(extensionId, sourceKey, method, pending, signal, parse);
+  }
+
+  /** `transformImage` of a page (BRAINSTORM.md §5.6); the tiles still need checking. */
+  transformImage(
+    extensionId: string,
+    sourceKey: string,
+    page: Page,
+    bytes: Uint8Array,
+    signal?: AbortSignal,
+  ): Promise<RawImageTransform> {
+    this.require(extensionId);
+    const pending = this.deps.host.request(
+      'transformImage',
+      { extensionId, sourceKey, page, bytes, prefs: this.deps.repo.getPrefs(extensionId) },
+      { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
+    );
+    return this.settle(extensionId, sourceKey, 'transformImage', pending, signal);
+  }
+
+  /** `migrateUrl` over a batch of stored urls (BRAINSTORM.md §5.10). */
+  migrateUrls(
+    extensionId: string,
+    sourceKey: string,
+    items: { url: string; kind: UrlKind }[],
+    fromVersion: string,
+  ): Promise<MigratedUrls> {
+    this.require(extensionId);
+    const pending = this.deps.host.request(
+      'migrateUrls',
+      { extensionId, sourceKey, items, fromVersion, prefs: this.deps.repo.getPrefs(extensionId) },
+      { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
+    );
+    return this.settle(extensionId, sourceKey, 'migrateUrl', pending);
+  }
+
+  /** Waits for a host call; failures and invalid answers go to the extension's log. */
+  private async settle<T>(
+    extensionId: string,
+    sourceKey: string,
+    method: string,
+    pending: Promise<unknown>,
+    signal?: AbortSignal,
+    parse?: (value: unknown) => T,
+  ): Promise<T> {
     try {
       const value = await withSignal(pending, signal);
       return parse ? parse(value) : (value as T);

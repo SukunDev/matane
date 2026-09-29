@@ -68,6 +68,24 @@ const filterSchema: z.ZodType<Filter> = z.lazy(() =>
   ]),
 ) as z.ZodType<Filter>;
 
+const pixels = z.number().int().nonnegative().max(20_000);
+const imageTransformSchema = z.object({
+  bytes: z
+    .instanceof(Uint8Array)
+    .refine((b) => b.byteLength > 0 && b.byteLength <= 30 * 1024 * 1024, 'bytes must be 1 byte to 30 MB')
+    .optional(),
+  tiles: z
+    .object({
+      width: pixels.min(1),
+      height: pixels.min(1),
+      ops: z
+        .array(z.object({ sx: pixels, sy: pixels, w: pixels.min(1), h: pixels.min(1), dx: pixels, dy: pixels }))
+        .min(1)
+        .max(10_000),
+    })
+    .optional(),
+});
+
 function parse<T>(schema: z.ZodType<T>, value: unknown, what: string): T {
   const result = schema.safeParse(value);
   if (!result.success) {
@@ -90,6 +108,7 @@ export const validate = {
   summaryOrNull: (value: unknown) => (value === null ? null : parse(summary, value, 'manga')),
   headers: (value: unknown): Record<string, string> =>
     parse(z.record(z.string().max(200), z.string().max(4096)), value ?? {}, 'header map'),
+  imageTransform: (value: unknown) => parse(imageTransformSchema, value, 'image transform'),
   capabilities: (value: unknown) =>
     parse(z.object({ baseUrl: z.string(), capabilities: z.array(z.string()) }), value, 'source info'),
 };

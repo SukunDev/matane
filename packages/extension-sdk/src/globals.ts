@@ -33,12 +33,29 @@ declare global {
     warn(...args: unknown[]): void;
     error(...args: unknown[]): void;
   };
+  /** Bytes given as a Uint8Array, an array of numbers, or a string (taken as UTF-8). */
+  type BytesLike = Uint8Array | number[] | string;
   const crypto: {
     md5(text: string): string;
     sha1(text: string): string;
     sha256(text: string): string;
+    /**
+     * AES decryption in the host (key of 16, 24 or 32 bytes). `cbc` and `ecb` remove PKCS#7 padding
+     * unless `padding: false`; `cbc` and `ctr` need a 16-byte `iv`.
+     */
+    aesDecrypt(
+      data: BytesLike,
+      key: BytesLike,
+      options: { mode: 'cbc' | 'ctr' | 'ecb'; iv?: BytesLike; padding?: boolean },
+    ): Uint8Array;
   };
-  const base64: { encode(text: string): string; decode(text: string): string };
+  const base64: {
+    encode(text: string): string;
+    decode(text: string): string;
+    /** Base64 → bytes (e.g. an `http` response with `responseType: 'bytes'`). */
+    decodeBytes(text: string): Uint8Array;
+    encodeBytes(bytes: BytesLike): string;
+  };
   const utf8: { encode(text: string): number[]; decode(bytes: number[]): string };
   const timers: { sleep(ms: number): Promise<void> };
   /** Information about the running host, e.g. for a descriptive User-Agent. */

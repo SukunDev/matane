@@ -57,17 +57,32 @@ export class ExtensionHost {
 
   readonly handlers: RpcHandlers<HostMethods> = {
     call: (params) => this.call(params),
+    transformImage: ({ extensionId, sourceKey, page, bytes, prefs }) =>
+      this.run(extensionId, prefs, (runtime, options) =>
+        runtime.transformImage(sourceKey, page, Uint8Array.from(bytes), options),
+      ),
+    migrateUrls: ({ extensionId, sourceKey, items, fromVersion, prefs }) =>
+      this.run(extensionId, prefs, (runtime, options) => runtime.migrateUrls(sourceKey, items, fromVersion, options)),
     unload: ({ extensionId }) => this.unload(extensionId),
     stats: () =>
       [...this.entries].map(([extensionId, entry]) => ({ extensionId, memoryBytes: entry.runtime.memoryUsage() })),
   };
 
-  async call({ extensionId, sourceKey, method, args, prefs }: Parameters<HostMethods['call']>[0]): Promise<unknown> {
+  call({ extensionId, sourceKey, method, args, prefs }: Parameters<HostMethods['call']>[0]): Promise<unknown> {
+    return this.run(extensionId, prefs, (runtime, options) => runtime.call(sourceKey, method, args, options));
+  }
+
+  /** Runs `work` on the extension's runtime (loaded on demand) with its preferences in effect. */
+  private async run<T>(
+    extensionId: string,
+    prefs: Record<string, unknown>,
+    work: (runtime: ExtensionRuntime, options: { prefs: Record<string, unknown> }) => Promise<T>,
+  ): Promise<T> {
     const entry = await this.get(extensionId);
     entry.active++;
     entry.lastUsed = this.now();
     try {
-      return await entry.runtime.call(sourceKey, method, args, { prefs: { ...entry.prefDefaults, ...prefs } });
+      return await work(entry.runtime, { prefs: { ...entry.prefDefaults, ...prefs } });
     } catch (error) {
       const appError = toAppError(error);
       // A runtime that ran out of memory may be in a bad state; start fresh next time.

@@ -10,8 +10,11 @@ import {
   type Preference,
   SDK_API_VERSION,
 } from '@manga-reader/extension-sdk';
-import { ExtensionRuntime } from '@manga-reader/extension-runtime';
-import { buildExtension } from './build';
+import { mkdir, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { ExtensionRuntime, type RawImageTransform } from '@manga-reader/extension-runtime';
+import { restoreImage, sniffImageType } from '@manga-reader/extension-runtime/image';
+import { buildOrLoad } from './build';
 import { CLI_NAME, CLI_VERSION, createNodeHost, nodeFetch } from './node-host';
 
 export interface SmokeOptions {
@@ -25,8 +28,10 @@ export interface SmokeOptions {
   pick?: number;
   prefs?: Record<string, unknown>;
   filters?: FilterState;
-  /** Fetch the first page image (and call reportImage). */
+  /** Fetch the first page image (and call reportImage, and transformImage). */
   image?: boolean;
+  /** Where a page restored by transformImage is written (default: `<dir>/.mr-ext/`). */
+  outDir?: string;
   verbose?: boolean;
   print?: (line: string) => void;
 }
@@ -37,10 +42,15 @@ interface Call {
   <T>(method: string, args?: unknown[]): Promise<T>;
 }
 
+interface Hooks {
+  key: string;
+  transformImage(page: Page, bytes: Uint8Array): Promise<RawImageTransform>;
+}
+
 /** Runs the reading flow against the real site: list → details → chapters → pages → first image. */
 export async function runSmokeTest(options: SmokeOptions): Promise<{ ok: boolean }> {
   const print = options.print ?? ((line: string) => console.log(line));
-  const built = await buildExtension(options.dir);
+  const built = await buildOrLoad(options.dir);
   const { manifest } = built;
   print(`${manifest.name} ${manifest.version} · bundle ${(built.bytes / 1024).toFixed(1)} KB`);
 
@@ -73,7 +83,11 @@ export async function runSmokeTest(options: SmokeOptions): Promise<{ ok: boolean
       if (!source) throw new Error(`Unknown source "${key}" (have: ${manifest.sources.map((s) => s.key).join(', ')})`);
       print(`\n■ ${source.name} [${source.key}, ${source.lang}]`);
       const call: Call = <T>(method: string, args: unknown[] = []) => runtime.call<T>(key, method, args, { prefs });
-      ok = (await testSource(call, options, print)) && ok;
+      const hooks: Hooks = {
+        key,
+        transformImage: (page, bytes) => runtime.transformImage(key, page, bytes, { prefs }),
+      };
+      ok = (await testSource(call, hooks, options, print)) && ok;
     }
   } finally {
     runtime.dispose();
@@ -82,7 +96,12 @@ export async function runSmokeTest(options: SmokeOptions): Promise<{ ok: boolean
   return { ok };
 }
 
-async function testSource(call: Call, options: SmokeOptions, print: (line: string) => void): Promise<boolean> {
+async function testSource(
+  call: Call,
+  hooks: Hooks,
+  options: SmokeOptions,
+  print: (line: string) => void,
+): Promise<boolean> {
   let ok = true;
   const step = async <T>(
     label: string,
@@ -204,11 +223,31 @@ async function testSource(call: Call, options: SmokeOptions, print: (line: strin
     ));
   if (!imageUrl) return false;
   const headers = has('imageHeaders') ? await call<Record<string, string>>('imageHeaders') : {};
+  const transforms = has('transformImage');
   const image = await step(
     'first image',
-    () => fetchImage(imageUrl, headers),
+    () => fetchImage(imageUrl, headers, transforms),
     (r) => `${r.type} · ${(r.bytes / 1024).toFixed(0)} KB`,
   );
+  if (image && transforms) {
+    // What the app would show: the restored page, written to a file to look at.
+    await step(
+      'transformImage',
+      async () => {
+        const transform = await hooks.transformImage(first, image.data);
+        const restored = await restoreImage(image.data, transform as Parameters<typeof restoreImage>[1]);
+        const type = sniffImageType(restored);
+        if (!type) throw new Error('the restored page is not an image');
+        const outDir = path.resolve(options.outDir ?? path.join(options.dir, '.mr-ext'));
+        await mkdir(outDir, { recursive: true });
+        const file = path.join(outDir, `${hooks.key}-page-${first.index + 1}.${type.slice(6).replace('jpeg', 'jpg')}`);
+        await writeFile(file, restored);
+        const what = [transform.bytes ? 'bytes' : '', transform.tiles ? 'tiles' : ''].filter(Boolean).join(' + ');
+        return `${what || 'unchanged'} → ${file}`;
+      },
+      (d) => d,
+    );
+  }
   if (image && has('reportImage')) {
     await step(
       'reportImage',
@@ -219,12 +258,14 @@ async function testSource(call: Call, options: SmokeOptions, print: (line: strin
   return ok && image !== undefined;
 }
 
-async function fetchImage(url: string, headers: Record<string, string>) {
+/** The first page image; protected images (`anyType`) may come with any content type. */
+async function fetchImage(url: string, headers: Record<string, string>, anyType = false) {
   const started = Date.now();
   const response = await nodeFetch({ url, headers, responseType: 'bytes' });
-  const bytes = Buffer.from(response.body as string, 'base64').length;
+  const data = Buffer.from(response.body as string, 'base64');
+  const bytes = data.length;
   const type = response.headers['content-type'] ?? 'unknown';
-  const success = response.status === 200 && type.startsWith('image/');
+  const success = response.status === 200 && (anyType || type.startsWith('image/'));
   const report: ImageFetchResult = {
     url,
     success,
@@ -233,7 +274,7 @@ async function fetchImage(url: string, headers: Record<string, string>) {
     cached: (response.headers['x-cache'] ?? '').startsWith('HIT'),
   };
   if (!success) throw new Error(`HTTP ${response.status} (${type})`);
-  return { type, bytes, report };
+  return { type, bytes, data, report };
 }
 
 function describePage(page: MangaPage): string {

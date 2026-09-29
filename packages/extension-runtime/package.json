@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./http-bridge": "./src/http-bridge.ts",
-    "./repo": "./src/repo.ts"
+    "./repo": "./src/repo.ts",
+    "./image": "./src/image.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -17,6 +18,7 @@
     "@manga-reader/extension-sdk": "workspace:*",
     "cheerio": "1.2.0",
     "quickjs-emscripten": "0.32.0",
+    "sharp": "0.35.5",
     "yauzl": "3.4.0"
   },
   "devDependencies": {

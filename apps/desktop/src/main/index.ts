@@ -30,6 +30,7 @@ import { initialContentLanguages } from './extensions/content';
 import { ExtensionLogs } from './extensions/logs';
 import { officialKeys } from './extensions/official';
 import { RepoService } from './extensions/repos';
+import { URL_VERSIONS_KEY, UrlMigration } from './extensions/url-migration';
 import { ReposRepository } from './db/repositories/repos';
 import { createFetchBytes } from './network/fetch-bytes';
 import { ExtensionRegistry } from './extensions/registry';
@@ -173,6 +174,8 @@ async function bootstrap(): Promise<void> {
     record: (extensionId, level, kind, message) => extensionLogs.append(extensionId, level, kind, message),
     onReload: (ids) => {
       for (const id of ids) sources.clearCache(id);
+      // An update may change how urls look (migrateUrl).
+      void urlMigration.run();
     },
   });
   const sources: SourceService = new SourceService({
@@ -231,6 +234,32 @@ async function bootstrap(): Promise<void> {
   });
   await installer.recover();
   const installed = await extensions.init();
+  const urlMigration = new UrlMigration({
+    sqlite: connection.sqlite,
+    store: {
+      get: () => settings.getValue<Record<string, string>>(URL_VERSIONS_KEY, {}),
+      set: (value) => settings.setValue(URL_VERSIONS_KEY, value),
+    },
+    installed: () =>
+      extensions
+        .list()
+        .filter((e) => e.error === null)
+        .map((e) => ({ id: e.id, version: e.version, sourceKeys: e.sourceIds.map((id) => id.split('/')[1]!) })),
+    supports: async (sourceId) =>
+      (await sources.info(sourceId).catch(() => ({ capabilities: [] as string[] }))).capabilities.includes(
+        'migrateUrl',
+      ),
+    migrate: (extensionId, sourceKey, items, fromVersion) =>
+      extensions.migrateUrls(extensionId, sourceKey, items, fromVersion),
+    record: (extensionId, level, message) => {
+      extLog[level](`[${extensionId}] ${message}`);
+      extensionLogs.append(extensionId, level, 'call', message);
+    },
+    changed: () => changes.mark('library', 'history', 'updates', 'downloads'),
+  });
+  void urlMigration.run().then((results) => {
+    if (results.length > 0) extLog.info('Migrated extension urls', results);
+  });
   extLog.info(
     'Extensions',
     installed.map((e) => `${e.id}@${e.version} (${e.origin}${e.error ? `, error: ${e.error}` : ''})`),
