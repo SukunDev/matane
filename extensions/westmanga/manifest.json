@@ -1,0 +1,19 @@
+{
+  "id": "westmanga",
+  "name": "WestManga",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "nsfw": false,
+  "domains": [
+    "data.mantweh.online",
+    "v1.westmanga.my",
+    "storage.westmanga.blog",
+    "*.westmanga.blog",
+    "*.westmanga.my",
+    "*.mantweh.online"
+  ],
+  "rateLimit": { "requests": 5, "perMs": 1000 },
+  "sources": [
+    { "key": "id", "lang": "id", "name": "WestManga" }
+  ]
+}
