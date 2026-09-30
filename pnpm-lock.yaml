@@ -360,6 +360,18 @@ importers:
         specifier: workspace:*
         version: link:../../packages/extension-sdk
 
+  extensions/ainzscansid:
+    devDependencies:
+      '@matane/extension-cli':
+        specifier: workspace:*
+        version: link:../../packages/extension-cli
+      '@matane/extension-runtime':
+        specifier: workspace:*
+        version: link:../../packages/extension-runtime
+      '@matane/extension-sdk':
+        specifier: workspace:*
+        version: link:../../packages/extension-sdk
+
   extensions/mangadex:
     devDependencies:
       '@matane/extension-cli':
