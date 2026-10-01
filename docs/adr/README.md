@@ -28,3 +28,7 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0022](0022-extension-repositories-and-trust.md) | Extension repositories: signed index, trust by key |
 | [0023](0023-extension-install-lifecycle.md) | Installing, updating and removing extensions |
 | [0024](0024-image-transform-with-sharp.md) | Scrambled images: the extension describes, the host restores with sharp |
+| [0025](0025-reader-page-processing.md) | Reader page processing: sizes, border crop and tall-page segments in main |
+| [0026](0026-reader-input.md) | Reader input: one keymap, pointer gestures, zoom per view |
+| [0027](0027-first-run-whats-new-cover-colour.md) | First run, What's new and cover colours |
+| [0028](0028-statistics-and-network-settings.md) | Statistics from reading sessions; network settings applied everywhere |

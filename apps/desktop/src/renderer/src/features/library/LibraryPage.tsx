@@ -31,7 +31,7 @@ import { categoriesQuery, libraryCountsQuery, libraryQuery } from '../../lib/lib
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { HandoffBanner } from '../extensions/HandoffBanner';
-import { isTyping } from '../reader/PagedView';
+import { isTyping } from '../reader/keymap';
 import { CategoryDialog } from './CategoryDialog';
 import { LibraryToolbar } from './LibraryToolbar';
 import { EMPTY_SELECTION, type Selection, select, visibleSelection } from './selection';

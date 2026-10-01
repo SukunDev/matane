@@ -404,16 +404,16 @@ repo/
 - Double page:
   - Halaman lebar (spread, lebar > tinggi) otomatis ditampilkan sendirian.
   - Tombol **"geser 1 halaman"** untuk membetulkan pasangan halaman yang tidak pas karena cover.
-- Fit: lebar, tinggi, layar, ukuran asli. Zoom dan pan tersedia.
+- Fit: lebar, tinggi, layar, ukuran asli. Zoom (Ctrl+scroll, Ctrl +/−/0, pinch, klik dua kali di zona tengah) dan pan (drag) tersedia. Di mode halaman zoom kembali normal saat halaman dibalik; di strip zoom mengubah lebar kolom.
 - Webtoon punya **lebar maksimum** (default ±800 px, bisa diatur), supaya tidak terlalu besar di layar lebar.
 
-**Pengaturan berlapis:** default global → default per jenis (manhwa/manhua → webtoon, manga → RTL) → **override per manga** (disimpan di DB).
+**Pengaturan berlapis:** default global → default per jenis (mode dan arah untuk manga, manhwa, manhua, komik, dan jenis tidak diketahui; bisa diatur di Settings → Reader, bawaannya manhwa/manhua → webtoon, manga → RTL) → **override per manga** (disimpan di DB, termasuk filter dan warna latar).
 
 **Navigasi**
-- Keyboard (bisa di-remap): panah, A/D, spasi, PgUp/PgDn, Home/End, `[` `]` untuk ganti chapter, F untuk fullscreen, Esc untuk keluar.
-- Mouse: klik tap zone, scroll wheel, Ctrl+scroll untuk zoom.
-- Preset tap zone: **L-shape**, **Kindle**, **kiri-kanan**, **tepi**, **nonaktif**. Klik tengah menampilkan/menyembunyikan overlay.
-- Sentuh: swipe untuk ganti halaman, pinch untuk zoom, dan tap zone yang sama dengan mouse.
+- Keyboard (bisa di-remap per aksi, maks. 4 tombol, tombol yang sudah dipakai aksi lain ditolak): panah, A/D, spasi, PgUp/PgDn, Home/End, `[` `]` untuk ganti chapter, F untuk fullscreen, M untuk menu, S untuk auto-scroll, Esc untuk keluar. "Halaman kiri/kanan" mengikuti layar (di RTL kiri = maju).
+- Mouse: klik tap zone, scroll wheel (bisa dimatikan sebagai pembalik halaman), Ctrl+scroll untuk zoom, drag untuk menggeser halaman yang lebih besar dari layar.
+- Preset tap zone: **L-shape**, **Kindle**, **kiri-kanan**, **tepi**, **nonaktif**, dengan opsi **balik** (tukar zona sebelumnya/berikutnya). Klik tengah menampilkan/menyembunyikan overlay.
+- Sentuh: swipe untuk ganti halaman (arah geser mengikuti LTR/RTL), pinch untuk zoom, dan tap zone yang sama dengan mouse. Di strip, scroll sentuh tetap bawaan browser.
 
 **Overlay UI**
 - Bar atas: judul, chapter, tombol kembali.
@@ -428,22 +428,22 @@ repo/
 **Performa & memori**
 - Preload 4–5 halaman ke depan dan beberapa halaman awal chapter berikutnya. Pakai `img.decode()` sebelum ditampilkan supaya tidak berkedip.
 - Webtoon memakai virtualisasi (`@tanstack/react-virtual` atau `react-virtuoso`). Halaman di luar jangkauan di-unload dari DOM.
-- **Split gambar tinggi**: gambar dengan tinggi di atas batas tertentu (mis. > 3× lebar atau > 5000 px) dipotong menjadi beberapa segmen di main process (`sharp`), lalu di-cache. Hasilnya ringan di-render dan bisa di-preload per segmen.
+- **Split gambar tinggi**: gambar yang lebih tinggi dari 5000 px dipotong menjadi segmen sama tinggi (maks. 4000 px) di main process (`sharp`), lalu di-cache. Hanya di mode webtoon/vertikal. Hasilnya ringan di-render, dan segmen dimuat saat mendekati layar (ADR 0025).
 
 **Pemrosesan gambar** (di main process pakai `sharp`, hasilnya di-cache)
-- **Crop border otomatis**: membuang margin putih/hitam (`sharp.trim()` dengan threshold).
+- **Crop border otomatis**: membuang margin putih/hitam yang seragam (dihitung dari satu decode `sharp`, toleransi noise JPEG; ADR 0025).
 - Split gambar tinggi (lihat di atas).
 - `transformImage` dari extension (§5.6) dijalankan lebih dulu sebelum crop/split.
 
-**Filter warna** (CSS filter di renderer, murah dan real-time): brightness, kontras, grayscale, invert, sepia/"hangat" untuk malam hari, warna latar (hitam/putih/abu).
+**Filter warna** (CSS filter di renderer, murah dan real-time, hanya pada halaman): brightness, kontras, grayscale, invert, sepia/"hangat" untuk malam hari, warna latar (hitam/putih/abu/kustom).
 
-**Auto-scroll webtoon**: kecepatan bisa diatur. Jeda dengan spasi atau klik, dan berhenti otomatis di akhir chapter terakhir yang tersedia.
+**Auto-scroll webtoon**: kecepatan bisa diatur (px/detik). Dinyalakan dengan S atau tombol di bar bawah; berhenti dengan spasi atau klik, saat jendela kehilangan fokus, dan otomatis di akhir chapter terakhir yang tersedia.
 
 **Progress**: disimpan setiap ganti halaman (dengan debounce). Untuk webtoon dipakai halaman yang paling banyak terlihat di viewport. Chapter ditandai dibaca kalau halaman terakhir sudah terlihat.
 
 **Error & aksi**
 - Error per halaman: tombol retry dan pesan singkat. Halaman lain tetap bisa dibaca.
-- Klik kanan di halaman: simpan gambar, salin gambar, jadikan cover manga.
+- Klik kanan di halaman: simpan gambar (file asli dari source, nama `Judul - Ch X - p N`), salin gambar (sebagai PNG), jadikan cover manga.
 
 ### 6.2 Library, detail manga & browse
 
@@ -533,9 +533,11 @@ repo/
 - Tidak ada bookmark halaman, tab "Bookmark" di detail, maupun halaman global "Bookmark" (diputuskan saat review Fase 2c; tabel `page_bookmarks` dihapus di migrasi `0002`).
 
 **Halaman statistik**
-- Ringkasan: jumlah manga di library, chapter dibaca, total waktu baca, rata-rata per hari.
-- Grafik: chapter dibaca & waktu baca per minggu/bulan, dan genre/source yang paling sering dibaca.
-- Tidak menghitung data dari sesi incognito.
+- Periode: minggu (7 hari), bulan (30 hari), tahun (12 bulan), atau semua.
+- Ringkasan: chapter dibaca, total waktu baca dan rata-rata per hari, jumlah manga di library (dan yang sedang dibaca), streak sekarang dan terbaik.
+- Grafik: chapter dibaca **atau** waktu baca per hari/bulan (dipilih dengan tombol; satu sumbu, tanpa grafik dua skala), dengan tooltip dan tampilan tabel; genre teratas, manga paling lama dibaca, dan pembagian per source.
+- "Chapter dibaca" = chapter yang selesai di reader (ditandai dibaca **dan** punya sesi baca), jadi "tandai semua dibaca" tidak menggelembungkan angka.
+- Tidak menghitung data dari sesi incognito. Setting → Data bisa menghapus statistik (sesi baca) tanpa menyentuh progres dan history (ADR 0028).
 
 **Tracker (setelah v1)**
 - Login OAuth lewat **browser sistem** → callback via **deep link** `matane://oauth/<service>` (`app.setAsDefaultProtocolClient`). Token disimpan terenkripsi dengan `safeStorage`.
@@ -618,23 +620,25 @@ repo/
 5. Kalau pengguna menutup jendela atau timeout 2 menit, lempar `CloudflareError` dan UI menampilkan tombol "Coba lagi".
 
 **Opsi jaringan (setting)**
-- **DNS-over-HTTPS**: `app.configureHostResolver({ secureDnsMode, secureDnsServers })`. Preset: Cloudflare, Google, Quad9, AdGuard, atau URL kustom. Penting untuk pengguna di Indonesia, karena banyak situs diblokir lewat DNS.
-- **Proxy**: ikut sistem, HTTP, atau SOCKS5 (host, port, auth opsional). Diterapkan ke semua session, termasuk partition extension (`session.setProxy`).
+- **DNS-over-HTTPS**: `app.configureHostResolver({ secureDnsMode, secureDnsServers })`, mode mati / otomatis / selalu. Preset: Cloudflare, Google, Quad9, AdGuard, atau URL kustom (wajib https, template `{?dns}` boleh). Penting untuk pengguna di Indonesia, karena banyak situs diblokir lewat DNS.
+- **Proxy**: ikut sistem, tanpa proxy, HTTP, atau SOCKS5 (host, port, auth opsional). Diterapkan ke request tanpa session (`app.setProxy`), session app, dan semua partition extension termasuk yang dibuat belakangan (`session.setProxy`); koneksi yang terbuka ditutup supaya langsung berlaku. Password disimpan di main dengan `safeStorage` (atau tanpa enkripsi kalau sistem tidak punya keyring, dengan peringatan) dan tidak pernah dikirim ke renderer.
 - **User-Agent kustom**: override UA global. Ada tombol "reset ke default".
+- **Tes koneksi**: memuat `api.mangadex.org/ping` lewat pengaturan di atas dan menampilkan hasil dan waktunya. Semua perubahan berlaku tanpa restart (ADR 0028).
 
 **Custom protocol `manga://`**
 - Didaftarkan sebagai scheme privileged (`standard`, `secure`, `stream`) sebelum app `ready`.
-- `manga://page/<chapterId>/<index>[/seg/<n>]`. Main process memeriksa berurutan:
+- `manga://page/<chapterId>/<index>[/seg/<n>][?crop=1]`. Main process memeriksa berurutan:
   1. Sudah didownload → baca dari CBZ/folder.
   2. Ada di cache → sajikan dari cache.
-  3. Kalau tidak → `getPages`/`getImageUrl` → fetch dengan `imageHeaders` → `transformImage` (§5.6) → crop/split (§6.1) → simpan ke cache → stream.
+  3. Kalau tidak → `getPages`/`getImageUrl` → fetch dengan `imageHeaders` → `transformImage` (§5.6) → simpan ke cache → stream.
+  - Crop dan segmen (§6.1) dibuat dari halaman itu (atau dari download) dan disimpan sebagai **varian** di cache yang sama (ADR 0025).
 - `manga://cover/<mangaId>`: cover kustom → cover permanen → cache → fetch.
 - **Renderer tidak pernah request ke internet**: CSP `img-src manga: data:; connect-src 'self'`. Satu-satunya jalan keluar ke internet adalah lewat main.
 - **Dimensi halaman** (lebar, tinggi, jumlah segmen) disimpan di metadata cache dan dikirim ke renderer lewat IPC. Dipakai untuk virtualisasi webtoon tanpa layout shift.
 - Beberapa request untuk gambar yang sama pada saat bersamaan (mis. preload + tampil) digabung jadi satu fetch.
 
 **Cache**
-- **Halaman**: `userData/cache/images`, key dari source + **URL chapter** + index halaman, bukan URL gambar, karena sebagian source (MangaDex@Home) memberi server gambar baru setiap kali; dengan begitu halaman yang sudah di-cache terbuka tanpa jaringan. Metadata di tabel `image_cache`: content-type, ukuran, (nanti) dimensi dan varian crop/split. **LRU** berdasarkan waktu akses terakhir, batas default **1 GB** (ADR 0014).
+- **Halaman**: `userData/cache/images`, key dari source + **URL chapter** + index halaman, bukan URL gambar, karena sebagian source (MangaDex@Home) memberi server gambar baru setiap kali; dengan begitu halaman yang sudah di-cache terbuka tanpa jaringan. Metadata di tabel `image_cache`: content-type dan ukuran. Dimensi halaman dan kotak crop disimpan di tabel `page_meta` (juga untuk halaman download), varian crop/segmen adalah entri cache biasa (ADR 0025). **LRU** berdasarkan waktu akses terakhir, batas default **1 GB** (ADR 0014).
 - **Cover library**: disimpan **permanen** di `userData/covers` (tidak kena LRU), diperbarui saat metadata di-refresh.
 - **Cover browse**: cache biasa (ikut LRU).
 - **Daftar halaman chapter** (`getPages`) di-cache di DB ±1 jam. Kalau source tidak bisa dihubungi, salinan lama tetap dipakai. Kalau URL gambar dari daftar cache sudah kedaluwarsa (403/404/410), daftar diambil ulang sekali.
@@ -688,27 +692,29 @@ repo/
 - **Warna aksen**: default **Mauve** (`#cba6f7` di Mocha, `#8839ef` di Latte). Preset berisi ke-14 aksen Catppuccin: rosewater, flamingo, pink, mauve, red, maroon, peach, yellow, green, teal, sky, sapphire, blue, lavender. Nilainya otomatis mengikuti flavor aktif.
 - **Aturan kontras**: aksen Catppuccin gelap berwarna pastel, jadi tombol berlatar aksen memakai teks **crust** (`#11111b`), bukan putih. Di Latte, teks di atas aksen memakai base.
 - Warna semantik memakai palet yang sama: sukses = green, peringatan = yellow/peach, error = red, info = blue/sapphire.
-- **Warna dari cover**: halaman detail manga mengambil warna dominan cover (diekstrak di main dengan `sharp`, disimpan di DB) untuk latar header dan tombol utama. Kontras dijaga, yaitu warna diturunkan otomatis kalau terlalu terang.
+- **Warna dari cover**: halaman detail manga mengambil warna cover (diekstrak di main dengan `sharp`: hue paling menonjol di antara piksel berwarna, jadi latar putih dan garis hitam tidak menang; disimpan di DB bersama kunci cover-nya) untuk latar header dan tombol utama. Kontras dijaga: versi pastel di tema gelap, versi pekat di Latte, dan kecerahan digeser sampai teks di tombol terbaca (WCAG AA). Cover tanpa warna (abu-abu) tidak memberi tint (ADR 0027).
 - Semua warna berupa CSS variable (Tailwind + shadcn/ui), jadi tema cukup mengganti variable.
 
 **Command palette (Ctrl+K)**
-- Navigasi ke halaman mana pun, cari manga di library (FTS5), lanjut baca item history teratas, jalankan aksi ("Cek update", "Pause download", "Toggle incognito", "Buka setting reader").
+- Navigasi ke halaman mana pun dan setiap bagian setting, cari manga di library (FTS5; manga yang sedang dibaca langsung dilanjutkan), lanjut baca 5 item history teratas, jalankan aksi ("Cek update", "Pause/lanjutkan download", "Toggle incognito", "Periksa repositori", "Buka setting reader"). Juga lewat kotak cari di title bar; Ctrl+K menutup lagi.
 - Mengetik lalu `Tab` atau memilih "Cari di source…" langsung membuka global search.
 
 **Onboarding (pertama kali dibuka)**
 1. Bahasa UI dan tema.
 2. Bahasa konten (menyaring source dan extension yang ditampilkan).
 3. Folder download.
-4. Tambah repo resmi dan pasang MangaDex (bisa dilewati).
+4. Source: pasang dari repo resmi (setelah Milestone 4f) dan daftar source yang sudah siap (bisa dilewati).
 5. Ringkasan singkat kontrol reader.
+- Setiap langkah langsung tersimpan; "Lewati" menyimpan bawaan. Profil dari versi sebelum onboarding dianggap sudah selesai.
 - Bisa diulang dari Setting → Tentang.
 
-**What's new**: setelah app di-update, dialog berisi catatan perubahan versi itu muncul sekali. Isinya diambil dari changelog yang ikut di-bundle, jadi tetap bisa tampil saat offline.
+**What's new**: setelah app di-update, dialog berisi catatan perubahan versi itu muncul sekali. Isinya diambil dari changelog yang ikut di-bundle, jadi tetap bisa tampil saat offline. Main mengingat versi terakhir yang catatannya sudah dilihat; profil baru tidak melihatnya (onboarding didahulukan), dan versi tanpa catatan di changelog dilewati. Bisa dibuka lagi dari Setting → Tentang.
 
 **Discord Rich Presence** (default **mati**)
 - Menampilkan "Membaca <judul> · Ch X" di Discord.
 - Opsi privasi: sembunyikan judul (hanya "Sedang membaca manga"), dan otomatis nonaktif untuk manga NSFW dan saat incognito.
-- Memakai IPC lokal Discord. Kalau Discord tidak jalan, fitur ini diam saja tanpa error.
+- Memakai IPC lokal Discord (`@xhayper/discord-rpc`). Kalau Discord tidak jalan, fitur ini diam saja tanpa error dan mencoba lagi tiap menit. Presence hilang saat reader ditutup atau 10 menit tanpa aktivitas.
+- Butuh Discord Application ID milik Matane; selama belum diisi, opsinya disembunyikan.
 
 **Konten NSFW**: default disembunyikan. Selama toggle belum diaktifkan, extension dan source yang ditandai `nsfw` tidak tampil di repo, browse, maupun global search.
 
@@ -721,7 +727,7 @@ repo/
 **Struktur setting**
 - **Umum**: bahasa, tema, aksen, jalankan saat login, tutup ke tray, Discord RPC, NSFW.
 - **Library**: tampilan, kategori, interval & aturan update, auto-download per kategori.
-- **Reader**: default mode/arah/fit, lebar maksimum webtoon, preload, keybinding, tap zone, filter, auto-scroll.
+- **Reader**: default mode/arah/fit, default per jenis, lebar maksimum webtoon, preload, crop/split, keybinding, tap zone (+ balik), roda gulir, filter, nomor halaman, auto-scroll.
 - **Download**: folder, format, paralel, download ahead, hapus setelah dibaca, batas ukuran.
 - **Browse & Extension**: repo, bahasa konten, update extension.
 - **Tracking**: akun tracker (setelah v1).
@@ -846,8 +852,11 @@ downloads         (id PK, chapter_id UNIQUE FK, status,   -- queued|downloading|
                    queue_order, pages_done, pages_total, error,
                    format, path, size_bytes, created_at, completed_at)
 image_cache       (key PK, kind, path, size_bytes, content_type,  -- kind: page|browse_cover
-                   width, height, segments, variants_json, last_access_at)
+                   last_access_at)                                -- varian: <key>#c0, #s<n>, #cs<n>
                    INDEX(last_access_at)
+page_meta         (key PK, bytes, width, height,                  -- key = key halaman di image_cache
+                   crop_left, crop_top, crop_width, crop_height, accessed_at)
+                   INDEX(accessed_at)
 ```
 - Chapter dianggap "didownload" kalau punya baris `downloads` dengan `status = 'done'`.
 - LRU cache: hapus berdasarkan `last_access_at` terlama sampai total `size_bytes` di bawah batas.
@@ -1034,12 +1043,18 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - bahasa konten juga menyaring Global search dan target migrasi, dan profil lama mendapat bahasa awal dari source yang sudah dipakai;
   - pixel kerja `transformImage` ada di `@matane/extension-runtime/image` (dipakai app dan `mr-ext test`); `migrateUrl` jalan per batch dalam satu transaksi, dengan versi tersimpan di setting.
 
-**Fase 5: Polish & rilis v1.0**
+**Fase 5: Polish & rilis v1.0** (rencana disetujui 1 Okt 2026, rincian: `docs/plans/fase-5-polish-rilis.md`)
 - Reader: crop border, split gambar tinggi, filter warna, auto-scroll, remap keyboard, gesture sentuh.
 - Tema AMOLED, warna aksen, warna dari cover. Command palette, onboarding, What's new, Discord RPC, halaman statistik.
 - Backup/restore + auto-backup.
 - Setting jaringan: DoH, proxy, User-Agent.
 - Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0**.
+- Keputusan rencana (1 Okt 2026):
+  - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), jadi v1.0 sudah memasang MangaDex dari repo resmi;
+  - Discord RPC tetap masuk (default mati; tersembunyi sampai Client ID diisi);
+  - situs dokumentasi VitePress di GitHub Pages;
+  - PKGBUILD AUR dan manifest Flatpak disiapkan dan diuji lokal di Fase 5, submit ke AUR/Flathub bersama 4f;
+  - grafik statistik memakai komponen SVG sendiri, tanpa library grafik.
 
 **Setelah v1**
 - Tracker: AniList, MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
@@ -1055,7 +1070,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 ## 12. Pertanyaan terbuka
 
 **Keputusan yang masih tersisa**
-- [ ] **Nama project**: ditentukan sebelum rilis v1.0 (ide: *Koma*, *Yomu*, *Halaman*, *Panelist*, *Mangadesk*). Cek ketersediaan di GitHub/npm/Flathub/AUR.
+- [x] **Nama project**: **Matane (またね)** (ditetapkan di Fase 2; appId `dev.sukun.matane`). Ketersediaan di Flathub/AUR dicek di Milestone 5g.
 
 **Yang perlu diverifikasi saat implementasi**
 - [ ] Aturan & rate limit **MangaDex API** terbaru (atribusi, laporan MangaDex@Home).

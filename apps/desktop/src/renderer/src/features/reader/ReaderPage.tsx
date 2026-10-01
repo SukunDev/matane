@@ -16,11 +16,13 @@ import {
   BookOpenText,
   Maximize,
   Minimize,
+  Pause,
+  Play,
   Settings2,
   SkipBack,
   SkipForward,
 } from 'lucide-react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../components/EmptyState';
 import { IncognitoToggle } from '../../components/IncognitoToggle';
@@ -32,7 +34,9 @@ import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from
 import { chapterQuery, chaptersQuery, mangaQuery, pagesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { ReaderNotice } from './notice';
-import { isTyping, PagedView } from './PagedView';
+import { PagedView } from './PagedView';
+import { readerStyle } from './filters';
+import { type ReaderHandlers, ReaderKeysContext, actionForKey, effectiveKeymap, isTyping, keyId } from './keymap';
 import { PageContextMenu } from './PageContextMenu';
 import { ReaderSettingsPanel } from './ReaderSettingsPanel';
 import { TapZoneOverlay } from './TapZoneOverlay';
@@ -43,12 +47,6 @@ import { useReaderPosition } from './store';
 
 const HIDE_AFTER_MS = 3000;
 const EDGE_PX = 90;
-
-const BACKGROUNDS: Record<ReaderSettings['background'], string> = {
-  black: 'bg-black',
-  gray: 'bg-[#2b2b30]',
-  white: 'bg-white',
-};
 
 /**
  * Full-screen reader (BRAINSTORM.md §6.1; mockups 03 and 04). `onVisibleChapter` lets webtoon mode
@@ -157,27 +155,41 @@ export function ReaderPage({
     else void navigate({ to: '/browse/sources' });
   }, [navigate, mangaId]);
 
+  // One key listener for the whole reader (BRAINSTORM.md §6.1: keys can be remapped). The view on
+  // screen lends the page actions (`useReaderKeys`); the reader itself handles the rest.
+  const viewKeys = useRef<ReaderHandlers>({});
+  const [autoScroll, setAutoScroll] = useState(false);
+  const stopAutoScroll = useCallback(() => setAutoScroll(false), []);
+  // Auto-scroll belongs to the strip (webtoon and vertical modes).
+  const resolvedMode = reader && manga.data ? resolveMode(reader.mode, manga.data.type, reader.typeDefaults) : null;
+  const strip = resolvedMode === 'webtoon' || resolvedMode === 'vertical';
+  const keymap = useMemo(() => effectiveKeymap(settings?.reader.keymap ?? {}), [settings?.reader.keymap]);
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      // Handled already, e.g. Escape closing a popover or menu.
-      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || isTyping(event)) return;
-      if (event.key === 'f' || event.key === 'F') {
-        void ipc.invoke('window.toggleFullScreen');
-      } else if (event.key === 'Escape') {
+    const own: ReaderHandlers = {
+      fullscreen: () => void ipc.invoke('window.toggleFullScreen'),
+      exit: () => {
         if (panelOpen) setPanelOpen(false);
         else if (fullScreen) void ipc.invoke('window.toggleFullScreen', { value: false });
         else exit();
-      } else if (event.key === '[' && prev) {
-        goChapter(prev);
-      } else if (event.key === ']' && next) {
-        goChapter(next);
-      } else if (event.key === 'm' || event.key === 'M') {
-        toggleOverlay();
-      }
+      },
+      prevChapter: () => prev && goChapter(prev),
+      nextChapter: () => next && goChapter(next),
+      menu: toggleOverlay,
+      autoScroll: () => strip && setAutoScroll((on) => !on),
+    };
+    const onKey = (event: KeyboardEvent) => {
+      // Handled already, e.g. Escape closing a popover or menu.
+      if (event.defaultPrevented || isTyping(event)) return;
+      const key = keyId(event);
+      const action = key ? actionForKey(keymap, key) : null;
+      const handler = action ? (viewKeys.current[action] ?? own[action]) : undefined;
+      if (!handler) return;
+      event.preventDefault();
+      handler();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [panelOpen, fullScreen, exit, prev, next, goChapter, toggleOverlay]);
+  }, [keymap, strip, panelOpen, fullScreen, exit, prev, next, goChapter, toggleOverlay]);
 
   const error = chapterResult.error ?? pages.error ?? manga.error;
   if (error) {
@@ -213,8 +225,8 @@ export function ReaderPage({
   const live = position.chapterId === chapter.id && position.page >= 0 ? position : null;
   const resumeAt = live?.page ?? start ?? (chapter.read ? 0 : chapter.lastPage);
   const resumeOffset = live ? live.offset : start === undefined && !chapter.read ? chapter.pageOffset : null;
-  const mode = resolveMode(reader.mode, manga.data.type);
-  const direction = resolveDirection(reader.direction, manga.data.type);
+  const mode = resolveMode(reader.mode, manga.data.type, reader.typeDefaults);
+  const direction = resolveDirection(reader.direction, manga.data.type, reader.typeDefaults);
   const rtl = direction === 'rtl' && (mode === 'single' || mode === 'double');
   // With an override, the manga's fields change the override and the rest (tap zones) the global
   // settings; without one, everything is global.
@@ -252,50 +264,55 @@ export function ReaderPage({
 
   return (
     <div
-      className={cn('relative h-full overflow-hidden select-none', BACKGROUNDS[reader.background])}
+      style={readerStyle(reader)}
+      className="reader-pages relative h-full overflow-hidden select-none"
       onMouseMove={(event) => {
         if (event.clientY < EDGE_PX || event.clientY > window.innerHeight - EDGE_PX) poke();
       }}
     >
-      <PageContextMenu mangaId={chapter.mangaId}>
-        {mode === 'webtoon' || mode === 'vertical' ? (
-          <WebtoonView
-            key={`${chapter.id}:${mode}`}
-            chapter={chapter}
-            pages={pages.data.pages}
-            chapters={chapters.data}
-            prefs={manga.data.scanlatorPrefs}
-            gap={mode === 'vertical' ? reader.verticalGap : 0}
-            settings={reader}
-            start={resumeAt}
-            startOffset={resumeOffset}
-            onVisibleChapter={onVisibleChapter}
-            onMenu={toggleOverlay}
-            onExit={exit}
-          />
-        ) : (
-          <PagedView
-            key={`${chapter.id}:${mode}`}
-            chapter={chapter}
-            pages={pages.data.pages}
-            double={mode === 'double'}
-            direction={direction}
-            settings={reader}
-            start={resumeAt}
-            prevChapter={prev}
-            nextChapter={next}
-            onChapter={goChapter}
-            onMenu={toggleOverlay}
-            onExit={exit}
-          />
-        )}
-      </PageContextMenu>
+      <ReaderKeysContext value={viewKeys}>
+        <PageContextMenu mangaId={chapter.mangaId}>
+          {mode === 'webtoon' || mode === 'vertical' ? (
+            <WebtoonView
+              key={`${chapter.id}:${mode}:${reader.cropBorders}:${reader.splitTall}`}
+              chapter={chapter}
+              pages={pages.data.pages}
+              chapters={chapters.data}
+              prefs={manga.data.scanlatorPrefs}
+              gap={mode === 'vertical' ? reader.verticalGap : 0}
+              settings={reader}
+              start={resumeAt}
+              startOffset={resumeOffset}
+              autoScroll={autoScroll && strip}
+              onAutoScrollEnd={stopAutoScroll}
+              onVisibleChapter={onVisibleChapter}
+              onMenu={toggleOverlay}
+              onExit={exit}
+            />
+          ) : (
+            <PagedView
+              key={`${chapter.id}:${mode}:${reader.cropBorders}:${reader.splitTall}`}
+              chapter={chapter}
+              pages={pages.data.pages}
+              double={mode === 'double'}
+              direction={direction}
+              settings={reader}
+              start={resumeAt}
+              prevChapter={prev}
+              nextChapter={next}
+              onChapter={goChapter}
+              onMenu={toggleOverlay}
+              onExit={exit}
+            />
+          )}
+        </PageContextMenu>
+      </ReaderKeysContext>
 
       {zoneChange.count > 0 && (
         <TapZoneOverlay
           key={zoneChange.count}
           zones={reader.tapZones}
-          rtl={rtl}
+          rtl={rtl !== reader.invertTapZones}
           continuous={mode === 'webtoon' || mode === 'vertical'}
         />
       )}
@@ -392,6 +409,21 @@ export function ReaderPage({
         <span className="rounded-md border border-ctp-surface1 px-2.5 py-1 font-mono text-xs">
           {t('reader.pageOf', { page: page + 1, total })}
         </span>
+        {strip && (
+          <Button
+            variant={autoScroll ? 'default' : 'secondary'}
+            size="sm"
+            aria-pressed={autoScroll}
+            title={t('reader.autoScrollHint')}
+            onClick={() => {
+              setAutoScroll((on) => !on);
+              setOverlay(false);
+            }}
+          >
+            {autoScroll ? <Pause /> : <Play />}
+            {t('reader.autoScroll')}
+          </Button>
+        )}
         {(mode === 'single' || mode === 'double') && (
           <Button
             variant="secondary"
@@ -410,7 +442,7 @@ export function ReaderPage({
       <ReaderNotice />
 
       {/* Page indicator while the bars are hidden. */}
-      {!overlay && position.page >= 0 && (
+      {!overlay && reader.pageIndicator && position.page >= 0 && (
         <span className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2 rounded-full bg-ctp-crust/80 px-3 py-1 font-mono text-xs text-ctp-text">
           {t('reader.pageOf', { page: page + 1, total })}
         </span>

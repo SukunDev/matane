@@ -16,8 +16,10 @@ export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 export const READY_SECTIONS: readonly SettingsSection[] = [
   'general',
   'library',
+  'reader',
   'downloads',
   'browse',
+  'network',
   'data',
   'advanced',
   'about',

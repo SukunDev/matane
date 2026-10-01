@@ -1,12 +1,14 @@
 import type { UpdaterSettings, UpdaterStatus } from '@manga-reader/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Download, ExternalLink, RefreshCw, RotateCw } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
+import { Download, ExternalLink, RefreshCw, RotateCw, Sparkles, Wand2 } from 'lucide-react';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import logoMark from '../../assets/logo-mark.png';
 import { Button } from '../../components/ui/button';
 import { formatRelative } from '../../lib/format';
 import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
+import { useWhatsNew } from '../whats-new/WhatsNewDialog';
 import { Row, Segmented } from './controls';
 
 const updaterQuery = { queryKey: ['updater', 'status'] as const, queryFn: () => ipc.invoke('updater.status') };
@@ -14,6 +16,8 @@ const updaterQuery = { queryKey: ['updater', 'status'] as const, queryFn: () => 
 export function AboutSettings() {
   const { t } = useTranslation();
   const { data: info } = useQuery(appInfoQuery);
+  const navigate = useNavigate();
+  const setWhatsNew = useWhatsNew((state) => state.setOpen);
   if (!info) return null;
   return (
     <div className="flex flex-col gap-6">
@@ -30,6 +34,16 @@ export function AboutSettings() {
             {t('settings.about.version', { version: info.version })}
           </p>
           <p className="text-xs text-muted-foreground">{t('settings.about.runtime', info)}</p>
+        </div>
+        <div className="ml-auto flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => setWhatsNew(true)}>
+            <Sparkles />
+            {t('settings.about.whatsNew')}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => void navigate({ to: '/onboarding' })}>
+            <Wand2 />
+            {t('settings.about.runSetup')}
+          </Button>
         </div>
       </section>
       <UpdaterCard />

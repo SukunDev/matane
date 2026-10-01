@@ -24,7 +24,6 @@
     "back": "Kembali",
     "forward": "Maju",
     "search": "Cari…",
-    "searchSoon": "Command palette hadir di versi berikutnya",
     "minimize": "Perkecil",
     "maximize": "Perbesar",
     "restore": "Pulihkan",
@@ -32,7 +31,8 @@
     "offline": "Offline",
     "checking": "Mengecek {{done}}/{{total}}",
     "downloading_one": "Mengunduh {{count}}",
-    "downloading_other": "Mengunduh {{count}}"
+    "downloading_other": "Mengunduh {{count}}",
+    "searchHint": "Cari di library, halaman, dan aksi (Ctrl+K)"
   },
   "empty": {
     "library": {
@@ -125,7 +125,9 @@
     },
     "about": {
       "version": "Versi {{version}}",
-      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}",
+      "whatsNew": "Yang baru",
+      "runSetup": "Ulangi pengaturan awal"
     },
     "advanced": {
       "devTitle": "Pengembangan extension",
@@ -245,7 +247,12 @@
       "downloads": "Download",
       "dataFolder": "Folder data",
       "logs": "Log",
-      "open": "Buka"
+      "open": "Buka",
+      "statistics": "Statistik",
+      "clearStats": "Hapus statistik",
+      "clearStatsHint": "Melupakan waktu baca dan sesi. Progres, chapter yang dibaca, dan history tetap ada.",
+      "clearStatsTitle": "Hapus statistik?",
+      "clearStatsDescription": "Waktu baca, streak, dan halaman statistik mulai dari awal. Tidak bisa dibatalkan."
     },
     "updater": {
       "title": "Update aplikasi",
@@ -304,6 +311,148 @@
         "week": "Mingguan"
       },
       "reposHint": "Asal extension. Terverifikasi = ditandatangani dengan kunci resmi."
+    },
+    "reader": {
+      "intro": "Aturan tampilan bawaan, arah baca, tap zone, dan tombol. Perubahan langsung tersimpan.",
+      "defaults": "Bawaan",
+      "defaultsHint": "Dipakai untuk setiap manga tanpa pengaturan sendiri.",
+      "widthHint": "Lebar strip di mode webtoon dan vertikal.",
+      "gapHint": "Jarak antarhalaman di mode vertikal.",
+      "backgroundColor": "Warna latar",
+      "byType": "Per jenis",
+      "byTypeHint": "Arti mode dan arah baca “Otomatis” untuk tiap jenis manga.",
+      "types": {
+        "manga": "Manga",
+        "manhwa": "Manhwa",
+        "manhua": "Manhua",
+        "comic": "Komik",
+        "other": "Jenis tidak diketahui"
+      },
+      "typeMode": "Mode baca untuk {{type}}",
+      "typeDirection": "Arah baca untuk {{type}}",
+      "navigation": "Navigasi",
+      "navigationHint": "Tap zone untuk mouse dan layar sentuh, serta roda gulir.",
+      "invertZones": "Balik tap zone",
+      "invertZonesHint": "Tukar zona sebelumnya dan berikutnya.",
+      "wheel": "Roda gulir membalik halaman",
+      "wheelHint": "Di mode halaman, roda membalik halaman setelah halaman tinggi digulir sampai ujung.",
+      "keys": "Pintasan keyboard",
+      "keysHint": "Tombol untuk membalik halaman, ganti chapter, dan kontrol reader.",
+      "keysFooter": "Tombol bisa memakai Ctrl, Alt, atau Shift. Escape membatalkan saat menunggu tombol.",
+      "pressKey": "Tekan tombol…",
+      "addKey": "Tambah tombol untuk {{action}}",
+      "removeKey": "Hapus {{key}} dari {{action}}",
+      "resetKeys": "Kembalikan tombol {{action}}",
+      "resetAllKeys": "Kembalikan bawaan",
+      "noKey": "Tanpa tombol",
+      "keyTaken": "{{key}} sudah dipakai “{{action}}”. Hapus dulu di sana.",
+      "actions": {
+        "nextPage": "Halaman berikutnya",
+        "prevPage": "Halaman sebelumnya",
+        "pageRight": "Halaman ke kanan",
+        "pageLeft": "Halaman ke kiri",
+        "scrollDown": "Gulir ke bawah",
+        "scrollUp": "Gulir ke atas",
+        "firstPage": "Halaman pertama",
+        "lastPage": "Halaman terakhir",
+        "nextChapter": "Chapter berikutnya",
+        "prevChapter": "Chapter sebelumnya",
+        "fullscreen": "Layar penuh",
+        "menu": "Tampilkan/sembunyikan menu",
+        "exit": "Tutup reader",
+        "autoScroll": "Gulir otomatis (strip)",
+        "zoomIn": "Perbesar",
+        "zoomOut": "Perkecil",
+        "zoomReset": "Zoom normal"
+      },
+      "display": "Tampilan",
+      "displayHint": "Filter warna di atas halaman, nomor halaman, dan gulir otomatis.",
+      "resetFilters": "Reset filter",
+      "brightness": "Kecerahan",
+      "contrast": "Kontras",
+      "warm": "Warna hangat",
+      "warmHint": "Nuansa sepia yang lebih nyaman di malam hari.",
+      "grayscale": "Hitam putih",
+      "grayscaleHint": "Halaman tanpa warna",
+      "invertColors": "Balik warna",
+      "invertColorsHint": "Halaman putih menjadi gelap",
+      "pageIndicator": "Nomor halaman",
+      "pageIndicatorHint": "Tampilkan “halaman / total” saat bar disembunyikan.",
+      "autoScrollSpeed": "Kecepatan gulir otomatis",
+      "autoScrollHint": "Seberapa cepat strip bergerak sendiri (S atau tombol di bar bawah).",
+      "performance": "Performa",
+      "performanceHint": "Pemuatan di depan dan pengolahan halaman.",
+      "preload": "Muat halaman di depan",
+      "preloadHint": "Jumlah halaman yang dimuat lebih dulu.",
+      "fewer": "Kurangi",
+      "more": "Tambah"
+    },
+    "discord": {
+      "title": "Discord",
+      "enabled": "Tampilkan bacaanku di Discord",
+      "enabledHint": "Rich Presence: “Membaca <judul> · <chapter>” selama reader terbuka. Tidak pernah untuk source dewasa atau saat incognito.",
+      "hideTitle": "Sembunyikan judul",
+      "hideTitleHint": "Hanya tampilkan “Sedang membaca manga”."
+    },
+    "network": {
+      "doh": {
+        "title": "DNS-over-HTTPS",
+        "description": "Cari alamat situs lewat koneksi terenkripsi, supaya provider yang memblokir situs lewat DNS (seperti banyak ISP di Indonesia) tidak bisa.",
+        "mode": "Mode",
+        "modes": {
+          "off": "Mati",
+          "automatic": "Otomatis",
+          "secure": "Selalu",
+          "offHint": "Pakai DNS sistem.",
+          "automaticHint": "Pakai DNS-over-HTTPS, dan DNS sistem kalau tidak menjawab.",
+          "secureHint": "Hanya DNS-over-HTTPS; situs tidak terjangkau kalau server tidak menjawab."
+        },
+        "provider": "Server",
+        "providers": {
+          "cloudflare": "Cloudflare",
+          "google": "Google",
+          "quad9": "Quad9",
+          "adguard": "AdGuard",
+          "custom": "Kustom"
+        },
+        "customUrl": "URL server",
+        "invalid": "Isi URL https://; sampai itu DNS-over-HTTPS tetap mati."
+      },
+      "proxy": {
+        "title": "Proxy",
+        "description": "Kirim semua lalu lintas (source, gambar, repositori, update) lewat proxy.",
+        "mode": "Proxy",
+        "modes": {
+          "system": "Sistem",
+          "direct": "Tanpa proxy",
+          "http": "HTTP",
+          "socks5": "SOCKS5"
+        },
+        "host": "Host",
+        "port": "Port",
+        "username": "Username (opsional)",
+        "password": "Password",
+        "passwordSaved": "Password tersimpan",
+        "savePassword": "Simpan",
+        "forgetPassword": "Hapus",
+        "passwordHint": "Disimpan di komputer ini (terenkripsi kalau sistem punya keyring) dan tidak pernah ditampilkan lagi. Dipakai hanya saat proxy memintanya.",
+        "noKeyring": "Sistem ini tidak punya keyring: password disimpan tanpa enkripsi di folder data app."
+      },
+      "userAgent": {
+        "title": "User-Agent",
+        "description": "Cara app memperkenalkan diri ke situs. Extension yang punya User-Agent sendiri (seperti MangaDex) tetap memakainya.",
+        "reset": "Reset",
+        "usingDefault": "Memakai User-Agent browser bawaan.",
+        "usingCustom": "Memakai User-Agent milikmu."
+      },
+      "test": {
+        "title": "Tes koneksi",
+        "description": "Memuat halaman kecil lewat pengaturan ini.",
+        "run": "Tes koneksi",
+        "ok": "Tersambung dalam {{ms}} ms (HTTP {{status}})",
+        "http": "Situs menjawab HTTP {{status}}",
+        "failed": "Tidak tersambung: {{error}}"
+      }
     }
   },
   "common": {
@@ -645,6 +794,10 @@
       },
       "shift": "Geser halaman satu",
       "shiftHint": "Tampilkan halaman pertama sendiri agar spread pas",
+      "cropBorders": "Potong tepi",
+      "cropBordersHint": "Buang margin putih atau hitam di halaman",
+      "splitTall": "Pecah halaman tinggi",
+      "splitTallHint": "Tampilkan strip yang sangat panjang per bagian (scroll lebih lancar)",
       "width": "Lebar strip",
       "gap": "Jarak antar halaman",
       "tapZones": "Zona ketuk",
@@ -659,13 +812,15 @@
       "backgrounds": {
         "black": "Hitam",
         "gray": "Abu-abu",
-        "white": "Putih"
+        "white": "Putih",
+        "custom": "Kustom"
       },
       "globalHint": "Pengaturan ini berlaku untuk semua manga yang tidak punya pengaturan sendiri.",
       "saveForManga": "Simpan sebagai default untuk manga ini",
       "mangaOverride": "Pengaturan khusus manga ini",
       "mangaOverrideHint": "Perubahan di sini hanya berlaku untuk manga ini (tap zone tetap global).",
-      "resetManga": "Kembali ke pengaturan global"
+      "resetManga": "Kembali ke pengaturan global",
+      "allSettings": "Semua pengaturan reader"
     },
     "tapZones": {
       "title": "Zona ketuk: {{preset}}",
@@ -679,7 +834,16 @@
     "coverSet": "Cover diperbarui",
     "coverFailed": "Gagal mengganti cover",
     "bookmarkChapter": "Tandai chapter ini",
-    "unbookmarkChapter": "Hapus penanda chapter"
+    "unbookmarkChapter": "Hapus penanda chapter",
+    "zoom": "Zoom {{percent}}%",
+    "autoScroll": "Gulir otomatis",
+    "autoScrollHint": "Gulir sendiri (S); klik atau Spasi untuk berhenti",
+    "savePage": "Simpan gambar…",
+    "copyPage": "Salin gambar",
+    "pageSaved": "Gambar disimpan",
+    "pageSaveFailed": "Gambar tidak bisa disimpan",
+    "pageCopied": "Gambar disalin",
+    "pageCopyFailed": "Gambar tidak bisa disalin"
   },
   "library": {
     "titles_other": "{{count}} judul",
@@ -998,5 +1162,181 @@
   "offline": {
     "title": "Kamu sedang offline",
     "description": "Menjelajah dan mencari di source butuh internet. Library, riwayat, download, dan chapter yang sudah pernah dibaca tetap bisa dipakai."
+  },
+  "palette": {
+    "label": "Command palette",
+    "placeholder": "Cari manga, halaman, pengaturan, dan aksi…",
+    "searching": "Mencari…",
+    "empty": "Tidak ada yang cocok.",
+    "groups": {
+      "library": "Library",
+      "continue": "Lanjut baca",
+      "actions": "Aksi",
+      "goTo": "Buka"
+    },
+    "reading": "lanjut baca",
+    "unread_one": "{{count}} belum dibaca",
+    "unread_other": "{{count}} belum dibaca",
+    "continue": "Lanjut",
+    "queued_one": "{{count}} di antrean",
+    "queued_other": "{{count}} di antrean",
+    "paused_one": "{{count}} dijeda",
+    "paused_other": "{{count}} dijeda",
+    "searchSources": "Cari “{{query}}” di semua source…",
+    "actions": {
+      "checkUpdates": "Cek update",
+      "incognitoOn": "Nyalakan incognito",
+      "incognitoOff": "Matikan incognito",
+      "pauseDownloads": "Jeda semua download",
+      "resumeDownloads": "Lanjutkan semua download",
+      "syncRepos": "Periksa repositori extension",
+      "readerSettings": "Buka pengaturan reader"
+    },
+    "footer": {
+      "navigate": "pilih",
+      "open": "buka",
+      "searchSources": "cari di source",
+      "close": "tutup"
+    }
+  },
+  "whatsNew": {
+    "title": "Yang baru",
+    "version": "Versi {{version}} · {{date}}",
+    "none": "Tidak ada catatan untuk versi ini.",
+    "done": "Mengerti"
+  },
+  "onboarding": {
+    "windowTitle": "Pengaturan awal",
+    "label": "Pengaturan",
+    "stepOf": "Langkah {{step}} dari {{total}}",
+    "steps": {
+      "appearance": "Tampilan",
+      "languages": "Bahasa konten",
+      "downloads": "Download",
+      "sources": "Source",
+      "reader": "Dasar reader"
+    },
+    "back": "Kembali",
+    "skip": "Lewati",
+    "continue": "Lanjut",
+    "finish": "Mulai membaca",
+    "appearance": {
+      "title": "Sesuaikan Matane",
+      "description": "Pilih bahasa, tema, dan warna aksen. Bisa diubah kapan saja di Settings."
+    },
+    "languages": {
+      "title": "Bahasa apa yang kamu baca?",
+      "description": "Source dan extension dalam bahasa ini yang ditampilkan. Bisa diubah nanti di Settings.",
+      "search": "Cari bahasa…",
+      "selected_one": "{{count}} bahasa dipilih",
+      "selected_other": "{{count}} bahasa dipilih",
+      "sources_one": "{{count}} source tersedia",
+      "sources_other": "{{count}} source tersedia",
+      "nsfwHint": "Disembunyikan secara bawaan"
+    },
+    "downloads": {
+      "title": "Di mana download disimpan?",
+      "description": "Chapter yang didownload disimpan di sini untuk dibaca offline.",
+      "choose": "Pilih…",
+      "later": "Folder bisa dipindah nanti di Settings → Downloads; chapter yang sudah didownload ikut pindah."
+    },
+    "sources": {
+      "title": "Source",
+      "description": "Source adalah extension yang mengambil manga dari sebuah situs.",
+      "official": "Dari repositori resmi",
+      "install": "Pasang",
+      "installed": "Terpasang",
+      "ready": "Siap dipakai",
+      "none": "Belum ada source dalam bahasamu.",
+      "later": "Source lain, dan repositori milikmu sendiri, ada di Browse → Extensions."
+    },
+    "reader": {
+      "title": "Membaca",
+      "description": "Klik sisi halaman atau pakai tombol di bawah. Semuanya bisa diubah di Settings → Reader.",
+      "next": "Halaman berikutnya",
+      "prev": "Halaman sebelumnya",
+      "chapters": "Chapter sebelumnya / berikutnya",
+      "fullscreen": "Layar penuh",
+      "menu": "Tampilkan atau sembunyikan bar",
+      "zoom": "Zoom",
+      "palette": "Command palette, di mana saja",
+      "zones": "Tap zone (bentuk L): biru mundur, hijau maju, tengah menampilkan bar.",
+      "later": "Pengaturan awal ini bisa diulang dari Settings → About."
+    }
+  },
+  "stats": {
+    "incognitoNote": "Bacaan saat incognito tidak pernah dihitung.",
+    "range": {
+      "label": "Periode",
+      "week": "Minggu",
+      "month": "Bulan",
+      "year": "Tahun",
+      "all": "Semua"
+    },
+    "empty": {
+      "title": "Belum ada yang dibaca",
+      "description": "Baca satu chapter dan waktu baca, chapter, serta genre favoritmu muncul di sini."
+    },
+    "tiles": {
+      "chapters": "Chapter dibaca",
+      "time": "Waktu baca",
+      "library": "Manga di library",
+      "streak": "Streak sekarang",
+      "in": {
+        "week": "Dalam 7 hari terakhir",
+        "month": "Dalam 30 hari terakhir",
+        "year": "Dalam 12 bulan terakhir",
+        "all": "Sejak awal"
+      },
+      "perDay": "≈ {{minutes}} menit sehari",
+      "reading_one": "{{count}} sedang dibaca",
+      "reading_other": "{{count}} sedang dibaca",
+      "best_one": "Terbaik: {{count}} hari",
+      "best_other": "Terbaik: {{count}} hari"
+    },
+    "hoursShort": "j",
+    "days_one": "hari",
+    "days_other": "hari",
+    "chaptersShort_one": "{{count}} ch",
+    "chaptersShort_other": "{{count}} ch",
+    "noneInRange": "Tidak ada yang dibaca di periode ini.",
+    "activity": {
+      "chapters": {
+        "day": "Chapter dibaca per hari",
+        "month": "Chapter dibaca per bulan"
+      },
+      "time": {
+        "day": "Waktu baca per hari",
+        "month": "Waktu baca per bulan"
+      },
+      "metric": "Ukuran",
+      "metrics": {
+        "chapters": "Chapter",
+        "time": "Jam"
+      },
+      "table": "Tampilkan sebagai tabel",
+      "period": {
+        "day": "Hari",
+        "month": "Bulan"
+      }
+    },
+    "genres": {
+      "title": "Genre teratas",
+      "description": "Genre dari chapter yang kamu baca",
+      "other_one": "{{count}} chapter di genre lain",
+      "other_other": "{{count}} chapter di genre lain"
+    },
+    "top": {
+      "title": "Paling banyak dibaca",
+      "description": "Menurut waktu baca"
+    },
+    "sources": {
+      "title": "Source",
+      "description": "Asal chapter yang kamu baca",
+      "other": "Lainnya",
+      "read_one": "{{count}} chapter dibaca",
+      "read_other": "{{count}} chapter dibaca"
+    },
+    "minutesShort": "mnt"
   }
 }

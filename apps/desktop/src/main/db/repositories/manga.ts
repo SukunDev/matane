@@ -44,6 +44,17 @@ export const scanlatorPrefsOf = (row: Pick<MangaRow, 'scanlatorPrefsJson'>): Sca
 export const coverKeyOf = (row: Pick<MangaRow, 'customCoverPath' | 'thumbnailUrl'>) =>
   row.customCoverPath ?? row.thumbnailUrl;
 
+/**
+ * The dominant colour of the cover on screen ("#rrggbb"), stored with the cover key it was taken
+ * from: a new cover (from the source or custom) makes it stale until measured again.
+ */
+export function coverColorOf(row: Pick<MangaRow, 'coverColor' | 'customCoverPath' | 'thumbnailUrl'>): string | null {
+  if (!row.coverColor) return null;
+  const space = row.coverColor.indexOf(' ');
+  const key = coverKeyOf(row);
+  return space > 0 && key !== null && row.coverColor.slice(space + 1) === key ? row.coverColor.slice(0, space) : null;
+}
+
 export function toMangaInfo(row: MangaRow, categoryIds: number[] = []): MangaInfo {
   return {
     id: row.id,
@@ -58,6 +69,7 @@ export function toMangaInfo(row: MangaRow, categoryIds: number[] = []): MangaInf
     type: row.type,
     thumbnailUrl: row.thumbnailUrl,
     coverKey: coverKeyOf(row),
+    coverColor: coverColorOf(row),
     hasCustomCover: row.customCoverPath !== null,
     inLibrary: row.inLibrary,
     categoryIds,
@@ -161,6 +173,16 @@ export class MangaRepository {
   /** Permanent copy of the source cover for library manga (not shown differently, no event). */
   setCoverPath(id: number, path: string | null): void {
     this.db.update(manga).set({ coverPath: path }).where(eq(manga.id, id)).run();
+  }
+
+  /** Records the colour of the cover under `key` (see `coverColorOf`). */
+  setCoverColor(id: number, color: string, key: string): void {
+    this.db
+      .update(manga)
+      .set({ coverColor: `${color} ${key}` })
+      .where(eq(manga.id, id))
+      .run();
+    this.changes.mark(`manga:${id}`);
   }
 
   setCustomCoverPath(id: number, path: string | null): void {

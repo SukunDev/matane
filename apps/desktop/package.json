@@ -18,7 +18,7 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json && tsc -p tsconfig.e2e.json",
-    "test": "ELECTRON_RUN_AS_NODE=1 electron ../../node_modules/vitest/vitest.mjs run",
+    "test": "vitest run",
     "postinstall": "electron-rebuild -f -o better-sqlite3",
     "e2e": "electron --version > /dev/null && electron-vite build && playwright test",
     "dist": "electron-vite build && electron-builder --publish never",
@@ -62,11 +62,13 @@
     "zustand": "5.0.15"
   },
   "dependencies": {
+    "@manga-reader/shared": "workspace:*",
     "@matane/extension-runtime": "workspace:*",
     "@matane/extension-sdk": "workspace:*",
-    "@manga-reader/shared": "workspace:*",
+    "@xhayper/discord-rpc": "1.5.1",
     "better-sqlite3": "13.0.3",
     "cheerio": "1.2.0",
+    "cmdk": "1.1.1",
     "drizzle-orm": "0.45.3",
     "electron-log": "5.4.4",
     "electron-updater": "6.8.9",

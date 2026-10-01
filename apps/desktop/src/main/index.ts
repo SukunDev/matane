@@ -1,6 +1,6 @@
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { BrowserWindow, Notification, app, net } from 'electron';
+import { BrowserWindow, Notification, app, net, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
 import { initLogging, log } from './app/log';
@@ -16,7 +16,7 @@ import { openDatabase } from './db/client';
 import { runMigrations } from './db/migrate';
 import { ChaptersRepository } from './db/repositories/chapters';
 import { ExtensionsRepository } from './db/repositories/extensions';
-import { MangaRepository, scanlatorPrefsOf } from './db/repositories/manga';
+import { MangaRepository, coverColorOf, coverKeyOf, scanlatorPrefsOf } from './db/repositories/manga';
 import { NO_SCANLATOR_PREFS } from '@manga-reader/shared/chapters';
 import { CategoriesRepository } from './db/repositories/categories';
 import { HistoryRepository } from './db/repositories/history';
@@ -44,6 +44,7 @@ import { ImageCache } from './images/cache';
 import { CoverStore } from './images/covers';
 import { handleMangaProtocol, registerMangaScheme } from './images/protocol';
 import { ImageService } from './images/service';
+import { PageMetaStore } from './images/page-meta';
 import { MigrationService } from './library/migration';
 import { LibraryService } from './library/service';
 import { UpdateService } from './library/updates';
@@ -59,13 +60,21 @@ import { DownloadStore } from './downloads/store';
 import { DownloadsRepository } from './db/repositories/downloads';
 import { contentLanguages, effectiveReaderSettings } from '@manga-reader/shared';
 import { resolveDirection } from '@manga-reader/shared/chapters';
+import { DiscordPresence, createDiscordClient, discordClientId } from './app/discord';
+import { NetworkControl, PROXY_PASSWORD_KEY } from './network/control';
+import { StatsService } from './stats/service';
+import { CoverColors } from './images/cover-color';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
 /** The official repository URL that was added once (a user who removes it keeps it removed). */
 const OFFICIAL_REPO_KEY = 'extensions.officialRepo';
 /** Extensions already moved to the official repository (never installed by themselves again). */
 const HANDOFF_DONE_KEY = 'extensions.handoffDone';
+/** Settings key (not an app setting): the last version whose release notes were shown or skipped. */
+const WHATS_NEW_KEY = 'app.whatsNewSeen';
 const MB = 1024 * 1024;
+/** Page sizes and crops kept (a few MB); the least recently read go first. */
+const PAGE_META_MAX = 200_000;
 
 // Before anything (logging, the single-instance lock, Chromium) creates the new data folder.
 const legacyUserData = join(app.getPath('appData'), LEGACY_APP_NAME);
@@ -126,6 +135,16 @@ async function bootstrap(): Promise<void> {
     if (tags.includes('downloads')) refreshTray();
   });
   const settings = new SettingsRepository(connection.db);
+  // First-run setup and What's new (Phase 5c): a profile from before them counts as set up, and a
+  // new profile has nothing new to read about. Tests skip the setup unless they test it.
+  if (settings.getValue<unknown>('onboarding', null) === null) {
+    if (!migration.fresh || process.env['MATANE_E2E_NO_ONBOARDING'] === '1') {
+      settings.updateAppSettings({ onboarding: { done: true } });
+    }
+  }
+  if (migration.fresh && settings.getValue<string | null>(WHATS_NEW_KEY, null) === null) {
+    settings.setValue(WHATS_NEW_KEY, app.getVersion());
+  }
   // Content languages arrived in 4c: keep the sources an existing profile already uses visible
   // (a fresh profile keeps the default, which follows the UI language).
   if (settings.getValue<unknown>('browse', null) === null) {
@@ -140,6 +159,19 @@ async function bootstrap(): Promise<void> {
   const chaptersRepo = new ChaptersRepository(connection.db, changes);
 
   const network = new NetworkManager(new CloudflareSolver((status) => broadcast('cloudflare.status', status)));
+  // Settings → Network (Phase 5d): DoH, proxy and User-Agent, before any request goes out.
+  const networkControl = new NetworkControl({
+    settings: () => settings.getAppSettings().network,
+    network,
+    defaultSession: session.defaultSession,
+    store: {
+      get: () => settings.getValue<string | null>(PROXY_PASSWORD_KEY, null),
+      set: (value) => settings.setValue(PROXY_PASSWORD_KEY, value),
+    },
+    proxyLoopback: process.env['MATANE_E2E_PROXY_LOOPBACK'] === '1',
+    log: (message) => log.info(message),
+  });
+  await networkControl.apply();
   const extLog = log.scope('ext');
   const extensionLogs = new ExtensionLogs((extensionId, entry) => broadcast('extensions.log', { extensionId, entry }));
 
@@ -314,11 +346,21 @@ async function bootstrap(): Promise<void> {
   const online = new OnlineMonitor(() => net.isOnline());
   if (process.env['MATANE_E2E_OFFLINE'] === '1') online.override(false);
   if (process.env['MATANE_E2E'])
-    Object.assign(globalThis, { __matane: { setOnline: (v: boolean | null) => online.override(v) } });
+    Object.assign(globalThis, {
+      __matane: {
+        setOnline: (v: boolean | null) => online.override(v),
+        setNetworkTestUrl: (url: string) => (networkControl.testUrl = url),
+      },
+    });
   const downloadsRepo = new DownloadsRepository(connection.db, changes);
   const downloadStore = new DownloadStore(downloadsRepo, new DownloadReader());
+  const pageMeta = new PageMetaStore(connection.db);
+  pageMeta.prune(PAGE_META_MAX);
+  const coverColors = new CoverColors({ manga: mangaRepo, log: (message) => log.scope('images').warn(message) });
   const images = new ImageService({
     cache: imageCache,
+    meta: pageMeta,
+    coverColors,
     manga: mangaRepo,
     chapters: chaptersRepo,
     sources,
@@ -337,7 +379,7 @@ async function bootstrap(): Promise<void> {
   handleMangaProtocol(
     {
       cover: (mangaId) => images.cover(mangaId),
-      page: (chapterId, index) => images.page(chapterId, index),
+      page: (chapterId, index, view) => images.pageView(chapterId, index, view),
       extensionIcon: (id) => extensionIcons.installed(id),
       repoIcon: (repoId, id) => extensionIcons.repo(repoId, id),
     },
@@ -373,7 +415,7 @@ async function bootstrap(): Promise<void> {
       const info = mangaRepo.info(mangaId);
       if (!info) return false;
       const reader = effectiveReaderSettings(settings.getAppSettings().reader, info.readerSettings);
-      return resolveDirection(reader.direction, info.type) === 'rtl';
+      return resolveDirection(reader.direction, info.type, reader.typeDefaults) === 'rtl';
     },
     webUrl: (mangaId) => sources.webUrl(mangaId),
     onProgress: (progress) => {
@@ -512,6 +554,37 @@ async function bootstrap(): Promise<void> {
         : process.platform === 'win32' && !process.env['PORTABLE_EXECUTABLE_DIR']
           ? 'auto'
           : 'notify';
+  // Discord Rich Presence (Phase 5c): only when a Discord application id is set.
+  const clientId = discordClientId();
+  const presence = clientId
+    ? new DiscordPresence({
+        createClient: () => createDiscordClient(clientId),
+        options: () => {
+          const current = settings.getAppSettings();
+          return { ...current.general.discord, incognito: current.incognito };
+        },
+        texts: () =>
+          (settings.getAppSettings().language ?? app.getLocale()).startsWith('id')
+            ? { reading: 'Membaca', readingManga: 'Sedang membaca manga' }
+            : { reading: 'Reading', readingManga: 'Reading manga' },
+        log: (message) => log.scope('discord').info(message),
+      })
+    : null;
+
+  // Cover colours for library manga measured before Phase 5c, a few seconds after start and one
+  // at a time (covers come from the permanent copies; offline, missing ones simply wait).
+  setTimeout(() => {
+    void (async () => {
+      const ids = connection.sqlite.prepare('SELECT id FROM manga WHERE in_library = 1').pluck().all() as number[];
+      for (const id of ids) {
+        const row = mangaRepo.get(id);
+        if (!row || coverColorOf(row) || !coverKeyOf(row)) continue;
+        await images.cover(id).catch(() => undefined);
+        await coverColors.idle();
+      }
+    })();
+  }, 5000);
+
   const updaterLog = log.scope('updater');
   const appUpdater = new AppUpdater({
     kind: updaterKind,
@@ -569,11 +642,36 @@ async function bootstrap(): Promise<void> {
       online,
       traySupport: () => traySupport,
       imageCache,
+      images,
       paths: { data: userData, logs: dirname(log.transports.file.getFile().path) },
       updater: appUpdater,
+      whatsNew: {
+        get: () => ({
+          version: app.getVersion(),
+          seen: settings.getValue<string | null>(WHATS_NEW_KEY, null) === app.getVersion(),
+        }),
+        markSeen: () => settings.setValue(WHATS_NEW_KEY, app.getVersion()),
+      },
+      discord: presence !== null,
+      stats: new StatsService(connection.sqlite),
+      networkControl,
+      readingActivity: presence
+        ? {
+            heartbeat: (chapterId) => {
+              const chapter = chaptersRepo.get(chapterId);
+              const row = chapter && mangaRepo.get(chapter.mangaId);
+              if (!chapter || !row) return;
+              const nsfw = extensions.get(extensionsRepo.getSource(row.sourceId)?.extensionId ?? '')?.manifest?.nsfw;
+              void presence?.reading({ title: row.title, chapter: chapter.name, nsfw: nsfw !== false });
+            },
+            end: () => void presence?.stopped(),
+          }
+        : undefined,
       settingsChanged: (patch) => {
         if (patch.general || patch.language) applySystem();
         if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
+        if (patch.general || patch.incognito !== undefined) void presence?.sync();
+        if (patch.network) void networkControl.apply();
         refreshTray();
       },
     }),
@@ -627,6 +725,7 @@ async function bootstrap(): Promise<void> {
     downloads.shutdown();
     void downloadStore.reader.closeAll();
     sessions.end();
+    void presence?.dispose();
     registry.close();
     host.dispose();
     connection.sqlite.close();

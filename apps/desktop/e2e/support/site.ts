@@ -20,6 +20,8 @@ export interface SiteManga {
   chapters: number[];
   /** Scanlator groups per chapter number (default: "Test Scans"); several = several versions. */
   groups?: Record<number, string[]>;
+  /** Only found by searching its exact title (keeps listings and counts as they were). */
+  unlisted?: boolean;
 }
 
 const PAGES_PER_CHAPTER = 4;
@@ -37,6 +39,16 @@ export const SITE_MANGA: SiteManga[] = [
     chapters: [1, 2, 3, 4],
     groups: { 1: ['Alpha'], 2: ['Alpha', 'Beta'], 3: ['Beta'], 4: ['Alpha', 'Beta'] },
   },
+  // Reader image processing (Milestone 5a): page 1 has white margins, page 2 is a 12000 px strip.
+  {
+    id: 'tall',
+    title: 'Long Strip',
+    type: 'manhwa',
+    genres: ['Drama'],
+    status: 'ongoing',
+    chapters: [1],
+    unlisted: true,
+  },
   // Filler so the listing has a second page (24 manga in total).
   ...Array.from({ length: 21 }, (_, i) => ({
     id: `filler-${i}`,
@@ -49,6 +61,24 @@ export const SITE_MANGA: SiteManga[] = [
 ];
 
 type Rgb = [number, number, number];
+
+const tallPages: Buffer[] = [];
+/**
+ * "Long Strip" pages: 0 is 200×300 white with a 100×200 picture at (40, 50) (crop borders), 1 is a
+ * 100×12000 strip in three coloured bands of 4000 px (cut into three segments).
+ */
+function tallPage(index: number): Buffer {
+  const bands: Rgb[] = [
+    [243, 139, 168],
+    [166, 227, 161],
+    [137, 180, 250],
+  ];
+  tallPages[index] ??=
+    index === 0
+      ? png(200, 300, (x, y) => (x >= 40 && x < 140 && y >= 50 && y < 250 ? [137, 180, 250] : [255, 255, 255]))
+      : png(100, 12_000, (_x, y) => bands[Math.floor(y / 4000)]!);
+  return tallPages[index]!;
+}
 
 function png(width: number, height: number, rgb: Rgb | ((x: number, y: number) => Rgb)): Buffer {
   const chunk = (type: string, data: Buffer) => {
@@ -118,6 +148,8 @@ export interface Site {
   origin: string;
   /** Requests seen, e.g. to assert an image was served from the app cache. */
   hits: string[];
+  /** User-Agent of each request, in order (Settings → Network). */
+  userAgents: string[];
   /** Page images answer this much later (downloads in progress, pause/cancel). */
   pageDelayMs: number;
   /** Page images fail with HTTP 404 (a download error that is not retried). */
@@ -146,6 +178,7 @@ export interface RepoOptions {
 
 export async function startSite(): Promise<Site> {
   const hits: string[] = [];
+  const userAgents: string[] = [];
   const scratch = mkdtempSync(join(tmpdir(), 'matane-site-'));
   /** Served repository folders by URL path prefix. */
   const repos = new Map<string, string>();
@@ -168,7 +201,7 @@ export async function startSite(): Promise<Site> {
       }
       const all = catalogue.filter(
         (m) =>
-          m.title.toLowerCase().includes(q) &&
+          (m.unlisted ? m.title.toLowerCase() === q : m.title.toLowerCase().includes(q)) &&
           include.every((g) => m.genres.includes(g)) &&
           !exclude.some((g) => m.genres.includes(g)),
       );
@@ -188,6 +221,7 @@ export async function startSite(): Promise<Site> {
     const page = /^\/img\/page\/([\w-]+)\/([\d-]+)\/(\d+)\.png$/.exec(path);
     if (page) {
       const index = Number(page[3]);
+      if (page[1] === 'tall' && index < 2) return { type: 'image/png', body: tallPage(index) };
       // Page 2 of every chapter is a two-page spread (landscape).
       return { type: 'image/png', body: index === 2 ? png(240, 160, [137, 180, 250]) : png(120, 180, [166, 227, 161]) };
     }
@@ -205,6 +239,7 @@ export async function startSite(): Promise<Site> {
     port: 0,
     origin: '',
     hits,
+    userAgents,
     pageDelayMs: 0,
     failPages: false,
     failManga: new Set(),
@@ -244,6 +279,7 @@ export async function startSite(): Promise<Site> {
   const server: Server = createServer((request, response) => {
     const url = new URL(request.url ?? '/', 'http://e2e.localhost');
     hits.push(url.pathname + url.search);
+    userAgents.push(request.headers['user-agent'] ?? '');
     if (site.down) {
       response.destroy();
       return;

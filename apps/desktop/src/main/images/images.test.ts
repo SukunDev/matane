@@ -11,6 +11,7 @@ import { ChaptersRepository } from '../db/repositories/chapters';
 import { MangaRepository } from '../db/repositories/manga';
 import type { SourceService } from '../extensions/sources';
 import { ImageCache } from './cache';
+import { PageMetaStore } from './page-meta';
 import { ImageService } from './service';
 
 const migrationsFolder = resolve(__dirname, '../../../drizzle');
@@ -96,7 +97,14 @@ describe('ImageService', () => {
       reportImage: (_id: string, result: ImageFetchResult) => reports.push(result),
     } as unknown as SourceService;
     const chapters = new ChaptersRepository(connection.db, new DbChanges(() => undefined));
-    const service = new ImageService({ cache, manga, chapters, sources, fetcher: { fetchImage } });
+    const service = new ImageService({
+      cache,
+      meta: new PageMetaStore(connection.db, () => now),
+      manga,
+      chapters,
+      sources,
+      fetcher: { fetchImage },
+    });
     const [item] = manga.upsertSummaries('demo/en', [
       { url: '/a', title: 'A', thumbnailUrl: 'https://example.com/a.jpg' },
     ]);
@@ -166,7 +174,14 @@ describe('ImageService pages', () => {
       hasImageTransform: async () => transformImage !== undefined,
       transformImage: async (_id: string, page: { index: number }, bytes: Uint8Array) => transformImage!(page, bytes),
     } as unknown as SourceService;
-    const service = new ImageService({ cache, manga, chapters, sources, fetcher: { fetchImage } });
+    const service = new ImageService({
+      cache,
+      meta: new PageMetaStore(connection.db, () => now),
+      manga,
+      chapters,
+      sources,
+      fetcher: { fetchImage },
+    });
     return { service, chapterId: chapterId!, fetchImage, fetchPages, pagesCall };
   }
   const jpeg = () => new Response(bytes(20), { headers: { 'content-type': 'image/jpeg' } });
@@ -227,5 +242,131 @@ describe('ImageService pages', () => {
   it('reports pages that do not exist', async () => {
     const { service, chapterId } = setup(jpeg);
     await expect(service.page(chapterId, 9)).rejects.toMatchObject({ code: 'not_found' });
+  });
+});
+
+describe('ImageService reader views (crop, segments)', () => {
+  const content = { left: 40, top: 50, width: 100, height: 200 };
+  const bordered = () =>
+    sharp({ create: { width: 200, height: 300, channels: 3, background: '#ffffff' } })
+      .composite([
+        {
+          input: { create: { width: 100, height: 200, channels: 3, background: '#336699' } },
+          left: content.left,
+          top: content.top,
+        },
+      ])
+      .png()
+      .toBuffer();
+  const tall = () =>
+    sharp({ create: { width: 100, height: 8000, channels: 3, background: '#ff8800' } })
+      .png()
+      .toBuffer();
+
+  function setup(images: Buffer[], downloaded?: Buffer) {
+    const changes = new DbChanges(() => undefined);
+    const manga = new MangaRepository(connection.db, changes);
+    const chapters = new ChaptersRepository(connection.db, changes);
+    const mangaId = manga.ensure('demo/en', { url: '/a', title: 'A' });
+    const [chapterId] = chapters.sync(mangaId, [{ url: 'c1', name: 'Ch. 1' }]).added;
+    const fetchImage = vi.fn(
+      async (_ext: string, url: string) =>
+        new Response(new Uint8Array(images[Number(url.at(-5))]!), { headers: { 'content-type': 'image/png' } }),
+    );
+    const sources = {
+      source: () => ({ id: 'demo/en', extensionId: 'demo', key: 'en' }),
+      imageHeaders: async () => ({}),
+      reportImage: () => undefined,
+      pages: async () => ({
+        pages: images.map((_, index) => ({ index, imageUrl: `https://example.com/${index}.png` })),
+        fromCache: false,
+      }),
+      imageUrl: async (_id: string, page: { imageUrl?: string }) => page.imageUrl!,
+      hasImageTransform: async () => false,
+    } as unknown as SourceService;
+    const meta = new PageMetaStore(connection.db, () => now);
+    const downloads = {
+      page: async (_chapterId: number, index: number) =>
+        downloaded && index === 0 ? { bytes: downloaded, contentType: 'image/png' } : undefined,
+    };
+    const service = new ImageService({ cache, meta, manga, chapters, sources, fetcher: { fetchImage }, downloads });
+    return { service, meta, chapterId: chapterId!, fetchImage };
+  }
+  const sizeOf = async (image: Awaited<ReturnType<ImageService['pageView']>>) => {
+    const info = await sharp('data' in image ? image.data : image.path).metadata();
+    return { width: info.width, height: info.height };
+  };
+
+  beforeEach(() => cache.setMaxBytes(100 * 1024 * 1024));
+
+  it('measures pages and crops them on request, remembering both', async () => {
+    const { service, chapterId, meta } = setup([await bordered()]);
+    await expect(service.preparePage(chapterId, 0, false)).resolves.toEqual({ width: 200, height: 300 });
+    expect(service.pageSizes(chapterId, true)).toEqual([]);
+    await expect(service.preparePage(chapterId, 0, true)).resolves.toEqual({ width: 100, height: 200 });
+    expect(service.pageSizes(chapterId, false)).toEqual([{ index: 0, width: 200, height: 300 }]);
+    expect(service.pageSizes(chapterId, true)).toEqual([{ index: 0, width: 100, height: 200 }]);
+
+    const cropped = await service.pageView(chapterId, 0, { crop: true });
+    await expect(sizeOf(cropped)).resolves.toEqual({ width: 100, height: 200 });
+    await expect(sizeOf(await service.pageView(chapterId, 0, { crop: false }))).resolves.toEqual({
+      width: 200,
+      height: 300,
+    });
+    // Cached: the second time is the same file.
+    expect(await service.pageView(chapterId, 0, { crop: true })).toEqual(cropped);
+
+    await service.clearCache('page');
+    expect(meta.count()).toBe(0);
+  });
+
+  it('serves a page without margins as it is when cropping', async () => {
+    const { service, chapterId } = setup([await tall()]);
+    await expect(service.preparePage(chapterId, 0, true)).resolves.toEqual({ width: 100, height: 8000 });
+    const plain = await service.pageView(chapterId, 0, { crop: false });
+    expect(await service.pageView(chapterId, 0, { crop: true, segment: undefined })).toEqual(plain);
+  });
+
+  it('cuts tall pages into segments, made once and cached', async () => {
+    const { service, chapterId } = setup([await tall()]);
+    const first = await service.pageView(chapterId, 0, { crop: false, segment: 0 });
+    const second = await service.pageView(chapterId, 0, { crop: false, segment: 1 });
+    await expect(sizeOf(first)).resolves.toEqual({ width: 100, height: 4000 });
+    await expect(sizeOf(second)).resolves.toEqual({ width: 100, height: 4000 });
+    expect(await service.pageView(chapterId, 0, { crop: false, segment: 0 })).toEqual(first);
+    await expect(service.pageView(chapterId, 0, { crop: false, segment: 2 })).rejects.toMatchObject({
+      code: 'not_found',
+    });
+
+    // Evicted segments come back from the page.
+    await cache.delete((first as { key: string }).key);
+    await expect(sizeOf(await service.pageView(chapterId, 0, { crop: false, segment: 0 }))).resolves.toEqual({
+      width: 100,
+      height: 4000,
+    });
+  });
+
+  it('works on downloaded pages, which stay untouched', async () => {
+    const { service, chapterId, fetchImage } = setup([], await bordered());
+    await expect(service.preparePage(chapterId, 0, true)).resolves.toEqual({ width: 100, height: 200 });
+    await expect(sizeOf(await service.pageView(chapterId, 0, { crop: true }))).resolves.toEqual({
+      width: 100,
+      height: 200,
+    });
+    expect(fetchImage).not.toHaveBeenCalled();
+    const original = await service.pageView(chapterId, 0, { crop: false });
+    expect('data' in original && original.sizeBytes).toBe((await bordered()).byteLength);
+  });
+
+  it('measures again when a different image takes the same place', async () => {
+    const images = [await bordered()];
+    const { service, chapterId } = setup(images);
+    await service.preparePage(chapterId, 0, true);
+    const cropped = await service.pageView(chapterId, 0, { crop: true });
+    // The page drops out of the cache and the source now has another picture.
+    await cache.clear('page');
+    images[0] = await tall();
+    await expect(service.preparePage(chapterId, 0, true)).resolves.toEqual({ width: 100, height: 8000 });
+    await expect(cache.get((cropped as { key: string }).key)).resolves.toBeUndefined();
   });
 });

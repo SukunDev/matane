@@ -35,11 +35,29 @@ export const imageCache = sqliteTable(
     path: text().notNull(),
     sizeBytes: integer().notNull(),
     contentType: text(),
-    width: integer(),
-    height: integer(),
-    segments: integer().notNull().default(1),
-    variantsJson: text(),
     lastAccessAt: integer().notNull(),
   },
   (t) => [index('image_cache_last_access_idx').on(t.lastAccessAt)],
+);
+
+/**
+ * What the reader knows about a page image (ADR 0025), keyed like its `image_cache` entry. Kept
+ * apart from the cache so pages of downloaded chapters (never cached) have it too. `bytes` is the
+ * size of the image it was measured on: a different image under the same key is measured again.
+ * The crop box is null until computed; equal to the page when there is nothing to crop.
+ */
+export const pageMeta = sqliteTable(
+  'page_meta',
+  {
+    key: text().primaryKey(),
+    bytes: integer().notNull(),
+    width: integer().notNull(),
+    height: integer().notNull(),
+    cropLeft: integer(),
+    cropTop: integer(),
+    cropWidth: integer(),
+    cropHeight: integer(),
+    accessedAt: integer().notNull(),
+  },
+  (t) => [index('page_meta_accessed_idx').on(t.accessedAt)],
 );

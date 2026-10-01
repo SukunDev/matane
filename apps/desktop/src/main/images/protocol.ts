@@ -3,7 +3,7 @@ import { Readable } from 'node:stream';
 import { toAppErrorData } from '@manga-reader/shared/errors';
 import { protocol } from 'electron';
 import type { CachedImage } from './cache';
-import type { ServedImage } from './service';
+import type { PageView, ServedImage } from './service';
 
 export const MANGA_SCHEME = 'manga';
 
@@ -16,13 +16,14 @@ export function registerMangaScheme(): void {
 
 export interface MangaProtocolRoutes {
   cover(mangaId: number): Promise<CachedImage>;
-  page(chapterId: number, index: number): Promise<ServedImage>;
+  page(chapterId: number, index: number, view: PageView): Promise<ServedImage>;
   extensionIcon?(extensionId: string): Promise<ServedImage>;
   repoIcon?(repoId: number, extensionId: string): Promise<ServedImage>;
 }
 
 /**
- * `manga://cover/<mangaId>` → the manga's cover; `manga://page/<chapterId>/<index>` → a chapter page.
+ * `manga://cover/<mangaId>` → the manga's cover; `manga://page/<chapterId>/<index>` → a chapter page,
+ * `…/seg/<n>` one segment of a tall page, `?crop=1` cropped to its content (ADR 0025).
  * Pages of downloaded chapters come from the download; everything else from the image cache,
  * fetched through the extension's network on a miss. `manga://extension-icon/<id>` and
  * `manga://repo-icon/<repoId>/<id>` are extension icons.
@@ -35,8 +36,10 @@ export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: 
       if (url.host === 'cover' && parts.length === 1 && /^\d+$/.test(parts[0]!)) {
         return serve(await routes.cover(Number(parts[0])));
       }
-      if (url.host === 'page' && parts.length === 2 && parts.every((part) => /^\d+$/.test(part))) {
-        return serve(await routes.page(Number(parts[0]), Number(parts[1])));
+      const page = url.host === 'page' ? pageRoute(parts) : null;
+      if (page) {
+        const crop = url.searchParams.get('crop') === '1';
+        return serve(await routes.page(page.chapterId, page.index, { crop, segment: page.segment }));
       }
       if (url.host === 'extension-icon' && parts.length === 1 && routes.extensionIcon) {
         return serve(await routes.extensionIcon(decodeURIComponent(parts[0]!)));
@@ -52,6 +55,17 @@ export function handleMangaProtocol(routes: MangaProtocolRoutes, log: (message: 
       return new Response(data.message, { status, headers: { 'x-error-code': data.code } });
     }
   });
+}
+
+/** `<chapterId>/<index>` or `<chapterId>/<index>/seg/<n>`. */
+function pageRoute(parts: string[]): { chapterId: number; index: number; segment?: number } | null {
+  const number = (part: string | undefined) => (part !== undefined && /^\d+$/.test(part) ? Number(part) : null);
+  const chapterId = number(parts[0]);
+  const index = number(parts[1]);
+  if (chapterId === null || index === null) return null;
+  if (parts.length === 2) return { chapterId, index };
+  const segment = number(parts[3]);
+  return parts.length === 4 && parts[2] === 'seg' && segment !== null ? { chapterId, index, segment } : null;
 }
 
 function serve(image: ServedImage | CachedImage): Response {

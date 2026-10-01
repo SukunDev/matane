@@ -2,7 +2,7 @@ import type { ChapterInfo, MangaInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowRightLeft, BookOpen, ChevronDown, ChevronUp, ExternalLink, Globe, Play, RefreshCw } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoverImage, coverSrc } from '../../components/CoverImage';
 import { EmptyState } from '../../components/EmptyState';
@@ -14,7 +14,9 @@ import { appError } from '../../lib/errors';
 import { formatRelative } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
 import { chaptersQuery, continueQuery, mangaQuery, sourcesQuery, useRefreshManga } from '../../lib/sources';
+import { coverTint } from '../../lib/cover-tint';
 import { cn } from '../../lib/utils';
+import { useColorScheme } from '../../theme/useColorScheme';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { ChapterList } from './ChapterList';
 import { LibraryButton, MoreMenu } from './LibraryActions';
@@ -112,6 +114,7 @@ function MangaHeader({
   onRefresh: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const scheme = useColorScheme();
   const [expanded, setExpanded] = useState(false);
   const openInBrowser = useMutation({ mutationFn: () => ipc.invoke('manga.openInBrowser', { mangaId: manga.id }) });
   // Main decides where "Continue" goes (last chapter read, next unread, or the first one).
@@ -133,8 +136,22 @@ function MangaHeader({
     manga.artist && manga.artist !== manga.author && t('manga.artist', { name: manga.artist }),
   ].filter(Boolean);
 
+  // The cover's colour tints the header and its main buttons (BRAINSTORM.md §6.6).
+  const tint = coverTint(manga.coverColor, scheme);
   return (
-    <section className="relative shrink-0 overflow-hidden border-b">
+    <section
+      data-cover-tint={tint ? tint.accent : undefined}
+      style={
+        tint
+          ? ({
+              // Utilities read these directly (`@theme inline` in styles.css).
+              '--app-accent': tint.accent,
+              '--app-on-accent': tint.onAccent,
+            } as CSSProperties)
+          : undefined
+      }
+      className="relative shrink-0 overflow-hidden border-b"
+    >
       {/* Blurred cover as a tinted backdrop (docs/ui/screens/02-detail.png). */}
       {manga.coverKey && (
         <img
@@ -145,6 +162,13 @@ function MangaHeader({
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-background/40 to-background" />
+      {tint && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{ background: `linear-gradient(to bottom, ${tint.wash}, transparent 85%)` }}
+        />
+      )}
 
       <div className="relative flex gap-8 px-6 py-6">
         <CoverImage

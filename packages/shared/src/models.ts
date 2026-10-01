@@ -237,6 +237,8 @@ export const mangaInfoSchema = z.object({
   type: z.enum(MANGA_TYPES).nullable(),
   thumbnailUrl: z.string().nullable(),
   coverKey: z.string().nullable(),
+  /** Dominant colour of the cover ("#rrggbb"), for the detail header; null until measured. */
+  coverColor: z.string().nullable(),
   hasCustomCover: z.boolean(),
   inLibrary: z.boolean(),
   categoryIds: z.array(z.number()),
@@ -571,3 +573,46 @@ export const updaterStatusSchema = z.object({
   releaseUrl: z.string(),
 });
 export type UpdaterStatus = z.infer<typeof updaterStatusSchema>;
+
+/** Statistics periods (mockup 14): the last 7 or 30 days, the last 12 months, or everything. */
+export const STATS_RANGES = ['week', 'month', 'year', 'all'] as const;
+export type StatsRange = (typeof STATS_RANGES)[number];
+
+/**
+ * The statistics page (BRAINSTORM.md §6.3). "Chapters read" are chapters finished in the reader
+ * (marked read and opened in a reading session), so marking a whole list read does not count;
+ * incognito never records anything to count.
+ */
+export const statsOverviewSchema = z.object({
+  range: z.enum(STATS_RANGES),
+  /** Start of the period (ms), null for all time. */
+  from: z.number().nullable(),
+  /** Days in the period (for the daily average). */
+  days: z.number(),
+  chaptersRead: z.number(),
+  readingMs: z.number(),
+  library: z.object({ total: z.number(), reading: z.number() }),
+  /** Consecutive days with reading, up to today (or yesterday), and the longest run ever. */
+  streak: z.object({ current: z.number(), best: z.number() }),
+  /** Per day (week, month) or per month (year, all), oldest first; `start` is local midnight. */
+  unit: z.enum(['day', 'month']),
+  series: z.array(z.object({ start: z.number(), chapters: z.number(), ms: z.number() })),
+  /** Genres of the chapters read, most first (top 5), and the chapters in the other genres. */
+  genres: z.array(z.object({ name: z.string(), chapters: z.number() })),
+  otherGenreChapters: z.number(),
+  /** Most read manga by reading time (top 5). */
+  topManga: z.array(
+    z.object({
+      mangaId: z.number(),
+      title: z.string(),
+      coverKey: z.string().nullable(),
+      author: z.string().nullable(),
+      genres: z.array(z.string()),
+      chapters: z.number(),
+      ms: z.number(),
+    }),
+  ),
+  /** Chapters read per source, most first. */
+  sources: z.array(z.object({ sourceId: z.string(), name: z.string(), chapters: z.number() })),
+});
+export type StatsOverview = z.infer<typeof statsOverviewSchema>;

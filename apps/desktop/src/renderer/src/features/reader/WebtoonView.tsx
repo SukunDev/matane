@@ -8,9 +8,12 @@ import { pagesQuery } from '../../lib/sources';
 import { ChapterTransition } from './ChapterTransition';
 import { adjacentChapter, tapAction } from './navigation';
 import { PageImage } from './PageImage';
-import { preloadPage, sizeKey, usePageSizes } from './pages';
-import { isTyping } from './PagedView';
+import { preloadPage, seedPageSizes, sizeKey, usePageSizes } from './pages';
 import { useReaderPosition } from './store';
+import { STRIP_ZOOM, ZOOM_STEP, clampZoom } from './gestures';
+import { type ReaderHandlers, useReaderKeys } from './keymap';
+import { useReaderNotice } from './notice';
+import { useGestures } from './useGestures';
 
 interface Segment {
   chapter: ChapterInfo;
@@ -23,6 +26,7 @@ type Item =
 
 const DEFAULT_RATIO = 1.45;
 const DIVIDER_HEIGHT = 260;
+const SCROLL_STEP_PX = 120;
 
 /**
  * Continuous strip (webtoon: no gaps; vertical: gaps between pages). The next chapter is appended
@@ -37,6 +41,8 @@ export function WebtoonView({
   settings,
   start,
   startOffset,
+  autoScroll = false,
+  onAutoScrollEnd,
   onVisibleChapter,
   onMenu,
   onExit,
@@ -51,6 +57,9 @@ export function WebtoonView({
   start: number | 'last';
   /** Scrolled fraction of the start page to restore (resume inside a long webtoon page). */
   startOffset?: number | null;
+  /** Scroll by itself at `settings.autoScrollSpeed` until the end, a click, Space or losing focus. */
+  autoScroll?: boolean;
+  onAutoScrollEnd?: () => void;
   onVisibleChapter: (chapter: ChapterInfo) => void;
   onMenu: () => void;
   onExit: () => void;
@@ -60,6 +69,8 @@ export function WebtoonView({
   const [segments, setSegments] = useState<Segment[]>([{ chapter, pages }]);
   const [loadingNext, setLoadingNext] = useState(false);
   const sizes = usePageSizes((s) => s.sizes);
+  const crop = settings.cropBorders;
+  const split = settings.splitTall;
   const scroller = useRef<HTMLDivElement>(null);
   const [viewport, setViewport] = useState({ width: 1000, height: 800 });
 
@@ -70,7 +81,14 @@ export function WebtoonView({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
-  const columnWidth = Math.min(settings.webtoonWidth, viewport.width);
+  // Zoom widens or narrows the column (wider than the window scrolls sideways).
+  const [zoom, setZoom] = useState(1);
+  const columnWidth = Math.round(Math.min(settings.webtoonWidth, viewport.width) * zoom);
+
+  // Pages read before are laid out at their real size straight away.
+  useEffect(() => {
+    for (const segment of segments) seedPageSizes(segment.chapter.id, crop);
+  }, [segments, crop]);
 
   const items = useMemo<Item[]>(() => {
     const list: Item[] = [];
@@ -88,11 +106,11 @@ export function WebtoonView({
     (i: number) => {
       const item = items[i];
       if (!item || item.kind === 'divider') return DIVIDER_HEIGHT;
-      const size = sizes[sizeKey(item.chapter.id, item.index)];
+      const size = sizes[sizeKey(item.chapter.id, item.index, crop)];
       const ratio = size ? size.height / size.width : DEFAULT_RATIO;
       return Math.round(columnWidth * ratio) + gap;
     },
-    [items, sizes, columnWidth, gap],
+    [items, sizes, columnWidth, gap, crop],
   );
 
   const virtualizer = useVirtualizer({
@@ -125,7 +143,7 @@ export function WebtoonView({
   const [initialOffset] = useState(startOffset ?? 0);
   const [restoring, setRestoring] = useState(initialOffset > 0);
   const startIndex = start === 'last' ? pages.length - 1 : start;
-  const startSize = sizes[sizeKey(chapter.id, startIndex)];
+  const startSize = sizes[sizeKey(chapter.id, startIndex, crop)];
   useEffect(() => {
     if (!restoring || !startSize) return;
     const frame = requestAnimationFrame(() => {
@@ -184,9 +202,9 @@ export function WebtoonView({
   // Append the next chapter when the end comes into view; preload pages just below the fold.
   const lastIndex = range.at(-1)?.index ?? 0;
   useEffect(() => {
-    for (let i = lastIndex + 1; i <= lastIndex + 3; i++) {
+    for (let i = lastIndex + 1; i <= lastIndex + settings.preloadPages; i++) {
       const item = items[i];
-      if (item?.kind === 'page') preloadPage(item.chapter.id, item.index);
+      if (item?.kind === 'page') preloadPage(item.chapter.id, item.index, { crop, split });
     }
     const tail = segments.at(-1)!;
     const next = adjacentChapter(chapters, tail.chapter, 1, prefs);
@@ -197,61 +215,125 @@ export function WebtoonView({
       .then(({ pages: nextPages }) => setSegments((list) => [...list, { chapter: next, pages: nextPages }]))
       .catch(() => undefined)
       .finally(() => setLoadingNext(false));
-  }, [lastIndex, items, segments, chapters, prefs, loadingNext, queryClient]);
+  }, [lastIndex, items, segments, chapters, prefs, loadingNext, queryClient, crop, split, settings.preloadPages]);
 
   const scrollByScreen = useCallback((dir: 1 | -1) => {
     const el = scroller.current;
     if (el) el.scrollBy({ top: dir * el.clientHeight * 0.85, behavior: 'smooth' });
   }, []);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event)) return;
+  const notify = useReaderNotice((state) => state.show);
+  const pendingCenter = useRef<number | null>(null);
+  const zoomTo = useCallback(
+    (next: number) => {
       const el = scroller.current;
-      if (!el) return;
-      if (
-        event.key === 'PageDown' ||
-        (event.key === ' ' && !event.shiftKey) ||
-        event.key === 'd' ||
-        event.key === 'D'
-      ) {
-        event.preventDefault();
-        scrollByScreen(1);
-      } else if (
-        event.key === 'PageUp' ||
-        (event.key === ' ' && event.shiftKey) ||
-        event.key === 'a' ||
-        event.key === 'A'
-      ) {
-        event.preventDefault();
-        scrollByScreen(-1);
-      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-        event.preventDefault();
-        el.scrollBy({ top: (event.key === 'ArrowDown' ? 1 : -1) * 120 });
-      } else if (event.key === 'Home') {
-        virtualizer.scrollToIndex(0);
-      } else if (event.key === 'End') {
-        virtualizer.scrollToIndex(items.length - 1, { align: 'end' });
+      const target = clampZoom(next, STRIP_ZOOM);
+      if (!el || target === zoom) return;
+      // Keep the middle of the screen where it is in the strip.
+      pendingCenter.current = (el.scrollTop + el.clientHeight / 2) / Math.max(virtualizer.getTotalSize(), 1);
+      setZoom(target);
+      notify(t('reader.zoom', { percent: Math.round(target * 100) }));
+    },
+    [zoom, virtualizer, notify, t],
+  );
+  useLayoutEffect(() => {
+    const el = scroller.current;
+    if (!el || pendingCenter.current === null) return;
+    virtualizer.measure();
+    el.scrollTop = pendingCenter.current * virtualizer.getTotalSize() - el.clientHeight / 2;
+    pendingCenter.current = null;
+  }, [zoom, virtualizer]);
+
+  // Auto-scroll: a steady glide, stopped at the end of the last chapter there is, or when the
+  // window loses focus.
+  const hasMore = loadingNext || adjacentChapter(chapters, segments.at(-1)!.chapter, 1, prefs) !== undefined;
+  const more = useRef(hasMore);
+  const endAutoScroll = useRef(onAutoScrollEnd);
+  useLayoutEffect(() => {
+    more.current = hasMore;
+    endAutoScroll.current = onAutoScrollEnd;
+  });
+  useEffect(() => {
+    const el = scroller.current;
+    if (!autoScroll || !el) return;
+    let last = performance.now();
+    let carry = 0;
+    let frame = 0;
+    const step = (now: number) => {
+      carry += (settings.autoScrollSpeed * Math.min(now - last, 100)) / 1000;
+      last = now;
+      const whole = Math.floor(carry);
+      if (whole > 0) {
+        el.scrollTop += whole;
+        carry -= whole;
       }
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2 && !more.current) {
+        endAutoScroll.current?.();
+        return;
+      }
+      frame = requestAnimationFrame(step);
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [scrollByScreen, virtualizer, items.length]);
+    frame = requestAnimationFrame(step);
+    const stop = () => endAutoScroll.current?.();
+    window.addEventListener('blur', stop);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('blur', stop);
+    };
+  }, [autoScroll, settings.autoScrollSpeed]);
+
+  const handlers = useMemo<ReaderHandlers>(() => {
+    const down = () => (autoScroll ? onAutoScrollEnd?.() : scrollByScreen(1));
+    return {
+      nextPage: down,
+      pageRight: down,
+      prevPage: () => scrollByScreen(-1),
+      pageLeft: () => scrollByScreen(-1),
+      scrollDown: () => scroller.current?.scrollBy({ top: SCROLL_STEP_PX }),
+      scrollUp: () => scroller.current?.scrollBy({ top: -SCROLL_STEP_PX }),
+      firstPage: () => virtualizer.scrollToIndex(0),
+      lastPage: () => virtualizer.scrollToIndex(items.length - 1, { align: 'end' }),
+      zoomIn: () => zoomTo(zoom * ZOOM_STEP),
+      zoomOut: () => zoomTo(zoom / ZOOM_STEP),
+      zoomReset: () => zoomTo(1),
+    };
+  }, [autoScroll, onAutoScrollEnd, scrollByScreen, virtualizer, items.length, zoomTo, zoom]);
+  useReaderKeys(handlers);
+
+  // Touch scrolls natively; the mouse can drag the strip, and pinch or Ctrl+wheel zoom.
+  const wasDrag = useGestures(scroller, {
+    onZoomWheel: (factor) => zoomTo(zoom * factor),
+    onPinch: (factor) => zoomTo(zoom * factor),
+    onPan: (dx, dy, pointerType) => {
+      if (pointerType === 'mouse') scroller.current?.scrollBy({ left: -dx, top: -dy });
+    },
+  });
 
   const onClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (wasDrag()) return;
+    if (autoScroll) {
+      onAutoScrollEnd?.();
+      return;
+    }
     const rect = event.currentTarget.getBoundingClientRect();
     const action = tapAction(
       settings.tapZones,
       (event.clientX - rect.left) / rect.width,
       (event.clientY - rect.top) / rect.height,
-      false,
+      settings.invertTapZones,
     );
     if (action === 'menu') onMenu();
     else scrollByScreen(action === 'next' ? 1 : -1);
   };
 
   return (
-    <div ref={scroller} role="presentation" onClick={onClick} className="h-full w-full cursor-pointer overflow-y-auto">
+    <div
+      ref={scroller}
+      role="presentation"
+      data-zoom={zoom}
+      onClick={onClick}
+      className="h-full w-full cursor-pointer touch-pan-x touch-pan-y overflow-auto"
+    >
       <div className="relative mx-auto" style={{ height: virtualizer.getTotalSize(), width: columnWidth }}>
         {range.map((row) => {
           const item = items[row.index]!;
@@ -267,6 +349,8 @@ export function WebtoonView({
                 <PageImage
                   chapterId={item.chapter.id}
                   index={item.index}
+                  crop={crop}
+                  split={split}
                   alt={t('reader.pageAlt', { page: item.index + 1, total: item.total })}
                   className="block h-auto w-full select-none"
                   placeholderClassName="w-full"

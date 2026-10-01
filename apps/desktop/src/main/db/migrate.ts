@@ -38,10 +38,12 @@ function pruneBackups(backupDir: string): void {
 export async function runMigrations(
   connection: DatabaseConnection,
   options: { migrationsFolder: string; backupDir: string },
-): Promise<{ applied: number; backupPath: string | null }> {
+): Promise<{ applied: number; backupPath: string | null; fresh: boolean }> {
   const applied = countAppliedMigrations(connection);
+  // No migration applied yet: a database created just now (a new profile).
+  const fresh = applied === 0;
   const pending = countBundledMigrations(options.migrationsFolder) - applied;
-  if (pending <= 0) return { applied: 0, backupPath: null };
+  if (pending <= 0) return { applied: 0, backupPath: null, fresh };
 
   let backupPath: string | null = null;
   if (applied > 0) {
@@ -52,5 +54,5 @@ export async function runMigrations(
   }
 
   migrate(connection.db, { migrationsFolder: options.migrationsFolder });
-  return { applied: pending, backupPath };
+  return { applied: pending, backupPath, fresh };
 }

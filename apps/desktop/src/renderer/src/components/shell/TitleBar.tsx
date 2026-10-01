@@ -5,6 +5,7 @@ import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { appInfoQuery } from '../../lib/ipc';
 import { useCrumbStore } from '../../stores/crumbs';
+import { usePalette } from '../../stores/palette';
 import { useUiStore } from '../../stores/ui';
 import { cn } from '../../lib/utils';
 import { IncognitoToggle } from '../IncognitoToggle';
@@ -25,6 +26,7 @@ export function TitleBar() {
   const online = useUiStore((state) => state.online);
   const isMac = info?.platform === 'darwin';
   const paletteShortcut = isMac ? '⌘K' : 'Ctrl K';
+  const setPalette = usePalette((state) => state.setOpen);
 
   return (
     <header className="drag-region relative flex h-10 shrink-0 items-center border-b bg-sidebar">
@@ -59,10 +61,11 @@ export function TitleBar() {
         ))}
       </nav>
 
-      {/* The command palette itself ships in a later phase (BRAINSTORM.md §6.6). */}
+      {/* Opens the command palette (BRAINSTORM.md §6.6, mockup 12). */}
       <button
         type="button"
-        title={t('titlebar.searchSoon')}
+        title={t('titlebar.searchHint')}
+        onClick={() => setPalette(true)}
         className="no-drag absolute left-1/2 flex h-7 w-80 -translate-x-1/2 items-center gap-2 rounded-lg border bg-background px-2.5 text-[13px] text-muted-foreground hover:border-input"
       >
         <Search className="size-3.5" />

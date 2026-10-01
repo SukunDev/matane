@@ -43,7 +43,7 @@ import { downloadsQuery, useEnqueueDownloads } from '../../lib/downloads';
 import { mangaQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../library/selection';
-import { isTyping } from '../reader/PagedView';
+import { isTyping } from '../reader/keymap';
 import { activeScanlator, viewChapters } from './chapterView';
 import { DownloadButton } from './DownloadButton';
 import { ScanlatorDialog } from './ScanlatorDialog';

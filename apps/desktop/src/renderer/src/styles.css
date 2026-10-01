@@ -126,3 +126,8 @@
 @utility no-drag {
   -webkit-app-region: no-drag;
 }
+
+/* Reader colour filters (Settings → Reader): only the pages, never the bars or transition cards. */
+.reader-pages [data-page] {
+  filter: var(--reader-filter, none);
+}

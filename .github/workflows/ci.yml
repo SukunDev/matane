@@ -19,12 +19,12 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
-      # Also downloads Electron and rebuilds better-sqlite3 for its ABI (postinstall).
+      # Also downloads Electron and rebuilds better-sqlite3 (postinstall).
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm typecheck
-      # DB tests run inside Electron's Node (ELECTRON_RUN_AS_NODE) so the native module ABI matches.
+      # Plain Node: better-sqlite3 is an N-API module, the same binary loads in Node and Electron.
       - run: pnpm test
       # End-to-end: the built app against a fake local site (no network). Needs a display.
       - run: xvfb-run -a pnpm e2e

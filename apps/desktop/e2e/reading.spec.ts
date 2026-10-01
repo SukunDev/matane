@@ -44,7 +44,12 @@ test.beforeAll(async () => {
     executablePath: electronPath as unknown as string,
     // GitHub's Ubuntu runners forbid the unprivileged user namespaces Chromium's sandbox needs.
     args: [appDir, ...(process.env['CI'] ? ['--no-sandbox'] : [])],
-    env: { ...process.env, XDG_CONFIG_HOME: join(home, 'config'), ELECTRON_ENABLE_LOGGING: '1' },
+    env: {
+      ...process.env,
+      XDG_CONFIG_HOME: join(home, 'config'),
+      ELECTRON_ENABLE_LOGGING: '1',
+      MATANE_E2E_NO_ONBOARDING: '1',
+    },
   });
   page = await app.firstWindow();
   await page.waitForSelector('aside');

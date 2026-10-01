@@ -2,6 +2,13 @@ import { Readable } from 'node:stream';
 import { type Session, net } from 'electron';
 import type { FetchFn } from './extension-fetcher';
 
+/** Credentials for a proxy that asks for them (Settings → Network); null = none stored. */
+let proxyCredentials: () => { username: string; password: string } | null = () => null;
+
+export function setProxyCredentials(provider: typeof proxyCredentials): void {
+  proxyCredentials = provider;
+}
+
 /**
  * `fetch` on top of `net.request` for one session. Electron's own `net.fetch` rejects on
  * `redirect: 'manual'` ("Redirect was cancelled"), but ExtensionFetcher needs the 3xx response to
@@ -55,6 +62,12 @@ export function sessionFetch(session: Session): FetchFn {
         finish(() => resolve(new Response(body, { status: response.statusCode, headers })));
       });
       request.on('error', (error) => finish(() => reject(error)));
+      // Only a proxy gets the stored credentials; a site asking for a login gets none.
+      request.on('login', (authInfo, callback) => {
+        const credentials = authInfo.isProxy ? proxyCredentials() : null;
+        if (credentials) callback(credentials.username, credentials.password);
+        else callback();
+      });
 
       if (typeof init.body === 'string') request.write(init.body);
       request.end();

@@ -24,7 +24,6 @@
     "back": "Back",
     "forward": "Forward",
     "search": "Search…",
-    "searchSoon": "The command palette arrives in a later version",
     "minimize": "Minimize",
     "maximize": "Maximize",
     "restore": "Restore",
@@ -32,7 +31,8 @@
     "offline": "Offline",
     "checking": "Checking {{done}}/{{total}}",
     "downloading_one": "Downloading {{count}}",
-    "downloading_other": "Downloading {{count}}"
+    "downloading_other": "Downloading {{count}}",
+    "searchHint": "Search the library, pages and actions (Ctrl+K)"
   },
   "empty": {
     "library": {
@@ -125,7 +125,9 @@
     },
     "about": {
       "version": "Version {{version}}",
-      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}"
+      "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}",
+      "whatsNew": "What’s new",
+      "runSetup": "Run setup again"
     },
     "advanced": {
       "devTitle": "Extension development",
@@ -245,7 +247,12 @@
       "downloads": "Downloads",
       "dataFolder": "Data folder",
       "logs": "Logs",
-      "open": "Open"
+      "open": "Open",
+      "statistics": "Statistics",
+      "clearStats": "Clear statistics",
+      "clearStatsHint": "Forgets reading time and sessions. Progress, read chapters and history stay.",
+      "clearStatsTitle": "Clear the statistics?",
+      "clearStatsDescription": "Reading time, streaks and the statistics page start over. This cannot be undone."
     },
     "updater": {
       "title": "App updates",
@@ -305,6 +312,148 @@
         "week": "Weekly"
       },
       "reposHint": "Where extensions come from. Verified = signed with the official key."
+    },
+    "reader": {
+      "intro": "Default display rules, reading direction, tap zones and keys. Changes save at once.",
+      "defaults": "Defaults",
+      "defaultsHint": "Used for every manga without its own settings.",
+      "widthHint": "Width of the strip in webtoon and vertical modes.",
+      "gapHint": "Space between pages in vertical mode.",
+      "backgroundColor": "Background colour",
+      "byType": "By type",
+      "byTypeHint": "What “Auto” reading mode and direction mean for each kind of manga.",
+      "types": {
+        "manga": "Manga",
+        "manhwa": "Manhwa",
+        "manhua": "Manhua",
+        "comic": "Comic",
+        "other": "Unknown type"
+      },
+      "typeMode": "Reading mode for {{type}}",
+      "typeDirection": "Reading direction for {{type}}",
+      "navigation": "Navigation",
+      "navigationHint": "Tap zones for the mouse and touch screens, and the scroll wheel.",
+      "invertZones": "Invert tap zones",
+      "invertZonesHint": "Swap the previous and next zones.",
+      "wheel": "Scroll wheel turns pages",
+      "wheelHint": "In page modes, the wheel turns the page once a tall page is scrolled to its edge.",
+      "keys": "Keyboard shortcuts",
+      "keysHint": "Keys for turning pages, changing chapters and the reader controls.",
+      "keysFooter": "Keys can include Ctrl, Alt or Shift. Escape cancels while waiting for a key.",
+      "pressKey": "Press a key…",
+      "addKey": "Add a key for {{action}}",
+      "removeKey": "Remove {{key}} from {{action}}",
+      "resetKeys": "Reset the keys of {{action}}",
+      "resetAllKeys": "Reset to defaults",
+      "noKey": "No key",
+      "keyTaken": "{{key}} is already used by “{{action}}”. Remove it there first.",
+      "actions": {
+        "nextPage": "Next page",
+        "prevPage": "Previous page",
+        "pageRight": "Page to the right",
+        "pageLeft": "Page to the left",
+        "scrollDown": "Scroll down",
+        "scrollUp": "Scroll up",
+        "firstPage": "First page",
+        "lastPage": "Last page",
+        "nextChapter": "Next chapter",
+        "prevChapter": "Previous chapter",
+        "fullscreen": "Toggle full screen",
+        "menu": "Toggle menu",
+        "exit": "Close the reader",
+        "autoScroll": "Auto-scroll (strip)",
+        "zoomIn": "Zoom in",
+        "zoomOut": "Zoom out",
+        "zoomReset": "Reset zoom"
+      },
+      "display": "Display",
+      "displayHint": "Colour filters over the pages, the page number and auto-scroll.",
+      "resetFilters": "Reset filters",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "warm": "Warm tint",
+      "warmHint": "A sepia tone that is easier on the eyes at night.",
+      "grayscale": "Grayscale",
+      "grayscaleHint": "Pages in black and white",
+      "invertColors": "Invert colours",
+      "invertColorsHint": "White pages become dark",
+      "pageIndicator": "Page number",
+      "pageIndicatorHint": "Show “page / total” while the bars are hidden.",
+      "autoScrollSpeed": "Auto-scroll speed",
+      "autoScrollHint": "How fast the strip moves by itself (S or the button in the bottom bar).",
+      "performance": "Performance",
+      "performanceHint": "Loading ahead and page processing.",
+      "preload": "Preload pages",
+      "preloadHint": "Pages loaded ahead of the one on screen.",
+      "fewer": "Fewer",
+      "more": "More"
+    },
+    "discord": {
+      "title": "Discord",
+      "enabled": "Show what I read on Discord",
+      "enabledHint": "Rich Presence: “Reading <title> · <chapter>” while the reader is open. Never for adult sources or in incognito.",
+      "hideTitle": "Hide the title",
+      "hideTitleHint": "Show only “Reading manga”."
+    },
+    "network": {
+      "doh": {
+        "title": "DNS-over-HTTPS",
+        "description": "Look up site addresses over an encrypted connection, so a provider blocking sites through DNS (as many Indonesian ISPs do) cannot.",
+        "mode": "Mode",
+        "modes": {
+          "off": "Off",
+          "automatic": "Automatic",
+          "secure": "Always",
+          "offHint": "Use the system DNS.",
+          "automaticHint": "Use DNS-over-HTTPS, and the system DNS when it does not answer.",
+          "secureHint": "Only DNS-over-HTTPS; sites stay unreachable when it does not answer."
+        },
+        "provider": "Server",
+        "providers": {
+          "cloudflare": "Cloudflare",
+          "google": "Google",
+          "quad9": "Quad9",
+          "adguard": "AdGuard",
+          "custom": "Custom"
+        },
+        "customUrl": "Server URL",
+        "invalid": "Enter an https:// URL; until then DNS-over-HTTPS stays off."
+      },
+      "proxy": {
+        "title": "Proxy",
+        "description": "Send all traffic (sources, images, repositories, updates) through a proxy.",
+        "mode": "Proxy",
+        "modes": {
+          "system": "System",
+          "direct": "None",
+          "http": "HTTP",
+          "socks5": "SOCKS5"
+        },
+        "host": "Host",
+        "port": "Port",
+        "username": "Username (optional)",
+        "password": "Password",
+        "passwordSaved": "A password is saved",
+        "savePassword": "Save",
+        "forgetPassword": "Forget",
+        "passwordHint": "Stored on this computer (encrypted where the system has a keyring) and never shown again. Used only when the proxy asks.",
+        "noKeyring": "This system has no keyring: the password is stored unencrypted in the app's data folder."
+      },
+      "userAgent": {
+        "title": "User-Agent",
+        "description": "How the app introduces itself to sites. An extension that sets its own (MangaDex does) keeps it.",
+        "reset": "Reset",
+        "usingDefault": "Using the default browser User-Agent.",
+        "usingCustom": "Using your User-Agent."
+      },
+      "test": {
+        "title": "Test connection",
+        "description": "Loads a small page through these settings.",
+        "run": "Test connection",
+        "ok": "Connected in {{ms}} ms (HTTP {{status}})",
+        "http": "The site answered HTTP {{status}}",
+        "failed": "No connection: {{error}}"
+      }
     }
   },
   "common": {
@@ -659,6 +808,10 @@
       },
       "shift": "Shift pages by one",
       "shiftHint": "Show the first page alone so spreads line up",
+      "cropBorders": "Crop borders",
+      "cropBordersHint": "Trim white or black margins off pages",
+      "splitTall": "Split tall pages",
+      "splitTallHint": "Show very long strips in parts (smoother scrolling)",
       "width": "Strip width",
       "gap": "Gap between pages",
       "tapZones": "Tap zones",
@@ -673,13 +826,15 @@
       "backgrounds": {
         "black": "Black",
         "gray": "Gray",
-        "white": "White"
+        "white": "White",
+        "custom": "Custom"
       },
       "globalHint": "These settings apply to every manga without its own.",
       "saveForManga": "Save as default for this manga",
       "mangaOverride": "Custom settings for this manga",
       "mangaOverrideHint": "Changes here apply to this manga only (tap zones stay global).",
-      "resetManga": "Reset to global settings"
+      "resetManga": "Reset to global settings",
+      "allSettings": "All reader settings"
     },
     "tapZones": {
       "title": "Tap zones: {{preset}}",
@@ -693,7 +848,16 @@
     "coverSet": "Cover updated",
     "coverFailed": "Couldn't set the cover",
     "bookmarkChapter": "Bookmark this chapter",
-    "unbookmarkChapter": "Remove chapter bookmark"
+    "unbookmarkChapter": "Remove chapter bookmark",
+    "zoom": "Zoom {{percent}}%",
+    "autoScroll": "Auto-scroll",
+    "autoScrollHint": "Scroll by itself (S); a click or Space stops it",
+    "savePage": "Save image…",
+    "copyPage": "Copy image",
+    "pageSaved": "Image saved",
+    "pageSaveFailed": "The image could not be saved",
+    "pageCopied": "Image copied",
+    "pageCopyFailed": "The image could not be copied"
   },
   "library": {
     "titles_one": "{{count}} title",
@@ -1028,5 +1192,181 @@
   "offline": {
     "title": "You're offline",
     "description": "Browsing and searching sources need the internet. Your library, history, downloads and chapters already read keep working."
+  },
+  "palette": {
+    "label": "Command palette",
+    "placeholder": "Search manga, pages, settings and actions…",
+    "searching": "Searching…",
+    "empty": "Nothing matches.",
+    "groups": {
+      "library": "Library",
+      "continue": "Continue reading",
+      "actions": "Actions",
+      "goTo": "Go to"
+    },
+    "reading": "continue reading",
+    "unread_one": "{{count}} unread",
+    "unread_other": "{{count}} unread",
+    "continue": "Continue",
+    "queued_one": "{{count}} in the queue",
+    "queued_other": "{{count}} in the queue",
+    "paused_one": "{{count}} paused",
+    "paused_other": "{{count}} paused",
+    "searchSources": "Search “{{query}}” in all sources…",
+    "actions": {
+      "checkUpdates": "Check for updates",
+      "incognitoOn": "Turn on incognito",
+      "incognitoOff": "Turn off incognito",
+      "pauseDownloads": "Pause all downloads",
+      "resumeDownloads": "Resume all downloads",
+      "syncRepos": "Check extension repositories",
+      "readerSettings": "Open reader settings"
+    },
+    "footer": {
+      "navigate": "navigate",
+      "open": "open",
+      "searchSources": "search sources",
+      "close": "close"
+    }
+  },
+  "whatsNew": {
+    "title": "What’s new",
+    "version": "Version {{version}} · {{date}}",
+    "none": "There are no notes for this version.",
+    "done": "Got it"
+  },
+  "onboarding": {
+    "windowTitle": "Initial setup",
+    "label": "Setup",
+    "stepOf": "Step {{step}} of {{total}}",
+    "steps": {
+      "appearance": "Appearance",
+      "languages": "Content languages",
+      "downloads": "Downloads",
+      "sources": "Sources",
+      "reader": "Reader basics"
+    },
+    "back": "Back",
+    "skip": "Skip setup",
+    "continue": "Continue",
+    "finish": "Start reading",
+    "appearance": {
+      "title": "Make Matane yours",
+      "description": "Pick the language, theme and accent colour. You can change them any time in Settings."
+    },
+    "languages": {
+      "title": "Which languages do you read?",
+      "description": "Sources and extensions in these languages are shown. You can change this later in Settings.",
+      "search": "Search languages…",
+      "selected_one": "{{count}} language selected",
+      "selected_other": "{{count}} languages selected",
+      "sources_one": "{{count}} source available",
+      "sources_other": "{{count}} sources available",
+      "nsfwHint": "Hidden by default"
+    },
+    "downloads": {
+      "title": "Where should downloads go?",
+      "description": "Chapters you download are kept here to read offline.",
+      "choose": "Choose…",
+      "later": "You can move the folder later in Settings → Downloads; downloaded chapters move with it."
+    },
+    "sources": {
+      "title": "Sources",
+      "description": "Sources are extensions that bring manga from a website.",
+      "official": "From the official repository",
+      "install": "Install",
+      "installed": "Installed",
+      "ready": "Ready to use",
+      "none": "No source in your languages yet.",
+      "later": "More sources, and your own repositories, are in Browse → Extensions."
+    },
+    "reader": {
+      "title": "Reading",
+      "description": "Click the sides of a page or use the keys below. Everything can be changed in Settings → Reader.",
+      "next": "Next page",
+      "prev": "Previous page",
+      "chapters": "Previous / next chapter",
+      "fullscreen": "Full screen",
+      "menu": "Show or hide the bars",
+      "zoom": "Zoom",
+      "palette": "Command palette, anywhere",
+      "zones": "Tap zones (L-shape): blue goes back, green forward, the middle shows the bars.",
+      "later": "You can run this setup again from Settings → About."
+    }
+  },
+  "stats": {
+    "incognitoNote": "Reading in incognito is never counted.",
+    "range": {
+      "label": "Period",
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "all": "All time"
+    },
+    "empty": {
+      "title": "Nothing read yet",
+      "description": "Read a chapter and your reading time, chapters and favourite genres show up here."
+    },
+    "tiles": {
+      "chapters": "Chapters read",
+      "time": "Reading time",
+      "library": "Manga in library",
+      "streak": "Current streak",
+      "in": {
+        "week": "In the last 7 days",
+        "month": "In the last 30 days",
+        "year": "In the last 12 months",
+        "all": "Since you started"
+      },
+      "perDay": "≈ {{minutes}} min a day",
+      "reading_one": "{{count}} reading",
+      "reading_other": "{{count}} reading",
+      "best_one": "Best: {{count}} day",
+      "best_other": "Best: {{count}} days"
+    },
+    "hoursShort": "h",
+    "days_one": "day",
+    "days_other": "days",
+    "chaptersShort_one": "{{count}} ch",
+    "chaptersShort_other": "{{count}} ch",
+    "noneInRange": "Nothing read in this period.",
+    "activity": {
+      "chapters": {
+        "day": "Chapters read per day",
+        "month": "Chapters read per month"
+      },
+      "time": {
+        "day": "Reading time per day",
+        "month": "Reading time per month"
+      },
+      "metric": "Measure",
+      "metrics": {
+        "chapters": "Chapters",
+        "time": "Hours"
+      },
+      "table": "Show as a table",
+      "period": {
+        "day": "Day",
+        "month": "Month"
+      }
+    },
+    "genres": {
+      "title": "Top genres",
+      "description": "Genres of the chapters you read",
+      "other_one": "{{count}} chapter in other genres",
+      "other_other": "{{count}} chapters in other genres"
+    },
+    "top": {
+      "title": "Most read",
+      "description": "By reading time"
+    },
+    "sources": {
+      "title": "Sources",
+      "description": "Where the chapters you read come from",
+      "other": "Other",
+      "read_one": "{{count}} chapter read",
+      "read_other": "{{count}} chapters read"
+    },
+    "minutesShort": "min"
   }
 }

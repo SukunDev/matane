@@ -39,6 +39,8 @@ import {
   sourceCapabilitiesSchema,
   sourceEntrySchema,
   sourceIdSchema,
+  statsOverviewSchema,
+  STATS_RANGES,
 } from '../models';
 import type { DbChangeTag } from '../models';
 import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
@@ -53,6 +55,8 @@ const appInfoSchema = z.object({
   chrome: z.string(),
   node: z.string(),
   platform: z.string(),
+  /** Discord Rich Presence can be offered (a Discord application id is set). */
+  discord: z.boolean(),
 });
 export type AppInfo = z.infer<typeof appInfoSchema>;
 
@@ -64,12 +68,16 @@ const preferencesSchema = z.object({
   values: z.record(z.string(), z.unknown()),
 });
 const idSchema = z.number().int().positive();
+const pageSizeSchema = z.object({ width: z.number().int().positive(), height: z.number().int().positive() });
 
 /** Renderer → main request/response channels. Inputs are validated in main. */
 export const invokeContract = {
   'app.getInfo': invoke(z.void(), appInfoSchema),
   'app.getLocale': invoke(z.void(), z.string()),
   /** Whether the network is up (main watches it; changes arrive on `app.online`). */
+  /** The running version and whether its release notes were seen (What's new, §6.6). */
+  'app.whatsNew': invoke(z.void(), z.object({ version: z.string(), seen: z.boolean() })),
+  'app.whatsNewSeen': invoke(z.void(), z.void()),
   'app.isOnline': invoke(z.void(), z.boolean()),
   /** Whether a system tray is there (some Linux desktops have none), and why not. */
   'app.tray': invoke(z.void(), z.object({ available: z.boolean(), reason: z.string().nullable() })),
@@ -186,6 +194,26 @@ export const invokeContract = {
     z.object({ chapterId: idSchema, requestId: requestIdSchema }),
     z.object({ pages: pagesSchema, fromCache: z.boolean() }),
   ),
+  /**
+   * Readies a page for the reader: fetched (or read from the download), measured and, with `crop`,
+   * cropped. Returns its size as shown, so the page is laid out before the image loads.
+   */
+  'reader.preparePage': invoke(
+    z.object({ chapterId: idSchema, index: z.number().int().nonnegative(), crop: z.boolean() }),
+    pageSizeSchema,
+  ),
+  /** Sizes already known for a chapter's pages (no network), shown size with or without crop. */
+  'reader.pageSizes': invoke(
+    z.object({ chapterId: idSchema, crop: z.boolean() }),
+    z.array(pageSizeSchema.extend({ index: z.number().int().nonnegative() })),
+  ),
+  /** "Save image…": the page as the source sent it, to a file picked in a dialog (null = cancelled). */
+  'reader.savePage': invoke(
+    z.object({ chapterId: idSchema, index: z.number().int().nonnegative() }),
+    z.string().nullable(),
+  ),
+  /** "Copy image": the page to the clipboard (as PNG). */
+  'reader.copyPage': invoke(z.object({ chapterId: idSchema, index: z.number().int().nonnegative() }), z.void()),
   'requests.cancel': invoke(z.object({ requestId: z.string() }), z.void()),
 
   /**
@@ -221,6 +249,30 @@ export const invokeContract = {
   ),
   'history.remove': invoke(z.object({ mangaId: idSchema }), z.void()),
   'history.clear': invoke(z.void(), z.void()),
+  'stats.overview': invoke(z.object({ range: z.enum(STATS_RANGES) }), statsOverviewSchema),
+  /** Forgets every reading session (Settings → Data); progress and history stay. */
+  'stats.clear': invoke(z.void(), z.void()),
+  /** The browser User-Agent sources get by default, and whether a proxy password is stored. */
+  'network.info': invoke(
+    z.void(),
+    z.object({ defaultUserAgent: z.string(), hasProxyPassword: z.boolean(), passwordEncrypted: z.boolean() }),
+  ),
+  /**
+   * Stores the proxy password (null removes it), encrypted where the system has a keyring; it never
+   * comes back to the renderer.
+   */
+  'network.setProxyPassword': invoke(z.object({ password: z.string().max(500).nullable() }), z.void()),
+  /** Loads a known page through the app's network settings (DNS-over-HTTPS, proxy). */
+  'network.test': invoke(
+    z.void(),
+    z.object({
+      url: z.string(),
+      ok: z.boolean(),
+      status: z.number().nullable(),
+      ms: z.number(),
+      error: z.string().nullable(),
+    }),
+  ),
 
   'library.list': invoke(
     z.object({

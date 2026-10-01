@@ -33,11 +33,14 @@ async function start(
       XDG_CONFIG_HOME: join(home, 'config'),
       ELECTRON_ENABLE_LOGGING: '1',
       MATANE_E2E: '1',
+      // A fresh profile would open the first-run setup; onboarding.spec.ts turns it back on.
+      MATANE_E2E_NO_ONBOARDING: '1',
       ...extraEnv,
     },
   });
   const page = await app.firstWindow();
-  await page.waitForSelector('aside');
+  // The app shell, or the first-run setup on a new profile that does not skip it.
+  await page.waitForSelector('aside, [data-testid="onboarding"]');
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0]?.setSize(1280, 860));
   return { app, page };
 }
@@ -98,6 +101,19 @@ export function writeSetting(home: string, key: string, value: unknown): void {
   const script = `const Database = require(${JSON.stringify(sqlite)});
     const db = new Database(${JSON.stringify(db)});
     db.prepare("INSERT INTO settings (key, value_json) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json").run(${JSON.stringify(key)}, ${JSON.stringify(JSON.stringify(value))});
+    db.close();`;
+  execFileSync(electronPath as unknown as string, ['-e', script], {
+    env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
+  });
+}
+
+/** Removes a setting from the database of a closed app (as if an older version never wrote it). */
+export function deleteSetting(home: string, key: string): void {
+  const sqlite = require.resolve('better-sqlite3', { paths: [resolve(__dirname, '../..')] });
+  const db = join(home, 'config', 'Matane', 'data.db');
+  const script = `const Database = require(${JSON.stringify(sqlite)});
+    const db = new Database(${JSON.stringify(db)});
+    db.prepare("DELETE FROM settings WHERE key = ?").run(${JSON.stringify(key)});
     db.close();`;
   execFileSync(electronPath as unknown as string, ['-e', script], {
     env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },

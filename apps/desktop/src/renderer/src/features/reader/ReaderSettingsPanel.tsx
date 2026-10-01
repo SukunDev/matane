@@ -9,6 +9,7 @@ import {
 import { BookMarked, RotateCcw, Save, SlidersHorizontal, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from '@tanstack/react-router';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
 import type { ResolvedMode } from './navigation';
@@ -47,6 +48,33 @@ function Segmented<T extends string>({
         ))}
       </div>
     </fieldset>
+  );
+}
+
+function Toggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between gap-3 rounded-lg border border-ctp-surface1 bg-ctp-crust/60 p-3">
+      <span>
+        <span className="block text-sm">{label}</span>
+        <span className="text-xs text-ctp-subtext0">{hint}</span>
+      </span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="size-4 accent-(--app-accent)"
+      />
+    </label>
   );
 }
 
@@ -151,18 +179,26 @@ export function ReaderSettingsPanel({
           </>
         )}
         {mode === 'double' && (
-          <label className="flex items-center justify-between gap-3 rounded-lg border border-ctp-surface1 bg-ctp-crust/60 p-3">
-            <span>
-              <span className="block text-sm">{t('reader.settings.shift')}</span>
-              <span className="text-xs text-ctp-subtext0">{t('reader.settings.shiftHint')}</span>
-            </span>
-            <input
-              type="checkbox"
-              checked={settings.shiftDouble}
-              onChange={(event) => onChange({ shiftDouble: event.target.checked })}
-              className="size-4 accent-(--app-accent)"
-            />
-          </label>
+          <Toggle
+            label={t('reader.settings.shift')}
+            hint={t('reader.settings.shiftHint')}
+            checked={settings.shiftDouble}
+            onChange={(value) => onChange({ shiftDouble: value })}
+          />
+        )}
+        <Toggle
+          label={t('reader.settings.cropBorders')}
+          hint={t('reader.settings.cropBordersHint')}
+          checked={settings.cropBorders}
+          onChange={(value) => onChange({ cropBorders: value })}
+        />
+        {!paged && (
+          <Toggle
+            label={t('reader.settings.splitTall')}
+            hint={t('reader.settings.splitTallHint')}
+            checked={settings.splitTall}
+            onChange={(value) => onChange({ splitTall: value })}
+          />
         )}
         {!paged && (
           <Range
@@ -200,6 +236,59 @@ export function ReaderSettingsPanel({
           onChange={(value) => onChange({ background: value })}
           render={(value) => t(`reader.settings.backgrounds.${value}`)}
         />
+        {settings.background === 'custom' && (
+          <label className="flex items-center justify-between gap-3 rounded-lg border border-ctp-surface1 bg-ctp-crust/60 p-3 text-sm">
+            {t('settings.reader.backgroundColor')}
+            <input
+              type="color"
+              value={settings.backgroundColor}
+              onChange={(event) => onChange({ backgroundColor: event.target.value })}
+              className="h-7 w-10 cursor-pointer rounded border-0 bg-transparent"
+            />
+          </label>
+        )}
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-2 text-[11px] font-semibold tracking-wider text-ctp-subtext0 uppercase">
+            {t('settings.reader.display')}
+          </legend>
+          <Range
+            label={t('settings.reader.brightness')}
+            value={settings.filters.brightness}
+            min={30}
+            max={150}
+            step={5}
+            unit="%"
+            onChange={(value) => onChange({ filters: { ...settings.filters, brightness: value } })}
+          />
+          <Range
+            label={t('settings.reader.warm')}
+            value={settings.filters.warm}
+            min={0}
+            max={100}
+            step={5}
+            unit="%"
+            onChange={(value) => onChange({ filters: { ...settings.filters, warm: value } })}
+          />
+          <Toggle
+            label={t('settings.reader.grayscale')}
+            hint={t('settings.reader.grayscaleHint')}
+            checked={settings.filters.grayscale}
+            onChange={(value) => onChange({ filters: { ...settings.filters, grayscale: value } })}
+          />
+          <Toggle
+            label={t('settings.reader.invertColors')}
+            hint={t('settings.reader.invertColorsHint')}
+            checked={settings.filters.invert}
+            onChange={(value) => onChange({ filters: { ...settings.filters, invert: value } })}
+          />
+        </fieldset>
+        <Link
+          to="/settings/$section"
+          params={{ section: 'reader' }}
+          className="self-start text-xs font-medium text-primary hover:underline"
+        >
+          {t('reader.settings.allSettings')}
+        </Link>
       </div>
       {/* Mockup 03: "Save as default for this manga" · "Reset". */}
       <footer className="mt-auto flex flex-col gap-2 border-t border-ctp-surface1 px-4 py-3">

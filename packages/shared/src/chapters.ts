@@ -1,20 +1,29 @@
-// Chapter navigation shared by main (continue reading) and the reader. Zod-free, types only.
+// Chapter navigation shared by main (continue reading) and the reader.
 import type { ChapterInfo, MangaInfo, ScanlatorPrefs } from './models';
-import type { ReaderSettings } from './settings';
+import { DEFAULT_TYPE_DEFAULTS, type ReaderSettings, type ReaderTypeDefaults } from './settings';
 
 export type ResolvedMode = Exclude<ReaderSettings['mode'], 'auto'>;
 export type ResolvedDirection = Exclude<ReaderSettings['direction'], 'auto'>;
 
-/** "auto": long-strip formats (manhwa/manhua) read as webtoon, everything else page by page. */
-export function resolveMode(mode: ReaderSettings['mode'], type: MangaInfo['type']): ResolvedMode {
-  if (mode !== 'auto') return mode;
-  return type === 'manhwa' || type === 'manhua' ? 'webtoon' : 'single';
+/** The type whose defaults apply: a manga without a known type counts as "other". */
+const typeKey = (type: MangaInfo['type']) => type ?? 'other';
+
+/** "auto" takes the manga type's default (by default manhwa/manhua as webtoon, the rest page by page). */
+export function resolveMode(
+  mode: ReaderSettings['mode'],
+  type: MangaInfo['type'],
+  typeDefaults: ReaderTypeDefaults = DEFAULT_TYPE_DEFAULTS,
+): ResolvedMode {
+  return mode !== 'auto' ? mode : typeDefaults[typeKey(type)].mode;
 }
 
-/** "auto": Japanese manga right-to-left, everything else left-to-right. */
-export function resolveDirection(direction: ReaderSettings['direction'], type: MangaInfo['type']): ResolvedDirection {
-  if (direction !== 'auto') return direction;
-  return type === 'manga' ? 'rtl' : 'ltr';
+/** "auto" takes the manga type's default (by default Japanese manga right-to-left, the rest left-to-right). */
+export function resolveDirection(
+  direction: ReaderSettings['direction'],
+  type: MangaInfo['type'],
+  typeDefaults: ReaderTypeDefaults = DEFAULT_TYPE_DEFAULTS,
+): ResolvedDirection {
+  return direction !== 'auto' ? direction : typeDefaults[typeKey(type)].direction;
 }
 
 export const NO_SCANLATOR_PREFS: ScanlatorPrefs = { hidden: [], priority: [] };

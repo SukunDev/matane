@@ -44,8 +44,17 @@ test('by default only the UI language and English show', async () => {
   await goto('#/browse/sources');
   await expect(sourceLink('e2e-demo').first()).toBeVisible();
   await expect(sourceLink('e2e-mirror')).toHaveCount(0);
-  // Hidden: the Indonesian MangaDex and mirror sources, and the adult one.
-  await expect(page.getByTestId('hidden-by-content')).toContainText('3 sources hidden by your content settings.');
+  // Hidden: the adult source and every non-English one (the mirror, and built-in ones such as the
+  // Indonesian MangaDex), counted from the list so new built-in extensions don't break the test.
+  const hidden = await page.evaluate(async () =>
+    (await window.api.invoke('sources.list')).filter(
+      (s) => s.installed && (s.nsfw || !['en', 'all', 'multi', 'other'].includes(s.lang.split('-')[0]!)),
+    ),
+  );
+  expect(hidden.map((s) => s.id)).toEqual(expect.arrayContaining(['e2e-adult/nsfw', 'e2e-mirror/id', 'mangadex/id']));
+  await expect(page.getByTestId('hidden-by-content')).toContainText(
+    `${hidden.length} sources hidden by your content settings.`,
+  );
 
   await goto('#/browse/extensions');
   await page.getByRole('tab', { name: /^Available/ }).click();

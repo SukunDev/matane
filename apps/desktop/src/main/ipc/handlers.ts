@@ -1,8 +1,9 @@
-import { mkdir } from 'node:fs/promises';
-import { isAbsolute, resolve } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { isAbsolute, join, resolve } from 'node:path';
 import { AppError } from '@manga-reader/shared/errors';
 import { toChapterInfo } from '../db/repositories/chapters';
-import { BrowserWindow, app, dialog, shell } from 'electron';
+import { BrowserWindow, ClipboardItem, app, clipboard, dialog, shell } from 'electron';
+import { pageFileName, toPng } from '../images/page-file';
 import type { SettingsRepository } from '../db/repositories/settings';
 import type { ChaptersRepository } from '../db/repositories/chapters';
 import type { CategoriesRepository } from '../db/repositories/categories';
@@ -25,6 +26,9 @@ import type { OnlineMonitor } from '../app/online';
 import type { AppUpdater } from '../app/updater';
 import type { TraySupport } from '../app/tray-support';
 import type { ImageCache } from '../images/cache';
+import type { ImageService } from '../images/service';
+import type { NetworkControl } from '../network/control';
+import type { StatsService } from '../stats/service';
 import type { AppSettings } from '@manga-reader/shared';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
@@ -55,9 +59,18 @@ export interface IpcDeps {
   updates: UpdateService;
   online: Pick<OnlineMonitor, 'isOnline'>;
   traySupport: () => TraySupport;
-  imageCache: Pick<ImageCache, 'bytesOf' | 'clear'>;
+  imageCache: Pick<ImageCache, 'bytesOf'>;
+  images: Pick<ImageService, 'preparePage' | 'pageSizes' | 'pageBytes' | 'clearCache'>;
   paths: { data: string; logs: string };
   updater: AppUpdater;
+  /** What's new: the running version and whether its notes were seen (§6.6). */
+  whatsNew: { get(): { version: string; seen: boolean }; markSeen(): void };
+  stats: Pick<StatsService, 'overview' | 'clear'>;
+  networkControl: Pick<NetworkControl, 'info' | 'setProxyPassword' | 'test'>;
+  /** Discord Rich Presence can be offered. */
+  discord: boolean;
+  /** Told when the reader is in use and when it closes (Discord presence). */
+  readingActivity?: { heartbeat(chapterId: number): void; end(): void };
   /** After `settings.set`: tray, login item, cache size… follow. */
   settingsChanged: (patch: Partial<AppSettings>) => void;
 }
@@ -90,8 +103,14 @@ export function createIpcHandlers({
   online,
   traySupport,
   imageCache,
+  images,
   paths,
   updater,
+  whatsNew,
+  discord,
+  stats,
+  networkControl,
+  readingActivity,
   settingsChanged,
 }: IpcDeps): IpcHandlers {
   const existing = (mangaId: number) => {
@@ -109,7 +128,10 @@ export function createIpcHandlers({
       chrome: process.versions.chrome,
       node: process.versions.node,
       platform: process.platform,
+      discord,
     }),
+    'app.whatsNew': () => whatsNew.get(),
+    'app.whatsNewSeen': () => whatsNew.markSeen(),
     'app.getLocale': () => app.getLocale(),
     'app.isOnline': () => online.isOnline(),
     'app.tray': () => traySupport(),
@@ -124,7 +146,7 @@ export function createIpcHandlers({
       dataPath: paths.data,
       logPath: paths.logs,
     }),
-    'storage.clearCache': ({ kind }) => imageCache.clear(kind),
+    'storage.clearCache': ({ kind }) => images.clearCache(kind),
     'updater.status': () => updater.getStatus(),
     'updater.check': () => updater.check(),
     'updater.download': () => updater.download(),
@@ -226,16 +248,48 @@ export function createIpcHandlers({
     'chapter.pages': ({ chapterId, requestId }) =>
       requests.run(requestId, (signal) => sources.pages(chapterId, signal)),
     'requests.cancel': ({ requestId }) => requests.cancel(requestId),
+    'reader.preparePage': ({ chapterId, index, crop }) => images.preparePage(chapterId, index, crop),
+    'reader.pageSizes': ({ chapterId, crop }) => images.pageSizes(chapterId, crop),
+    'reader.savePage': async ({ chapterId, index }, event) => {
+      const chapter = chapters.get(chapterId);
+      const row = chapter && manga.get(chapter.mangaId);
+      if (!chapter || !row) throw new AppError('not_found', `Chapter ${chapterId} not found`);
+      const { bytes, contentType } = await images.pageBytes(chapterId, index);
+      const options: Electron.SaveDialogOptions = {
+        defaultPath: join(app.getPath('downloads'), pageFileName(row.title, chapter.name, index, contentType)),
+      };
+      const window = windowOf(event);
+      const picked = window ? await dialog.showSaveDialog(window, options) : await dialog.showSaveDialog(options);
+      if (picked.canceled || !picked.filePath) return null;
+      await writeFile(picked.filePath, bytes);
+      return picked.filePath;
+    },
+    'reader.copyPage': async ({ chapterId, index }) => {
+      const { bytes } = await images.pageBytes(chapterId, index);
+      const png = new Blob([new Uint8Array(await toPng(bytes))], { type: 'image/png' });
+      await clipboard.write([new ClipboardItem({ 'image/png': png })]);
+    },
 
     'progress.save': (input) => reading.saveProgress(input),
     'chapters.markRead': ({ chapterIds, read }) => reading.markRead(chapterIds, read),
     'chapters.markPreviousRead': ({ chapterId }) => reading.markPreviousRead(chapterId),
     'manga.continue': ({ mangaId }) => reading.continueTarget(mangaId),
-    'reading.heartbeat': ({ chapterId }) => reading.heartbeat(chapterId),
-    'reading.end': () => reading.endSession(),
+    'reading.heartbeat': ({ chapterId }) => {
+      reading.heartbeat(chapterId);
+      readingActivity?.heartbeat(chapterId);
+    },
+    'reading.end': () => {
+      reading.endSession();
+      readingActivity?.end();
+    },
     'history.list': (input) => history.list(input ?? {}),
     'history.remove': ({ mangaId }) => history.remove(mangaId),
     'history.clear': () => history.clear(),
+    'stats.overview': ({ range }) => stats.overview(range),
+    'stats.clear': () => stats.clear(),
+    'network.info': () => networkControl.info(),
+    'network.setProxyPassword': ({ password }) => networkControl.setProxyPassword(password),
+    'network.test': () => networkControl.test(),
 
     'library.list': (input) => libraryRepo.list(input),
     'library.counts': () => libraryRepo.counts(),

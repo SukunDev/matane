@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, lt, sql } from 'drizzle-orm';
 import type { AppDatabase } from '../db/client';
 import { type IMAGE_CACHE_KINDS, imageCache } from '../db/schema';
 
@@ -69,6 +69,16 @@ export class ImageCache {
   async delete(key: string): Promise<void> {
     const row = this.db.delete(imageCache).where(eq(imageCache.key, key)).returning().get();
     if (row) await rm(row.path, { force: true });
+  }
+
+  /** Removes every entry whose key starts with `prefix` (the variants of a page). */
+  async deletePrefix(prefix: string): Promise<void> {
+    const rows = this.db
+      .delete(imageCache)
+      .where(and(gte(imageCache.key, prefix), lt(imageCache.key, `${prefix}\uffff`)))
+      .returning()
+      .all();
+    for (const row of rows) await rm(row.path, { force: true });
   }
 
   /** Bytes used by one kind of image (Settings → Data & storage). */

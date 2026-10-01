@@ -17,7 +17,7 @@ const menuItem =
   'flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none select-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent [&_svg]:size-4';
 
 /** Offered even before any extension uses them. */
-const COMMON_LANGUAGES = [
+export const COMMON_LANGUAGES = [
   'en',
   'id',
   'ja',

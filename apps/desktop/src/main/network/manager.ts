@@ -26,24 +26,66 @@ interface NetworkEntry {
  */
 export class NetworkManager implements ExtensionNetwork {
   private readonly entries = new Map<string, NetworkEntry>();
-  readonly userAgent = browserUserAgent(session.defaultSession.getUserAgent());
+  /** Sessions handed out, each with the proxy being applied to it (Settings → Network). */
+  private readonly sessions = new Map<string, { session: Session; proxy: Promise<void> }>();
+  private proxy: Electron.ProxyConfig | null = null;
+  /** The browser User-Agent without Electron's tokens; `setUserAgent` can replace it. */
+  readonly defaultUserAgent = browserUserAgent(session.defaultSession.getUserAgent());
+  private customUserAgent: string | null = null;
 
   constructor(private readonly solver: CloudflareSolver) {}
 
-  request(manifest: ExtensionManifest, request: HttpRequest): Promise<HttpResponse> {
-    return this.entry(manifest).fetcher.request(request);
+  get userAgent(): string {
+    return this.customUserAgent ?? this.defaultUserAgent;
+  }
+
+  async request(manifest: ExtensionManifest, request: HttpRequest): Promise<HttpResponse> {
+    const entry = this.entry(manifest);
+    await this.proxyReady(manifest.id);
+    return entry.fetcher.request(request);
   }
 
   /** Image fetch through the extension's session and allowlist, with its own rate bucket. */
   async fetchImage(manifest: ExtensionManifest, url: string, headers: Record<string, string>): Promise<Response> {
-    const { response } = await this.entry(manifest).images.fetchRaw({ url, headers });
+    const entry = this.entry(manifest);
+    await this.proxyReady(manifest.id);
+    const { response } = await entry.images.fetchRaw({ url, headers });
     return response;
   }
 
   sessionFor(extensionId: string): Session {
     const ses = session.fromPartition(`persist:ext-${extensionId}`);
     ses.setUserAgent(this.userAgent);
+    if (!this.sessions.has(extensionId)) {
+      this.sessions.set(extensionId, {
+        session: ses,
+        proxy: this.proxy ? ses.setProxy(this.proxy) : Promise.resolve(),
+      });
+    }
     return ses;
+  }
+
+  /** The proxy for every extension session, now and later ones. */
+  async setProxy(config: Electron.ProxyConfig): Promise<void> {
+    this.proxy = config;
+    for (const entry of this.sessions.values()) {
+      entry.proxy = entry.session.setProxy(config);
+      // Open connections would keep using the old route.
+      await entry.proxy;
+      await entry.session.closeAllConnections();
+    }
+  }
+
+  /** A global User-Agent instead of the browser's (null = back to it); extensions' own still win. */
+  setUserAgent(userAgent: string | null): void {
+    if (userAgent === this.customUserAgent) return;
+    this.customUserAgent = userAgent;
+    this.entries.clear();
+    for (const { session: ses } of this.sessions.values()) ses.setUserAgent(this.userAgent);
+  }
+
+  private proxyReady(extensionId: string): Promise<void> {
+    return this.sessions.get(extensionId)?.proxy ?? Promise.resolve();
   }
 
   /** Opens the challenge visibly (the user pressed "Verify"). */
