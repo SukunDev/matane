@@ -24,7 +24,7 @@ pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm e2e
 
 ## Extensions
 
-Source requests and extension code belong in the extension repository (Phase 4). To write one, see the [extension guide](https://sukundev.github.io/matane/extensions/) (source in `apps/docs/extensions/`). The documentation site is `apps/docs` (VitePress: `pnpm --filter @manga-reader/docs dev`).
+Source requests and extension code belong in the extension repository, [matane-extensions](https://github.com/SukunDev/matane-extensions). To write one, see the [extension guide](https://sukundev.github.io/matane/extensions/) (source in `apps/docs/extensions/`). The documentation site is `apps/docs` (VitePress: `pnpm --filter @manga-reader/docs dev`).
 
 ## Releases
 
@@ -32,4 +32,4 @@ Maintainers tag `vX.Y.Z` (or `vX.Y.Z-beta.N`); `.github/workflows/release.yml` b
 
 ## License
 
-By contributing you agree that your contribution is licensed like the part of the repository it touches: GPL-3.0 for the app, MIT for `packages/extension-*` and the built-in extensions.
+By contributing you agree that your contribution is licensed like the part of the repository it touches: GPL-3.0 for the app, MIT for `packages/extension-*`.

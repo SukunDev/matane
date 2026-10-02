@@ -38,7 +38,12 @@ jobs:
         env:
           MR_REPO_KEY: ${{ secrets.MR_REPO_KEY }}
       - name: Verify against the key built into the app
-        run: pnpm exec mr-ext repo verify public --public-key "$PUBLIC_KEY"
+        run: |
+          if [ -z "$PUBLIC_KEY" ]; then
+            echo "::error::The MR_REPO_PUBLIC_KEY variable is empty: add it under Settings → Secrets and variables → Actions → Variables (not Secrets)."
+            exit 1
+          fi
+          pnpm exec mr-ext repo verify public --public-key "$PUBLIC_KEY"
         env:
           PUBLIC_KEY: ${{ vars.MR_REPO_PUBLIC_KEY }}
       - uses: actions/configure-pages@v5

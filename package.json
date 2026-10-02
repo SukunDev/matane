@@ -18,16 +18,16 @@
     }
   },
   "scripts": {
-    "dev": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dev",
+    "dev": "pnpm --filter @manga-reader/desktop dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint . --cache",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "pnpm -r test",
-    "e2e": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop e2e",
-    "dist": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dist",
-    "dist:linux": "pnpm --filter './extensions/*' build && pnpm --filter @manga-reader/desktop dist:linux"
+    "e2e": "pnpm --filter @manga-reader/desktop e2e",
+    "dist": "pnpm --filter @manga-reader/desktop dist",
+    "dist:linux": "pnpm --filter @manga-reader/desktop dist:linux"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

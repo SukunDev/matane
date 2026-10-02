@@ -18,13 +18,7 @@ asarUnpack:
   # sharp loads its native addon and libvips from @img/sharp-<platform> packages (ADR 0024).
   - '**/node_modules/sharp/**'
   - '**/node_modules/@img/**'
-# Built-in extensions (their built bundles), read from resources/extensions.
-extraResources:
-  - from: ../../extensions
-    to: extensions
-    filter:
-      - '*/dist/**'
-      - '*/LICENSE'
+# No built-in extensions: sources come from the official repository (docs/matane-extensions/).
 icon: resources/icon.png
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 linux:

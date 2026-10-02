@@ -16,3 +16,10 @@ Until Phase 4 extensions were either built into the app or loaded from a folder 
 ## Consequences
 - An install needs the archive in memory (at most 20 MB), which keeps verification simple.
 - The official repository and moving MangaDex out of the app follow in Phase 4e.
+
+## Update (Milestone 4f, 2 Oct 2026)
+- The official repository is live: `https://sukundev.github.io/matane-extensions/`, signed by `ed25519:MorWEtba9PuogLbiYZR/HVUVn+KpY3zsNq8nzqyhAbw=` (`main/extensions/official.ts`). Its sources are github.com/SukunDev/matane-extensions.
+- The app ships no built-in extension anymore (`extensions/` left the repository, and so did `extraResources`). The `builtin` origin stays in the registry, which reads an absent folder as empty: it is the way back if an extension ever has to ship with the app again.
+- Users of 0.1 with the built-in MangaDex get it from the official repository by the handoff; their library, progress, preferences and storage stay (same id).
+- End-to-end tests never reach the real repository: with `MATANE_E2E` the official URL is only the test's own.
+

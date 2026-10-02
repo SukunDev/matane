@@ -2,7 +2,7 @@
 
 Panduan untuk menyiapkan **repo extension resmi** Matane: repo GitHub terpisah yang membangun, menandatangani, dan menerbitkan extension (mulai dari MangaDex) ke GitHub Pages, lalu dipasang pengguna dari halaman Extensions di app.
 
-> **Strategi rilis (2 Okt 2026):** GitHub dulu; npm, AUR, Flathub ditunda sampai app lengkap. Ikuti [`langkah-pemisahan.md`](langkah-pemisahan.md).
+> **Status (2 Okt 2026):** repo resmi hidup di https://sukundev.github.io/matane-extensions/ dan SDK ada di npm. AUR dan Flathub ditunda sampai app lengkap. Ikuti [`langkah-pemisahan.md`](langkah-pemisahan.md).
 >
 > **Status:** ditunda sampai semua fase app selesai (keputusan 29 Sep 2026). Semua kode di sisi app sudah siap: format repo, tanda tangan ed25519, `mr-ext repo`, pasang/update/hapus, `transformImage`, dan `migrateUrl` (Fase 4a–4d). Yang belum ada hanya hal-hal di luar kode: akun, kunci, dan repo itu sendiri.
 

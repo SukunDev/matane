@@ -16,7 +16,7 @@ Updates appear on the same page; **Update all** installs them. Settings → Brow
 
 ## Repositories
 
-Add a repository by its URL (Extensions → Repositories). Every repository index is **signed**:
+The official repository (`https://sukundev.github.io/matane-extensions/`) is added by itself. Add others by their URL (Extensions → Repositories). Every repository index is **signed**:
 
 - **Official:** signed with the key built into Matane.
 - **Trusted:** signed with a key you chose to trust when adding it.

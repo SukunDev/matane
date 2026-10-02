@@ -523,3 +523,27 @@ Beda dari rencana:
 
 Catatan:
 - `node_modules/.bin/npm` tidak ada di PATH lingkungan ini (pnpm-only). Uji npm memakai npm 11.19 dari instalasi nvm lain, dengan Node 24 proyek.
+
+### Milestone 4f: selesai (2 Okt 2026), menunggu review
+
+Dikerjakan mengikuti [`docs/matane-extensions/langkah-pemisahan.md`](../matane-extensions/langkah-pemisahan.md). Strategi rilis: app hanya di GitHub dulu; SDK di npm.
+
+- **Repo resmi:** `SukunDev/matane-extensions`, terbit di `https://sukundev.github.io/matane-extensions/`.
+  - Isinya 4 extension: mangadex, westmanga, ainzscansid, aarlas.
+  - `mr-ext repo verify` terhadap kunci `ed25519:MorWEtba…Abw=` lolos.
+  - Workflow Publish memverifikasi dengan kunci yang sama. Kunci itu tertulis di workflow sebagai cadangan, karena variable `MR_REPO_PUBLIC_KEY` tidak terbaca job.
+- **SDK di npm:** `@matane/extension-{sdk,runtime,cli}` 0.1.0 (tag `sdk-v0.1.0`). Token npm butuh "Bypass 2FA".
+- **App:**
+  - `official.ts` berisi kunci dan URL resmi. Dalam mode `MATANE_E2E`, URL hanya diambil dari `MATANE_E2E_OFFICIAL_REPO`, sehingga E2E tidak pernah menyentuh repo asli. Unit test baru: `official.test.ts`.
+  - `extensions/` dihapus dari repo matane, beserta `extraResources`, build extension di skrip root, `release.yml`, dan workspace pnpm.
+  - Asal `builtin` tetap ada di registry; folder yang tidak ada dibaca sebagai kosong (ADR 0023).
+- **Test:**
+  - lint 0 error (7 warning lama), `format:check`, `typecheck`, dan `test` hijau (desktop 283);
+  - E2E: `content.spec` disesuaikan (tidak ada lagi MangaDex bawaan), dan spec yang terdampak hijau.
+- **Live check** (app hasil build, profil scratch):
+  - Profil baru: repo resmi ditambahkan sendiri dan tersinkron (official, 4 extension). MangaDex dan WestManga dipasang dari repo dengan status "Official · Verified". WestManga menampilkan 20 manga; MangaDex menampilkan 24 manga dengan DoH Cloudflare (DNS ISP di jaringan ini memblokir MangaDex).
+  - Handoff: profil dengan MangaDex "bawaan" (disimulasikan dengan folder yang lalu dihapus) dan satu manga di library dengan chapter terbaca. Setelah "update", MangaDex terpasang dari repo resmi, library dan status baca utuh, dan tidak ada handoff tertunda.
+- **Dokumentasi:** README, CHANGELOG (0.2.0-beta.1), CONTRIBUTING, situs dokumentasi (panduan extension: SDK dari npm, kontribusi ke matane-extensions), ADR 0013 dan 0023, `BRAINSTORM.md` §11.
+- Catatan:
+  - Handoff diuji dengan simulasi. Uji dengan salinan profil `0.1.0-beta.1` asli dilakukan di 5g.
+  - Submit AUR/Flathub ditunda sampai rilis global.

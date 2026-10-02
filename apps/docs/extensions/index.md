@@ -2,7 +2,7 @@
 
 > Extension API version **1**. Users install extensions from signed repositories (Extensions → Repositories), developers load them from a folder.
 >
-> **Not on npm yet:** the `@matane/*` packages are ready (`pnpm pack` builds them) but are published together with the official repository, after the app's remaining phases ([Milestone 4f](https://github.com/SukunDev/matane/blob/main/docs/plans/fase-4-ekosistem-extension.md)). Until then, develop inside this repository (`extensions/<id>`, with `--layout workspace`).
+> The SDK, runtime and CLI are on npm (`@matane/extension-*`). Official extensions live in [matane-extensions](https://github.com/SukunDev/matane-extensions); contributions go there.
 
 An extension is a small JavaScript bundle plus a `manifest.json`. It turns a website into one or more **sources**: lists of manga, details, chapters and page images. Extensions run in a **QuickJS sandbox** (ADR 0003): no Node.js, no `fetch`, no DOM. Everything that touches the outside world goes through a few host APIs (`http`, `html`, `storage`, …) that the app controls.
 
@@ -20,10 +20,10 @@ npx mr-ext build                 # → dist/index.js + dist/manifest.json
 npx mr-ext test                  # popular → details → chapters → pages → first image, against the real site
 ```
 
-Inside this repository (or a workspace such as matane-extensions), pick the layout that matches: `--layout workspace` here (dependencies `workspace:*`), `--layout catalog` in matane-extensions (versions from the workspace catalog). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
+Inside a pnpm workspace, pick the layout that matches: `--layout catalog` in matane-extensions (versions from the workspace catalog), `--layout workspace` next to the SDK sources in the matane repository (dependencies `workspace:*`). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
 
 ```sh
-pnpm exec mr-ext create my-site --domain example.com --lang en --dir extensions --layout workspace
+pnpm exec mr-ext create my-site --domain example.com --lang en --dir extensions --layout catalog
 pnpm install && pnpm --filter my-site exec mr-ext build
 ```
 
@@ -196,7 +196,7 @@ QuickJS is roughly 50× slower than V8 on tight loops, so keep heavy work (HTML 
 ## Testing
 
 - `mr-ext test [dir]`: runs the reading flow against the real site and prints a summary. Options: `-s <source>`, `-q <query>`, `-u <web url>` (tests `resolveUrl`), `--pref key=value`, `--filter id=value`, `--no-image`, `--out <dir>` (where a page restored by `transformImage` is written), `-v` (every request).
-- **Fixture tests** (what CI runs): use `createFixtureHost` from `@matane/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. See [`extensions/mangadex/test/`](https://github.com/SukunDev/matane/tree/main/extensions/mangadex/test).
+- **Fixture tests** (what CI runs): use `createFixtureHost` from `@matane/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. See [`extensions/mangadex/test/`](https://github.com/SukunDev/matane-extensions/tree/main/extensions/mangadex/test) in matane-extensions.
 - `mr-ext bench [dir]`: call times (sandbox vs network), heap after each call, and synthetic worst cases. `--fixtures <dir> --manga <url>` makes it repeatable offline.
 
 Ready to share it? See [Publishing a repository](./repository).

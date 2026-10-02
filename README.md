@@ -33,10 +33,10 @@ Your data lives in the app data folder (`~/.config/Matane`, `%APPDATA%\Matane`, 
 Phases 0–4 are done (the official extension repository goes live later, see below):
 
 - **Foundation:** Electron shell with the Catppuccin UI, typed IPC and SQLite.
-- **Extensions & reading:** the QuickJS extension sandbox with MangaDex built in; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
+- **Extensions & reading:** the QuickJS extension sandbox; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
 - **Library & progress:** library with categories, sort/filter, full-text search, multi-select and permanent/custom covers; reading progress and "continue reading"; history with an incognito mode; chapter bookmarks; per-manga reader settings and scanlator preferences; global search and source migration.
 - **Downloads & updates:** CBZ/folder downloads with a managed queue, download ahead, delete after reading and a size limit; the library update checker with the Updates page, notifications and auto-download; tray, start at login, offline mode; installers with auto-update.
-- **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. The official repository and the SDK on npm are prepared and launch after the remaining phases ([`docs/matane-extensions/`](docs/matane-extensions/README.md)); until then MangaDex stays built in.
+- **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. The [official repository](https://github.com/SukunDev/matane-extensions) (MangaDex, WestManga, Ainz Scans ID, Aarlas) is added by itself, and the SDK is on npm (`@matane/extension-sdk`, `-cli`, `-runtime`).
 
 See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the phase plans in [`docs/plans/`](docs/plans), the [changelog](CHANGELOG.md) and the [architecture decisions](docs/adr/README.md). Next: polish and v1.0 (Phase 5).
 
@@ -66,7 +66,6 @@ packages/shared/       Domain types and the typed IPC contract
 packages/extension-sdk/      Extension author SDK (MIT)
 packages/extension-runtime/  QuickJS sandbox host (MIT)
 packages/extension-cli/      mr-ext: create, build, test, bench and publish extensions (MIT)
-extensions/mangadex/   Built-in MangaDex extension
 apps/docs/             Documentation site (VitePress): user guide and extension guide
 docs/matane-extensions/  How to set up the official extension repository (with templates)
 docs/adr/              Architecture decision records
@@ -75,4 +74,4 @@ docs/ui/               UI mockups (design source of truth)
 
 ## License
 
-[GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) and the built-in extensions are [MIT](packages/extension-sdk/LICENSE).
+[GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) are [MIT](packages/extension-sdk/LICENSE), like the extensions in [matane-extensions](https://github.com/SukunDev/matane-extensions).

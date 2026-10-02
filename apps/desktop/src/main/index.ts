@@ -106,7 +106,11 @@ if (!app.requestSingleInstanceLock()) {
   void bootstrap();
 }
 
-/** Built-in extensions: the repo's `extensions/*` in dev, `resources/extensions` when packaged. */
+/**
+ * Built-in extensions: none ship since the official repository went live (Milestone 4f), but the
+ * folder is still read (`resources/extensions` when packaged, `extensions/` at the repo root in
+ * development) as a way back (ADR 0023).
+ */
 function builtinExtensionsDir(): string {
   return app.isPackaged ? join(process.resourcesPath, 'extensions') : join(app.getAppPath(), '../../extensions');
 }

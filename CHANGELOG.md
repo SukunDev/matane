@@ -4,7 +4,7 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 
 ## 0.2.0-beta.1 — unreleased
 
-Phase 4: the extension ecosystem. The official extension repository and the SDK on npm are prepared and launch later; until then MangaDex stays built in.
+Phase 4: the extension ecosystem. Sources now come from the official extension repository ([SukunDev/matane-extensions](https://github.com/SukunDev/matane-extensions)), added by itself; nothing is built into the app anymore.
 
 ### Extensions
 
@@ -16,13 +16,13 @@ Phase 4: the extension ecosystem. The official extension repository and the SDK 
 - A live log per extension (its own lines, every request and failed call), with level filter, copy and clear.
 - Sites that scramble or encrypt their images work: extensions describe how to restore a page (`transformImage`, with `crypto.aesDecrypt`), the app rebuilds it; restored pages are cached and downloaded as they are shown.
 - Extension updates can change how their links look without breaking the library, progress or downloads (`migrateUrl`).
-- Ready for the official repository: it will be added by itself, and extensions that came with the app move to it by themselves.
+- The official repository is added by itself and offers MangaDex, WestManga, Ainz Scans ID and Aarlas. Extensions that came with the app move to it by themselves ("handoff"): MangaDex from 0.1 keeps your library, progress and settings.
 
 ### For extension authors
 
 - `mr-ext repo keygen | build | verify`: reproducible, signed repositories for static hosting (GitHub Pages).
 - `mr-ext test` runs `transformImage` on the first page and writes the restored page to `.mr-ext/`; it also accepts built bundles. `mr-ext create --layout standalone | catalog | workspace`.
-- The packages are now `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli` (published to npm with the official repository).
+- The packages are now `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli`, published on npm.
 - Guides: `docs/extensions.md` and `docs/matane-extensions/` (setting up a repository, with templates for its workflows).
 
 ### Fixes

@@ -30,7 +30,7 @@ test.beforeAll(async () => {
   t = await launchApp();
   page = t.page;
   // Pinned sources are the default set for global search and migration; pinning the fake ones keeps
-  // the built-in MangaDex (real network) out.
+  // any other installed source (real network) out.
   for (const sourceId of ['e2e-demo/en', 'e2e-mirror/id', 'e2e-demo/broken']) {
     await api('sources.setPinned', { sourceId, pinned: true });
   }

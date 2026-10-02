@@ -1032,7 +1032,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - build macOS x64 memakai runner `macos-15-intel`.
 - Penutup: E2E alur penuh (download → situs mati → baca offline → chapter baru → Updates → auto-download), ADR 0019–0021, `CHANGELOG.md`, `SECURITY.md`, dan `CONTRIBUTING.md`.
 
-**Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026, kecuali peluncuran repo resmi (Milestone 4f, setelah Fase 5) → **0.2.0-beta.1** (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
+**Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026; Milestone 4f (repo resmi `SukunDev/matane-extensions` di GitHub Pages, SDK di npm, extension bawaan keluar dari app) selesai 2 Okt 2026 → **0.2.0-beta.1** (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
 - Repo extension (`index.json`), **signing ed25519**, install/update/uninstall + dialog izin domain, filter NSFW.
 - Mode dev: load dari folder, hot reload, panel log. `mr-ext repo`.
 - Repo extension terpisah + smoke test harian.

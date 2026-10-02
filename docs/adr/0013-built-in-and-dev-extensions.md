@@ -1,5 +1,7 @@
 # 13. Built-in extensions and extensions loaded from a folder
 
+> Built-in extensions are gone since Milestone 4f (ADR 0023, update of 2 Oct 2026): sources come from the official repository. Dev folders stay as described here.
+
 Status: Accepted (2026-09-23)
 
 ## Context

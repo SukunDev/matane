@@ -213,3 +213,16 @@ Yang bisa langsung kukerjakan sekarang tanpa menunggumu adalah bagian 🤖 di la
   - langkah 3 (kunci);
   - `git init`, lalu push (langkah 4, bagian 🧑);
   - langkah 2 (release SDK) bisa menyusul, karena `vendor/` sudah cukup untuk CI.
+
+### Langkah 2: selesai (2 Okt 2026)
+
+- `@matane/extension-sdk`, `-runtime`, dan `-cli` versi 0.1.0 terbit di npm lewat tag `sdk-v0.1.0`.
+  - Publish pertama gagal karena token tanpa bypass 2FA (`ERR_PNPM_OTP_NON_INTERACTIVE`).
+  - Diperbaiki dengan Granular Token yang mencentang "Bypass two-factor authentication".
+- `matane-extension` sekarang memakai npm: catalog `^0.1.0`, `overrides` dan `vendor/` dihapus. `install --frozen-lockfile`, `format:check`, `typecheck`, dan `test` (43) hijau, dan hash zip `repo:build:unsigned` sama seperti sebelumnya.
+- Opsional: pasang Trusted Publishing di ketiga paket, lalu hapus `NPM_TOKEN`.
+- Berikutnya: langkah 1 (repo GitHub `matane-extensions` + Pages) dan langkah 3 (kunci tanda tangan).
+
+### Langkah 1, 3–6: selesai (2 Okt 2026)
+
+Repo `SukunDev/matane-extensions` hidup di GitHub Pages, ditandatangani kunci resmi, dan app sudah tersambung. Rinciannya ada di [plan Fase 4, Milestone 4f](../plans/fase-4-ekosistem-extension.md). Berikutnya langkah 7: rilis beta di GitHub.
