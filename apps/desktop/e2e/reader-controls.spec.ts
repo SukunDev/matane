@@ -81,14 +81,19 @@ test('the new key turns pages, and the old ones still work', async () => {
 
 test('zooms the page with Ctrl+wheel and the keys, never the whole window', async () => {
   const box = page.locator('[data-zoom]');
-  const before = (await page.locator('img[data-page]').first().boundingBox())!;
+  const image = page.locator('img[data-page]').first();
+  // The page re-renders while zooming: measure once it is on screen, never a passing null.
+  let last: { x: number; y: number; width: number; height: number } | null = null;
+  const heightOf = async () => (last = await image.boundingBox())?.height ?? 0;
+  await expect.poll(heightOf).toBeGreaterThan(0);
+  const before = last!.height;
   await box.hover();
   await page.keyboard.down('Control');
   await page.mouse.wheel(0, -400);
   await page.keyboard.up('Control');
   await expect.poll(zoomOf).toBeGreaterThan(1.5);
-  const after = (await page.locator('img[data-page]').first().boundingBox())!;
-  expect(after.height).toBeGreaterThan(before.height * 1.4);
+  await expect.poll(heightOf).toBeGreaterThan(before * 1.4);
+  const after = last!;
   // The zoomed page is on screen, around the cursor, not pushed off somewhere in the bigger box.
   const view = (await box.boundingBox())!;
   expect(after.y).toBeLessThan(view.y + view.height);
