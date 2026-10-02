@@ -134,6 +134,11 @@ function Text({ text }: { text: string }) {
           </code>
         ) : part.kind === 'strong' ? (
           <strong key={i}>{part.text}</strong>
+        ) : part.kind === 'link' ? (
+          // Opens in the browser (the window's open handler).
+          <a key={i} href={part.href} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+            {part.text}
+          </a>
         ) : (
           part.text
         ),

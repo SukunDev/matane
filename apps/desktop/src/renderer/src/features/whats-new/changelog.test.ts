@@ -61,4 +61,13 @@ describe('inline', () => {
     ]);
     expect(inline('plain')).toEqual([{ kind: 'text', text: 'plain' }]);
   });
+
+  it('turns web links into links and leaves other brackets alone', () => {
+    expect(inline('See [the guide](https://example.org/guide) [sic] (x).')).toEqual([
+      { kind: 'text', text: 'See ' },
+      { kind: 'link', text: 'the guide', href: 'https://example.org/guide' },
+      { kind: 'text', text: ' [sic] (x).' },
+    ]);
+    expect(inline('[no](javascript:alert)')).toEqual([{ kind: 'text', text: '[no](javascript:alert)' }]);
+  });
 });

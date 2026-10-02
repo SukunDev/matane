@@ -2,7 +2,7 @@
 // they show offline. Sections are `## <version> — <date>` (the same format release.yml reads).
 
 export type Block = { kind: 'paragraph' | 'heading' | 'item'; text: string };
-export type Inline = { kind: 'text' | 'code' | 'strong'; text: string };
+export type Inline = { kind: 'text' | 'code' | 'strong'; text: string } | { kind: 'link'; text: string; href: string };
 
 export interface ReleaseNotes {
   version: string;
@@ -36,14 +36,16 @@ export function releaseNotes(markdown: string, version: string): ReleaseNotes | 
   return { version, date, blocks };
 }
 
-/** `code` and **bold** inside a line; everything else is plain text. */
+/** `code`, **bold** and [links](https://…) inside a line; everything else is plain text. */
 export function inline(text: string): Inline[] {
   const parts: Inline[] = [];
-  const pattern = /`([^`]+)`|\*\*([^*]+)\*\*/g;
+  const pattern = /`([^`]+)`|\*\*([^*]+)\*\*|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
   let at = 0;
   for (const match of text.matchAll(pattern)) {
     if (match.index > at) parts.push({ kind: 'text', text: text.slice(at, match.index) });
-    parts.push(match[1] !== undefined ? { kind: 'code', text: match[1] } : { kind: 'strong', text: match[2]! });
+    if (match[1] !== undefined) parts.push({ kind: 'code', text: match[1] });
+    else if (match[2] !== undefined) parts.push({ kind: 'strong', text: match[2] });
+    else parts.push({ kind: 'link', text: match[3]!, href: match[4]! });
     at = match.index + match[0].length;
   }
   if (at < text.length) parts.push({ kind: 'text', text: text.slice(at) });

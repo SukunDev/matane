@@ -2,7 +2,7 @@
 
 # Matane (またね)
 
-> **Beta** (0.1): browse MangaDex, read, keep a library with reading progress, download chapters for offline reading and get told about new chapters. Expect rough edges; please [report them](https://github.com/SukunDev/matane/issues).
+> **Beta** (0.2): install sources from the official extension repository, read, keep a library with reading progress, download chapters for offline reading, get told about new chapters, back up your library. Expect rough edges; please [report them](https://github.com/SukunDev/matane/issues/new/choose).
 
 _Matane_ is Japanese for "see you later": close the app now and pick up on the same page next time.
 
@@ -17,8 +17,14 @@ Download the latest release from [GitHub Releases](https://github.com/SukunDev/m
 | OS                            | File                                              | Updates                      |
 | ----------------------------- | ------------------------------------------------- | ---------------------------- |
 | Linux                         | `Matane-<version>-linux-x86_64.AppImage`          | installs them itself         |
+| Debian, Ubuntu                | `Matane-<version>-linux-amd64.deb`                | tells you                    |
+| Fedora, openSUSE              | `Matane-<version>-linux-x86_64.rpm`               | tells you                    |
+| Linux (any, by hand)          | `Matane-<version>-linux-x64.tar.gz`               | tells you                    |
 | Windows 10/11                 | `Matane-<version>-win-x64.exe` (installer)        | installs them itself         |
+| Windows, no install           | `Matane-<version>-win-x64-portable.exe`           | tells you                    |
 | macOS (Apple silicon / Intel) | `Matane-<version>-mac-arm64.dmg` / `-mac-x64.dmg` | tells you, links the release |
+
+More on installing, every feature and the FAQ: **[sukundev.github.io/matane](https://sukundev.github.io/matane/)**.
 
 The builds are **not code-signed yet**, so your OS will warn the first time:
 
@@ -30,15 +36,16 @@ Your data lives in the app data folder (`~/.config/Matane`, `%APPDATA%\Matane`, 
 
 ## Status
 
-Phases 0–4 are done (the official extension repository goes live later, see below):
+Phases 0–4 are done, and Phase 5 (polish) up to the v1.0 release:
 
 - **Foundation:** Electron shell with the Catppuccin UI, typed IPC and SQLite.
 - **Extensions & reading:** the QuickJS extension sandbox; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
 - **Library & progress:** library with categories, sort/filter, full-text search, multi-select and permanent/custom covers; reading progress and "continue reading"; history with an incognito mode; chapter bookmarks; per-manga reader settings and scanlator preferences; global search and source migration.
 - **Downloads & updates:** CBZ/folder downloads with a managed queue, download ahead, delete after reading and a size limit; the library update checker with the Updates page, notifications and auto-download; tray, start at login, offline mode; installers with auto-update.
 - **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. The [official repository](https://github.com/SukunDev/matane-extensions) (MangaDex, WestManga, Ainz Scans ID, Aarlas) is added by itself, and the SDK is on npm (`@matane/extension-sdk`, `-cli`, `-runtime`).
+- **Polish:** reader image processing (border cropping, tall pages in parts), zoom and touch gestures, remappable keys, colour filters, auto-scroll; command palette, first-run setup, What's new, cover colours, Discord Rich Presence; statistics; DNS-over-HTTPS, proxy and User-Agent settings; backup and restore; diagnostics, more package formats and the documentation site.
 
-See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the phase plans in [`docs/plans/`](docs/plans), the [changelog](CHANGELOG.md) and the [architecture decisions](docs/adr/README.md). Next: polish and v1.0 (Phase 5).
+See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the phase plans in [`docs/plans/`](docs/plans), the [changelog](CHANGELOG.md) and the [architecture decisions](docs/adr/README.md). Next: the v1.0 release.
 
 ## Development
 

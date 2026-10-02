@@ -2,9 +2,39 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
-## 0.2.0-beta.1 — unreleased
+## 0.2.0-beta.1 — 2026-10-02
 
-Phase 4: the extension ecosystem. Sources now come from the official extension repository ([SukunDev/matane-extensions](https://github.com/SukunDev/matane-extensions)), added by itself; nothing is built into the app anymore.
+The second beta: sources now come from the official extension repository ([SukunDev/matane-extensions](https://github.com/SukunDev/matane-extensions)), added by itself, and most of the polish planned for 1.0 is in. Nothing is built into the app anymore: MangaDex from 0.1 moves to the repository by itself and keeps your library and progress.
+
+### Reading and library
+
+- Pages are measured, cropped and cut in the background: no more jumping strip, optional automatic border cropping, and very tall pages shown in parts (smoother webtoons). Downloads stay untouched.
+- Zoom (Ctrl+wheel, Ctrl +/−/0, double-click) and drag around a zoomed page; on touch screens, swipe to turn pages and pinch to zoom.
+- Every reader key can be remapped (Settings → Reader → Keyboard shortcuts).
+- Colour filters (brightness, contrast, warm tint, grayscale, invert) and a custom background, also per manga; a page number while the bars are hidden; auto-scroll for webtoons.
+- Default reading mode and direction per kind of manga (manga, manhwa, manhua, comic).
+- Right-click a page to save or copy it.
+- The manga page takes its colour from the cover.
+- Statistics: chapters read, reading time, streaks, favourite genres and sources over 30 days, 12 months or all time.
+
+### Getting around
+
+- Command palette (Ctrl+K): pages, settings, your library, recent chapters and actions.
+- A short first-run setup (language, theme, content languages, download folder, sources), which can run again from Settings → About.
+- What's new: these notes show once after an update, also offline.
+- Discord Rich Presence (off by default; hidden for adult sources and in incognito).
+
+### Network and data
+
+- Settings → Network: DNS-over-HTTPS (Cloudflare, Google, Quad9, AdGuard or your own), HTTP/SOCKS5 proxy, a custom User-Agent, and a connection test. Useful where providers block sites through DNS.
+- Backup and restore: one file with your library, progress, history, statistics, repositories, extension settings and app settings; merge or replace; daily automatic backups (the last 7 kept).
+
+### Diagnostics and packages
+
+- Settings → Advanced: log level, the log and crash report folders (crash reports never leave your computer) and "Copy debug info" for bug reports, without your home folder or tokens.
+- Settings → About: how Matane was installed, the open source licenses, and links to the documentation and issue tracker.
+- New downloads: Windows portable, deb, rpm and tar.gz. Builds that cannot update themselves tell you when a new version is out.
+- Documentation site: [sukundev.github.io/matane](https://sukundev.github.io/matane/).
 
 ### Extensions
 
@@ -23,7 +53,7 @@ Phase 4: the extension ecosystem. Sources now come from the official extension r
 - `mr-ext repo keygen | build | verify`: reproducible, signed repositories for static hosting (GitHub Pages).
 - `mr-ext test` runs `transformImage` on the first page and writes the restored page to `.mr-ext/`; it also accepts built bundles. `mr-ext create --layout standalone | catalog | workspace`.
 - The packages are now `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli`, published on npm.
-- Guides: `docs/extensions.md` and `docs/matane-extensions/` (setting up a repository, with templates for its workflows).
+- Guides: the [extension guide](https://sukundev.github.io/matane/extensions/) and `docs/matane-extensions/` (setting up a repository, with templates for its workflows).
 
 ### Fixes
 

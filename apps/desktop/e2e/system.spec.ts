@@ -163,7 +163,8 @@ test('Data & storage shows the page cache and clears it; the cache size is a set
 
 test('About shows the version, and app updates are off in development builds', async () => {
   await goto('#/settings/about');
-  await expect(page.getByTestId('app-version')).toContainText('Version 0.1.0-beta.1');
+  const { version } = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8')) as { version: string };
+  await expect(page.getByTestId('app-version')).toContainText(`Version ${version}`);
   await expect(page.getByTestId('updater-status')).toHaveText('Updates are off in development builds.');
   await expect(page.getByRole('button', { name: 'Check now' })).toBeDisabled();
   await page
