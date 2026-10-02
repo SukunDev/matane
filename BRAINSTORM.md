@@ -902,7 +902,7 @@ settings          (key PK, value_json)   -- termasuk keybinding, tap zone, jarin
 | Test | Vitest (unit/integrasi), Testing Library (komponen kompleks), Playwright `_electron` (E2E) |
 | Lint/format | ESLint (typescript-eslint, react-hooks, aturan i18n) + Prettier |
 | Rilis | **electron-builder** + **electron-updater**, **release-please**, GitHub Actions |
-| Dokumentasi | VitePress (`docs/`) |
+| Dokumentasi | VitePress (`apps/docs`, GitHub Pages) |
 
 ---
 
@@ -935,7 +935,7 @@ manga-reader/
 │  └─ mangadex/             # extension bawaan (legal)
 ├─ docs/
 │  ├─ adr/                  # Architecture Decision Records (diturunkan dari dokumen ini)
-│  └─ ...                   # situs dokumentasi VitePress (pengguna + pembuat extension)
+│  └─ ...                   # rencana fase, mockup UI, panduan repo extension
 └─ BRAINSTORM.md
 ```
 
@@ -959,7 +959,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - **DB**: SQLite in-memory dengan migrasi sungguhan.
 - **Extension runtime**: extension dijalankan di QuickJS dengan **fixture HTTP** yang direkam. **Test sandbox**: `require`, `process`, request ke domain di luar allowlist, batas memori/CPU, dan timeout harus gagal dengan benar.
 - **E2E (Playwright `_electron`)**: browse → detail → baca → tambah ke library → download → baca offline, memakai **extension tiruan** + server fixture lokal. **CI tidak pernah menyentuh situs sungguhan.**
-- **Target performa** (dicek manual/benchmark sebelum rilis): startup < 2 detik, library 1.000+ manga lancar di-scroll, memori reader webtoon stabil pada chapter panjang.
+- **Target performa** (dicek manual/benchmark sebelum rilis): startup < 2 detik, library 1.000+ manga lancar di-scroll, memori reader webtoon stabil pada chapter panjang. Diukur dengan `pnpm bench` (`apps/desktop/scripts/bench/`, profil seed lokal); hasil Fase 5f di plan Fase 5.
 
 **Alur kerja**
 - ESLint + Prettier, TypeScript strict, lint rule untuk string literal di JSX (i18n).
@@ -969,17 +969,18 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 **CI (GitHub Actions)**
 - Setiap PR: lint, typecheck, unit/integrasi, E2E (Linux).
 - Setiap tag rilis: **build matrix per OS** (Windows, macOS x64, macOS arm64, Linux). Wajib per OS karena `better-sqlite3` dan `sharp` adalah modul native. Hasilnya diunggah ke GitHub Release (pre-release untuk beta).
-- Setelah rilis stable: perbarui PKGBUILD **AUR** dan manifest **Flatpak** (Flathub butuh proses review sekali di awal).
+- Setelah rilis stable: perbarui PKGBUILD **AUR** dan manifest **Flatpak** (Flathub butuh proses review sekali di awal). Keduanya ada di `packaging/`, dengan skrip `update-aur.mjs`/`update-flatpak.mjs` dan panduan submit di `packaging/README.md`.
 
 **Auto-update**
 - `electron-updater` via GitHub Releases. Setting: channel (stable/beta) dan "download otomatis" atau "beri tahu saja".
-- Berlaku untuk: Windows NSIS, AppImage. **Tidak** untuk portable, deb, rpm, AUR, dan Flatpak (diupdate lewat package manager masing-masing; app hanya memberi tahu ada versi baru).
+- Berlaku untuk: Windows NSIS, AppImage. **Tidak** untuk portable, deb, rpm, tar.gz, AUR, dan Flatpak (app hanya memberi tahu ada versi baru; Flatpak/AUR/deb/rpm diarahkan ke package manager). Jenis paket dideteksi saat start (`MATANE_PACKAGE` dari launcher AUR/Flatpak, `APPIMAGE`, `FLATPAK_ID`, lokasi `/opt`/`/usr`, `PORTABLE_EXECUTABLE_DIR`) dan ditampilkan di Setting → Tentang (ADR 0021).
 - **macOS tanpa signing tidak bisa auto-update**, jadi app hanya memberi tahu dan membuka halaman rilis.
 
 **Logging & crash**
 - `electron-log`: log ke file dengan rotasi, level bisa diatur di setting Lanjutan.
 - `crashReporter` Electron dengan **upload dimatikan**: dump disimpan lokal.
-- Tombol **"Salin info debug"** (versi app/OS/Electron, extension terpasang, potongan log) untuk dilampirkan saat melapor bug.
+- Tombol **"Salin info debug"** (versi app/OS/Electron, jenis paket, extension terpasang, 100 baris log terakhir; folder home, nama user, query URL, dan token disamarkan) untuk dilampirkan saat melapor bug.
+- Setting → Tentang: lisensi pihak ketiga (dibuat saat build dari bundle renderer + dependensi main, `build-tools/licenses.ts`).
 
 **Dokumentasi & komunitas**
 - README: fitur, screenshot, cara install per OS (termasuk melewati SmartScreen/Gatekeeper), **disclaimer** konten.
@@ -1075,9 +1076,9 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 **Yang perlu diverifikasi saat implementasi**
 - [ ] Aturan & rate limit **MangaDex API** terbaru (atribusi, laporan MangaDex@Home).
 - [ ] Batas memori/CPU sandbox yang final (benchmark di Fase 1).
-- [ ] Library pendukung yang masih aktif dirawat (Discord RPC, grafik).
 - [ ] API tracker (terutama MangaUpdates dan Kitsu), saat masuk tahap setelah v1.
-- [ ] Persyaratan Flathub untuk app Electron (sandbox Flatpak, portal untuk folder download).
+- [x] Persyaratan Flathub untuk app Electron (sandbox Flatpak, portal untuk folder download): manifest di `packaging/flatpak` memakai `org.electronjs.Electron2.BaseApp` + zypak, akses `~/Documents/Matane`, folder lain lewat portal file chooser. App id `dev.sukun.matane` harus diverifikasi lewat domain `sukun.dev` (alternatif `io.github.SukunDev.Matane`), dicek saat submit di 4f.
+- [x] Library Discord RPC (5c) dan grafik (5d: SVG sendiri) sudah dipilih.
 
 **Semua keputusan lain sudah diambil.** Ringkasannya ada di tabel "Keputusan" di awal setiap bagian (§2, §5.0, §6.1–§6.7, §10).
 

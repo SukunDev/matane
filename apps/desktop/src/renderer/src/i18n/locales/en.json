@@ -127,12 +127,53 @@
       "version": "Version {{version}}",
       "runtime": "Electron {{electron}} · Chromium {{chrome}} · Node {{node}}",
       "whatsNew": "What’s new",
-      "runSetup": "Run setup again"
+      "runSetup": "Run setup again",
+      "packaging": "Installed as {{kind}}",
+      "packagings": {
+        "appimage": "AppImage",
+        "nsis": "Windows installer",
+        "portable": "Windows portable",
+        "dmg": "macOS app",
+        "flatpak": "Flatpak",
+        "aur": "AUR package",
+        "system": "system package (deb/rpm)",
+        "archive": "tar.gz archive",
+        "dev": "development build"
+      },
+      "links": "Links",
+      "docs": "Documentation",
+      "repository": "Source code",
+      "issues": "Report a problem",
+      "licenses": "Open source licenses",
+      "license": "Matane is free software under the GNU GPL v3.",
+      "licensesTitle": "Open source licenses",
+      "licensesCount_one": "{{count}} package",
+      "licensesCount_other": "{{count}} packages",
+      "licensesFilter": "Filter by name or license",
+      "licensesNone": "The license list is created when the app is built.",
+      "licenseNoText": "Licensed under {{license}}; the package ships no license file."
     },
     "advanced": {
       "devTitle": "Extension development",
       "devDescription": "Load an extension from a folder (its project or a built bundle). It reloads automatically when `mr-ext build` updates it.",
-      "noFolders": "No folders loaded."
+      "noFolders": "No folders loaded.",
+      "diagnostics": "Diagnostics",
+      "logLevel": "Log level",
+      "logLevelHint": "How much goes into the log file. \"Debug\" helps when reporting a problem.",
+      "logLevels": {
+        "error": "Error",
+        "warn": "Warning",
+        "info": "Info",
+        "debug": "Debug"
+      },
+      "files": "Logs and crash reports",
+      "filesHint": "Crash reports stay on this computer; nothing is sent anywhere.",
+      "openLogs": "Logs",
+      "openCrashes": "Crash reports",
+      "debugInfo": "Debug info",
+      "debugInfoHint": "Versions, installed extensions and the last log lines, without your home folder or URL tokens. Paste it into a bug report.",
+      "copy": "Copy debug info",
+      "copied": "Copied"
     },
     "library": {
       "categories": "Categories",
@@ -283,7 +324,8 @@
       "channels": {
         "stable": "Stable",
         "beta": "Beta"
-      }
+      },
+      "packageManager": "Installed through a package manager: update Matane there."
     },
     "browse": {
       "contentTitle": "Content",

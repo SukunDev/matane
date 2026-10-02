@@ -41,6 +41,8 @@ import {
   sourceIdSchema,
   statsOverviewSchema,
   STATS_RANGES,
+  PACKAGE_KINDS,
+  appLicenseSchema,
 } from '../models';
 import type { DbChangeTag } from '../models';
 import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
@@ -58,6 +60,7 @@ const appInfoSchema = z.object({
   platform: z.string(),
   /** Discord Rich Presence can be offered (a Discord application id is set). */
   discord: z.boolean(),
+  packaging: z.enum(PACKAGE_KINDS),
 });
 export type AppInfo = z.infer<typeof appInfoSchema>;
 
@@ -83,7 +86,14 @@ export const invokeContract = {
   /** Whether a system tray is there (some Linux desktops have none), and why not. */
   'app.tray': invoke(z.void(), z.object({ available: z.boolean(), reason: z.string().nullable() })),
   /** Opens the data folder or the log folder in the file manager. */
-  'app.openPath': invoke(z.object({ which: z.enum(['data', 'logs']) }), z.void()),
+  'app.openPath': invoke(z.object({ which: z.enum(['data', 'logs', 'crashes']) }), z.void()),
+  /**
+   * "Copy debug info": versions, OS, how it was installed, extensions and the end of the log, with
+   * the home folder and URL queries left out. Copied to the clipboard and returned.
+   */
+  'app.copyDebugInfo': invoke(z.void(), z.string()),
+  /** Licenses of the open source software in the app (generated at build). */
+  'app.licenses': invoke(z.void(), z.array(appLicenseSchema)),
   /** Disk use: page cache, browse covers, downloads; and where data and logs live. */
   'storage.info': invoke(
     z.void(),

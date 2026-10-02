@@ -30,7 +30,7 @@ import type { ImageService } from '../images/service';
 import type { NetworkControl } from '../network/control';
 import type { StatsService } from '../stats/service';
 import type { BackupService } from '../backup/service';
-import type { AppSettings } from '@manga-reader/shared';
+import type { AppLicense, AppSettings, PackageKind } from '@manga-reader/shared';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
 import type { RequestRegistry } from './requests';
@@ -62,8 +62,10 @@ export interface IpcDeps {
   traySupport: () => TraySupport;
   imageCache: Pick<ImageCache, 'bytesOf'>;
   images: Pick<ImageService, 'preparePage' | 'pageSizes' | 'pageBytes' | 'clearCache'>;
-  paths: { data: string; logs: string };
+  paths: { data: string; logs: string; crashes: string };
   updater: AppUpdater;
+  /** How this copy was installed, "Copy debug info" and the third-party licenses (§10). */
+  diagnostics: { packaging: PackageKind; debugInfo(): Promise<string>; licenses(): Promise<AppLicense[]> };
   /** What's new: the running version and whether its notes were seen (§6.6). */
   whatsNew: { get(): { version: string; seen: boolean }; markSeen(): void };
   stats: Pick<StatsService, 'overview' | 'clear'>;
@@ -108,6 +110,7 @@ export function createIpcHandlers({
   images,
   paths,
   updater,
+  diagnostics,
   whatsNew,
   discord,
   stats,
@@ -131,6 +134,7 @@ export function createIpcHandlers({
       chrome: process.versions.chrome,
       node: process.versions.node,
       platform: process.platform,
+      packaging: diagnostics.packaging,
       discord,
     }),
     'app.whatsNew': () => whatsNew.get(),
@@ -139,9 +143,17 @@ export function createIpcHandlers({
     'app.isOnline': () => online.isOnline(),
     'app.tray': () => traySupport(),
     'app.openPath': async ({ which }) => {
-      const error = await shell.openPath(which === 'data' ? paths.data : paths.logs);
+      const folder = which === 'data' ? paths.data : which === 'crashes' ? paths.crashes : paths.logs;
+      await mkdir(folder, { recursive: true });
+      const error = await shell.openPath(folder);
       if (error) throw new AppError('unknown', error);
     },
+    'app.copyDebugInfo': async () => {
+      const text = await diagnostics.debugInfo();
+      clipboard.writeText(text);
+      return text;
+    },
+    'app.licenses': () => diagnostics.licenses(),
     'storage.info': () => ({
       pageCacheBytes: imageCache.bytesOf('page'),
       browseCoverBytes: imageCache.bytesOf('browse_cover'),

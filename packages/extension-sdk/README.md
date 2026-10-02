@@ -28,4 +28,4 @@ export default defineExtension({
 - `@matane/extension-sdk/globals`: types of the sandbox globals (`http`, `html`, `storage`, `prefs`, `log`, `crypto`, `base64`, `utf8`, `timers`, `host`). Add `import '@matane/extension-sdk/globals'` to a `.d.ts` file of your extension.
 - `@matane/extension-sdk/manifest` and `/repo`: the `manifest.json` and repository index schemas (tooling and the app).
 
-The full guide: [docs/extensions.md](https://github.com/SukunDev/matane/blob/main/docs/extensions.md). MIT.
+The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/). MIT.

@@ -18,7 +18,7 @@ Sites change. A smoke test reads every site once a day and opens an issue when a
 
 ## Writing an extension
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guide](https://github.com/SukunDev/matane/blob/main/docs/extensions.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [extension guide](https://sukundev.github.io/matane/extensions/).
 
 ## License
 

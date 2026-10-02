@@ -1,0 +1,16 @@
+/* The app's red (the logo) as the brand colour: Catppuccin Latte red in light mode, Mocha in dark. */
+:root {
+  --vp-c-brand-1: #d20f39;
+  --vp-c-brand-2: #b80d32;
+  --vp-c-brand-3: #d20f39;
+  --vp-c-brand-soft: rgba(210, 15, 57, 0.12);
+  --vp-home-hero-image-background-image: radial-gradient(circle, rgba(210, 15, 57, 0.25), transparent 70%);
+  --vp-home-hero-image-filter: blur(48px);
+}
+
+.dark {
+  --vp-c-brand-1: #f38ba8;
+  --vp-c-brand-2: #eba0ac;
+  --vp-c-brand-3: #d20f39;
+  --vp-c-brand-soft: rgba(243, 139, 168, 0.16);
+}

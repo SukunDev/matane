@@ -1,15 +1,17 @@
-import type { UpdaterSettings, UpdaterStatus } from '@manga-reader/shared';
+import { PACKAGE_MANAGED, type UpdaterSettings, type UpdaterStatus } from '@manga-reader/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { Download, ExternalLink, RefreshCw, RotateCw, Sparkles, Wand2 } from 'lucide-react';
-import { useCallback } from 'react';
+import { BookOpen, Bug, Code, Download, ExternalLink, RefreshCw, RotateCw, Scale, Sparkles, Wand2 } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import logoMark from '../../assets/logo-mark.png';
 import { Button } from '../../components/ui/button';
 import { formatRelative } from '../../lib/format';
+import { LINKS } from '../../lib/links';
 import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
 import { useWhatsNew } from '../whats-new/WhatsNewDialog';
 import { Row, Segmented } from './controls';
+import { LicensesDialog } from './LicensesDialog';
 
 const updaterQuery = { queryKey: ['updater', 'status'] as const, queryFn: () => ipc.invoke('updater.status') };
 
@@ -18,6 +20,7 @@ export function AboutSettings() {
   const { data: info } = useQuery(appInfoQuery);
   const navigate = useNavigate();
   const setWhatsNew = useWhatsNew((state) => state.setOpen);
+  const [licenses, setLicenses] = useState(false);
   if (!info) return null;
   return (
     <div className="flex flex-col gap-6">
@@ -34,6 +37,9 @@ export function AboutSettings() {
             {t('settings.about.version', { version: info.version })}
           </p>
           <p className="text-xs text-muted-foreground">{t('settings.about.runtime', info)}</p>
+          <p className="text-xs text-muted-foreground" data-testid="app-packaging">
+            {t('settings.about.packaging', { kind: t(`settings.about.packagings.${info.packaging}`) })}
+          </p>
         </div>
         <div className="ml-auto flex gap-2">
           <Button variant="secondary" size="sm" onClick={() => setWhatsNew(true)}>
@@ -47,6 +53,31 @@ export function AboutSettings() {
         </div>
       </section>
       <UpdaterCard />
+      <section className="rounded-xl border bg-card/40 p-5">
+        <h2 className="mb-4 text-sm font-semibold">{t('settings.about.links')}</h2>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ['docs', LINKS.docs, BookOpen],
+              ['repository', LINKS.repository, Code],
+              ['issues', LINKS.issues, Bug],
+            ] as const
+          ).map(([key, href, Icon]) => (
+            <Button key={key} variant="secondary" size="sm" asChild>
+              <a href={href} target="_blank" rel="noreferrer">
+                <Icon />
+                {t(`settings.about.${key}`)}
+              </a>
+            </Button>
+          ))}
+          <Button variant="secondary" size="sm" onClick={() => setLicenses(true)}>
+            <Scale />
+            {t('settings.about.licenses')}
+          </Button>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">{t('settings.about.license')}</p>
+      </section>
+      <LicensesDialog open={licenses} onOpenChange={setLicenses} />
     </div>
   );
 }
@@ -97,7 +128,11 @@ function UpdaterCard() {
               {line}
             </p>
             <p className="text-xs text-muted-foreground">
-              {status.kind === 'notify' ? t('settings.updater.notifyOnly') : t('settings.updater.autoHint')}
+              {PACKAGE_MANAGED.includes(status.packaging)
+                ? t('settings.updater.packageManager')
+                : status.kind === 'notify'
+                  ? t('settings.updater.notifyOnly')
+                  : t('settings.updater.autoHint')}
               {status.checkedAt &&
                 ` · ${t('settings.updater.checkedAt', { when: formatRelative(status.checkedAt, i18n.language) })}`}
             </p>

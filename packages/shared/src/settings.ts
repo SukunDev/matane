@@ -458,6 +458,10 @@ export const appSettingsSchema = z.object({
       folder: z.string().nullable().catch(null),
     })
     .catch({ auto: 'daily', folder: null }),
+  /** Settings → Advanced: how much goes into the log file (BRAINSTORM.md §10). */
+  advanced: z
+    .object({ logLevel: z.enum(['error', 'warn', 'info', 'debug']).catch('info') })
+    .catch({ logLevel: 'info' }),
   /** First-run setup (§6.6); profiles from before it count as set up. */
   onboarding: z.object({ done: z.boolean().catch(false) }).catch({ done: false }),
 });
@@ -498,5 +502,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     userAgent: null,
   },
   backup: { auto: 'daily', folder: null },
+  advanced: { logLevel: 'info' },
   onboarding: { done: false },
 };

@@ -1,0 +1,36 @@
+name: Bug report
+description: Something in Matane does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! A source that is broken or missing chapters is usually an extension problem: report it in the extension repository instead.
+        Security problems: please report privately (see SECURITY.md), not here.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Click …
+        3. See …
+  - type: textarea
+    id: debug
+    attributes:
+      label: Debug info
+      description: Settings → Advanced → **Copy debug info**, then paste here. It contains versions, how Matane was installed, your extensions and the last log lines, without your home folder or tokens. Read it before posting.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots or anything else

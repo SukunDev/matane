@@ -23,3 +23,6 @@ playwright-report/
 
 # Recorded HTTP fixtures of extension tests (record with `MR_RECORD=1 pnpm test`)
 extensions/*/test/fixtures/
+
+# VitePress cache
+.vitepress/cache/

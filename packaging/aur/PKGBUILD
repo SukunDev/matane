@@ -1,0 +1,36 @@
+# Maintainer: SukunDev <sukundev32@gmail.com>
+# Generated from packaging/aur in https://github.com/SukunDev/matane: edit it there and run
+# `node packaging/update-aur.mjs <version>`, which also writes .SRCINFO.
+
+pkgname=matane-bin
+_pkgver=0.1.0-beta.1
+pkgver=${_pkgver//-/_}
+pkgrel=1
+pkgdesc='Open-source desktop manga reader with a sandboxed extension system'
+arch=('x86_64')
+url='https://github.com/SukunDev/matane'
+license=('GPL-3.0-only')
+depends=('alsa-lib' 'gtk3' 'libnotify' 'libsecret' 'libxss' 'libxtst' 'nss' 'xdg-utils')
+optdepends=('libappindicator-gtk3: tray icon on desktops without StatusNotifier support')
+provides=('matane')
+conflicts=('matane')
+options=('!strip' '!debug')
+source=("Matane-${_pkgver}-linux-x64.tar.gz::${url}/releases/download/v${_pkgver}/Matane-${_pkgver}-linux-x64.tar.gz"
+        "matane-${_pkgver}.png::https://raw.githubusercontent.com/SukunDev/matane/v${_pkgver}/apps/desktop/resources/icon.png"
+        'matane.sh'
+        'matane.desktop')
+sha256sums=('7ca2a2a311c84e1a910797a19b68b418b0f593529fe5c9f32c837ebe94913ac7'
+            'bf77e75640062c07a8c2c23a4bf22f8ac719ef106ad76e3d39eb307138eb1088'
+            '27f92835bee29410970973343996724e5883574f548328f7a9a450e5855c6006'
+            '7a984ee59db052e17f1e4ff6609e7706e150e1c4c35b419940219c5389c4233a')
+
+package() {
+  install -d "${pkgdir}/opt/matane"
+  cp -a "Matane-${_pkgver}-linux-x64/." "${pkgdir}/opt/matane/"
+  # Chromium's sandbox helper, for kernels without unprivileged user namespaces.
+  chmod 4755 "${pkgdir}/opt/matane/chrome-sandbox"
+
+  install -Dm755 matane.sh "${pkgdir}/usr/bin/matane"
+  install -Dm644 matane.desktop "${pkgdir}/usr/share/applications/matane.desktop"
+  install -Dm644 "matane-${_pkgver}.png" "${pkgdir}/usr/share/icons/hicolor/512x512/apps/matane.png"
+}

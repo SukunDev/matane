@@ -560,8 +560,39 @@ export type UpdateStatus = z.infer<typeof updateStatusSchema>;
  * tells and links the release (macOS without signing, portable, other Linux packages), "none" in
  * development.
  */
+/**
+ * How Matane was installed (ADR 0021): updates itself (AppImage, NSIS), or is updated by something
+ * else (Flatpak, AUR, deb/rpm through the system package manager), or only tells (portable, dmg,
+ * a plain archive). "dev" is an unpackaged run.
+ */
+export const PACKAGE_KINDS = [
+  'appimage',
+  'nsis',
+  'portable',
+  'dmg',
+  'flatpak',
+  'aur',
+  'system',
+  'archive',
+  'dev',
+] as const;
+export type PackageKind = (typeof PACKAGE_KINDS)[number];
+/** Installs a package manager updates: the app only says a new version is out. */
+export const PACKAGE_MANAGED: readonly PackageKind[] = ['flatpak', 'aur', 'system'];
+
+/** An open source package shipped in the app and its license (Settings → About). */
+export const appLicenseSchema = z.object({
+  name: z.string(),
+  version: z.string(),
+  license: z.string(),
+  repository: z.string().nullable(),
+  text: z.string().nullable(),
+});
+export type AppLicense = z.infer<typeof appLicenseSchema>;
+
 export const updaterStatusSchema = z.object({
   kind: z.enum(['auto', 'notify', 'none']),
+  packaging: z.enum(PACKAGE_KINDS),
   state: z.enum(['idle', 'checking', 'latest', 'available', 'downloading', 'downloaded', 'error']),
   /** The newer version found. */
   version: z.string().nullable(),

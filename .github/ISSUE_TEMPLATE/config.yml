@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Source request or broken source
+    url: https://github.com/SukunDev/matane-extensions/issues
+    about: Sources are extensions; requests and fixes go to the extension repository.
+  - name: Documentation
+    url: https://sukundev.github.io/matane/
+    about: Installing, reading, downloads, extensions, network settings and the FAQ.
+  - name: Security problem
+    url: https://github.com/SukunDev/matane/security/advisories/new
+    about: Please report vulnerabilities privately.

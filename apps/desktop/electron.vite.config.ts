@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'electron-vite';
+import { licensesPlugin } from './build-tools/licenses';
 
 // Workspace packages ship TypeScript sources, so they must be bundled instead of externalized.
 const bundledWorkspaceDeps = ['@manga-reader/shared', '@matane/extension-runtime', '@matane/extension-sdk'];
@@ -40,6 +41,8 @@ export default defineConfig({
       }),
       react(),
       tailwindcss(),
+      // Settings → About → Licenses: runtime and bundled packages with their texts.
+      licensesPlugin(__dirname, resolve(__dirname, 'out/licenses.json')),
     ],
   },
 });

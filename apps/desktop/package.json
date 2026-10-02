@@ -21,6 +21,7 @@
     "test": "vitest run",
     "postinstall": "electron-rebuild -f -o better-sqlite3",
     "e2e": "electron --version > /dev/null && electron-vite build && playwright test",
+    "bench": "node scripts/bench/run.mts",
     "dist": "electron-vite build && electron-builder --publish never",
     "dist:linux": "electron-vite build && electron-builder --linux --publish never"
   },

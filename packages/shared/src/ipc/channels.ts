@@ -7,6 +7,8 @@ export const INVOKE_CHANNELS = [
   'app.isOnline',
   'app.tray',
   'app.openPath',
+  'app.copyDebugInfo',
+  'app.licenses',
   'storage.info',
   'storage.clearCache',
   'updater.status',

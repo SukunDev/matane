@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping! Matane is early (beta), so please open an issue before large changes.
+Thanks for helping! Matane is early (beta), so please open an issue before large changes. Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Setup
 
@@ -24,7 +24,7 @@ pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm e2e
 
 ## Extensions
 
-Source requests and extension code belong in the extension repository (Phase 4). To write one, see [`docs/extensions.md`](docs/extensions.md).
+Source requests and extension code belong in the extension repository (Phase 4). To write one, see the [extension guide](https://sukundev.github.io/matane/extensions/) (source in `apps/docs/extensions/`). The documentation site is `apps/docs` (VitePress: `pnpm --filter @manga-reader/docs dev`).
 
 ## Releases
 

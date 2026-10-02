@@ -1,6 +1,6 @@
 # Contributing
 
-Extensions are small TypeScript projects that run in Matane's sandbox (QuickJS, no Node.js APIs, network only to the domains they list). The full guide: [docs/extensions.md](https://github.com/SukunDev/matane/blob/main/docs/extensions.md).
+Extensions are small TypeScript projects that run in Matane's sandbox (QuickJS, no Node.js APIs, network only to the domains they list). The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/).
 
 ## Setup
 

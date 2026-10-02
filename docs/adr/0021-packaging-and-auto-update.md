@@ -1,6 +1,6 @@
 # 21. Packaging with electron-builder, auto-update from GitHub releases, no signing yet
 
-Status: Accepted (2026-09-27)
+Status: Accepted (2026-09-27; package formats and package-manager installs added 2026-10-02, Phase 5f)
 
 ## Context
 The first beta (end of Phase 3) needs installers for Windows, macOS and Linux and a way to update (BRAINSTORM.md §10). There is no budget for code-signing certificates yet, and no telemetry is wanted.
@@ -17,3 +17,10 @@ The first beta (end of Phase 3) needs installers for Windows, macOS and Linux an
 - Users see SmartScreen/Gatekeeper warnings until the builds are signed (planned after v1 if there are enough users).
 - The two macOS jobs both upload `latest-mac.yml`; it is not used (macOS only gets notified), so the overwrite is harmless.
 - release-please (automatic versions and changelog) is postponed; `CHANGELOG.md` is written by hand for now.
+
+## Update (Phase 5f, 2026-10-02)
+- **More formats:** Windows `portable` (`…-win-x64-portable.exe`); Linux `deb`, `rpm` (rpmbuild installed on the CI runner) and `tar.gz` beside the AppImage. deb and rpm install under `/opt/Matane` with a `matane` command.
+- **AUR and Flathub** (`packaging/`): `matane-bin` repacks the release tar.gz into `/opt/matane` with a wrapper; the Flatpak (`dev.sukun.matane`, `org.electronjs.Electron2.BaseApp`, zypak) repacks it too. `packaging/update-aur.mjs` and `update-flatpak.mjs` fill the version and hashes for a release; submitting is manual (`packaging/README.md`).
+- **How it was installed** (`main/app/packaging.ts`): `MATANE_PACKAGE` set by the AUR and Flatpak launchers, else `APPIMAGE` → AppImage, `FLATPAK_ID` → Flatpak, an executable under `/opt` or `/usr` → system package (deb/rpm), another Linux folder → tar.gz archive; `PORTABLE_EXECUTABLE_DIR` → portable, else NSIS; macOS → dmg. Shown in Settings → About and in the debug info.
+- AppImage and NSIS still update themselves. Everything else only tells; Flatpak, AUR and deb/rpm say "update through your package manager" instead of linking the release (electron-updater could install a deb/rpm with pkexec, but the package manager should stay the owner of those files).
+

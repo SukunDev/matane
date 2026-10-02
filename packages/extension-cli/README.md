@@ -19,4 +19,4 @@ npx mr-ext test           # popular → details → chapters → pages → first
 | `repo build <ext…> -o <dir>` | Zips, hashes and indexes extensions into a repository folder and signs `index.json` (`--key` or `$MR_REPO_KEY`).      |
 | `repo verify <dir\|url>`     | Checks a repository the way the app does.                                                                             |
 
-For tests: `createFixtureHost` records HTTP responses once (`MR_RECORD=1`) and replays them offline. The full guide: [docs/extensions.md](https://github.com/SukunDev/matane/blob/main/docs/extensions.md). MIT.
+For tests: `createFixtureHost` records HTTP responses once (`MR_RECORD=1`) and replays them offline. The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/). MIT.

@@ -1,0 +1,14 @@
+{
+  "name": "@manga-reader/docs",
+  "private": true,
+  "description": "Matane's documentation site (VitePress, published to GitHub Pages)",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

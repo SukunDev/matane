@@ -1,13 +1,71 @@
+import type { AppSettings } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { FolderOpen, FolderX, RotateCw } from 'lucide-react';
+import { Bug, Check, ClipboardCopy, FileText, FolderOpen, FolderX, RotateCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
-import { ipc } from '../../lib/ipc';
+import { ipc, settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { extensionsQuery } from '../../lib/sources';
 import { useLoadDevFolder } from '../extensions/ExtensionsPage';
+import { Row, Segmented } from './controls';
+
+const LOG_LEVELS = ['error', 'warn', 'info', 'debug'] as const satisfies readonly AppSettings['advanced']['logLevel'][];
+
+export function AdvancedSettings() {
+  return (
+    <div className="flex flex-col gap-6">
+      <DiagnosticsCard />
+      <DevExtensionsCard />
+    </div>
+  );
+}
+
+/** Logs, crash dumps and the debug info for a bug report (BRAINSTORM.md §10). */
+function DiagnosticsCard() {
+  const { t } = useTranslation();
+  const { data: settings } = useQuery(settingsQuery);
+  const update = useUpdateSettings();
+  const openPath = useMutation({ mutationFn: (which: 'logs' | 'crashes') => ipc.invoke('app.openPath', { which }) });
+  const copy = useMutation({ mutationFn: () => ipc.invoke('app.copyDebugInfo') });
+  if (!settings) return null;
+
+  return (
+    <section className="rounded-xl border bg-card/40 p-5">
+      <h2 className="mb-4 text-sm font-semibold">{t('settings.advanced.diagnostics')}</h2>
+      <div className="divide-y">
+        <Row label={t('settings.advanced.logLevel')} description={t('settings.advanced.logLevelHint')}>
+          <Segmented
+            label={t('settings.advanced.logLevel')}
+            options={LOG_LEVELS}
+            value={settings.advanced.logLevel}
+            onChange={(logLevel) => update.mutate({ advanced: { ...settings.advanced, logLevel } })}
+            format={(level) => t(`settings.advanced.logLevels.${level}`)}
+          />
+        </Row>
+        <Row label={t('settings.advanced.files')} description={t('settings.advanced.filesHint')}>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => openPath.mutate('logs')}>
+              <FileText />
+              {t('settings.advanced.openLogs')}
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => openPath.mutate('crashes')}>
+              <Bug />
+              {t('settings.advanced.openCrashes')}
+            </Button>
+          </div>
+        </Row>
+        <Row label={t('settings.advanced.debugInfo')} description={t('settings.advanced.debugInfoHint')}>
+          <Button variant="secondary" size="sm" onClick={() => copy.mutate()} disabled={copy.isPending}>
+            {copy.isSuccess ? <Check /> : <ClipboardCopy />}
+            {copy.isSuccess ? t('settings.advanced.copied') : t('settings.advanced.copy')}
+          </Button>
+        </Row>
+      </div>
+    </section>
+  );
+}
 
 /** Developer tools: extensions loaded from folders (hot-reloaded when `mr-ext build` rewrites them). */
-export function AdvancedSettings() {
+function DevExtensionsCard() {
   const { t } = useTranslation();
   const { data: extensions = [] } = useQuery(extensionsQuery);
   const devExtensions = extensions.filter((e) => e.origin === 'dev');

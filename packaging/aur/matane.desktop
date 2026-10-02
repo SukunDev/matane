@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Matane
+GenericName=Manga Reader
+Comment=Manga reader with a sandboxed extension system
+Exec=matane %U
+Terminal=false
+Type=Application
+Icon=matane
+StartupWMClass=matane
+Categories=Graphics;Viewer;
+Keywords=manga;manhwa;manhua;comic;webtoon;reader;

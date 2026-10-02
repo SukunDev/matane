@@ -1,13 +1,16 @@
 import { mkdirSync } from 'node:fs';
+import os from 'node:os';
 import { dirname, join } from 'node:path';
-import { BrowserWindow, Notification, app, net, session } from 'electron';
+import { BrowserWindow, Notification, app, crashReporter, net, session } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { LEGACY_APP_NAME, moveLegacyUserData, rewriteDataPaths } from './app/legacy-data';
-import { initLogging, log } from './app/log';
+import { initLogging, log, setLogLevel } from './app/log';
+import { debugInfo, logTail, readLicenses, scrub } from './app/debug-info';
 import { HIDDEN_ARG, applyLoginItem } from './app/login-item';
 import { OnlineMonitor } from './app/online';
 import { AppTray } from './app/tray';
 import { AppUpdater, fetchGithubReleases } from './app/updater';
+import { detectPackaging, updaterKindFor } from './app/packaging';
 import { detectTraySupport } from './app/tray-support';
 import { createMainWindow } from './app/window';
 import icon from '../../resources/icon.png?asset';
@@ -93,6 +96,8 @@ try {
 }
 
 initLogging();
+// Crash dumps stay on this computer (Settings → Advanced opens the folder); nothing is uploaded.
+crashReporter.start({ uploadToServer: false });
 registerMangaScheme();
 
 if (!app.requestSingleInstanceLock()) {
@@ -142,6 +147,7 @@ async function bootstrap(): Promise<void> {
     if (tags.includes('downloads')) refreshTray();
   });
   const settings = new SettingsRepository(connection.db);
+  setLogLevel(settings.getAppSettings().advanced.logLevel);
   // First-run setup and What's new (Phase 5c): a profile from before them counts as set up, and a
   // new profile has nothing new to read about. Tests skip the setup unless they test it.
   if (settings.getValue<unknown>('onboarding', null) === null) {
@@ -357,6 +363,7 @@ async function bootstrap(): Promise<void> {
       __matane: {
         setOnline: (v: boolean | null) => online.override(v),
         setNetworkTestUrl: (url: string) => (networkControl.testUrl = url),
+        logLevel: () => log.transports.file.level,
       },
     });
   const downloadsRepo = new DownloadsRepository(connection.db, changes);
@@ -551,16 +558,13 @@ async function bootstrap(): Promise<void> {
 
   // App updates (ADR 0021). MATANE_UPDATE_FEED points at a local generic feed for testing.
   const updateFeed = process.env['MATANE_UPDATE_FEED'];
-  const updaterKind =
-    !app.isPackaged && !updateFeed
-      ? 'none'
-      : process.platform === 'linux'
-        ? process.env['APPIMAGE']
-          ? 'auto'
-          : 'notify'
-        : process.platform === 'win32' && !process.env['PORTABLE_EXECUTABLE_DIR']
-          ? 'auto'
-          : 'notify';
+  const packaging = detectPackaging({
+    env: process.env,
+    platform: process.platform,
+    execPath: process.execPath,
+    packaged: app.isPackaged,
+  });
+  const updaterKind = updaterKindFor(packaging, !!updateFeed);
   // Discord Rich Presence (Phase 5c): only when a Discord application id is set.
   const clientId = discordClientId();
   const presence = clientId
@@ -595,6 +599,7 @@ async function bootstrap(): Promise<void> {
   const updaterLog = log.scope('updater');
   const appUpdater = new AppUpdater({
     kind: updaterKind,
+    packaging,
     version: app.getVersion(),
     settings: () => settings.getAppSettings().updater,
     autoUpdater: () => {
@@ -624,6 +629,7 @@ async function bootstrap(): Promise<void> {
   });
 
   const settingsChanged = (patch: Partial<AppSettings>) => {
+    if (patch.advanced) setLogLevel(settings.getAppSettings().advanced.logLevel);
     if (patch.general || patch.language) applySystem();
     if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
     if (patch.general || patch.incognito !== undefined) void presence?.sync();
@@ -699,8 +705,37 @@ async function bootstrap(): Promise<void> {
       traySupport: () => traySupport,
       imageCache,
       images,
-      paths: { data: userData, logs: dirname(log.transports.file.getFile().path) },
+      paths: {
+        data: userData,
+        logs: dirname(log.transports.file.getFile().path),
+        crashes: app.getPath('crashDumps'),
+      },
       updater: appUpdater,
+      diagnostics: {
+        packaging,
+        debugInfo: async () =>
+          debugInfo(
+            {
+              version: app.getVersion(),
+              electron: process.versions.electron,
+              chrome: process.versions.chrome,
+              node: process.versions.node,
+              os: `${os.type()} ${os.release()}`,
+              arch: process.arch,
+              locale: app.getLocale(),
+              packaging,
+              extensions: extensions.list().map((e) => ({
+                id: e.id,
+                version: e.version,
+                origin: e.origin,
+                error: e.error,
+              })),
+              log: await logTail(log.transports.file.getFile().path),
+            },
+            (text) => scrub(text, os.homedir(), os.userInfo().username),
+          ),
+        licenses: () => readLicenses(join(app.getAppPath(), 'out', 'licenses.json')),
+      },
       whatsNew: {
         get: () => ({
           version: app.getVersion(),

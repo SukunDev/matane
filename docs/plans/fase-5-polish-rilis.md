@@ -512,3 +512,65 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
 - Catatan:
   - Auto-backup default harian juga berjalan untuk profil baru (file kecil).
   - Saat replace, file cover kustom milik manga lama tetap tertinggal di folder `covers/custom` (tidak lagi dirujuk).
+
+### Milestone 5f: selesai (2 Okt 2026), menunggu review
+
+- `pnpm lint` 0 error (7 warning lama `useVirtualizer`), `typecheck` dan `pnpm test` hijau: desktop 281 test, shared 31. E2E 117/117. `actionlint` (1.7.12, binary resmi di folder scratch) lolos untuk keempat workflow.
+- `format:check` hanya menandai 13 file di `extensions/aarlas`, `extensions/ainzscansid`, dan `extensions/westmanga` (dari commit extension kamu, bukan bagian 5f). Sesuai aturan repo, file itu tidak aku format.
+- Test baru:
+  - `app/packaging.test.ts` (4): deteksi jenis paket per OS/variabel, `MATANE_PACKAGE` menang, jenis updater per paket, dan isi info debug (versi, paket, extension, 100 baris log terakhir; home, nama user, query URL, Bearer/token/password disamarkan).
+  - `app/updater.test.ts` (+1): Flatpak memberi tahu "update lewat package manager", tar.gz tetap "Lihat Setting → Tentang".
+  - E2E `diagnostics.spec.ts` (3): level log berlaku langsung dan setelah restart; "Copy debug info" berisi versi, extension, dan akhir log tanpa token/home; Tentang menampilkan jenis instalasi dan dialog lisensi (filter `react-dom`).
+- **Paket** (dibangun lokal dari `0.1.0-beta.1`):
+  - deb (`Matane-0.1.0-beta.1-linux-amd64.deb`, 121 MB): `/opt/Matane` + `/usr/share/applications/matane.desktop` (lolos `desktop-file-validate`), dependensi default electron-builder + `Recommends: libappindicator3-1`.
+  - tar.gz (145 MB): dijalankan dari folder scratch dengan profil terpisah. Terdeteksi `archive`; dengan `MATANE_PACKAGE=aur` terdeteksi `aur`. Lisensi 173 paket, info debug benar, folder Crashpad terbentuk.
+  - rpm tidak bisa dibangun di sini (tidak ada `rpmbuild`), jadi hanya di CI (`release.yml` memasang `rpm`). Portable juga hanya di CI Windows. Podman/docker tidak ada, jadi deb belum dipasang di container.
+  - **AUR:** `packaging/aur/PKGBUILD` (`matane-bin`, repack tar.gz ke `/opt/matane`, wrapper `/usr/bin/matane` dengan `MATANE_PACKAGE=aur`). `makepkg -f` lolos dengan tarball lokal; isi paket benar (`chrome-sandbox` 4755, wrapper, desktop, ikon). `.SRCINFO` dari `update-aur.mjs` identik dengan `makepkg --printsrcinfo`.
+  - **Flatpak:** `packaging/flatpak/dev.sukun.matane.yml` (Freedesktop/Electron2 BaseApp 25.08, zypak), plus metainfo (lolos `appstreamcli validate --pedantic`) dan desktop (lolos validasi). `update-flatpak.mjs` diuji pada salinan (URL, sha256 tarball dan ikon, entri `<release>`). `flatpak-builder` tidak ada, jadi belum dibangun.
+- **Situs dokumentasi** `apps/docs` (VitePress 1.6.4):
+  - 8 halaman panduan dan 2 halaman extension, `vitepress build` lolos termasuk cek dead link;
+  - `vitepress preview` dicek: semua halaman 200, screenshot desktop dan mobile, warna brand merah Catppuccin;
+  - `docs.yml` membangun di PR dan deploy ke Pages dari `main`.
+- **Benchmark** (`pnpm bench`, mesin ini, layar 60 Hz, profil seed 1.000 manga × 20 chapter, server lokal):
+
+  | Ukuran | Hasil | Target |
+  | --- | --- | --- |
+  | Startup (launch → cover library pertama tampil, median 5×) | **1,57 s** (proses main 1,46 s) | < 2 s ✅ |
+  | Scroll library 1.000 manga, ±1.200 px/s | **55 fps**, p95 33 ms, 0 frame > 50 ms | lancar ✅ |
+  | Scroll cepat ±3.600 px/s (seret scrollbar) | 50 fps, p95 33 ms, 2 frame > 50 ms | — |
+  | Webtoon 200 halaman (800×1400): working set renderer | 185 → 220 MB (naik ±0,18 MB/halaman), JS heap 14 MB datar | stabil ⚠️ |
+
+  - Memori webtoon diselidiki dengan memory dump Chromium (memory-infra). Yang tumbuh adalah `cc/image_memory`, yaitu cache decode gambar compositor. ±99% berstatus *unlocked* (locked 3 MB), sehingga bisa dibuang Chromium saat memori menekan. DOM, JS heap, dan preload (maks. 40) tetap terbatas, jadi tidak ada kebocoran di kode app.
+  - Uji 600 halaman: working set mencapai ±620 MB dan belum turun setelah reader ditutup. Batas cache discardable Chromium bergantung pada RAM, dan Linux jarang mengirim sinyal memory pressure, jadi di mesin RAM besar cache ini tumbuh lama.
+  - Pertimbangan untuk 5g atau setelahnya: perkecil decode (`<img>` selebar kolom). Belum diubah di 5f karena masih dalam batas wajar untuk chapter normal.
+- Implementasi:
+  - **Shared:** `PACKAGE_KINDS`/`PACKAGE_MANAGED`, `appLicenseSchema`, `updaterStatus.packaging`, `AppInfo.packaging`, setting `advanced.logLevel`, IPC `app.copyDebugInfo`, `app.licenses`, dan `app.openPath('crashes')`.
+  - **Main:**
+    - `app/packaging.ts` (deteksi + jenis updater, menggantikan logika inline di `index.ts`);
+    - `app/debug-info.ts` (`scrub`, `debugInfo`, `logTail`, `readLicenses`);
+    - `app/log.ts` `setLogLevel` (saat start dan saat setting berubah);
+    - `crashReporter.start({ uploadToServer: false })`;
+    - `AppUpdater` menerima `packaging`, dengan pesan notifikasi untuk paket package manager;
+    - hook E2E `__matane.logLevel`.
+  - **Build:** `build-tools/licenses.ts` (plugin Vite renderer: modul yang benar-benar di-bundle + dependensi produksi main) → `out/licenses.json`.
+  - **Renderer:**
+    - Setting → Lanjutan: kartu Diagnostik (level log, buka log/laporan crash, Copy debug info).
+    - Setting → Tentang: "Terpasang sebagai …", pesan updater package manager, tautan dokumentasi/kode sumber/lapor masalah, dan dialog lisensi (`LicensesDialog.tsx`, dengan filter).
+    - `lib/links.ts`.
+  - **Rilis:** target `electron-builder.yml` (Windows `portable`, Linux AppImage/deb/rpm/tar.gz x64, `Keywords` desktop, maintainer/vendor); `release.yml` memasang `rpm` di runner Linux.
+  - **Komunitas:** `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `.github/ISSUE_TEMPLATE/` (bug dengan info debug, fitur, `config.yml`: permintaan source → repo `matane-extensions`, dokumentasi, keamanan), `PULL_REQUEST_TEMPLATE.md`, dan tautan dari `CONTRIBUTING.md`.
+  - **Dokumentasi:**
+    - panduan extension pindah ke `apps/docs/extensions/` (dipecah: menulis extension dan menerbitkan repo); `docs/extensions.md` sekarang berisi tautan;
+    - link di README, CONTRIBUTING, README/`homepage` paket SDK/runtime/CLI, dan template matane-extensions diarahkan ke situs;
+    - ADR 0021 diperbarui, `BRAINSTORM.md` §10 dan §12, dan `packaging/README.md` (langkah submit AUR/Flathub).
+  - **Benchmark:** `apps/desktop/scripts/bench/run.mts` (`pnpm bench`, opsi `--only`, `--runs`, `--pages`, `--json`), dengan server dan extension sendiri sehingga E2E tidak terpengaruh.
+- Beda dari rencana:
+  - AUR me-repack **tar.gz**, bukan `.deb` (lebih sederhana dan tanpa `/opt/Matane` bawaan deb). deb/rpm/tar.gz dianggap "system"/"archive", bukan AUR, kecuali launcher memberi `MATANE_PACKAGE`.
+  - deb/rpm hanya memberi tahu update. electron-updater sebenarnya bisa memasang deb/rpm lewat pkexec, tetapi file itu sebaiknya tetap dimiliki package manager.
+  - Frame time scroll diukur dengan `requestAnimationFrame` di renderer, bukan Playwright tracing (angka lebih langsung, tanpa overhead trace).
+- Catatan untuk kamu:
+  - `maintainer` deb/rpm, `# Maintainer:` PKGBUILD, dan kontak penegakan di `CODE_OF_CONDUCT.md` memakai email `sukundev32@gmail.com`. Ganti kalau kamu ingin alamat lain yang publik.
+  - Flathub memverifikasi app id `dev.sukun.matane` lewat domain `sukun.dev`. Kalau domain itu bukan milikmu, pakai `io.github.SukunDev.Matane` (lihat `packaging/README.md`).
+  - Nyalakan GitHub Pages (Source: GitHub Actions) supaya `docs.yml` bisa deploy.
+  - `PKGBUILD`/`.SRCINFO` saat ini berisi hash dari tarball lokal. Jalankan `node packaging/update-aur.mjs <versi>` setelah rilis sungguhan, sebelum submit. Manifest Flatpak masih berisi hash nol sampai `update-flatpak.mjs` dijalankan.
+  - `CHANGELOG.md` belum memuat fitur Fase 5; ditulis di 5g bersama catatan 1.0.0.

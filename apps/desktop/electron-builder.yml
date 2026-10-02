@@ -28,16 +28,39 @@ extraResources:
 icon: resources/icon.png
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 linux:
-  target: AppImage
+  # AppImage updates itself; deb and rpm install under /opt (updates through the package manager);
+  # tar.gz is what the AUR package (packaging/aur) repacks. ADR 0021.
+  target:
+    - target: AppImage
+      arch: x64
+    - target: deb
+      arch: x64
+    - target: rpm
+      arch: x64
+    - target: tar.gz
+      arch: x64
   category: Graphics;Viewer
   executableName: matane
   # WM_CLASS matches the .desktop entry, so docks group the window with its launcher.
   syncDesktopName: true
   synopsis: Manga reader with a sandboxed extension system
+  desktop:
+    entry:
+      Keywords: manga;manhwa;manhua;comic;webtoon;reader;
+  maintainer: SukunDev <sukundev32@gmail.com>
+  vendor: SukunDev
+deb:
+  # electron-builder's default dependencies, plus the tray's indicator library where there is one.
+  recommends: [libappindicator3-1]
 win:
   target:
     - target: nsis
       arch: x64
+    # One exe, no installer; tells about updates only (PORTABLE_EXECUTABLE_DIR, ADR 0021).
+    - target: portable
+      arch: x64
+portable:
+  artifactName: ${productName}-${version}-win-${arch}-portable.${ext}
 nsis:
   oneClick: false
   perMachine: false

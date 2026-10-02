@@ -8,4 +8,9 @@ export function initLogging(): void {
   log.errorHandler.startCatching({ showDialog: false });
 }
 
+/** The level written to the log file (Settings → Advanced); the console keeps everything. */
+export function setLogLevel(level: 'error' | 'warn' | 'info' | 'debug'): void {
+  log.transports.file.level = level;
+}
+
 export { log };

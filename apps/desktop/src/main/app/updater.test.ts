@@ -1,5 +1,5 @@
 import { EventEmitter } from 'node:events';
-import type { UpdaterSettings, UpdaterStatus } from '@manga-reader/shared';
+import type { PackageKind, UpdaterSettings, UpdaterStatus } from '@manga-reader/shared';
 import { describe, expect, it, vi } from 'vitest';
 import { AppUpdater, type AutoUpdaterLike, type ReleaseInfo, compareVersions, newerRelease } from './updater';
 
@@ -50,12 +50,18 @@ class FakeUpdater extends EventEmitter {
   }
 }
 
-function setup(kind: UpdaterStatus['kind'], settings: UpdaterSettings, releases: ReleaseInfo[] = []) {
+function setup(
+  kind: UpdaterStatus['kind'],
+  settings: UpdaterSettings,
+  releases: ReleaseInfo[] = [],
+  packaging: PackageKind = kind === 'auto' ? 'appimage' : 'archive',
+) {
   const fake = new FakeUpdater();
   const notify = vi.fn();
   const states: string[] = [];
   const updater = new AppUpdater({
     kind,
+    packaging,
     version: '0.1.0-beta.1',
     settings: () => settings,
     autoUpdater: () => fake as unknown as AutoUpdaterLike,
@@ -112,5 +118,17 @@ describe('AppUpdater', () => {
     updater.install();
     const none = setup('none', { mode: 'auto', channel: 'beta' });
     expect((await none.updater.check()).state).toBe('idle');
+  });
+
+  it('points package manager installs at their package manager', async () => {
+    const releases = [{ tag: 'v0.1.0-beta.2', prerelease: true, draft: false, url: 'https://x/v0.1.0-beta.2' }];
+    const flatpak = setup('notify', { mode: 'auto', channel: 'beta' }, releases, 'flatpak');
+    expect((await flatpak.updater.check()).packaging).toBe('flatpak');
+    expect(flatpak.notify).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.stringMatching(/package manager/) }),
+    );
+    const archive = setup('notify', { mode: 'auto', channel: 'beta' }, releases);
+    await archive.updater.check();
+    expect(archive.notify).toHaveBeenCalledWith(expect.objectContaining({ body: 'See Settings → About.' }));
   });
 });

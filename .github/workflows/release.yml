@@ -2,6 +2,7 @@ name: Release
 
 # A `v*` tag builds every OS and publishes a GitHub release: a pre-release when the tag has a
 # suffix (v0.1.0-beta.1). electron-updater reads the latest*.yml files uploaded with it.
+# Linux: AppImage, deb, rpm, tar.gz; Windows: installer and portable; macOS: dmg (ADR 0021).
 # Native modules (better-sqlite3) are built per OS, so every platform builds on its own runner.
 on:
   push:
@@ -58,6 +59,10 @@ jobs:
           cache: pnpm
       # Also downloads Electron and rebuilds better-sqlite3 for its ABI (postinstall).
       - run: pnpm install --frozen-lockfile
+      # The rpm target needs rpmbuild (deb, AppImage and tar.gz need nothing extra).
+      - name: Install rpm
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y rpm
       - name: Build the built-in extensions and the app
         run: |
           pnpm --filter "./extensions/*" build

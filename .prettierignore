@@ -1,6 +1,7 @@
 node_modules
 out
 dist
+.vitepress/cache
 release
 pnpm-lock.yaml
 **/routeTree.gen.ts

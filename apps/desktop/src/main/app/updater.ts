@@ -1,4 +1,4 @@
-import type { UpdaterSettings, UpdaterStatus } from '@manga-reader/shared';
+import { PACKAGE_MANAGED, type PackageKind, type UpdaterSettings, type UpdaterStatus } from '@manga-reader/shared';
 import { toAppErrorData } from '@manga-reader/shared/errors';
 
 export const RELEASES_URL = 'https://github.com/SukunDev/matane/releases';
@@ -73,6 +73,8 @@ export interface AutoUpdaterLike {
 }
 
 export interface AppUpdaterDeps {
+  /** How this copy was installed (the message differs for package managers). */
+  packaging: PackageKind;
   kind: UpdaterStatus['kind'];
   version: string;
   settings: () => UpdaterSettings;
@@ -103,6 +105,7 @@ export class AppUpdater {
   constructor(private readonly deps: AppUpdaterDeps) {
     this.status = {
       kind: deps.kind,
+      packaging: deps.packaging,
       state: 'idle',
       version: null,
       progress: null,
@@ -144,6 +147,12 @@ export class AppUpdater {
       return id
         ? { title: `Matane ${version} siap dipasang`, body: 'Mulai ulang Matane untuk memperbarui.' }
         : { title: `Matane ${version} is ready`, body: 'Restart Matane to update.' };
+    }
+    // Flatpak, AUR and deb/rpm installs update through their package manager.
+    if (PACKAGE_MANAGED.includes(this.deps.packaging)) {
+      return id
+        ? { title: `Matane ${version} tersedia`, body: 'Perbarui lewat package manager kamu.' }
+        : { title: `Matane ${version} is available`, body: 'Update it through your package manager.' };
     }
     return id
       ? { title: `Matane ${version} tersedia`, body: 'Lihat Setting → Tentang.' }

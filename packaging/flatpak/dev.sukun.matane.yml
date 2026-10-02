@@ -1,0 +1,60 @@
+# Flatpak manifest for Flathub (packaging/README.md). It repacks the release tar.gz, like most
+# Electron apps on Flathub; `node packaging/update-flatpak.mjs <version>` fills the URL and hash.
+app-id: dev.sukun.matane
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '25.08'
+command: matane
+separate-locales: false
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  # The default download folder; other folders come through the file chooser portal.
+  - --filesystem=xdg-documents/Matane:create
+  - --talk-name=org.freedesktop.Notifications
+  # The tray (StatusNotifierItem) and the proxy password in the keyring.
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.secrets
+  # Discord Rich Presence (off by default): the native client's socket, and the Flatpak client's.
+  - --filesystem=xdg-run/discord-ipc-0
+  - --filesystem=xdg-run/app/com.discordapp.Discord:create
+modules:
+  - name: matane
+    buildsystem: simple
+    build-commands:
+      - cp -a matane /app/matane
+      # zypak runs Chromium's sandbox inside Flatpak's; the setuid helper is not used.
+      - rm -f /app/matane/chrome-sandbox
+      - install -Dm755 matane.sh /app/bin/matane
+      - install -Dm644 dev.sukun.matane.desktop /app/share/applications/dev.sukun.matane.desktop
+      - install -Dm644 dev.sukun.matane.metainfo.xml /app/share/metainfo/dev.sukun.matane.metainfo.xml
+      - install -Dm644 icon.png /app/share/icons/hicolor/512x512/apps/dev.sukun.matane.png
+    sources:
+      - type: archive
+        only-arches: [x86_64]
+        url: https://github.com/SukunDev/matane/releases/download/v0.1.0-beta.1/Matane-0.1.0-beta.1-linux-x64.tar.gz
+        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        dest: matane
+      # The Flathub repository holds only this folder, so the icon comes from the tag.
+      - type: file
+        url: https://raw.githubusercontent.com/SukunDev/matane/v0.1.0-beta.1/apps/desktop/resources/icon.png
+        sha256: 0000000000000000000000000000000000000000000000000000000000000000
+        dest-filename: icon.png
+      - type: file
+        path: dev.sukun.matane.desktop
+      - type: file
+        path: dev.sukun.matane.metainfo.xml
+      - type: script
+        dest-filename: matane.sh
+        commands:
+          # Tells Matane it is a Flatpak: updates come from Flathub (ADR 0021).
+          - export MATANE_PACKAGE=flatpak
+          # A Flatpak Discord client keeps its socket in its own runtime folder.
+          - discord="$XDG_RUNTIME_DIR/app/com.discordapp.Discord/discord-ipc-0"
+          - if [ -S "$discord" ] && [ ! -e "$XDG_RUNTIME_DIR/discord-ipc-0" ]; then ln -sf "$discord" "$XDG_RUNTIME_DIR/discord-ipc-0"; fi
+          - exec zypak-wrapper /app/matane/matane "$@"

@@ -56,7 +56,7 @@ pnpm dist:linux   # build an AppImage into apps/desktop/release/ (pnpm dist: thi
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request, and [`SECURITY.md`](SECURITY.md) to report a vulnerability.
 
-Writing an extension? See [`docs/extensions.md`](docs/extensions.md).
+User guide and extension guide: **[sukundev.github.io/matane](https://sukundev.github.io/matane/)** (source in `apps/docs`).
 
 Project layout:
 
@@ -67,7 +67,7 @@ packages/extension-sdk/      Extension author SDK (MIT)
 packages/extension-runtime/  QuickJS sandbox host (MIT)
 packages/extension-cli/      mr-ext: create, build, test, bench and publish extensions (MIT)
 extensions/mangadex/   Built-in MangaDex extension
-docs/extensions.md     Extension authoring guide
+apps/docs/             Documentation site (VitePress): user guide and extension guide
 docs/matane-extensions/  How to set up the official extension repository (with templates)
 docs/adr/              Architecture decision records
 docs/ui/               UI mockups (design source of truth)

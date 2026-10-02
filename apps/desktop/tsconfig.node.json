@@ -9,6 +9,7 @@
   },
   "include": [
     "electron.vite.config.ts",
+    "build-tools/**/*",
     "drizzle.config.ts",
     "src/main/**/*",
     "src/preload/**/*",

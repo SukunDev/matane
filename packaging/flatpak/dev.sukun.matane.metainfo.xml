@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>dev.sukun.matane</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <name>Matane</name>
+  <summary>Read manga, manhwa and webtoons from your library</summary>
+  <developer id="dev.sukun">
+    <name>SukunDev</name>
+  </developer>
+  <description>
+    <p>
+      Matane is an open-source desktop manga reader. Keep a library with reading progress, read in
+      paged or webtoon mode, download chapters for offline reading and get told about new chapters.
+    </p>
+    <p>
+      Sources come from extensions that run in a sandbox: they can only reach the sites they list
+      and never touch your files. Matane itself hosts no content.
+    </p>
+    <ul>
+      <li>Paged, double-page and webtoon reading with zoom, colour filters and remappable keys</li>
+      <li>Downloads as CBZ or folders, read offline</li>
+      <li>Categories, history, reading statistics and backups</li>
+      <li>Catppuccin themes, DNS-over-HTTPS and proxy settings</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">dev.sukun.matane.desktop</launchable>
+  <url type="homepage">https://sukundev.github.io/matane/</url>
+  <url type="bugtracker">https://github.com/SukunDev/matane/issues</url>
+  <url type="vcs-browser">https://github.com/SukunDev/matane</url>
+  <url type="help">https://sukundev.github.io/matane/guide/</url>
+  <screenshots>
+    <screenshot type="default">
+      <caption>The library</caption>
+      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/01-library.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Manga details and chapters</caption>
+      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/02-detail.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Reading a webtoon</caption>
+      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/04-reader-webtoon.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Browsing a source</caption>
+      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/05-browse.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Extensions</caption>
+      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/09-extensions.png</image>
+    </screenshot>
+  </screenshots>
+  <content_rating type="oars-1.1">
+    <content_attribute id="social-info">mild</content_attribute>
+  </content_rating>
+  <branding>
+    <color type="primary" scheme_preference="light">#cba6f7</color>
+    <color type="primary" scheme_preference="dark">#1e1e2e</color>
+  </branding>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <requires>
+    <display_length compare="ge">768</display_length>
+  </requires>
+  <releases>
+    <release version="0.1.0-beta.1" date="2026-09-27" type="development"/>
+  </releases>
+</component>
