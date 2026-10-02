@@ -3,9 +3,19 @@ packages:
 
 # One version of the Matane SDK, runtime and CLI for every extension ("catalog:" in package.json).
 catalog:
-  '@matane/extension-cli': ^0.1.0
-  '@matane/extension-runtime': ^0.1.0
-  '@matane/extension-sdk': ^0.1.0
+  '@matane/extension-cli': 0.1.0
+  '@matane/extension-runtime': 0.1.0
+  '@matane/extension-sdk': 0.1.0
+  '@types/node': ^24.13.6
+
+# Until the SDK is on npm, the packages come from tarballs: vendor/ now (`pnpm pack` in the matane
+# repository), then the GitHub release `sdk-v0.1.0`:
+#   https://github.com/SukunDev/matane/releases/download/sdk-v0.1.0/matane-extension-<name>-0.1.0.tgz
+# Once they are on npm, remove this block and vendor/.
+overrides:
+  '@matane/extension-cli': file:vendor/matane-extension-cli-0.1.0.tgz
+  '@matane/extension-runtime': file:vendor/matane-extension-runtime-0.1.0.tgz
+  '@matane/extension-sdk': file:vendor/matane-extension-sdk-0.1.0.tgz
 
 allowBuilds:
   esbuild: true

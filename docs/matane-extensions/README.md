@@ -2,12 +2,15 @@
 
 Panduan untuk menyiapkan **repo extension resmi** Matane: repo GitHub terpisah yang membangun, menandatangani, dan menerbitkan extension (mulai dari MangaDex) ke GitHub Pages, lalu dipasang pengguna dari halaman Extensions di app.
 
+> **Strategi rilis (2 Okt 2026):** GitHub dulu; npm, AUR, Flathub ditunda sampai app lengkap. Ikuti [`langkah-pemisahan.md`](langkah-pemisahan.md).
+>
 > **Status:** ditunda sampai semua fase app selesai (keputusan 29 Sep 2026). Semua kode di sisi app sudah siap: format repo, tanda tangan ed25519, `mr-ext repo`, pasang/update/hapus, `transformImage`, dan `migrateUrl` (Fase 4a–4d). Yang belum ada hanya hal-hal di luar kode: akun, kunci, dan repo itu sendiri.
 
 ## Isi folder ini
 
 | File | Isi |
 |---|---|
+| [`langkah-pemisahan.md`](langkah-pemisahan.md) | **Mulai di sini:** langkah demi langkah memisahkan repo dengan strategi "GitHub dulu" (SDK sebagai tarball GitHub Release, npm ditunda). Menggantikan urutan checklist di bawah. |
 | [`setup-akun-dan-kunci.md`](setup-akun-dan-kunci.md) | Langkah membuat repo GitHub + Pages, kunci tanda tangan, organisasi dan token npm, serta ke mana setiap nilai disimpan. |
 | [`struktur-repo.md`](struktur-repo.md) | Tata letak repo, aturan setiap extension, versi, fixture test, dan cara kerja ketiga workflow. |
 | [`perubahan-di-app.md`](perubahan-di-app.md) | Apa yang diubah di Matane setelah repo resmi hidup: kunci resmi, repo default, handoff MangaDex, dan menghapus extension bawaan. |

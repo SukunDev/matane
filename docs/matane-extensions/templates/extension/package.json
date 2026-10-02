@@ -13,6 +13,7 @@
   "devDependencies": {
     "@matane/extension-cli": "catalog:",
     "@matane/extension-runtime": "catalog:",
-    "@matane/extension-sdk": "catalog:"
+    "@matane/extension-sdk": "catalog:",
+    "@types/node": "catalog:"
   }
 }

@@ -574,3 +574,8 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - Nyalakan GitHub Pages (Source: GitHub Actions) supaya `docs.yml` bisa deploy.
   - `PKGBUILD`/`.SRCINFO` saat ini berisi hash dari tarball lokal. Jalankan `node packaging/update-aur.mjs <versi>` setelah rilis sungguhan, sebelum submit. Manifest Flatpak masih berisi hash nol sampai `update-flatpak.mjs` dijalankan.
   - `CHANGELOG.md` belum memuat fitur Fase 5; ditulis di 5g bersama catatan 1.0.0.
+
+### Keputusan rilis (2 Okt 2026)
+
+- Rilis hanya di GitHub dulu (Releases, Pages, Actions). AUR, Flathub, dan pengumuman ditunda sampai app lengkap; SDK diterbitkan ke npm (keputusan menyusul di hari yang sama).
+- Berikutnya: Milestone 4f, yaitu memisahkan repo extension, mengikuti [`docs/matane-extensions/langkah-pemisahan.md`](../matane-extensions/langkah-pemisahan.md). SDK dari npm (`@matane/*`, tag `sdk-v0.1.0`).
