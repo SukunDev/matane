@@ -6,3 +6,4 @@ export * from './ipc/contract';
 export * from './errors';
 export * from './models';
 export * from './chapters';
+export * from './backup';

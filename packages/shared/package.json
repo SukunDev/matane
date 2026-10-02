@@ -11,7 +11,8 @@
     "./errors": "./src/errors.ts",
     "./reader": "./src/reader.ts",
     "./chapters": "./src/chapters.ts",
-    "./limit": "./src/limit.ts"
+    "./limit": "./src/limit.ts",
+    "./backup": "./src/backup.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

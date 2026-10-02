@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   BookOpen,
   EyeOff,
+  HardDriveDownload,
   Pause,
   Play,
   RefreshCw,
@@ -143,6 +144,12 @@ function Palette({ onClose }: { onClose: () => void }) {
       label: t('palette.actions.syncRepos'),
       icon: RefreshCw,
       onSelect: run(() => ipc.invoke('repos.sync')),
+    },
+    {
+      id: 'backup',
+      label: t('palette.actions.backup'),
+      icon: HardDriveDownload,
+      onSelect: run(() => ipc.invoke('backup.create')),
     },
     {
       id: 'reader-settings',

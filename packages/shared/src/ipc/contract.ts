@@ -44,6 +44,7 @@ import {
 } from '../models';
 import type { DbChangeTag } from '../models';
 import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
+import { backupFileSchema, backupPreviewSchema, backupProgressSchema, restoreResultSchema } from '../backup';
 import type { EventChannel, InvokeChannel } from './channels';
 
 const invoke = <I extends z.ZodType, O extends z.ZodType>(input: I, output: O) => ({ input, output });
@@ -249,6 +250,24 @@ export const invokeContract = {
   ),
   'history.remove': invoke(z.object({ mangaId: idSchema }), z.void()),
   'history.clear': invoke(z.void(), z.void()),
+  /** "Back up now": a file picked in a save dialog (default: the backup folder). Null = cancelled. */
+  'backup.create': invoke(z.void(), z.string().nullable()),
+  /** Backups in the backup folder, newest first. */
+  'backup.list': invoke(z.void(), z.array(backupFileSchema)),
+  /** Picks a backup file to restore (open dialog). */
+  'backup.pick': invoke(z.void(), z.string().nullable()),
+  'backup.preview': invoke(z.object({ path: z.string().min(1) }), backupPreviewSchema),
+  /**
+   * Restores a backup. "merge" combines it with what is here; "replace" first backs up and then
+   * removes the current library. `settings`: also take the backup's app settings.
+   */
+  'backup.restore': invoke(
+    z.object({ path: z.string().min(1), mode: z.enum(['merge', 'replace']), settings: z.boolean() }),
+    restoreResultSchema,
+  ),
+  /** Picks the folder automatic backups go to. Null = cancelled. */
+  'backup.chooseFolder': invoke(z.void(), z.string().nullable()),
+  'backup.openFolder': invoke(z.void(), z.void()),
   'stats.overview': invoke(z.object({ range: z.enum(STATS_RANGES) }), statsOverviewSchema),
   /** Forgets every reading session (Settings → Data); progress and history stay. */
   'stats.clear': invoke(z.void(), z.void()),
@@ -402,6 +421,7 @@ export const invokeContract = {
 export const eventContract = {
   'window.maximizeChanged': z.boolean(),
   'settings.changed': appSettingsSchema,
+  'backup.progress': backupProgressSchema,
   'db.changed': z.object({ tags: z.array(z.custom<DbChangeTag>()) }),
   'cloudflare.status': cloudflareStatusSchema,
   'window.fullScreenChanged': z.boolean(),

@@ -1220,7 +1220,8 @@
       "pauseDownloads": "Pause all downloads",
       "resumeDownloads": "Resume all downloads",
       "syncRepos": "Check extension repositories",
-      "readerSettings": "Open reader settings"
+      "readerSettings": "Open reader settings",
+      "backup": "Back up now"
     },
     "footer": {
       "navigate": "navigate",
@@ -1368,5 +1369,69 @@
       "read_other": "{{count}} chapters read"
     },
     "minutesShort": "min"
+  },
+  "backup": {
+    "title": "Backup",
+    "description": "Your library, categories, progress, history, statistics, repositories, extension settings and app settings. Not the downloaded files.",
+    "now": "Back up now",
+    "restore": "Restore…",
+    "saved": "Saved to {{path}}",
+    "auto": {
+      "label": "Automatic backup",
+      "hint": "The last 7 are kept; a missed one runs soon after the app opens.",
+      "off": "Off",
+      "daily": "Daily",
+      "weekly": "Weekly"
+    },
+    "folder": "Backup folder",
+    "defaultFolder": "In the app data folder",
+    "changeFolder": "Change…",
+    "syncTip": "Tip: a folder synced by Syncthing, Dropbox or OneDrive brings your backups to your other computers; restore them there with \"Merge\".",
+    "recent": "Recent backups",
+    "safety": "before a restore",
+    "restoreThis": "Restore",
+    "dialog": {
+      "title": "Restore a backup",
+      "reading": "Reading the backup…",
+      "made": "Made",
+      "version": "Matane version",
+      "library": "Library",
+      "manga_one": "{{count}} manga",
+      "manga_other": "{{count}} manga",
+      "categories": "Categories",
+      "chaptersRead": "Chapters read",
+      "missing": "Not installed here: {{names}}. Their manga come back as \"source not installed\" until you install them.",
+      "how": "How",
+      "merge": "Merge",
+      "mergeHint": "Combine with what is here: read status and bookmarks from both, the furthest progress, every category. Nothing is removed.",
+      "replace": "Replace",
+      "replaceHint": "Remove the current library first, then restore. A backup of what is here now is made first.",
+      "settings": "Also restore the app settings (theme, reader, downloads…)",
+      "replaceSure": "I understand that the current library, progress and history are replaced.",
+      "safety": "Backing up what is here now…",
+      "restoring": "Restoring…",
+      "mergeAction": "Merge",
+      "replaceAction": "Replace"
+    },
+    "summary": {
+      "done": "Restored",
+      "manga": "{{added}} manga added, {{updated}} already here updated",
+      "chapters": "{{added}} chapters added, {{updated}} updated",
+      "categories_one": "{{count}} category added",
+      "categories_other": "{{count}} categories added",
+      "downloads_one": "{{count}} downloaded chapter linked again",
+      "downloads_other": "{{count}} downloaded chapters linked again",
+      "covers_one": "{{count}} custom cover",
+      "covers_other": "{{count}} custom covers",
+      "repos_one": "{{count}} repository added",
+      "repos_other": "{{count}} repositories added",
+      "settings": "App settings restored",
+      "safety": "The previous state was backed up to {{path}}",
+      "failed_one": "{{count}} manga could not be restored",
+      "failed_other": "{{count}} manga could not be restored",
+      "missingTitle": "Extensions to install",
+      "missingHint": "Install them to read these sources again; their settings from the backup come with them.",
+      "notOffered": "Not in your repositories"
+    }
   }
 }

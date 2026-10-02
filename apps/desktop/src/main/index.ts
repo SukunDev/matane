@@ -58,11 +58,18 @@ import { DownloadAutomation } from './downloads/automation';
 import { DownloadManager } from './downloads/manager';
 import { DownloadStore } from './downloads/store';
 import { DownloadsRepository } from './db/repositories/downloads';
-import { contentLanguages, effectiveReaderSettings } from '@manga-reader/shared';
+import {
+  type AppSettings,
+  DEFAULT_SETTINGS,
+  appSettingsSchema,
+  contentLanguages,
+  effectiveReaderSettings,
+} from '@manga-reader/shared';
 import { resolveDirection } from '@manga-reader/shared/chapters';
 import { DiscordPresence, createDiscordClient, discordClientId } from './app/discord';
 import { NetworkControl, PROXY_PASSWORD_KEY } from './network/control';
 import { StatsService } from './stats/service';
+import { BackupService } from './backup/service';
 import { CoverColors } from './images/cover-color';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
@@ -616,6 +623,55 @@ async function bootstrap(): Promise<void> {
     log: (message) => updaterLog.warn(message),
   });
 
+  const settingsChanged = (patch: Partial<AppSettings>) => {
+    if (patch.general || patch.language) applySystem();
+    if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
+    if (patch.general || patch.incognito !== undefined) void presence?.sync();
+    if (patch.network) void networkControl.apply();
+    refreshTray();
+  };
+
+  // Backup and restore (Phase 5e).
+  const backups = new BackupService({
+    sqlite: connection.sqlite,
+    appVersion: app.getVersion(),
+    settingKeys: Object.keys(DEFAULT_SETTINGS),
+    settings: () => settings.getAppSettings().backup,
+    defaultFolder: join(userData, 'backups'),
+    customCoversDir: join(userData, 'covers', 'custom'),
+    isInstalled: (extensionId) => extensions.isInstalled(extensionId),
+    store: {
+      get: (key, fallback) => settings.getValue(key, fallback),
+      set: (key, value) => settings.setValue(key, value),
+    },
+    applySettings: (restored) => {
+      const current = settings.getAppSettings();
+      const patch: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(restored)) {
+        // The first-run state stays; the rest only when it is a valid setting.
+        if (key === 'onboarding' || !(key in appSettingsSchema.shape)) continue;
+        const parsed = appSettingsSchema.shape[key as keyof AppSettings].safeParse(value);
+        if (parsed.success) patch[key] = parsed.data;
+      }
+      // Folders belong to this machine.
+      if (patch['downloads'])
+        patch['downloads'] = { ...(patch['downloads'] as AppSettings['downloads']), folder: current.downloads.folder };
+      if (patch['backup'])
+        patch['backup'] = { ...(patch['backup'] as AppSettings['backup']), folder: current.backup.folder };
+      const next = settings.updateAppSettings(patch as Partial<AppSettings>);
+      broadcast('settings.changed', next);
+      settingsChanged(patch as Partial<AppSettings>);
+    },
+    restored: () => {
+      changes.mark('library', 'categories', 'history', 'downloads', 'repos', 'sources', 'extensions');
+      void repos.sync().catch(() => undefined);
+    },
+    onProgress: (progress) => broadcast('backup.progress', progress),
+    log: (message) => log.scope('backup').info(message),
+  });
+  backups.applyAllPending();
+  backups.start();
+
   registerIpcHandlers(
     createIpcHandlers({
       settings,
@@ -667,13 +723,8 @@ async function bootstrap(): Promise<void> {
             end: () => void presence?.stopped(),
           }
         : undefined,
-      settingsChanged: (patch) => {
-        if (patch.general || patch.language) applySystem();
-        if (patch.cacheSizeMb) void imageCache.setMaxBytes(patch.cacheSizeMb * MB);
-        if (patch.general || patch.incognito !== undefined) void presence?.sync();
-        if (patch.network) void networkControl.apply();
-        refreshTray();
-      },
+      backups,
+      settingsChanged,
     }),
   );
 
@@ -725,6 +776,7 @@ async function bootstrap(): Promise<void> {
     downloads.shutdown();
     void downloadStore.reader.closeAll();
     sessions.end();
+    backups.stop();
     void presence?.dispose();
     registry.close();
     host.dispose();

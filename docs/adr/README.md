@@ -32,3 +32,4 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0026](0026-reader-input.md) | Reader input: one keymap, pointer gestures, zoom per view |
 | [0027](0027-first-run-whats-new-cover-colour.md) | First run, What's new and cover colours |
 | [0028](0028-statistics-and-network-settings.md) | Statistics from reading sessions; network settings applied everywhere |
+| [0029](0029-backup-and-restore.md) | Backup and restore: natural keys, merge rules, restored in steps in main |

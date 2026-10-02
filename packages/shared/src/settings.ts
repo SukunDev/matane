@@ -451,6 +451,13 @@ export const appSettingsSchema = z.object({
   updater: updaterSettingsSchema,
   browse: browseSettingsSchema,
   network: networkSettingsSchema,
+  /** Automatic backups (§6.7): how often, and where (null = `userData/backups`). The last 7 are kept. */
+  backup: z
+    .object({
+      auto: z.enum(['off', 'daily', 'weekly']).catch('daily'),
+      folder: z.string().nullable().catch(null),
+    })
+    .catch({ auto: 'daily', folder: null }),
   /** First-run setup (§6.6); profiles from before it count as set up. */
   onboarding: z.object({ done: z.boolean().catch(false) }).catch({ done: false }),
 });
@@ -490,5 +497,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     proxy: { ...DEFAULT_NETWORK_SETTINGS.proxy },
     userAgent: null,
   },
+  backup: { auto: 'daily', folder: null },
   onboarding: { done: false },
 };

@@ -8,6 +8,7 @@ import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { Button } from '../../components/ui/button';
 import { formatBytes } from '../../lib/format';
 import { ipc, settingsQuery, useUpdateSettings } from '../../lib/ipc';
+import { BackupSettings } from './BackupSettings';
 import { Row } from './controls';
 
 const storageQueryKey = ['storage', 'info'] as const;
@@ -147,6 +148,8 @@ export function DataSettings() {
           </div>
         </div>
       </section>
+
+      <BackupSettings />
 
       <section className="rounded-xl border bg-card/40 p-5">
         <h2 className="mb-4 text-sm font-semibold">{t('settings.data.statistics')}</h2>

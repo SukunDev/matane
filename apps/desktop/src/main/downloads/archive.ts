@@ -41,7 +41,7 @@ interface OpenZip {
   pages: string[];
 }
 
-const openZip = (path: string) =>
+export const openZip = (path: string) =>
   new Promise<OpenZip>((resolve, reject) => {
     yauzl.open(path, { lazyEntries: true, autoClose: false }, (error, zip) => {
       if (error || !zip) {
@@ -59,7 +59,7 @@ const openZip = (path: string) =>
     });
   });
 
-const readEntry = (zip: yauzl.ZipFile, entry: yauzl.Entry) =>
+export const readEntry = (zip: yauzl.ZipFile, entry: yauzl.Entry) =>
   new Promise<Buffer>((resolve, reject) => {
     zip.openReadStream(entry, (error, stream) => {
       if (error || !stream) {

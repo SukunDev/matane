@@ -1190,7 +1190,8 @@
       "pauseDownloads": "Jeda semua download",
       "resumeDownloads": "Lanjutkan semua download",
       "syncRepos": "Periksa repositori extension",
-      "readerSettings": "Buka pengaturan reader"
+      "readerSettings": "Buka pengaturan reader",
+      "backup": "Backup sekarang"
     },
     "footer": {
       "navigate": "pilih",
@@ -1338,5 +1339,69 @@
       "read_other": "{{count}} chapter dibaca"
     },
     "minutesShort": "mnt"
+  },
+  "backup": {
+    "title": "Backup",
+    "description": "Library, kategori, progres, history, statistik, repositori, pengaturan extension, dan pengaturan app. Bukan file yang sudah didownload.",
+    "now": "Backup sekarang",
+    "restore": "Pulihkan…",
+    "saved": "Tersimpan di {{path}}",
+    "auto": {
+      "label": "Backup otomatis",
+      "hint": "7 terakhir disimpan; yang terlewat dijalankan tak lama setelah app dibuka.",
+      "off": "Mati",
+      "daily": "Harian",
+      "weekly": "Mingguan"
+    },
+    "folder": "Folder backup",
+    "defaultFolder": "Di folder data app",
+    "changeFolder": "Ganti…",
+    "syncTip": "Tips: folder yang disinkronkan Syncthing, Dropbox, atau OneDrive membawa backup ke komputer lain; pulihkan di sana dengan \"Gabungkan\".",
+    "recent": "Backup terakhir",
+    "safety": "sebelum pemulihan",
+    "restoreThis": "Pulihkan",
+    "dialog": {
+      "title": "Pulihkan backup",
+      "reading": "Membaca backup…",
+      "made": "Dibuat",
+      "version": "Versi Matane",
+      "library": "Library",
+      "manga_one": "{{count}} manga",
+      "manga_other": "{{count}} manga",
+      "categories": "Kategori",
+      "chaptersRead": "Chapter dibaca",
+      "missing": "Belum terpasang di sini: {{names}}. Manga-nya kembali sebagai \"source tidak terpasang\" sampai kamu memasangnya.",
+      "how": "Cara",
+      "merge": "Gabungkan",
+      "mergeHint": "Gabung dengan yang ada: status dibaca dan bookmark dari keduanya, progres terjauh, semua kategori. Tidak ada yang dihapus.",
+      "replace": "Ganti",
+      "replaceHint": "Hapus library sekarang dulu, lalu pulihkan. Backup kondisi sekarang dibuat lebih dulu.",
+      "settings": "Pulihkan juga pengaturan app (tema, reader, download…)",
+      "replaceSure": "Aku paham library, progres, dan history sekarang akan diganti.",
+      "safety": "Membackup kondisi sekarang…",
+      "restoring": "Memulihkan…",
+      "mergeAction": "Gabungkan",
+      "replaceAction": "Ganti"
+    },
+    "summary": {
+      "done": "Dipulihkan",
+      "manga": "{{added}} manga ditambahkan, {{updated}} yang sudah ada diperbarui",
+      "chapters": "{{added}} chapter ditambahkan, {{updated}} diperbarui",
+      "categories_one": "{{count}} kategori ditambahkan",
+      "categories_other": "{{count}} kategori ditambahkan",
+      "downloads_one": "{{count}} chapter download tersambung lagi",
+      "downloads_other": "{{count}} chapter download tersambung lagi",
+      "covers_one": "{{count}} cover kustom",
+      "covers_other": "{{count}} cover kustom",
+      "repos_one": "{{count}} repositori ditambahkan",
+      "repos_other": "{{count}} repositori ditambahkan",
+      "settings": "Pengaturan app dipulihkan",
+      "safety": "Kondisi sebelumnya dibackup ke {{path}}",
+      "failed_one": "{{count}} manga tidak bisa dipulihkan",
+      "failed_other": "{{count}} manga tidak bisa dipulihkan",
+      "missingTitle": "Extension yang perlu dipasang",
+      "missingHint": "Pasang supaya source ini bisa dibaca lagi; pengaturannya dari backup ikut terbawa.",
+      "notOffered": "Tidak ada di repositorimu"
+    }
   }
 }

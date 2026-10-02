@@ -748,7 +748,7 @@ repo/
 | Auto-backup | **Harian, simpan 7 file** (pilihan: mati, harian, mingguan) |
 | Import Mihon/Tachiyomi | **Setelah v1** |
 
-**Format file**: `matane-backup-YYYY-MM-DD.zip`
+**Format file**: `matane-backup-YYYY-MM-DD-HHmm.zip` (backup pengaman sebelum Replace: `matane-before-restore-…zip`)
 ```
 backup.json        # { formatVersion, appVersion, createdAt, data: {...} }
 covers/            # cover kustom (nama file = hash natural key manga)
@@ -769,10 +769,10 @@ covers/            # cover kustom (nama file = hash natural key manga)
 **Restore**
 1. Pilih file → **preview**: jumlah manga, kategori, chapter dibaca, extension/source yang belum terpasang.
 2. Pilih mode:
-   - **Merge** (default): status dibaca = OR, progress = yang terjauh, kategori = gabungan, history = yang terbaru, setting = tidak ditimpa kecuali dicentang.
+   - **Merge** (default): status dibaca = OR, bookmark = OR, progress = yang terjauh, kategori = gabungan, history = yang terbaru, metadata dan pengaturan per manga di sini menang (backup hanya mengisi yang kosong), setting app = tidak ditimpa kecuali dicentang (folder download dan backup tetap milik mesin ini).
    - **Replace**: data lama dihapus. Wajib konfirmasi, dan app **otomatis membuat backup** kondisi sekarang sebelum menghapus.
-3. Extension yang dibutuhkan tapi belum terpasang: tawarkan install dari repo yang tercatat di backup (atau repo yang sudah ada).
-4. Berjalan di **worker thread** dengan progress bar. Hasil akhir berupa ringkasan (berhasil, dilewati, gagal).
+3. Extension yang dibutuhkan tapi belum terpasang: tawarkan install dari repo yang tercatat di backup (atau repo yang sudah ada). Prefs dan storage-nya dari backup disimpan dulu dan diterapkan begitu extension itu terpasang.
+4. Berjalan di main **bertahap** (transaksi per 50 manga, event loop mendapat giliran di antaranya) dengan progress bar; bukan worker thread, supaya hanya ada satu penulis database (ADR 0029). Hasil akhir berupa ringkasan (berhasil, dilewati, gagal).
 
 **Auto-backup**
 - Default **harian**, menyimpan **7 file terakhir**. Folder bisa diatur (default `userData/backups`).

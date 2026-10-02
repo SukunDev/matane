@@ -29,6 +29,7 @@ import type { ImageCache } from '../images/cache';
 import type { ImageService } from '../images/service';
 import type { NetworkControl } from '../network/control';
 import type { StatsService } from '../stats/service';
+import type { BackupService } from '../backup/service';
 import type { AppSettings } from '@manga-reader/shared';
 import type { ReadingService } from '../reading/service';
 import { type IpcHandlers, broadcast } from './register';
@@ -66,6 +67,7 @@ export interface IpcDeps {
   /** What's new: the running version and whether its notes were seen (§6.6). */
   whatsNew: { get(): { version: string; seen: boolean }; markSeen(): void };
   stats: Pick<StatsService, 'overview' | 'clear'>;
+  backups: BackupService;
   networkControl: Pick<NetworkControl, 'info' | 'setProxyPassword' | 'test'>;
   /** Discord Rich Presence can be offered. */
   discord: boolean;
@@ -109,6 +111,7 @@ export function createIpcHandlers({
   whatsNew,
   discord,
   stats,
+  backups,
   networkControl,
   readingActivity,
   settingsChanged,
@@ -207,7 +210,12 @@ export function createIpcHandlers({
     'repos.trustKey': ({ repoId }) => repos.trustKey(repoId),
     'extensions.available': () => installer.available(),
     'extensions.prepareInstall': ({ repoId, extensionId }) => installer.prepare(repoId, extensionId),
-    'extensions.install': ({ token }) => installer.install(token),
+    'extensions.install': async ({ token }) => {
+      const entry = await installer.install(token);
+      // Preferences a restored backup kept for it (BRAINSTORM.md §6.7).
+      backups.applyPending(entry.id);
+      return entry;
+    },
     'extensions.cancelInstall': ({ token }) => installer.cancel(token),
     'extensions.updateAll': () => installer.updateAll(),
     'extensions.uninstall': ({ extensionId }) => installer.uninstall(extensionId),
@@ -285,6 +293,50 @@ export function createIpcHandlers({
     'history.list': (input) => history.list(input ?? {}),
     'history.remove': ({ mangaId }) => history.remove(mangaId),
     'history.clear': () => history.clear(),
+    'backup.create': async (_input, event) => {
+      const folder = backups.folder();
+      await mkdir(folder, { recursive: true });
+      const options: Electron.SaveDialogOptions = {
+        defaultPath: join(folder, backups.defaultName()),
+        filters: [{ name: 'Matane backup', extensions: ['zip'] }],
+      };
+      const window = windowOf(event);
+      const picked = window ? await dialog.showSaveDialog(window, options) : await dialog.showSaveDialog(options);
+      if (picked.canceled || !picked.filePath) return null;
+      await backups.create(picked.filePath);
+      return picked.filePath;
+    },
+    'backup.list': () => backups.list(),
+    'backup.pick': async (_input, event) => {
+      const options: Electron.OpenDialogOptions = {
+        properties: ['openFile'],
+        defaultPath: backups.folder(),
+        filters: [{ name: 'Matane backup', extensions: ['zip'] }],
+      };
+      const window = windowOf(event);
+      const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+      return picked.canceled ? null : (picked.filePaths[0] ?? null);
+    },
+    'backup.preview': ({ path }) => backups.preview(path),
+    'backup.restore': (input) => backups.restore(input.path, { mode: input.mode, settings: input.settings }),
+    'backup.chooseFolder': async (_input, event) => {
+      const options: Electron.OpenDialogOptions = {
+        properties: ['openDirectory', 'createDirectory'],
+        defaultPath: backups.folder(),
+      };
+      const window = windowOf(event);
+      const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+      const folder = picked.canceled ? null : (picked.filePaths[0] ?? null);
+      if (!folder) return null;
+      const next = settings.updateAppSettings({ backup: { ...settings.getAppSettings().backup, folder } });
+      broadcast('settings.changed', next);
+      return folder;
+    },
+    'backup.openFolder': async () => {
+      await mkdir(backups.folder(), { recursive: true });
+      const error = await shell.openPath(backups.folder());
+      if (error) throw new AppError('unknown', error);
+    },
     'stats.overview': ({ range }) => stats.overview(range),
     'stats.clear': () => stats.clear(),
     'network.info': () => networkControl.info(),

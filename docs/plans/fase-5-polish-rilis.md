@@ -480,3 +480,35 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - Password proxy disimpan tanpa enkripsi di sistem tanpa keyring (dengan peringatan), bukan ditolak.
 - Catatan:
   - Permintaan app sendiri lewat `net.fetch` (repositori, cek update) memakai proxy tetapi tidak bisa menjawab password proxy; source, gambar, dan jendela Cloudflare bisa.
+
+### Milestone 5e: selesai (2 Okt 2026), menunggu review
+
+- `pnpm lint` 0 error (7 warning lama `useVirtualizer`), `format:check`, `typecheck`, dan `pnpm test` hijau: desktop 276 test, shared 31. E2E 114/114.
+- Test baru:
+  - `backup/backup.test.ts` (7):
+    - round trip ke profil baru (library, chapter, history, sesi, download, kategori, repositori, setting, data extension tertunda);
+    - aturan merge (dibaca/bookmark = keduanya, progres terjauh, kategori gabungan, history terbaru, setting lokal per manga menang, restore dua kali tidak menambah apa pun);
+    - replace (backup pengaman dulu, isinya bisa dipulihkan);
+    - file bukan zip / tanpa backup.json / JSON rusak / format lebih baru / skema salah ditolak tanpa menyentuh DB;
+    - auto-backup harian dan rotasi 7 (backup pengaman tidak ikut dihapus);
+    - prefs extension tertunda diterapkan setelah terpasang tanpa menimpa;
+    - skala: 1.000 manga / 50.000 chapter.
+  - E2E `backup.spec.ts` (4): profil A (kategori, progres, bookmark, download, tema) → "Back up now"; profil B menolak file rusak; merge memulihkan semuanya + setting, lalu extension yang hilang dipasang dari repo yang ikut di backup dan source-nya jalan lagi; replace meminta konfirmasi dan membuat backup pengaman.
+- Pengukuran (mesin senggang): backup 1.000 manga / 50.000 chapter 307 ms, restore 914 ms, langkah terpanjang 272 ms (parse `backup.json`), langkah berikutnya ±30 ms. Batas di test dilonggarkan (jumlah langkah ≥ 20, langkah < 3 detik) karena `pnpm test` paralel membuat angka waktu tidak stabil.
+- Live check (app hasil build):
+  - Profil statistik (2 manga asli WestManga/Ainz Scans, 142 chapter dibaca, 1 download) → "Back up now" 172 ms, 9 KB.
+  - Dipulihkan ke profil baru dengan merge dalam 89 ms: library identik (120/120 dan 22/22 dibaca, download tersambung lagi), statistik sama (142 chapter, 38 jam).
+  - Auto-backup tertulis ±1 menit setelah app dibuka (`matane-backup-2026-10-02-0245.zip`).
+  - Screenshot bagian Backup dan dialog pemulihan.
+- Implementasi:
+  - **Shared:** `backup.ts` (`backupSchema` format 1, preview, hasil, daftar file, progres), setting `backup {auto, folder}`, IPC `backup.create/list/pick/preview/restore/chooseFolder/openFolder`, event `backup.progress`.
+  - **Main:** `backup/export.ts` (kumpulkan + tulis zip atomik), `backup/restore.ts` (buka dan validasi, preview, restore bertahap dengan aturan merge/replace), `backup/service.ts` (`BackupService`: manual, otomatis + rotasi, backup pengaman, data extension tertunda); `extensions.install` menerapkan data tertunda; callback perubahan setting di `index.ts` dipakai bersama oleh restore.
+  - **Renderer:** `features/settings/BackupSettings.tsx` (Backup sekarang, Pulihkan, auto-backup, folder, daftar backup, dialog pemulihan dengan preview, mode, progres, ringkasan, dan pasang extension yang hilang), aksi palette "Back up now".
+  - **Dokumentasi:** ADR 0029, `BRAINSTORM.md` §6.7.
+- Beda dari rencana:
+  - Restore berjalan di main secara bertahap (transaksi per 50 manga), bukan di worker thread: dengan better-sqlite3 sinkron di main, penulis kedua akan mengunci database dan justru membekukan main.
+  - Nama file memakai jam (`matane-backup-YYYY-MM-DD-HHmm.zip`) supaya backup manual dan otomatis di hari yang sama tidak bertabrakan; rotasi mengurutkan nama, bukan waktu file.
+  - Cover kustom di-backup; cover permanen dan cache tidak (diambil lagi dari source).
+- Catatan:
+  - Auto-backup default harian juga berjalan untuk profil baru (file kecil).
+  - Saat replace, file cover kustom milik manga lama tetap tertinggal di folder `covers/custom` (tidak lagi dirujuk).
