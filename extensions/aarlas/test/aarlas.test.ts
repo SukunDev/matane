@@ -11,8 +11,7 @@ const FIXTURES = path.join(root, 'test/fixtures');
 const RECORD = process.env.MR_RECORD === '1';
 const enabled = RECORD || hasFixtures(FIXTURES);
 const suite = enabled ? describe : describe.skip;
-if (!enabled)
-  console.warn(`Aarlas tests skipped: no fixtures in ${FIXTURES} (record them with MR_RECORD=1 pnpm test)`);
+if (!enabled) console.warn(`Aarlas tests skipped: no fixtures in ${FIXTURES} (record them with MR_RECORD=1 pnpm test)`);
 
 let host: FixtureHost;
 let runtime: ExtensionRuntime;

@@ -15,7 +15,5 @@
     "*.bp.blogspot.com"
   ],
   "rateLimit": { "requests": 5, "perMs": 1000 },
-  "sources": [
-    { "key": "id", "lang": "id", "name": "Ainz Scans ID" }
-  ]
+  "sources": [{ "key": "id", "lang": "id", "name": "Ainz Scans ID" }]
 }

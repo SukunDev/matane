@@ -8,13 +8,7 @@ import {
 } from '@matane/extension-sdk';
 import { BASE_URL, type BloggerEntry, fetchFeed } from './api';
 import { buildSearchPath, getFilters } from './filters';
-import {
-  extractFeedKey,
-  parseMangaDetails,
-  toChapter,
-  toSummaryFromElement,
-  toSummaryFromEntry,
-} from './parse';
+import { extractFeedKey, parseMangaDetails, toChapter, toSummaryFromElement, toSummaryFromEntry } from './parse';
 
 const EXCLUDED_CATEGORIES = ['Anime', 'Novel', 'Novela'];
 const PAGE_SIZE = 20;
@@ -120,9 +114,7 @@ export default defineExtension({
         }
       }
 
-      return allEntries
-        .filter((entry) => entry.category?.some((c) => c.term === 'Chapter'))
-        .map(toChapter);
+      return allEntries.filter((entry) => entry.category?.some((c) => c.term === 'Chapter')).map(toChapter);
     },
 
     async getPages(chapter: Chapter): Promise<Page[]> {

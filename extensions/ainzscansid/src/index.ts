@@ -6,22 +6,9 @@ import {
   type Page,
   defineExtension,
 } from '@matane/extension-sdk';
-import {
-  BASE_URL,
-  type ChapterPagesResponseDto,
-  type SearchResponseDto,
-  type SeriesDetailDto,
-  apiGet,
-} from './api';
+import { BASE_URL, type ChapterPagesResponseDto, type SearchResponseDto, type SeriesDetailDto, apiGet } from './api';
 import { filterParams, getFilters } from './filters';
-import {
-  extractChapterParts,
-  extractMangaSlug,
-  toChapter,
-  toDetails,
-  toFilteredPageList,
-  toSummary,
-} from './parse';
+import { extractChapterParts, extractMangaSlug, toChapter, toDetails, toFilteredPageList, toSummary } from './parse';
 
 const PAGE_SIZE = 20;
 
@@ -109,9 +96,7 @@ export default defineExtension({
 
     async getPages(chapter: Chapter): Promise<Page[]> {
       const { seriesSlug, chapterSlug } = extractChapterParts(chapter.url);
-      const response = await apiGet<ChapterPagesResponseDto>(
-        `/series/comic/${seriesSlug}/chapter/${chapterSlug}`,
-      );
+      const response = await apiGet<ChapterPagesResponseDto>(`/series/comic/${seriesSlug}/chapter/${chapterSlug}`);
       const pages = response.chapter?.pages || [];
       return toFilteredPageList(pages);
     },

@@ -80,9 +80,10 @@ export default defineExtension({
       },
 
       resolveUrl(url: string): MangaSummary | null {
-        const match = /^https?:\/\/(?:[a-zA-Z0-9-]+\.)?westmanga\.(?:my|info|blog|online|org|com|net)\/(?:comic|manga)\/([a-zA-Z0-9_-]+)/i.exec(
-          url.trim(),
-        );
+        const match =
+          /^https?:\/\/(?:[a-zA-Z0-9-]+\.)?westmanga\.(?:my|info|blog|online|org|com|net)\/(?:comic|manga)\/([a-zA-Z0-9_-]+)/i.exec(
+            url.trim(),
+          );
         return match?.[1] ? { url: `/manga/${match[1]}/`, title: '' } : null;
       },
 

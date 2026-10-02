@@ -28,14 +28,14 @@ export interface BloggerEntry {
   link?: BloggerLink[];
   content?: BloggerText;
   summary?: BloggerText;
-  'media$thumbnail'?: BloggerThumbnail;
+  media$thumbnail?: BloggerThumbnail;
 }
 
 export interface BloggerFeed {
   title?: BloggerText;
-  'openSearch$totalResults'?: BloggerText;
-  'openSearch$startIndex'?: BloggerText;
-  'openSearch$itemsPerPage'?: BloggerText;
+  openSearch$totalResults?: BloggerText;
+  openSearch$startIndex?: BloggerText;
+  openSearch$itemsPerPage?: BloggerText;
   category?: BloggerCategory[];
   entry?: BloggerEntry[];
 }

@@ -111,9 +111,7 @@ suite('pages', () => {
 
 suite('urls', () => {
   it('resolveUrl parses comic urls', async () => {
-    await expect(
-      call('resolveUrl', ['https://v3.ainzscans01.com/comic/leveling-in-the-future']),
-    ).resolves.toEqual({
+    await expect(call('resolveUrl', ['https://v3.ainzscans01.com/comic/leveling-in-the-future'])).resolves.toEqual({
       url: '/comic/leveling-in-the-future',
       title: '',
     });
@@ -121,8 +119,6 @@ suite('urls', () => {
   });
 
   it('getWebUrl formats full web URLs', async () => {
-    await expect(call('getWebUrl', [MANGA])).resolves.toBe(
-      'https://v3.ainzscans01.com/comic/leveling-in-the-future',
-    );
+    await expect(call('getWebUrl', [MANGA])).resolves.toBe('https://v3.ainzscans01.com/comic/leveling-in-the-future');
   });
 });

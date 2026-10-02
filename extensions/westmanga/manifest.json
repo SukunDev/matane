@@ -13,7 +13,5 @@
     "*.mantweh.online"
   ],
   "rateLimit": { "requests": 5, "perMs": 1000 },
-  "sources": [
-    { "key": "id", "lang": "id", "name": "WestManga" }
-  ]
+  "sources": [{ "key": "id", "lang": "id", "name": "WestManga" }]
 }

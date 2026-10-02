@@ -13,7 +13,5 @@
     "*.bp.blogspot.com"
   ],
   "rateLimit": { "requests": 5, "perMs": 1000 },
-  "sources": [
-    { "key": "id", "lang": "id", "name": "Aarlas" }
-  ]
+  "sources": [{ "key": "id", "lang": "id", "name": "Aarlas" }]
 }

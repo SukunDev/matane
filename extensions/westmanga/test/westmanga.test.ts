@@ -118,9 +118,7 @@ suite('pages', () => {
 
 suite('urls', () => {
   it('resolveUrl parses manga urls', async () => {
-    await expect(
-      call('resolveUrl', ['https://v1.westmanga.my/comic/martial-peak']),
-    ).resolves.toEqual({
+    await expect(call('resolveUrl', ['https://v1.westmanga.my/comic/martial-peak'])).resolves.toEqual({
       url: '/manga/martial-peak/',
       title: '',
     });

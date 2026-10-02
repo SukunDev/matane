@@ -89,12 +89,12 @@ export function toChapter(unit: ChapterDto, seriesSlug: string): Chapter {
 }
 
 export function cleanPageUrl(rawUrl: string): string {
-  let url = rawUrl.startsWith('http') ? rawUrl : `https://api.ainzscans01.com${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
+  let url = rawUrl.startsWith('http')
+    ? rawUrl
+    : `https://api.ainzscans01.com${rawUrl.startsWith('/') ? '' : '/'}${rawUrl}`;
 
   if (url.includes('googleusercontent.com') || url.includes('bp.blogspot.com')) {
-    url = url
-      .replace(/=[swh]\d+[^/?]*($|\?)/i, '=s0$1')
-      .replace(/\/[swh]\d+[^/]*\//i, '/s0/');
+    url = url.replace(/=[swh]\d+[^/?]*($|\?)/i, '=s0$1').replace(/\/[swh]\d+[^/]*\//i, '/s0/');
   }
 
   const queryIdx = url.indexOf('?');

@@ -19,9 +19,7 @@ export function toSummaryFromEntry(entry: BloggerEntry): MangaSummary {
 
   let thumbnailUrl: string | undefined;
   if (entry['media$thumbnail']?.url) {
-    thumbnailUrl = entry['media$thumbnail'].url
-      .replace(/\/s.+?-c\//, '/w600/')
-      .replace(/=s(?!.*=s).+?-c$/, '=w600');
+    thumbnailUrl = entry['media$thumbnail'].url.replace(/\/s.+?-c\//, '/w600/').replace(/=s(?!.*=s).+?-c$/, '=w600');
   } else if (entry.content?.$t) {
     const doc = html.load(entry.content.$t);
     thumbnailUrl = doc.selectFirst('img')?.attr('src') ?? doc.selectFirst('img')?.absUrl('src');
@@ -50,7 +48,9 @@ export function toSummaryFromElement(el: HtmlElement): MangaSummary {
 
 export function parseStatus(text: string): MangaStatus {
   const lower = text.toLowerCase().trim();
-  if (['ongoing', 'en curso', 'en emisión', 'em lançamento', 'activo', 'ativo', 'lançando', 'berjalan'].includes(lower)) {
+  if (
+    ['ongoing', 'en curso', 'en emisión', 'em lançamento', 'activo', 'ativo', 'lançando', 'berjalan'].includes(lower)
+  ) {
     return 'ongoing';
   }
   if (['completed', 'completo', 'finalizado', 'tamat'].includes(lower)) {
@@ -72,7 +72,10 @@ export function parseMangaDetails(doc: HtmlElement, manga: MangaSummary): MangaD
   if (!title) {
     const pageTitle = doc.selectFirst('h1.entry-title, h1')?.text().trim();
     if (pageTitle) {
-      title = pageTitle.replace(/^komik\s+/i, '').replace(/\s+bahasa indonesia$/i, '').trim();
+      title = pageTitle
+        .replace(/^komik\s+/i, '')
+        .replace(/\s+bahasa indonesia$/i, '')
+        .trim();
     } else {
       const ogTitle = doc.selectFirst('meta[property="og:title"]')?.attr('content');
       if (ogTitle) {
@@ -94,9 +97,7 @@ export function parseMangaDetails(doc: HtmlElement, manga: MangaSummary): MangaD
   }
 
   const genreElements = profile.select('div.mt-15 > a[rel=tag]');
-  const genres: string[] = genreElements
-    .map((el: HtmlElement) => el.text().trim())
-    .filter((g: string) => Boolean(g));
+  const genres: string[] = genreElements.map((el: HtmlElement) => el.text().trim()).filter((g: string) => Boolean(g));
 
   let author = profile.selectFirst('span#author')?.text().trim() || undefined;
   let artist = profile.selectFirst('span#artist')?.text().trim() || undefined;
