@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phase 2e: global search and source migration across two fake extensions: "E2E Demo" (English, and
 // "E2E Broken", whose searches always fail) and "E2E Mirror" (same catalogue in Indonesian, chapters
@@ -98,7 +98,7 @@ test('migrates read status, bookmarks, categories, reader settings and cover by 
   expect(
     await api('manga.setCustomCover', { mangaId: hero, from: { kind: 'page', chapterId: byNumber(3), index: 0 } }),
   ).toBe(true);
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
   await api('manga.setReaderSettings', { mangaId: hero, settings: { mode: 'webtoon' } });
 
   // Library: select both, Migrate.

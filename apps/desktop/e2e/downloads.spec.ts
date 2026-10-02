@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { type Page, expect, test } from '@playwright/test';
 import yauzl from 'yauzl';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phase 3a: download chapters to CBZ, then read them with the site down.
 test.describe.configure({ mode: 'serial' });
@@ -99,7 +99,7 @@ test('reads a downloaded chapter with the site down', async () => {
   await page.keyboard.press('ArrowLeft');
   await expect(page.getByText('2 / 4').first()).toBeVisible();
   await expect.poll(loadedImages).toBeGreaterThanOrEqual(1);
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
 });
 
 test('deletes a download from the row menu', async () => {

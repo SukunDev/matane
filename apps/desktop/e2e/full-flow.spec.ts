@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phases 2–3 end to end, as a reader would go: library + category → read part of a chapter → quit
 // and reopen → continue on the same page → history → chapter bookmark → incognito → global search →
@@ -10,7 +10,7 @@ test.describe.configure({ mode: 'serial' });
 let t: TestApp;
 const page = (): Page => t.page;
 const goto = (hash: string) => page().evaluate((h) => (location.hash = h), hash);
-const leaveReader = () => page().getByTitle('Back to manga').click({ force: true });
+const leave = () => leaveReader(page());
 const chapterRow = (name: string) => page().locator('main section div.group', { hasText: name });
 
 test.beforeAll(async () => {
@@ -45,7 +45,7 @@ test('adds a manga to a category and reads part of a chapter', async () => {
   await expect(page().getByText('3 / 4').first()).toBeVisible();
   await page().getByRole('button', { name: 'Bookmark this chapter' }).click({ force: true });
   await expect(page().getByRole('button', { name: 'Remove chapter bookmark' })).toBeAttached();
-  await leaveReader();
+  await leave();
   await expect(chapterRow('Ch. 2')).toContainText('Page 3 / 4');
 });
 
@@ -61,7 +61,7 @@ test('continues on the same page after quitting and reopening the app', async ()
   await page().getByRole('link', { name: 'Continue · Ch. 2' }).click();
   await expect(page().getByText('3 / 4').first()).toBeVisible();
   await expect(page().getByRole('button', { name: 'Remove chapter bookmark' })).toBeAttached();
-  await leaveReader();
+  await leave();
 
   await goto('#/history');
   const entry = page().getByTestId('history-entry');
@@ -79,7 +79,7 @@ test('reads in incognito without leaving a trace', async () => {
   await expect(page().getByText('1 / 4').first()).toBeVisible();
   await page().keyboard.press('ArrowLeft');
   await expect(page().getByText('2 / 4').first()).toBeVisible();
-  await leaveReader();
+  await leave();
   await expect(chapterRow('Ch. 3')).not.toContainText('Page');
   await page().getByRole('button', { name: 'Incognito', exact: true }).click();
 
@@ -116,7 +116,7 @@ test('migrates to the second extension and keeps reading where it stopped', asyn
   await expect(chapterRow('Ch. 2').getByRole('button', { name: 'Remove bookmark' })).toBeVisible();
   await page().getByRole('link', { name: 'Continue · Ch. 2' }).click();
   await expect(page().getByText('3 / 4').first()).toBeVisible();
-  await leaveReader();
+  await leave();
 
   await goto('#/library');
   await page()
@@ -153,7 +153,7 @@ test('downloads a chapter and reads it while the site is down', async () => {
       ),
     )
     .toBeGreaterThanOrEqual(1);
-  await leaveReader();
+  await leave();
   t.site.down = false;
 });
 

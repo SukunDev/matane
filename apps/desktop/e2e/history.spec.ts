@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phase 2c: history, chapter bookmarks, incognito. One app session against the fake site.
 test.describe.configure({ mode: 'serial' });
@@ -14,7 +14,7 @@ const openReader = async (chapter: number, pageIndex: number) => {
   await goto(`#/reader/${chapterIds[chapter]}?page=${pageIndex}`);
   await expect(page.getByText(`${pageIndex + 1} / 4`).first()).toBeVisible();
 };
-const leaveReader = () => page.getByTitle('Back to manga').click({ force: true });
+const leave = () => leaveReader(page);
 const historyEntries = () => page.getByTestId('history-entry');
 
 test.beforeAll(async () => {
@@ -40,7 +40,7 @@ test('starts empty with incognito off', async () => {
 
 test('records history while reading and resumes from it', async () => {
   await openReader(2, 2);
-  await leaveReader();
+  await leave();
   await goto('#/history');
   await expect(historyEntries()).toHaveCount(1);
   const entry = historyEntries().first();
@@ -57,7 +57,7 @@ test('bookmarks the chapter from the reader and filters the library by it', asyn
   // The top bar icon toggles the chapter bookmark directly (mockup 03).
   await page.getByRole('button', { name: 'Bookmark this chapter' }).click({ force: true });
   await expect(page.getByRole('button', { name: 'Remove chapter bookmark' })).toHaveAttribute('aria-pressed', 'true');
-  await leaveReader();
+  await leave();
 
   const row = page.locator('main section div.group', { hasText: 'Ch. 2' });
   await expect(row.getByRole('button', { name: 'Remove bookmark' })).toHaveAttribute('aria-pressed', 'true');
@@ -88,7 +88,7 @@ test('records nothing while incognito', async () => {
   await expect(page.getByRole('button', { name: 'Incognito', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await openReader(3, 1);
   await expect(page.getByRole('button', { name: 'Incognito', exact: true })).toBeVisible();
-  await leaveReader();
+  await leave();
 
   const state = await page.evaluate(
     async (id) => ({
@@ -111,7 +111,7 @@ test('removes an entry and clears the history', async () => {
   await expect(page.getByText('Nothing read yet')).toBeVisible();
 
   await openReader(1, 1);
-  await leaveReader();
+  await leave();
   await goto('#/history');
   await expect(historyEntries()).toHaveCount(1);
   await page.getByRole('button', { name: 'Clear all history' }).click();

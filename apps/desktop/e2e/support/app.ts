@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { type ElectronApplication, type Page, _electron as electron } from '@playwright/test';
+import { type ElectronApplication, type Page, _electron as electron, expect } from '@playwright/test';
 import electronPath from 'electron';
 import { type Site, type SiteExtension, extensionFiles, startSite } from './site';
 
@@ -118,4 +118,15 @@ export function deleteSetting(home: string, key: string): void {
   execFileSync(electronPath as unknown as string, ['-e', script], {
     env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' },
   });
+}
+
+/**
+ * Closes the reader through its "Back to manga" button and waits until it is gone. The bars hide
+ * after 3 s; moving the mouse to the top edge shows them again (a forced click on the hidden
+ * button would land on a tap zone and leave the reader open on slow machines).
+ */
+export async function leaveReader(page: Page): Promise<void> {
+  await page.mouse.move(400, 20);
+  await page.getByTitle('Back to manga').click();
+  await expect.poll(() => page.evaluate(() => location.hash)).not.toContain('/reader/');
 }

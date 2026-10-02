@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phase 2d: scanlator prefs, per-manga chapter view and reader settings. "Twin Scans" has chapter 1
 // by Alpha, 2 by Alpha and Beta, 3 by Beta, 4 by Alpha and Beta.
@@ -83,7 +83,7 @@ test('prefers the priority scanlator for the next chapter and "continue"', async
   await readerSubtitle('Ch. 1 · Alpha');
   await page.keyboard.press(']');
   await readerSubtitle('Ch. 2 · Beta');
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
   await expect(page.getByRole('link', { name: 'Continue · Ch. 2' })).toHaveAttribute(
     'href',
     new RegExp(`/reader/${ids['2Beta']}$`),

@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { type ElectronApplication, type Page, _electron as electron, expect, test } from '@playwright/test';
 import electronPath from 'electron';
 import { type Site, extensionFiles, startSite } from './support/site';
+import { leaveReader } from './support/app';
 
 // One app session walks the Phase 1 flow against a fake site: install → browse → filter → detail →
 // read (single RTL, double, transition with a missing chapter) → back → webtoon → offline.
@@ -147,7 +148,7 @@ test('warns about a missing chapter between chapter 3 and 5', async () => {
 });
 
 test('keeps the chapter list after returning from the reader', async () => {
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
   await expect(page.getByRole('heading', { name: 'Paged Hero' })).toBeVisible();
   // Regression: with cached data the virtual list used to render no rows at all.
   await expect(page.locator('main a[href*="/reader/"]')).toHaveCount(5);
@@ -162,7 +163,7 @@ test('resumes where reading stopped and marks chapters read', async () => {
   await expect(page.getByRole('link', { name: 'Continue · Ch. 5' })).toBeVisible();
   await ch1.locator('a').click();
   await expect(page.getByText('3 / 4').first()).toBeVisible();
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
   await expect(rows).toHaveCount(4);
 
   // Row menu: mark chapter 5's predecessors read.

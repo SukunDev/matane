@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Phase 3b: the Downloads page (mockup 08), download ahead, delete after reading, moving the
 // download folder and the size limit.
@@ -137,7 +137,7 @@ test('download ahead queues the next chapters while reading a library manga', as
   await expect(page.getByText('1 / 4').first()).toBeVisible();
   await expect.poll(async () => (await downloads()).map((d) => d.chapterName).sort()).toEqual(['Ch. 2', 'Ch. 3']);
   await expect.poll(() => statusOf('Ch. 3')).toBe('done');
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
 });
 
 test('delete after reading removes a chapter once it is read', async () => {
@@ -157,7 +157,7 @@ test('delete after reading removes a chapter once it is read', async () => {
   await expect.poll(() => statusOf('Ch. 2')).toBeUndefined();
   expect(existsSync(path)).toBe(false);
   expect(await statusOf('Ch. 3')).toBe('done');
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
 });
 
 test('changing the folder moves the downloads, which stay readable', async () => {
@@ -193,7 +193,7 @@ test('changing the folder moves the downloads, which stay readable', async () =>
       ),
     )
     .toBeGreaterThanOrEqual(1);
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
 });
 
 test('past the size limit, download ahead stops and manual downloads ask first', async () => {
@@ -203,7 +203,7 @@ test('past the size limit, download ahead stops and manual downloads ask first',
   await expect(page.getByText('1 / 4').first()).toBeVisible();
   await page.waitForTimeout(1500);
   expect((await downloads()).map((d) => d.chapterName)).toEqual(['Ch. 3']);
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
 
   await goto('#/downloads');
   await expect(page.getByRole('status').filter({ hasText: 'Download size limit reached' })).toBeVisible();

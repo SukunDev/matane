@@ -1,5 +1,5 @@
 import { type Locator, type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, launchApp, leaveReader } from './support/app';
 
 // Milestone 5a: main measures, crops and cuts pages for the reader. "Long Strip" (a manhwa, so a
 // webtoon strip) has a page with white margins and a 100×12000 page in three coloured bands.
@@ -91,7 +91,7 @@ test('resumes inside the tall page after a restart', async () => {
 });
 
 test('reads the downloaded chapter with the site down, cropped and cut', async () => {
-  await page.getByTitle('Back to manga').click({ force: true });
+  await leaveReader(page);
   const row = page.locator('main section div.group', { hasText: 'Ch. 1' });
   await row.getByRole('button', { name: 'Download' }).click();
   await expect(row.getByTitle('Downloaded')).toBeVisible();
