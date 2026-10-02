@@ -26,6 +26,10 @@ jobs:
       - run: pnpm typecheck
       # Plain Node: better-sqlite3 is an N-API module, the same binary loads in Node and Electron.
       - run: pnpm test
+      # Ubuntu 24.04 runners restrict unprivileged user namespaces (AppArmor), which Chromium's
+      # sandbox needs; without it every Electron start, even `electron --version`, aborts.
+      - name: Allow user namespaces for the Chromium sandbox
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       # End-to-end: the built app against a fake local site (no network). Needs a display.
       - run: xvfb-run -a pnpm e2e
         env:
