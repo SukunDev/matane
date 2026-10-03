@@ -2,7 +2,7 @@ import type { AppSettings, EventPayload } from '@manga-reader/shared';
 import type { QueryClient } from '@tanstack/react-query';
 import { Outlet, createRootRouteWithContext, useNavigate } from '@tanstack/react-router';
 import { useCallback } from 'react';
-import { settingsQuery, useIpcEvent } from '../lib/ipc';
+import { receiveSettings, useIpcEvent } from '../lib/ipc';
 import { DownloadLimitDialog } from '../features/downloads/DownloadLimitDialog';
 import { useDownloadProgressSync } from '../lib/downloads';
 import { useUpdateProgressSync } from '../lib/updates';
@@ -20,7 +20,7 @@ function RootComponent() {
   // Settings can change from main (or another window); keep the cache authoritative.
   useIpcEvent(
     'settings.changed',
-    useCallback((settings: AppSettings) => queryClient.setQueryData(settingsQuery.queryKey, settings), [queryClient]),
+    useCallback((settings: AppSettings) => receiveSettings(queryClient, settings), [queryClient]),
   );
   useDownloadProgressSync();
   useUpdateProgressSync();

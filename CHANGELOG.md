@@ -4,6 +4,8 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 
 ## Unreleased
 
+- A source's manga list has a cover size slider and the same display modes as the library (comfortable grid, compact grid, covers only, list); the choice is remembered.
+
 ## 0.2.0-beta.1 — 2026-10-03
 
 The second beta: sources now come from the official extension repository ([SukunDev/matane-extensions](https://github.com/SukunDev/matane-extensions)), added by itself, and most of the polish planned for 1.0 is in. Nothing is built into the app anymore: MangaDex from 0.1 moves to the repository by itself and keeps your library and progress.

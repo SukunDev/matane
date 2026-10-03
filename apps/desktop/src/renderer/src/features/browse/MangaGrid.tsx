@@ -1,28 +1,64 @@
-import type { BrowseItem } from '@manga-reader/shared';
+import type { BrowseItem, BrowseSettings } from '@manga-reader/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { Bookmark, Loader2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { type CSSProperties, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoverImage } from '../../components/CoverImage';
 import { Skeleton } from '../../components/ui/skeleton';
 import { libraryIdsQuery } from '../../lib/library';
 
-export const GRID_CLASS = 'grid grid-cols-[repeat(auto-fill,minmax(148px,1fr))] gap-x-4 gap-y-6';
+type Display = BrowseSettings['display'];
 
-export function MangaCard({ item }: { item: BrowseItem }) {
+/** Columns of `coverSize` px, like the library grid; the list is one row per manga. */
+export function gridStyle(display: Display, coverSize: number): CSSProperties {
+  return {
+    gridTemplateColumns: display === 'list' ? 'minmax(0, 1fr)' : `repeat(auto-fill, minmax(${coverSize}px, 1fr))`,
+    columnGap: display === 'comfortable' ? 16 : display === 'list' ? 0 : 10,
+    rowGap: display === 'comfortable' ? 24 : display === 'list' ? 0 : 10,
+  };
+}
+
+export function MangaCard({ item, display = 'comfortable' }: { item: BrowseItem; display?: Display }) {
   const { t } = useTranslation();
   // Browse results are cached remote data; library membership comes from the local query (ADR 0010).
   const { data: libraryIds } = useQuery(libraryIdsQuery);
   const inLibrary = libraryIds ? libraryIds.has(item.mangaId) : item.inLibrary;
+  const params = { mangaId: String(item.mangaId) };
+
+  if (display === 'list') {
+    return (
+      <Link
+        to="/manga/$mangaId"
+        params={params}
+        title={item.title}
+        className="group flex h-16 min-w-0 items-center gap-3 border-b px-2 transition-colors hover:bg-accent/60"
+      >
+        <CoverImage
+          mangaId={item.mangaId}
+          coverKey={item.coverKey}
+          alt={item.title}
+          className="aspect-[2/3] h-12 shrink-0 rounded"
+        />
+        <span className="min-w-0 flex-1 truncate font-semibold group-hover:text-primary">{item.title}</span>
+        {inLibrary && (
+          <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+            <Bookmark className="size-3.5 fill-current text-primary" />
+            {t('browse.inLibrary')}
+          </span>
+        )}
+      </Link>
+    );
+  }
+
   return (
     <Link
       to="/manga/$mangaId"
-      params={{ mangaId: String(item.mangaId) }}
+      params={params}
       className="group flex min-w-0 flex-col gap-2 rounded-lg outline-offset-4"
       title={item.title}
     >
-      <div className="relative">
+      <div className="relative overflow-hidden rounded-lg">
         <CoverImage
           mangaId={item.mangaId}
           coverKey={item.coverKey}
@@ -35,18 +71,37 @@ export function MangaCard({ item }: { item: BrowseItem }) {
             {t('browse.inLibrary')}
           </span>
         )}
+        {display === 'compact' && (
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ctp-crust/95 via-ctp-crust/70 to-transparent px-2 pt-6 pb-2">
+            <p className="line-clamp-2 text-xs leading-snug font-semibold text-ctp-text">{item.title}</p>
+          </div>
+        )}
       </div>
-      <span className="line-clamp-2 text-[13px] leading-snug font-medium group-hover:text-primary">{item.title}</span>
+      {display === 'comfortable' && (
+        <span className="line-clamp-2 text-[13px] leading-snug font-medium group-hover:text-primary">{item.title}</span>
+      )}
     </Link>
   );
 }
 
-export function MangaCardSkeleton() {
+export function MangaCardSkeleton({ display = 'comfortable' }: { display?: Display }) {
+  if (display === 'list') {
+    return (
+      <div className="flex h-16 items-center gap-3 border-b px-2">
+        <Skeleton className="aspect-[2/3] h-12 rounded" />
+        <Skeleton className="h-3.5 w-1/3" />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col gap-2">
       <Skeleton className="aspect-[2/3] rounded-lg" />
-      <Skeleton className="h-3.5 w-4/5" />
-      <Skeleton className="h-3 w-1/2" />
+      {display === 'comfortable' && (
+        <>
+          <Skeleton className="h-3.5 w-4/5" />
+          <Skeleton className="h-3 w-1/2" />
+        </>
+      )}
     </div>
   );
 }
@@ -62,6 +117,8 @@ export function MangaGrid({
   fetchNextPage,
   scrollRoot,
   loadingLabel,
+  display,
+  coverSize,
 }: {
   items: BrowseItem[];
   hasNextPage: boolean;
@@ -69,6 +126,8 @@ export function MangaGrid({
   fetchNextPage: () => void;
   scrollRoot: React.RefObject<HTMLElement | null>;
   loadingLabel: string;
+  display: Display;
+  coverSize: number;
 }) {
   const sentinel = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -86,11 +145,12 @@ export function MangaGrid({
 
   return (
     <>
-      <div className={GRID_CLASS}>
+      <div className="grid" style={gridStyle(display, coverSize)}>
         {items.map((item) => (
-          <MangaCard key={item.mangaId} item={item} />
+          <MangaCard key={item.mangaId} item={item} display={display} />
         ))}
-        {isFetchingNextPage && Array.from({ length: 6 }, (_, i) => <MangaCardSkeleton key={`s${i}`} />)}
+        {isFetchingNextPage &&
+          Array.from({ length: 6 }, (_, i) => <MangaCardSkeleton key={`s${i}`} display={display} />)}
       </div>
       <div ref={sentinel} className="h-px" />
       {isFetchingNextPage && (

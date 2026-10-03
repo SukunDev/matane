@@ -403,6 +403,10 @@ export const browseSettingsSchema = z.object({
   /** Updates install by themselves after a repository sync. */
   autoUpdateExtensions: z.boolean().catch(false),
   repoSyncHours: z.literal(REPO_SYNC_HOURS).catch(24),
+  /** How a source's manga list looks; same choices as the library, kept separately. */
+  display: z.enum(LIBRARY_DISPLAYS).catch('comfortable'),
+  /** Cover width in CSS px for the grid displays. */
+  coverSize: z.number().int().min(100).max(280).catch(160),
 });
 export type BrowseSettings = z.infer<typeof browseSettingsSchema>;
 
@@ -495,7 +499,14 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   cacheSizeMb: 1024,
   updater: { mode: 'auto', channel: 'beta' },
-  browse: { showNsfw: false, languages: null, autoUpdateExtensions: false, repoSyncHours: 24 },
+  browse: {
+    showNsfw: false,
+    languages: null,
+    autoUpdateExtensions: false,
+    repoSyncHours: 24,
+    display: 'comfortable',
+    coverSize: 160,
+  },
   network: {
     doh: { ...DEFAULT_NETWORK_SETTINGS.doh },
     proxy: { ...DEFAULT_NETWORK_SETTINGS.proxy },

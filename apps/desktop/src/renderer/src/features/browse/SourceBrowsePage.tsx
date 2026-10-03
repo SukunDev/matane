@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import { RefreshCw, Search, SearchX, SlidersHorizontal } from 'lucide-react';
 import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CoverViewControls } from '../../components/CoverViewControls';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
 import { Badge } from '../../components/ui/badge';
@@ -21,7 +22,8 @@ import { useScrollRestoration } from '../../lib/scroll';
 import { cn } from '../../lib/utils';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { FilterPanel, countActiveFilters } from './FilterPanel';
-import { GRID_CLASS, MangaCardSkeleton, MangaGrid } from './MangaGrid';
+import { MangaCardSkeleton, MangaGrid, gridStyle } from './MangaGrid';
+import { useBrowseView } from './settings';
 import { SourceIcon } from './SourceIcon';
 import { extensionIconUrl } from '../../lib/extensions';
 
@@ -56,6 +58,7 @@ export function SourceBrowsePage({
   const hasFilters = capabilities.includes('getFilters');
   const filterDefs = useQuery({ ...sourceFiltersQuery(sourceId), enabled: hasFilters });
   const [panelOpen, setPanelOpen] = useState(false);
+  const [{ display, coverSize }, updateView] = useBrowseView();
   usePageCrumbs(source ? `${source.name} (${source.lang.toUpperCase()})` : undefined);
 
   const listing = useInfiniteQuery({
@@ -104,7 +107,8 @@ export function SourceBrowsePage({
             <h1 className="min-w-0 truncate text-2xl font-semibold">{source?.name ?? sourceId}</h1>
             {source && <Badge>{source.lang.toUpperCase()}</Badge>}
             {source && !source.installed && <Badge variant="danger">{t('browse.notInstalled')}</Badge>}
-            <div className="ml-auto flex gap-2">
+            <div className="ml-auto flex items-center gap-2">
+              <CoverViewControls display={display} coverSize={coverSize} onChange={updateView} />
               <Button variant="secondary" onClick={reload} disabled={listing.isFetching && !listing.isFetchingNextPage}>
                 <RefreshCw className={cn(listing.isFetching && !listing.isFetchingNextPage && 'animate-spin')} />
                 {t('browse.refresh')}
@@ -159,9 +163,9 @@ export function SourceBrowsePage({
 
         <div className="p-6">
           {listing.isPending ? (
-            <div className={GRID_CLASS}>
+            <div className="grid" style={gridStyle(display, coverSize)}>
               {Array.from({ length: 18 }, (_, i) => (
-                <MangaCardSkeleton key={i} />
+                <MangaCardSkeleton key={i} display={display} />
               ))}
             </div>
           ) : listing.isError && unique.length === 0 ? (
@@ -186,6 +190,8 @@ export function SourceBrowsePage({
                 fetchNextPage={() => void listing.fetchNextPage()}
                 scrollRoot={scrollRef}
                 loadingLabel={t('browse.loadingMore', { source: source?.name ?? '' })}
+                display={display}
+                coverSize={coverSize}
               />
               {listing.isFetchNextPageError && (
                 <ErrorState

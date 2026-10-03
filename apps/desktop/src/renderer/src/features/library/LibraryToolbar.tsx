@@ -1,34 +1,16 @@
-import { LIBRARY_DISPLAYS, LIBRARY_SORTS, type LibrarySettings, MANGA_STATUSES } from '@manga-reader/shared';
+import { LIBRARY_SORTS, type LibrarySettings, MANGA_STATUSES } from '@manga-reader/shared';
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  Check,
-  Grid2x2,
-  Grid3x3,
-  Image,
-  ListFilter,
-  List,
-  type LucideIcon,
-  SlidersHorizontal,
-  ZoomIn,
-  ZoomOut,
-} from 'lucide-react';
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, Check, ListFilter, SlidersHorizontal } from 'lucide-react';
 import { DropdownMenu, Popover } from 'radix-ui';
-import { type ReactNode, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CoverViewControls } from '../../components/CoverViewControls';
 import { SearchField } from '../../components/SearchField';
 import { Button } from '../../components/ui/button';
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { filterCount } from './settings';
 
-const DISPLAY_ICONS: Record<LibrarySettings['display'], LucideIcon> = {
-  comfortable: Grid2x2,
-  compact: Grid3x3,
-  cover: Image,
-  list: List,
-};
 const menuItem =
   'flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-accent';
 const popoverClass = 'z-50 rounded-lg border bg-popover p-1 text-popover-foreground shadow-xl';
@@ -50,58 +32,8 @@ export function LibraryToolbar({
       <SearchField value={query} onChange={onQuery} placeholder={t('library.filterPlaceholder')} className="w-56" />
       <FilterPopover settings={settings} onChange={onChange} />
       <SortMenu settings={settings} onChange={onChange} />
-      <div role="radiogroup" aria-label={t('library.display.label')} className="flex rounded-lg border p-0.5">
-        {LIBRARY_DISPLAYS.map((display) => {
-          const Icon = DISPLAY_ICONS[display];
-          return (
-            <button
-              key={display}
-              type="button"
-              role="radio"
-              aria-checked={settings.display === display}
-              title={t(`library.display.${display}`)}
-              onClick={() => onChange({ display })}
-              className={cn(
-                'flex size-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground',
-                settings.display === display && 'bg-primary/15 text-primary hover:text-primary',
-              )}
-            >
-              <Icon className="size-4" />
-            </button>
-          );
-        })}
-      </div>
-      {settings.display !== 'list' && <CoverSizeSlider value={settings.coverSize} onChange={onChange} />}
+      <CoverViewControls display={settings.display} coverSize={settings.coverSize} onChange={onChange} />
     </div>
-  );
-}
-
-/** Local while dragging; saved once the pointer or key is released. */
-function CoverSizeSlider({ value, onChange }: { value: number; onChange: (patch: Partial<LibrarySettings>) => void }) {
-  const { t } = useTranslation();
-  const [draft, setDraft] = useState<number | null>(null);
-  const commit = () => {
-    if (draft !== null) onChange({ coverSize: draft });
-    setDraft(null);
-  };
-  return (
-    <label className="flex h-8 items-center gap-2 rounded-lg border px-2 text-muted-foreground">
-      <ZoomOut className="size-3.5" />
-      <input
-        type="range"
-        min={100}
-        max={280}
-        step={10}
-        value={draft ?? value}
-        aria-label={t('library.coverSize')}
-        onChange={(event) => setDraft(Number(event.target.value))}
-        onPointerUp={commit}
-        onKeyUp={commit}
-        onBlur={commit}
-        className="w-24 accent-primary"
-      />
-      <ZoomIn className="size-3.5" />
-    </label>
   );
 }
 

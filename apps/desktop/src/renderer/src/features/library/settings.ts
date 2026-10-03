@@ -1,14 +1,22 @@
 import type { LibraryFilters, LibrarySettings } from '@manga-reader/shared';
 import { DEFAULT_LIBRARY_SETTINGS } from '@manga-reader/shared';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { settingsQuery, useUpdateSettings } from '../../lib/ipc';
 
 /** The library view settings (display, sort, filters), saved in app settings. */
 export function useLibrarySettings(): [LibrarySettings, (patch: Partial<LibrarySettings>) => void] {
+  const queryClient = useQueryClient();
   const { data } = useQuery(settingsQuery);
   const update = useUpdateSettings();
   const library = data?.library ?? DEFAULT_LIBRARY_SETTINGS;
-  return [library, (patch) => update.mutate({ library: { ...library, ...patch } })];
+  return [
+    library,
+    (patch) => {
+      // From the cache, not this render: quick successive patches must build on each other.
+      const current = queryClient.getQueryData(settingsQuery.queryKey)?.library ?? library;
+      update.mutate({ library: { ...current, ...patch } });
+    },
+  ];
 }
 
 export const filtersOf = (settings: LibrarySettings): LibraryFilters => ({
