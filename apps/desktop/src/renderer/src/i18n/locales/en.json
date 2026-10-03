@@ -634,7 +634,7 @@
       "addAnyway": "Add anyway",
       "unverifiedTitle_one": "\"{{name}}\" ({{count}} extension) is not verified",
       "unverifiedTitle_other": "\"{{name}}\" ({{count}} extensions) is not verified",
-      "unverifiedWarning": "Extensions from it can reach the sites they list. Only add repositories you trust.",
+      "unverifiedWarning": "Extensions from it can run code that reaches any site. Only add repositories you trust.",
       "count_one": "{{count}} extension",
       "count_other": "{{count}} extensions",
       "synced": "Last synced {{when}}",

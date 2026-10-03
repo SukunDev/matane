@@ -7,10 +7,9 @@ A **source** is a website Matane can read from; an **extension** provides one or
 Open **Extensions**. The list shows what the repositories you added offer, filtered by your content languages. **Install** shows:
 
 - the repository and whether it is **trusted**,
-- the **sites the extension can reach** (it cannot reach any other),
 - its version and size.
 
-Updates appear on the same page; **Update all** installs them. Settings → Browse & extensions can update extensions by themselves, except when an update wants to reach a new site: then it asks again.
+Updates appear on the same page; **Update all** installs them. Settings → Browse & extensions can update extensions by themselves.
 
 **Uninstall** removes an extension with its settings, data and cookies. Its manga stay in your library as "source not installed" until you install it again.
 

@@ -628,7 +628,7 @@
       "addButton": "Tambah",
       "addAnyway": "Tetap tambahkan",
       "unverifiedTitle_other": "\"{{name}}\" ({{count}} extension) tidak terverifikasi",
-      "unverifiedWarning": "Extension darinya bisa mengakses situs yang dicantumkannya. Tambahkan hanya repositori yang kamu percaya.",
+      "unverifiedWarning": "Extension darinya menjalankan kode yang bisa mengakses situs mana pun. Tambahkan hanya repositori yang kamu percaya.",
       "count_other": "{{count}} extension",
       "synced": "Terakhir disinkronkan {{when}}",
       "sync": "Sinkronkan sekarang",

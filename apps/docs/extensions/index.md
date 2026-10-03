@@ -35,7 +35,7 @@ Try it in the app: **Extensions → Load from folder** (or Settings → Advanced
 
 ```
 my-site/
-├─ manifest.json      # identity, allowlist, sources
+├─ manifest.json      # identity, sources
 ├─ icon.png           # optional, square, at most 512 KB (shown in the app and repositories)
 ├─ package.json
 ├─ tsconfig.json
