@@ -88,7 +88,6 @@ function extensionFiles(origin: string): Record<string, string> {
     version: '1.0.0',
     apiVersion: 1,
     nsfw: false,
-    domains: ['bench.localhost'],
     rateLimit: { requests: 1000, perMs: 1000 },
     sources: [{ key: 'en', lang: 'en', name: 'Bench' }],
   };

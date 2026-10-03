@@ -25,7 +25,7 @@ describe('create + build', () => {
     const dir = await createExtension(await scratch(), { id: 'demo', domain: 'demo.example', lang: 'id' });
     const result = await buildExtension(dir);
 
-    expect(result.manifest).toMatchObject({ id: 'demo', domains: ['demo.example'], sources: [{ key: 'id' }] });
+    expect(result.manifest).toMatchObject({ id: 'demo', sources: [{ key: 'id' }] });
     expect(result.code).not.toMatch(/\bimport\b|\brequire\(/);
     expect(JSON.parse(await readFile(path.join(dir, 'dist/manifest.json'), 'utf8'))).toEqual(result.manifest);
 

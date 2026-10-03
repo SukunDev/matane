@@ -1,4 +1,4 @@
-import type { AvailableExtension, ExtensionEntry, InstallPreview, RepoInfo } from '@manga-reader/shared';
+import type { AvailableExtension, ExtensionEntry, RepoInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
@@ -66,12 +66,7 @@ export function ExtensionsPage({ initialTab = 'installed' }: { initialTab?: Exte
   const [panelOpen, setPanelOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [install, setInstall] = useState<InstallRequest | null>(null);
-  const [confirmQueue, setConfirmQueue] = useState<InstallPreview[]>([]);
-  const updateAll = useMutation({
-    mutationFn: () => ipc.invoke('extensions.updateAll'),
-    // Updates that reach new domains are confirmed one by one.
-    onSuccess: (result) => setConfirmQueue(result.needsConfirmation),
-  });
+  const updateAll = useMutation({ mutationFn: () => ipc.invoke('extensions.updateAll') });
 
   const content = useContentFilter();
   // Content settings (§6.6) hide extensions in other languages and adult ones; a developer's own
@@ -94,12 +89,8 @@ export function ExtensionsPage({ initialTab = 'installed' }: { initialTab?: Exte
     updates: updates.length,
   };
 
-  const current = confirmQueue[0];
-  const dialogRequest: InstallRequest | null = install ?? (current ? { kind: 'preview', preview: current } : null);
-  const closeDialog = useCallback(() => {
-    if (install) setInstall(null);
-    else setConfirmQueue((queue) => queue.slice(1));
-  }, [install]);
+  const dialogRequest: InstallRequest | null = install;
+  const closeDialog = useCallback(() => setInstall(null), []);
 
   const startInstall = (item: AvailableExtension) =>
     setInstall({ kind: 'prepare', repoId: item.repoId, extensionId: item.id, name: item.name, update: item.update });

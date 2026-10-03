@@ -22,7 +22,6 @@ const manifest = {
   version: '1.2.0',
   apiVersion: 1,
   nsfw: false,
-  domains: ['demo.example'],
   sources: [
     { key: 'id', lang: 'id', name: 'Demo' },
     { key: 'en', lang: 'en', name: 'Demo' },
@@ -161,9 +160,9 @@ describe('archives', () => {
 
   it('rejects a manifest that differs from what the index promised', async () => {
     const entry = await entryFor(await goodZip());
-    await expect(
-      readExtensionArchive(await goodZip({ domains: ['demo.example', 'tracker.example'] }), entry),
-    ).rejects.toThrow(/manifest domains .* differs from the index/);
+    await expect(readExtensionArchive(await goodZip({ nsfw: true }), entry)).rejects.toThrow(
+      /manifest nsfw .* differs from the index/,
+    );
     await expect(readExtensionArchive(await goodZip({ version: '1.3.0' }), entry)).rejects.toThrow(/version/);
   });
 

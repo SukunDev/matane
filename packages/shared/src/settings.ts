@@ -400,7 +400,7 @@ export const browseSettingsSchema = z.object({
   showNsfw: z.boolean().catch(false),
   /** Content languages (ISO codes); null = the UI language and English. */
   languages: z.array(z.string().min(2).max(10)).max(100).nullable().catch(null),
-  /** Updates that reach no new site install by themselves after a repository sync. */
+  /** Updates install by themselves after a repository sync. */
   autoUpdateExtensions: z.boolean().catch(false),
   repoSyncHours: z.literal(REPO_SYNC_HOURS).catch(24),
 });

@@ -257,7 +257,7 @@ async function bootstrap(): Promise<void> {
     },
     log: (message) => extLog.warn(`repos: ${message}`),
   });
-  // Updates that reach no new site install by themselves (the others wait for the user).
+  // Updates install by themselves after a repository sync.
   let autoUpdating: Promise<void> | null = null;
   const autoUpdateExtensions = () => {
     autoUpdating ??= installer

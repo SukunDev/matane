@@ -36,7 +36,6 @@ async function extensions(): Promise<string[]> {
       version: '2.0.0',
       apiVersion: 1,
       description: 'Prebuilt',
-      domains: ['beta.example'],
       sources: [{ key: 'en', lang: 'en', name: 'Beta' }],
     }),
   );

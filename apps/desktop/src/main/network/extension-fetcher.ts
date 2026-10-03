@@ -1,6 +1,5 @@
 import { fromFetchResponse, toFetchParts } from '@matane/extension-runtime/http-bridge';
 import type { HttpRequest, HttpResponse } from '@matane/extension-sdk';
-import { isAllowedHost } from '@matane/extension-sdk/manifest';
 import { AppError } from '@manga-reader/shared/errors';
 import type { TokenBucket } from './token-bucket';
 
@@ -9,8 +8,6 @@ export type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 export interface ExtensionFetcherOptions {
   /** Performs one HTTP exchange; redirects are followed here, not by `fetch`. */
   fetch: FetchFn;
-  /** Manifest allowlist, checked for the first URL and every redirect hop. */
-  domains: readonly string[];
   limiter?: TokenBucket | null;
   /** Used when the extension does not set its own User-Agent. */
   userAgent: string;
@@ -158,9 +155,6 @@ export class ExtensionFetcher {
     }
     if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
       throw new AppError('network', `Only http(s) URLs are allowed: ${url}`);
-    }
-    if (!isAllowedHost(parsed.hostname, this.options.domains)) {
-      throw new AppError('network', `Domain ${parsed.hostname} is not in the extension allowlist`);
     }
   }
 }

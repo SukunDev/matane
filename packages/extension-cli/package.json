@@ -1,6 +1,6 @@
 {
   "name": "@matane/extension-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "mr-ext: create, build, test and publish Matane extensions",
   "keywords": [
     "matane",

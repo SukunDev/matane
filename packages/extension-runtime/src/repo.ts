@@ -211,7 +211,7 @@ export async function readExtensionArchive(bytes: Uint8Array, expected?: RepoEnt
   }
   if (expected) {
     const listed = entryFields(manifest);
-    for (const key of ['id', 'version', 'apiVersion', 'nsfw', 'langs', 'domains'] as const) {
+    for (const key of ['id', 'version', 'apiVersion', 'nsfw', 'langs'] as const) {
       if (JSON.stringify(listed[key]) !== JSON.stringify(expected[key])) {
         throw fail(
           `manifest ${key} ${JSON.stringify(listed[key])} differs from the index (${JSON.stringify(expected[key])})`,
@@ -235,6 +235,5 @@ export function entryFields(manifest: ExtensionManifest) {
     ...(manifest.description ? { description: manifest.description } : {}),
     nsfw: manifest.nsfw,
     langs: [...new Set(manifest.sources.map((s) => s.lang))].sort(),
-    domains: manifest.domains,
   };
 }

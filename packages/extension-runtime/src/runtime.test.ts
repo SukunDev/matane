@@ -10,7 +10,6 @@ const manifest: ExtensionManifest = {
   version: '1.0.0',
   apiVersion: 1,
   nsfw: false,
-  domains: ['example.com', '*.cdn.example.com'],
   sources: [{ key: 'en', lang: 'en', name: 'Test' }],
 };
 
@@ -114,11 +113,11 @@ describe('ExtensionRuntime', () => {
     expect(result.globals).toEqual(['undefined', 'undefined', 'undefined', 'undefined', 'undefined', 'undefined']);
   });
 
-  it('enforces the manifest domain allowlist', async () => {
+  it('only allows http(s) URLs', async () => {
     const { host } = createHost();
     const runtime = await load(
       bundle(`async getPopular(page) {
-        const urls = ['https://evil.com/x', 'https://example.com.evil.com/x', 'file:///etc/passwd', 'https://img.cdn.example.com/a.jpg'];
+        const urls = ['file:///etc/passwd', 'not a url', 'https://img.cdn.example.com/a.jpg'];
         const outcomes = [];
         for (const url of urls) {
           try { const r = await http.request({ url }); outcomes.push('ok ' + r.status); } catch (e) { outcomes.push(e.name); }
@@ -127,12 +126,7 @@ describe('ExtensionRuntime', () => {
       }`),
       host,
     );
-    await expect(runtime.call('en', 'getPopular', [1])).resolves.toEqual([
-      'NetworkError',
-      'NetworkError',
-      'NetworkError',
-      'ok 404',
-    ]);
+    await expect(runtime.call('en', 'getPopular', [1])).resolves.toEqual(['NetworkError', 'NetworkError', 'ok 404']);
     expect(host.http).toHaveBeenCalledTimes(1);
   });
 

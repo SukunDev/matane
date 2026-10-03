@@ -37,7 +37,7 @@ let clearedSessions: string[];
 let unloaded: string[];
 let officialUrl: string | null;
 
-function writeExtension(folder: string, version: string, domains = ['demo.example'], extra: object = {}) {
+function writeExtension(folder: string, version: string, extra: object = {}) {
   mkdirSync(folder, { recursive: true });
   writeFileSync(
     join(folder, 'manifest.json'),
@@ -46,7 +46,6 @@ function writeExtension(folder: string, version: string, domains = ['demo.exampl
       name: 'Demo',
       version,
       apiVersion: 1,
-      domains,
       sources: [{ key: 'en', lang: 'en', name: 'Demo' }],
       ...extra,
     }),
@@ -55,14 +54,9 @@ function writeExtension(folder: string, version: string, domains = ['demo.exampl
 }
 
 /** Publishes a repository with "demo" at `version` into a served folder. */
-async function publish(
-  url: string,
-  version: string,
-  key: { privateKeyPem: string } | null,
-  domains?: string[],
-): Promise<string> {
+async function publish(url: string, version: string, key: { privateKeyPem: string } | null): Promise<string> {
   const source = join(dir, `src-${version}-${Math.random()}`);
-  writeExtension(source, version, domains);
+  writeExtension(source, version);
   writeFileSync(join(source, 'icon.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]));
   const out = served.get(url) ?? join(dir, `repo-${served.size}`);
   served.set(url, out);
@@ -270,8 +264,6 @@ describe('ExtensionInstaller', () => {
     expect(preview).toMatchObject({
       id: 'demo',
       version: '1.0.0',
-      domains: ['demo.example'],
-      newDomains: [],
       currentVersion: null,
       hasIcon: true,
     });
@@ -286,32 +278,21 @@ describe('ExtensionInstaller', () => {
     await expect(installer.install(preview.token)).rejects.toThrow(/expired/);
   });
 
-  it('updates from the same repository and asks again for new domains', async () => {
+  it('updates from the same repository', async () => {
     const repo = await addOfficial();
     await installer.install((await installer.prepare(repo.id, 'demo')).token);
 
     await publish(REPO_URL, '1.1.0', official);
     await repos.sync(repo.id);
     expect(installer.available()[0]).toMatchObject({ installedVersion: '1.0.0', installedHere: true, update: true });
-    expect(await installer.updateAll()).toEqual({ updated: ['demo'], needsConfirmation: [], failed: [] });
+    expect(await installer.updateAll()).toEqual({ updated: ['demo'], failed: [] });
     expect(extensions.get('demo')?.manifest?.version).toBe('1.1.0');
     expect(unloaded).toContain('demo');
 
-    await publish(REPO_URL, '1.2.0', official, ['demo.example', 'cdn.demo.example']);
+    await publish(REPO_URL, '1.2.0', official);
     await repos.sync(repo.id);
-    const result = await installer.updateAll();
-    expect(result.updated).toEqual([]);
-    expect(result.needsConfirmation).toEqual([
-      expect.objectContaining({
-        id: 'demo',
-        version: '1.2.0',
-        currentVersion: '1.1.0',
-        newDomains: ['cdn.demo.example'],
-      }),
-    ]);
-    expect(extensions.get('demo')?.manifest?.version).toBe('1.1.0');
-    await installer.install(result.needsConfirmation[0]!.token);
-    expect(extensions.get('demo')?.manifest?.domains).toEqual(['demo.example', 'cdn.demo.example']);
+    expect(await installer.updateAll()).toEqual({ updated: ['demo'], failed: [] });
+    expect(extensions.get('demo')?.manifest?.version).toBe('1.2.0');
   });
 
   it('never takes an installed extension from another repository', async () => {

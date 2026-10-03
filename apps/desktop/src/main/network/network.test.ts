@@ -40,7 +40,6 @@ function fetcher(
   const fake = fakeFetch(routes);
   const instance = new ExtensionFetcher({
     fetch: fake.fetch,
-    domains: ['example.com', '*.cdn.example.com'],
     userAgent: 'Chrome-ish',
     sleep: noSleep,
     ...extra,
@@ -85,18 +84,17 @@ describe('ExtensionFetcher', () => {
     });
   });
 
-  it('refuses redirects that leave the allowlist', async () => {
-    const { fetcher: f, calls } = fetcher({ 'https://example.com/a': redirect('https://evil.com/steal') });
+  it('refuses redirects to non-http schemes', async () => {
+    const { fetcher: f, calls } = fetcher({ 'https://example.com/a': redirect('file:///etc/passwd') });
     const error = await rejection(f.request({ url: 'https://example.com/a' }));
     expect(error.code).toBe('network');
-    expect(error.message).toMatch(/evil\.com/);
+    expect(error.message).toMatch(/http\(s\)/);
     expect(calls.map((c) => c.url)).toEqual(['https://example.com/a']);
   });
 
-  it('refuses non-http schemes and unlisted hosts up front', async () => {
+  it('refuses non-http schemes up front', async () => {
     const { fetcher: f, calls } = fetcher({});
     await expect(f.request({ url: 'file:///etc/passwd' })).rejects.toThrow(/http\(s\)/);
-    await expect(f.request({ url: 'https://cdn.example.com/x' })).rejects.toThrow(/allowlist/);
     expect(calls).toHaveLength(0);
   });
 
@@ -157,7 +155,6 @@ describe('ExtensionFetcher', () => {
     const hanging = new ExtensionFetcher({
       fetch: (_url, init) =>
         new Promise((_, reject) => init.signal?.addEventListener('abort', () => reject(new Error('aborted')))),
-      domains: ['example.com'],
       userAgent: 'x',
     });
     const pending = hanging.request({ url: 'https://example.com/slow' }, controller.signal);

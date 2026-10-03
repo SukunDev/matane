@@ -157,7 +157,7 @@ export const invokeContract = {
   'extensions.prepareInstall': invoke(z.object({ repoId: idSchema, extensionId: z.string() }), installPreviewSchema),
   'extensions.install': invoke(z.object({ token: z.string() }), extensionEntrySchema),
   'extensions.cancelInstall': invoke(z.object({ token: z.string() }), z.void()),
-  /** Installs every update that reaches no new domain; the others come back for confirmation. */
+  /** Installs every available update. */
   'extensions.updateAll': invoke(z.void(), updateAllResultSchema),
   'extensions.uninstall': invoke(z.object({ extensionId: z.string() }), z.void()),
   /** Extensions still waiting to move from the app to the official repository. */

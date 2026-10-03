@@ -147,7 +147,6 @@ const SYNTHETIC_MANIFEST: ExtensionManifest = {
   version: '1.0.0',
   apiVersion: SDK_API_VERSION,
   nsfw: false,
-  domains: ['bench.example'],
   sources: [{ key: 'x', lang: 'en', name: 'Bench' }],
 };
 

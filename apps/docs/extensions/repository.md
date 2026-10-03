@@ -6,7 +6,7 @@ Extensions reach users through a repository: a static folder (GitHub Pages works
 
 ```
 repo/
-├─ index.json            # name, extensions (id, version, langs, nsfw, domains, sha256, …)
+├─ index.json            # name, extensions (id, version, langs, nsfw, sha256, …)
 ├─ index.json.sig        # ed25519 signature over the exact bytes of index.json
 └─ extensions/
    ├─ my-site-1.0.0.zip  # manifest.json + index.js (+ icon.png), nothing else

@@ -55,7 +55,6 @@ my-site/
   "version": "1.0.0",
   "apiVersion": 1,
   "nsfw": false,
-  "domains": ["example.com", "*.cdn-example.net"],
   "rateLimit": { "requests": 2, "perMs": 1000 },
   "sources": [{ "key": "en", "lang": "en", "name": "My Site" }]
 }
@@ -67,7 +66,6 @@ my-site/
 | `version` | Semver. Bump it on every release. |
 | `description` | Optional, one line (max 200 characters) for the Extensions page. |
 | `apiVersion` | Extension API version the bundle targets. The app refuses newer ones. |
-| `domains` | Allowlist for every request, **including every redirect hop and every image**. `*.cdn.net` matches subdomains only; list the bare domain separately if needed. |
 | `rateLimit` | Requests per window for API/page calls (default 10/s). Images use a separate, looser bucket. |
 | `sources` | One per language/variant. The source id is `<extension id>/<key>`, e.g. `my-site/en`. |
 

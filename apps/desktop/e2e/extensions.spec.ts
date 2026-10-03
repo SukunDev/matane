@@ -17,12 +17,12 @@ let page: Page;
 const goto = (hash: string) => page.evaluate((h) => (location.hash = h), hash);
 const tab = (name: RegExp) => page.getByRole('tab', { name });
 const dialog = () => page.getByRole('dialog');
-const publishOfficial = (version: string, domains?: string[]) =>
+const publishOfficial = (version: string) =>
   t.site.publishRepo({
     path: 'official',
     name: 'Test Official',
     privateKeyPem: official.privateKeyPem,
-    extensions: [{ which: 'demo', version, domains, description: 'Everything the tests need' }],
+    extensions: [{ which: 'demo', version, description: 'Everything the tests need' }],
   });
 const installedVersion = () =>
   page.evaluate(
@@ -66,7 +66,6 @@ test('adds the official repository and installs from it through the install dial
   await row.getByRole('button', { name: 'Install' }).click();
 
   await expect(dialog()).toContainText('Test Official (official)');
-  await expect(dialog().getByRole('list', { name: 'This extension can access:' })).toHaveText('e2e.localhost');
   await expect(dialog()).toContainText('API version 1');
   await expect(dialog()).toContainText('SHA-256 verified');
   await expect(dialog()).not.toContainText('not verified');
@@ -96,24 +95,19 @@ test('the installed source browses, and a manga goes into the library', async ()
   await expect(page.getByRole('button', { name: 'In library' })).toBeVisible();
 });
 
-test('an update that reaches a new domain asks again; one that does not just installs', async () => {
-  await publishOfficial('1.1.0', ['e2e.localhost', 'img.e2e.localhost']);
+test('updates install without asking, one by one or all at once', async () => {
+  await publishOfficial('1.1.0');
   await syncRepos();
   await goto('#/browse/extensions');
   await expect(page.getByRole('status', { name: 'Update available: 1' })).toBeVisible();
   await expect(tab(/^Updates/)).toContainText('1');
 
   await installedRow().getByRole('button', { name: 'Update to v1.1.0' }).click();
-  const domains = dialog().getByRole('list', { name: 'This extension can access:' });
-  await expect(domains.getByRole('listitem')).toHaveCount(2);
-  await expect(domains.getByRole('listitem').filter({ hasText: 'img.e2e.localhost' })).toContainText('New');
-  await expect(dialog()).toContainText('Version 1.1.0 can reach sites that 1.0.0 could not');
-  await dialog().getByRole('button', { name: 'Update' }).click();
-  await expect(dialog()).toHaveCount(0);
   await expect.poll(installedVersion).toBe('1.1.0');
+  await expect(dialog()).toHaveCount(0);
   await expect(page.getByRole('status', { name: /Update available/ })).toHaveCount(0);
 
-  await publishOfficial('1.2.0', ['e2e.localhost', 'img.e2e.localhost']);
+  await publishOfficial('1.2.0');
   await syncRepos();
   await page.getByRole('button', { name: 'Update all' }).click();
   await expect.poll(installedVersion).toBe('1.2.0');
@@ -121,7 +115,7 @@ test('an update that reaches a new domain asks again; one that does not just ins
 });
 
 test('a tampered archive is refused', async () => {
-  const folder = await publishOfficial('1.3.0', ['e2e.localhost', 'img.e2e.localhost']);
+  const folder = await publishOfficial('1.3.0');
   await syncRepos();
   const zip = join(folder, 'extensions', 'e2e-demo-1.3.0.zip');
   const bytes = readFileSync(zip);
@@ -135,7 +129,7 @@ test('a tampered archive is refused', async () => {
   await dialog().getByRole('button', { name: 'Cancel' }).click();
   expect(await installedVersion()).toBe('1.2.0');
   // Repaired for the next tests.
-  await publishOfficial('1.3.0', ['e2e.localhost', 'img.e2e.localhost']);
+  await publishOfficial('1.3.0');
 });
 
 test('uninstalling keeps the manga as "not installed"; installing again brings it back', async () => {
@@ -226,19 +220,12 @@ test('installed extensions and repositories survive a restart', async () => {
   await expect(page.getByText('Paged Hero')).toBeVisible();
 });
 
-test('with automatic updates on, a sync installs updates that reach no new site', async () => {
+test('with automatic updates on, a sync installs updates', async () => {
   await page.evaluate(async () => {
     const { browse } = await window.api.invoke('settings.get');
     await window.api.invoke('settings.set', { browse: { ...browse, autoUpdateExtensions: true } });
   });
-  await publishOfficial('1.4.0', ['e2e.localhost', 'img.e2e.localhost']);
+  await publishOfficial('1.4.0');
   await syncRepos();
   await expect.poll(installedVersion).toBe('1.4.0');
-
-  // A new site still waits for the user.
-  await publishOfficial('1.5.0', ['e2e.localhost', 'img.e2e.localhost', 'cdn.e2e.localhost']);
-  await syncRepos();
-  await goto('#/browse/extensions');
-  await expect(installedRow().getByRole('button', { name: 'Update to v1.5.0' })).toBeVisible();
-  expect(await installedVersion()).toBe('1.4.0');
 });

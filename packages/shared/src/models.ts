@@ -26,7 +26,6 @@ export const extensionEntrySchema = z.object({
   error: z.string().nullable(),
   sourceIds: z.array(z.string()),
   langs: z.array(z.string()),
-  domains: z.array(z.string()),
   /** The repository it was installed from (updates only come from there); null otherwise or once removed. */
   repoId: z.number().nullable(),
   /** Served as `manga://extension-icon/<id>`. */
@@ -87,7 +86,6 @@ export const availableExtensionSchema = z.object({
   description: z.string().nullable(),
   nsfw: z.boolean(),
   langs: z.array(z.string()),
-  domains: z.array(z.string()),
   size: z.number(),
   hasIcon: z.boolean(),
   /** Installed version (from any origin), or null. */
@@ -111,9 +109,6 @@ export const installPreviewSchema = z.object({
   apiVersion: z.number(),
   nsfw: z.boolean(),
   langs: z.array(z.string()),
-  domains: z.array(z.string()),
-  /** Domains the installed version could not reach (an update asks again for these). */
-  newDomains: z.array(z.string()),
   size: z.number(),
   sha256: z.string(),
   currentVersion: z.string().nullable(),
@@ -136,8 +131,6 @@ export type HandoffItem = z.infer<typeof handoffItemSchema>;
 
 export const updateAllResultSchema = z.object({
   updated: z.array(z.string()),
-  /** Updates that reach new domains: each needs the user's confirmation. */
-  needsConfirmation: z.array(installPreviewSchema),
   failed: z.array(z.object({ id: z.string(), message: z.string() })),
 });
 export type UpdateAllResult = z.infer<typeof updateAllResultSchema>;

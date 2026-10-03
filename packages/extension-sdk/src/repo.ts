@@ -39,7 +39,6 @@ export const repoEntrySchema = z
     nsfw: z.boolean(),
     /** Languages of the extension's sources, sorted and unique. */
     langs: z.array(z.string().min(2)).min(1),
-    domains: manifestSchema.shape.domains,
     /** Relative to the repo root; always `archivePath(id, version)`. */
     file: z.string(),
     size: z.number().int().positive().max(REPO_LIMITS.archiveBytes),

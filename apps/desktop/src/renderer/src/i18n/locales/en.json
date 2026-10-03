@@ -344,7 +344,7 @@
       },
       "autoUpdate": {
         "label": "Update extensions by themselves",
-        "hint": "After a repository sync, updates install unless they reach new sites; those still ask."
+        "hint": "After a repository sync, updates install by themselves."
       },
       "syncEvery": {
         "label": "Check repositories",
@@ -659,10 +659,7 @@
       "verifying": "Downloading and verifying…",
       "updating": "Updating…",
       "unverifiedWarning": "This repository is not verified. Only install extensions you trust.",
-      "newDomainsWarning": "Version {{to}} can reach sites that {{from}} could not (marked New).",
       "nsfw": "This extension has adult content.",
-      "canAccess": "This extension can access:",
-      "new": "New",
       "apiVersion": "API version {{version}}",
       "shaVerified": "SHA-256 verified",
       "install": "Install",

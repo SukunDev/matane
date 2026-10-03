@@ -1,6 +1,6 @@
 # Security policy
 
-Matane runs third-party extensions in a sandbox (QuickJS in a separate process, network only through the app, to the domains an extension declares). Bugs that let an extension or a website escape that — read files, reach other domains, run code in the app — are security issues.
+Matane runs third-party extensions in a sandbox (QuickJS in a separate process, network only through the app, over http(s)). Bugs that let an extension or a website escape that — read files, reach the local system, run code in the app — are security issues.
 
 ## Reporting
 

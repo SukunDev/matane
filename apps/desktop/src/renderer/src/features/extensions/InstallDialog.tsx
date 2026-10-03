@@ -1,17 +1,6 @@
 import type { InstallPreview } from '@manga-reader/shared';
 import { useMutation } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  CircleCheck,
-  Download,
-  Globe,
-  Info,
-  Loader2,
-  Shield,
-  ShieldAlert,
-  ShieldCheck,
-  X,
-} from 'lucide-react';
+import { AlertTriangle, CircleCheck, Download, Info, Loader2, Shield, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,15 +19,15 @@ export type InstallRequest =
       repoId: number;
       extensionId: string;
       name: string;
-      /** An update that reaches no new domain installs without asking. */
+      /** An update installs without asking. */
       update?: boolean;
     }
   | { kind: 'preview'; preview: InstallPreview };
 
 /**
  * The install dialog (mockup 09b): downloads and verifies the archive first (main does it; nothing
- * is installed yet), then shows the repository's trust, the domains the extension may reach (new
- * ones marked on updates), its API version, size and that the SHA-256 matched the signed index.
+ * is installed yet), then shows the repository's trust, its API version, size and that the SHA-256
+ * matched the signed index.
  */
 export function InstallDialog({ request, onClose }: { request: InstallRequest | null; onClose: () => void }) {
   const { t, i18n } = useTranslation();
@@ -63,7 +52,7 @@ export function InstallDialog({ request, onClose }: { request: InstallRequest | 
       { repoId: request.repoId, extensionId: request.extensionId },
       {
         onSuccess: (preview) => {
-          if (request.update && preview.newDomains.length === 0) {
+          if (request.update) {
             installMutate(preview.token, { onSuccess: () => onCloseRef.current() });
           }
         },
@@ -88,7 +77,7 @@ export function InstallDialog({ request, onClose }: { request: InstallRequest | 
   const name = preview?.name ?? (request?.kind === 'prepare' ? request.name : '');
   const isUpdate = preview ? preview.currentVersion !== null : request?.kind === 'prepare' && request.update;
   const error = prepare.error ?? install.error;
-  const autoUpdating = request?.kind === 'prepare' && request.update && preview?.newDomains.length === 0;
+  const autoUpdating = request?.kind === 'prepare' && request.update && preview !== null;
 
   return (
     <Dialog.Root open={request !== null} onOpenChange={(open) => !open && close()}>
@@ -137,42 +126,12 @@ export function InstallDialog({ request, onClose }: { request: InstallRequest | 
                     {t('extensions.install.unverifiedWarning')}
                   </p>
                 )}
-                {preview.newDomains.length > 0 && (
-                  <p className="flex items-start gap-2.5 rounded-lg border border-ctp-peach/40 bg-ctp-peach/10 px-3 py-2.5 text-ctp-peach">
-                    <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                    {t('extensions.install.newDomainsWarning', {
-                      from: preview.currentVersion,
-                      to: preview.version,
-                    })}
-                  </p>
-                )}
                 {preview.nsfw && (
                   <p className="flex items-center gap-2.5 rounded-lg border border-ctp-red/40 bg-ctp-red/10 px-3 py-2.5 text-ctp-red">
                     <Badge variant="danger">18+</Badge>
                     {t('extensions.install.nsfw')}
                   </p>
                 )}
-                <section>
-                  <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
-                    {t('extensions.install.canAccess')}
-                  </h3>
-                  <ul className="flex flex-col gap-1.5" aria-label={t('extensions.install.canAccess')}>
-                    {preview.domains.map((domain) => (
-                      <li
-                        key={domain}
-                        className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 font-mono text-[13px]"
-                      >
-                        <Globe className="size-3.5 shrink-0 text-muted-foreground" />
-                        <span className="truncate">{domain}</span>
-                        {preview.newDomains.includes(domain) && (
-                          <Badge variant="warning" className="ml-auto font-sans">
-                            {t('extensions.install.new')}
-                          </Badge>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5">
                     <Info className="size-3.5" />

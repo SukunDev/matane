@@ -24,7 +24,6 @@ const manifest = (version = '1.0.0') => ({
   name: 'Demo',
   version,
   apiVersion: 1,
-  domains: ['example.com'],
   sources: [{ key: 'en', lang: 'en', name: 'Demo' }],
 });
 

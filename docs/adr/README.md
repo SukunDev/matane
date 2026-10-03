@@ -34,3 +34,4 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0028](0028-statistics-and-network-settings.md) | Statistics from reading sessions; network settings applied everywhere |
 | [0029](0029-backup-and-restore.md) | Backup and restore: natural keys, merge rules, restored in steps in main |
 | [0030](0030-strip-both-directions.md) | The reader strip reads on in both directions, with a window of loaded chapters |
+| [0031](0031-no-domain-allowlist.md) | No domain allowlist for extensions |

@@ -65,7 +65,6 @@ const manifest: ExtensionManifest = {
   version: '1.0.0',
   apiVersion: 1,
   nsfw: false,
-  domains: ['example.com'],
   sources: [{ key: 'en', lang: 'en', name: 'Demo' }],
 };
 

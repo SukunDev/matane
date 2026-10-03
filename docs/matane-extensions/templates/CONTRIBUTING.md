@@ -1,6 +1,6 @@
 # Contributing
 
-Extensions are small TypeScript projects that run in Matane's sandbox (QuickJS, no Node.js APIs, network only to the domains they list). The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/).
+Extensions are small TypeScript projects that run in Matane's sandbox (QuickJS, no Node.js APIs, network only through the app). The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/).
 
 ## Setup
 
@@ -25,7 +25,6 @@ Develop with the app: Extensions → **Load from folder** → `extensions/my-sit
 
 - [ ] `id` is new, lowercase, without a language, and will never change.
 - [ ] `version` in `manifest.json` is higher than the published one (CI checks this).
-- [ ] `domains` lists only what is needed. Every domain added in an update is asked for again in the app.
 - [ ] `nsfw` is `true` for adult sites.
 - [ ] `rateLimit` follows the site's rules.
 - [ ] `url` values are stable. If their form changes, `migrateUrl` handles every older version.

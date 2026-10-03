@@ -35,7 +35,6 @@ Ini juga isi checklist PR di `CONTRIBUTING.md`:
 
 - **`id` tidak pernah berubah** (huruf kecil, angka, tanda minus, tanpa bahasa). Mengganti id sama dengan extension baru, dan library pengguna kehilangan source-nya.
 - **Naikkan `version`** di `manifest.json` setiap kali ada perubahan yang dikirim ke pengguna. App hanya menawarkan update kalau versinya naik. Workflow CI menolak perubahan tanpa kenaikan versi (`scripts/check-versions.mjs`).
-- **`domains` sesempit mungkin.** Setiap domain baru di update ditanyakan ulang ke pengguna (dialog "New"), jadi tambahkan domain hanya kalau memang perlu.
 - **`nsfw: true`** untuk situs dewasa. Extension seperti ini tersembunyi sampai pengguna menyalakan konten NSFW.
 - **`rateLimit`** mengikuti aturan situs (MangaDex: 5 request/detik).
 - **Format `url` stabil.** Kalau terpaksa berubah, implementasikan `migrateUrl` dan tulis cara migrasinya di PR (lihat "Changing how urls look" di [`docs/extensions.md`](../extensions.md)).

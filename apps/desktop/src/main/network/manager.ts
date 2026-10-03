@@ -109,14 +109,12 @@ export class NetworkManager implements ExtensionNetwork {
     const solveChallenge = (url: string) => this.solver.solve(manifest.id, { session: ses, url });
     const fetcher = new ExtensionFetcher({
       fetch: sessionFetch(ses),
-      domains: manifest.domains,
       limiter: new TokenBucket(rate.requests, rate.perMs),
       userAgent: this.userAgent,
       solveChallenge,
     });
     const images = new ExtensionFetcher({
       fetch: sessionFetch(ses),
-      domains: manifest.domains,
       limiter: new TokenBucket(IMAGE_RATE.requests, IMAGE_RATE.perMs),
       userAgent: this.userAgent,
       solveChallenge,

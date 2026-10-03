@@ -344,7 +344,7 @@
       },
       "autoUpdate": {
         "label": "Update extension otomatis",
-        "hint": "Setelah repositori disinkronkan, update langsung dipasang kecuali mengakses situs baru; yang itu tetap ditanyakan."
+        "hint": "Setelah repositori disinkronkan, update langsung dipasang."
       },
       "syncEvery": {
         "label": "Cek repositori",
@@ -652,10 +652,7 @@
       "verifying": "Mengunduh dan memverifikasi…",
       "updating": "Memperbarui…",
       "unverifiedWarning": "Repositori ini tidak terverifikasi. Pasang hanya extension yang kamu percaya.",
-      "newDomainsWarning": "Versi {{to}} bisa mengakses situs yang tidak bisa diakses {{from}} (ditandai Baru).",
       "nsfw": "Extension ini berisi konten dewasa.",
-      "canAccess": "Extension ini bisa mengakses:",
-      "new": "Baru",
       "apiVersion": "Versi API {{version}}",
       "shaVerified": "SHA-256 terverifikasi",
       "install": "Pasang",

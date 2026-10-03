@@ -92,7 +92,6 @@ export class ExtensionInstaller {
           description: entry.description ?? null,
           nsfw: entry.nsfw,
           langs: entry.langs,
-          domains: entry.domains,
           size: entry.size,
           hasIcon: entry.icon !== null,
           installedVersion: current?.version ?? null,
@@ -137,8 +136,6 @@ export class ExtensionInstaller {
       apiVersion: entry.apiVersion,
       nsfw: entry.nsfw,
       langs: entry.langs,
-      domains: entry.domains,
-      newDomains: current ? entry.domains.filter((d) => !current.domains.includes(d)) : [],
       size: entry.size,
       sha256: entry.sha256,
       currentVersion: current?.version ?? null,
@@ -169,16 +166,12 @@ export class ExtensionInstaller {
     });
   }
 
-  /** Installs every update that reaches no new domain; the others need the user's confirmation. */
+  /** Installs every available update. */
   async updateAll(): Promise<UpdateAllResult> {
-    const result: UpdateAllResult = { updated: [], needsConfirmation: [], failed: [] };
+    const result: UpdateAllResult = { updated: [], failed: [] };
     for (const item of this.available().filter((a) => a.update)) {
       try {
         const preview = await this.prepare(item.repoId, item.id);
-        if (preview.newDomains.length > 0) {
-          result.needsConfirmation.push(preview);
-          continue;
-        }
         await this.install(preview.token);
         result.updated.push(item.id);
       } catch (error) {

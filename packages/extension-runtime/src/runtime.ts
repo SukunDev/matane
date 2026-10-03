@@ -1,6 +1,6 @@
 import { createDecipheriv, createHash } from 'node:crypto';
 import type { ExtensionManifest, HttpRequest, HttpResponse, Page, UrlKind } from '@matane/extension-sdk';
-import { isAllowedHost, manifestSchema } from '@matane/extension-sdk/manifest';
+import { manifestSchema } from '@matane/extension-sdk/manifest';
 import {
   type QuickJSContext,
   type QuickJSDeferredPromise,
@@ -467,9 +467,6 @@ export class ExtensionRuntime {
     }
     if (url.protocol !== 'https:' && url.protocol !== 'http:') {
       throw new HostError('NetworkError', `Only http(s) URLs are allowed: ${request.url}`);
-    }
-    if (!isAllowedHost(url.hostname, this.manifest.domains)) {
-      throw new HostError('NetworkError', `Domain ${url.hostname} is not in the manifest allowlist`);
     }
     return this.host.http({ ...request, url: url.toString() });
   }

@@ -1,24 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseRelativeDate } from './date.js';
 import { HttpError, NotFoundError } from './errors.js';
-import { isAllowedHost, manifestSchema } from './manifest.js';
-
-describe('isAllowedHost', () => {
-  const domains = ['mangadex.org', '*.mangadex.network'];
-
-  it('matches exact hosts and wildcard subdomains', () => {
-    expect(isAllowedHost('mangadex.org', domains)).toBe(true);
-    expect(isAllowedHost('MangaDex.org', domains)).toBe(true);
-    expect(isAllowedHost('abc.def.mangadex.network', domains)).toBe(true);
-  });
-
-  it('rejects look-alikes, parents of wildcards and other subdomains', () => {
-    expect(isAllowedHost('api.mangadex.org', domains)).toBe(false);
-    expect(isAllowedHost('mangadex.network', domains)).toBe(false);
-    expect(isAllowedHost('evilmangadex.network', domains)).toBe(false);
-    expect(isAllowedHost('mangadex.org.evil.com', domains)).toBe(false);
-  });
-});
+import { manifestSchema } from './manifest.js';
 
 describe('parseRelativeDate', () => {
   const now = Date.UTC(2026, 0, 10);
@@ -48,7 +31,6 @@ describe('manifestSchema', () => {
     name: 'MangaDex',
     version: '1.0.0',
     apiVersion: 1,
-    domains: ['api.mangadex.org', '*.mangadex.network'],
     sources: [{ key: 'en', lang: 'en', name: 'MangaDex' }],
   };
 
@@ -56,11 +38,13 @@ describe('manifestSchema', () => {
     expect(manifestSchema.parse(valid).nsfw).toBe(false);
   });
 
+  it('ignores the former domains allowlist of older manifests', () => {
+    expect(manifestSchema.parse({ ...valid, domains: ['mangadex.org'] })).not.toHaveProperty('domains');
+  });
+
   it.each([
     ['uppercase id', { id: 'MangaDex' }],
     ['non-semver version', { version: '1.0' }],
-    ['empty domains', { domains: [] }],
-    ['url instead of domain', { domains: ['https://mangadex.org'] }],
     ['no sources', { sources: [] }],
   ])('rejects %s', (_, patch) => {
     expect(manifestSchema.safeParse({ ...valid, ...patch }).success).toBe(false);

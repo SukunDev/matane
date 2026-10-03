@@ -173,7 +173,7 @@ export interface RepoOptions {
   name: string;
   /** Signing key (PEM); null publishes an unsigned repository. */
   privateKeyPem: string | null;
-  extensions: { which: SiteExtension; version: string; domains?: string[]; description?: string }[];
+  extensions: { which: SiteExtension; version: string; description?: string }[];
 }
 
 export async function startSite(): Promise<Site> {
@@ -251,7 +251,6 @@ export async function startSite(): Promise<Site> {
         mkdirSync(dir);
         const files = extensionFiles(site.origin, ext.which, {
           version: ext.version,
-          domains: ext.domains,
           description: ext.description,
         });
         for (const [name, content] of Object.entries(files)) writeFileSync(join(dir, name), content);
@@ -366,7 +365,6 @@ export function extensionFiles(
   which: SiteExtension = 'demo',
   overrides: {
     version?: string;
-    domains?: string[];
     description?: string;
     /** v2 stores manga as "m:<id>" and chapters as "c:<id>/<n>", and migrates v1 urls. */
     urlScheme?: 'v1' | 'v2';
@@ -379,7 +377,6 @@ export function extensionFiles(
     apiVersion: 1,
     ...(overrides.description ? { description: overrides.description } : {}),
     nsfw: 'nsfw' in EXTENSIONS[which],
-    domains: overrides.domains ?? ['e2e.localhost'],
   };
   const code = `globalThis.__extension = {
   createSource: ({ key }) => {

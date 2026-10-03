@@ -55,7 +55,6 @@ export async function createExtension(parent: string, options: CreateOptions): P
       version: '0.1.0',
       apiVersion: SDK_API_VERSION,
       nsfw: false,
-      domains: [domain],
       rateLimit: { requests: 2, perMs: 1000 },
       sources: [{ key: lang, lang, name }],
     }),

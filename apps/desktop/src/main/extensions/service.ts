@@ -270,7 +270,6 @@ export class ExtensionService {
       error: entry.error,
       sourceIds: manifest?.sources.map((s) => sourceIdOf(entry.id, s.key)) ?? [],
       langs: [...new Set(manifest?.sources.map((s) => s.lang) ?? [])].sort(),
-      domains: manifest?.domains ?? [],
       repoId,
       hasIcon: entry.iconPath !== null,
     };
