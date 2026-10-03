@@ -265,10 +265,16 @@ export const invokeContract = {
   'backup.preview': invoke(z.object({ path: z.string().min(1) }), backupPreviewSchema),
   /**
    * Restores a backup. "merge" combines it with what is here; "replace" first backs up and then
-   * removes the current library. `settings`: also take the backup's app settings.
+   * removes the current library. `settings`: also take the backup's app settings. A Mihon backup
+   * is always merged; `sourceMap` says which installed source each of its sources (by id) goes to.
    */
   'backup.restore': invoke(
-    z.object({ path: z.string().min(1), mode: z.enum(['merge', 'replace']), settings: z.boolean() }),
+    z.object({
+      path: z.string().min(1),
+      mode: z.enum(['merge', 'replace']),
+      settings: z.boolean(),
+      sourceMap: z.record(z.string(), z.string()).optional(),
+    }),
     restoreResultSchema,
   ),
   /** Picks the folder automatic backups go to. Null = cancelled. */

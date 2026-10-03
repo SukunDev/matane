@@ -142,6 +142,24 @@ export const backupPreviewSchema = z.object({
   chaptersRead: z.number(),
   /** Extensions its sources need that are not installed here. */
   missingExtensions: z.array(z.object({ id: z.string(), name: z.string(), repoUrl: z.string().nullable() })),
+  /** A Mihon/Tachiyomi backup (`.tachibk`): its sources and what they matched here. Null for a Matane backup. */
+  mihon: z
+    .object({
+      sources: z.array(
+        z.object({
+          /** The source's Long id in the backup (a string: it does not fit a double). */
+          id: z.string(),
+          name: z.string().nullable(),
+          manga: z.number(),
+          inLibrary: z.number(),
+          /** The installed source it matched by itself, or null (the user picks one or skips it). */
+          matchedSourceId: z.string().nullable(),
+          /** When nothing is installed for it: an extension in the user's repositories that looks like it. */
+          offer: z.object({ repoId: z.number(), extensionId: z.string(), name: z.string() }).nullable(),
+        }),
+      ),
+    })
+    .nullable(),
 });
 export type BackupPreview = z.infer<typeof backupPreviewSchema>;
 
@@ -158,6 +176,8 @@ export const restoreResultSchema = z.object({
   /** The automatic backup taken before "Replace" wiped the data. */
   safetyBackup: z.string().nullable(),
   missingExtensions: backupPreviewSchema.shape.missingExtensions,
+  /** Mihon sources that were skipped (none matched or picked), with how many manga that left out. */
+  unmatched: z.array(z.object({ name: z.string().nullable(), manga: z.number() })),
 });
 export type RestoreResult = z.infer<typeof restoreResultSchema>;
 

@@ -44,6 +44,7 @@ function service(
     defaultFolder: join(dir, 'auto'),
     customCoversDir: join(dir, 'covers-restored'),
     isInstalled: (id) => (options.installed ?? []).includes(id),
+    offered: () => [],
     store: {
       get: (key, fallback) => (kv.has(key) ? (kv.get(key) as never) : fallback),
       set: (key, value) => kv.set(key, value),
@@ -296,7 +297,7 @@ describe('backup and restore', () => {
       return path;
     };
     writeFileSync(join(dir, 'text.zip'), 'hello');
-    await expect(backups.preview(join(dir, 'text.zip'))).rejects.toThrow('it is not a zip archive');
+    await expect(backups.preview(join(dir, 'text.zip'))).rejects.toThrow('not a Matane or Mihon backup');
     await expect(backups.preview(await write('empty.zip', { 'other.txt': 'x' }))).rejects.toThrow(
       'backup.json is missing',
     );
@@ -412,6 +413,7 @@ describe('backup at library scale', () => {
       defaultFolder: dir,
       customCoversDir: join(dir, 'covers'),
       isInstalled: () => true,
+      offered: () => [],
       store: {
         get: (key, fallback) => (kv.has(key) ? (kv.get(key) as never) : fallback),
         set: (key, value) => kv.set(key, value),

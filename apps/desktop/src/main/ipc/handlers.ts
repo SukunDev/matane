@@ -314,14 +314,18 @@ export function createIpcHandlers({
       const options: Electron.OpenDialogOptions = {
         properties: ['openFile'],
         defaultPath: backups.folder(),
-        filters: [{ name: 'Matane backup', extensions: ['zip'] }],
+        filters: [
+          { name: 'Matane or Mihon backup', extensions: ['zip', 'tachibk', 'gz'] },
+          { name: 'All files', extensions: ['*'] },
+        ],
       };
       const window = windowOf(event);
       const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
       return picked.canceled ? null : (picked.filePaths[0] ?? null);
     },
     'backup.preview': ({ path }) => backups.preview(path),
-    'backup.restore': (input) => backups.restore(input.path, { mode: input.mode, settings: input.settings }),
+    'backup.restore': (input) =>
+      backups.restore(input.path, { mode: input.mode, settings: input.settings, sourceMap: input.sourceMap }),
     'backup.chooseFolder': async (_input, event) => {
       const options: Electron.OpenDialogOptions = {
         properties: ['openDirectory', 'createDirectory'],

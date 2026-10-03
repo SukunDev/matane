@@ -3,7 +3,17 @@ import { basename, join } from 'node:path';
 import type { AppSettings, BackupFile, BackupPreview, BackupProgress, RestoreResult } from '@manga-reader/shared';
 import type Database from 'better-sqlite3';
 import { collectBackup, writeBackup } from './export';
-import { openBackup, previewBackup, restoreBackup } from './restore';
+import {
+  type InstalledSource,
+  type OfferedExtension,
+  convertMihon,
+  isMihonFile,
+  listMihonSources,
+  matchOffers,
+  matchSources,
+  readMihonFile,
+} from './mihon';
+import { type OpenBackup, openBackup, previewBackup, restoreBackup } from './restore';
 
 /** Automatic backups kept in the folder (older ones are removed). */
 export const KEEP_AUTO = 7;
@@ -32,6 +42,8 @@ export interface BackupServiceDeps {
   defaultFolder: string;
   customCoversDir: string;
   isInstalled: (extensionId: string) => boolean;
+  /** What the repositories offer that is not installed (for the sources of a Mihon backup). */
+  offered: () => OfferedExtension[];
   store: { get<T>(key: string, fallback: T): T; set(key: string, value: unknown): void };
   /** Applies restored app settings (keeping what belongs to this machine). */
   applySettings: (settings: Record<string, unknown>) => void;
@@ -100,6 +112,7 @@ export class BackupService {
   }
 
   async preview(path: string): Promise<BackupPreview> {
+    if (await isMihonFile(path)) return this.previewMihon(path);
     const open = await openBackup(path);
     try {
       return previewBackup(path, open.backup, this.deps.isInstalled);
@@ -108,18 +121,82 @@ export class BackupService {
     }
   }
 
-  /** Restores a backup; "replace" writes a safety backup of the current state first. */
-  async restore(path: string, options: { mode: 'merge' | 'replace'; settings: boolean }): Promise<RestoreResult> {
-    const open = await openBackup(path);
+  /** The sources of installed extensions: where the sources of a Mihon backup can go. */
+  private installedSources(): InstalledSource[] {
+    return (
+      this.deps.sqlite
+        .prepare('SELECT id, extension_id AS extensionId, key, name, lang FROM sources')
+        .all() as InstalledSource[]
+    ).filter((source) => this.deps.isInstalled(source.extensionId));
+  }
+
+  private async previewMihon(path: string): Promise<BackupPreview> {
+    const mihon = await readMihonFile(path);
+    const sources = listMihonSources(mihon);
+    const matches = matchSources(sources, this.installedSources());
+    const offers = matchOffers(
+      sources.filter((s) => !matches.get(s.id)),
+      this.deps.offered(),
+    );
+    return {
+      path,
+      createdAt: (await stat(path)).mtimeMs,
+      appVersion: 'Mihon',
+      manga: mihon.manga.length,
+      inLibrary: mihon.manga.filter((m) => m.favorite).length,
+      categories: mihon.categories.length,
+      chaptersRead: mihon.manga.reduce((sum, m) => sum + m.chapters.filter((c) => c.read).length, 0),
+      missingExtensions: [],
+      mihon: {
+        sources: sources.map((s) => {
+          const offer = offers.get(s.id);
+          return {
+            ...s,
+            matchedSourceId: matches.get(s.id) ?? null,
+            offer: offer ? { repoId: offer.repoId, extensionId: offer.id, name: offer.name } : null,
+          };
+        }),
+      },
+    };
+  }
+
+  /**
+   * A Mihon backup as an opened Matane one. `sourceMap` (Mihon source id → installed source id,
+   * "" = skip) decides where each source goes; sources it does not mention are matched by
+   * themselves.
+   */
+  private async openMihon(path: string, sourceMap: Record<string, string> = {}) {
+    const mihon = await readMihonFile(path);
+    const installed = this.installedSources();
+    const matches = matchSources(listMihonSources(mihon), installed);
+    for (const [id, target] of Object.entries(sourceMap)) matches.set(id, target || null);
+    const { backup, unmatched } = convertMihon(mihon, matches, installed, (await stat(path)).mtimeMs);
+    const open: OpenBackup = { backup, read: async () => null, close: () => undefined };
+    return { open, unmatched };
+  }
+
+  /**
+   * Restores a backup; "replace" writes a safety backup of the current state first. A Mihon
+   * backup is only ever merged, without app settings.
+   */
+  async restore(
+    path: string,
+    options: { mode: 'merge' | 'replace'; settings: boolean; sourceMap?: Record<string, string> },
+  ): Promise<RestoreResult> {
+    const mihon = await isMihonFile(path);
+    const { open, unmatched } = mihon
+      ? await this.openMihon(path, options.sourceMap)
+      : { open: await openBackup(path), unmatched: [] };
+    const effective = mihon ? { mode: 'merge' as const, settings: false } : options;
     try {
       let safetyBackup: string | null = null;
-      if (options.mode === 'replace') {
+      if (effective.mode === 'replace') {
         await mkdir(this.folder(), { recursive: true });
         safetyBackup = join(this.folder(), `${SAFETY_PREFIX}${stamp(this.now())}.zip`);
         await this.create(safetyBackup);
       }
       const result = await this.exclusive(() =>
-        restoreBackup(open, options, {
+        restoreBackup(open, effective, {
           sqlite: this.deps.sqlite,
           customCoversDir: this.deps.customCoversDir,
           isInstalled: this.deps.isInstalled,
@@ -133,11 +210,12 @@ export class BackupService {
         }),
       );
       this.deps.log?.(
-        `restored ${basename(path)} (${options.mode}): ${result.manga.added} manga added, ${result.manga.updated} updated, ` +
-          `${result.failed.length} failed`,
+        `${mihon ? 'imported Mihon backup' : 'restored'} ${basename(path)} (${effective.mode}): ${result.manga.added} manga added, ` +
+          `${result.manga.updated} updated, ${result.failed.length} failed` +
+          (unmatched.length > 0 ? `, ${unmatched.reduce((sum, u) => sum + u.manga, 0)} skipped (no source)` : ''),
       );
       this.deps.restored();
-      return { ...result, safetyBackup };
+      return { ...result, safetyBackup, unmatched };
     } finally {
       open.close();
     }

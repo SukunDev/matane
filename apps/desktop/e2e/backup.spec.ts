@@ -88,7 +88,7 @@ test('profile B: a damaged file is refused before anything happens', async () =>
   await pickFile(b, junk);
   await goto(page, '#/settings/data');
   await page.getByRole('button', { name: 'Restore…' }).click();
-  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('not a Matane backup');
+  await expect(page.getByRole('dialog').getByRole('alert')).toContainText('not a Matane or Mihon backup');
   await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).click();
   expect(await libraryOf(page)).toEqual([]);
 });

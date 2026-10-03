@@ -4,6 +4,7 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 
 ## Unreleased
 
+- Restore can import a Mihon/Tachiyomi backup (`.tachibk`): library, categories, read chapters, bookmarks, progress, history and reading time. Each source in the backup is matched to an installed source (by Mihon's source id, else by name) and can be changed or skipped in the dialog (an extension that is not installed yet can be installed from there when a repository has it); manga of skipped sources are reported, not imported. Trackers, repositories and app settings are not imported.
 - A source's manga list has a cover size slider and the same display modes as the library (comfortable grid, compact grid, covers only, list); the choice is remembered.
 - Matane no longer ships with, links to, or adds any extension repository by itself. Add a repository by its URL (Extensions → Repositories); the "official" trust level is gone, so a repository is either signed with a key you chose to trust or unverified. A repository that was added automatically by 0.2.0-beta.1 stays in your list as unverified until you trust its key or remove it. The "handoff" of extensions that came with 0.1 is gone too.
 - Documentation about writing extensions and publishing a repository of your own stays; the setup guides for a specific repository were removed.

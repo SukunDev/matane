@@ -606,6 +606,11 @@ async function bootstrap(): Promise<void> {
     defaultFolder: join(userData, 'backups'),
     customCoversDir: join(userData, 'covers', 'custom'),
     isInstalled: (extensionId) => extensions.isInstalled(extensionId),
+    offered: () =>
+      installer
+        .available()
+        .filter((e) => e.installedVersion === null)
+        .map((e) => ({ repoId: e.repoId, id: e.id, name: e.name, langs: e.langs })),
     store: {
       get: (key, fallback) => settings.getValue(key, fallback),
       set: (key, value) => settings.setValue(key, value),

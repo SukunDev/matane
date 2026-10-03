@@ -111,6 +111,7 @@ export function previewBackup(
     categories: backup.data.categories.length,
     chaptersRead: backup.data.manga.reduce((sum, m) => sum + m.chapters.filter((c) => c.read).length, 0),
     missingExtensions: missingExtensions(backup, isInstalled),
+    mihon: null,
   };
 }
 
@@ -156,6 +157,7 @@ export async function restoreBackup(
     settings: false,
     failed: [],
     missingExtensions: missingExtensions(backup, deps.isInstalled),
+    unmatched: [],
   };
 
   if (options.mode === 'replace') {

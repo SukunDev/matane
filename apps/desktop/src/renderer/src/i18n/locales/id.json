@@ -1410,7 +1410,15 @@
       "safety": "Membackup kondisi sekarang…",
       "restoring": "Memulihkan…",
       "mergeAction": "Gabungkan",
-      "replaceAction": "Ganti"
+      "replaceAction": "Ganti",
+      "madeBy": "Dibuat oleh",
+      "mihonApp": "Mihon / Tachiyomi",
+      "mihonSources": "Source",
+      "mihonHint": "Pilih source terpasang tujuan masing-masing. Source yang diset \"Lewati\" tidak diimpor. Matane mencocokkan lewat nama dan bahasa bila bisa; untuk source yang belum cocok, Matane menawarkan extension dari repositorimu bila ada yang mirip.",
+      "unknownSource": "Source tidak dikenal",
+      "installOffer": "Pasang {{name}}",
+      "skip": "Lewati",
+      "importAction": "Impor"
     },
     "summary": {
       "done": "Dipulihkan",
@@ -1430,7 +1438,9 @@
       "failed_other": "{{count}} manga tidak bisa dipulihkan",
       "missingTitle": "Extension yang perlu dipasang",
       "missingHint": "Pasang supaya source ini bisa dibaca lagi; pengaturannya dari backup ikut terbawa.",
-      "notOffered": "Tidak ada di repositorimu"
+      "notOffered": "Tidak ada di repositorimu",
+      "unmatched_one": "{{count}} manga dilewati: source belum dipilih",
+      "unmatched_other": "{{count}} manga dilewati: source belum dipilih"
     }
   }
 }

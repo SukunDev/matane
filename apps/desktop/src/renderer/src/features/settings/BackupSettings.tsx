@@ -1,4 +1,4 @@
-import type { BackupProgress, RestoreResult } from '@manga-reader/shared';
+import type { BackupPreview, BackupProgress, RestoreResult } from '@manga-reader/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
@@ -12,13 +12,14 @@ import {
   X,
 } from 'lucide-react';
 import { Dialog } from 'radix-ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
 import { appError } from '../../lib/errors';
 import { availableExtensionsQuery } from '../../lib/extensions';
 import { formatBytes, formatRelative } from '../../lib/format';
 import { ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
+import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { InstallDialog, type InstallRequest } from '../extensions/InstallDialog';
 import { Row, Segmented } from './controls';
@@ -138,13 +139,36 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
   const [mode, setMode] = useState<'merge' | 'replace'>('merge');
   const [withSettings, setWithSettings] = useState(false);
   const [sure, setSure] = useState(false);
+  const [chosen, setChosen] = useState<Record<string, string>>({});
+  const [request, setRequest] = useState<InstallRequest | null>(null);
   const [progress, setProgress] = useState<BackupProgress | null>(null);
   useIpcEvent(
     'backup.progress',
     useCallback((next: BackupProgress) => setProgress(next), []),
   );
+  // Installing an extension for a source of a Mihon backup: the preview matches again.
+  const { data: allSources = [] } = useQuery(sourcesQuery);
+  const installedSources = allSources.filter((source) => source.installed).length;
+  const seenInstalled = useRef(installedSources);
+  const { refetch: refetchPreview } = preview;
+  useEffect(() => {
+    if (installedSources === seenInstalled.current) return;
+    seenInstalled.current = installedSources;
+    void refetchPreview();
+  }, [installedSources, refetchPreview]);
+  const mihon = preview.data?.mihon ?? null;
+  // Where each Mihon source goes: what the user picked, else what matched by itself, else nowhere.
+  const sourceMap = Object.fromEntries(
+    (mihon?.sources ?? []).map((s) => [s.id, chosen[s.id] ?? s.matchedSourceId ?? '']),
+  );
   const restore = useMutation({
-    mutationFn: () => ipc.invoke('backup.restore', { path, mode, settings: withSettings }),
+    mutationFn: () =>
+      ipc.invoke('backup.restore', {
+        path,
+        mode: mihon ? 'merge' : mode,
+        settings: mihon ? false : withSettings,
+        ...(mihon && { sourceMap }),
+      }),
     onSettled: () => {
       void queryClient.invalidateQueries();
     },
@@ -189,7 +213,10 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
               <div className="flex flex-col gap-4">
                 <dl className="grid grid-cols-2 gap-3" data-testid="backup-preview">
                   <Fact label={t('backup.dialog.made')} value={formatRelative(preview.data.createdAt, i18n.language)} />
-                  <Fact label={t('backup.dialog.version')} value={preview.data.appVersion} />
+                  <Fact
+                    label={mihon ? t('backup.dialog.madeBy') : t('backup.dialog.version')}
+                    value={mihon ? t('backup.dialog.mihonApp') : preview.data.appVersion}
+                  />
                   <Fact
                     label={t('backup.dialog.library')}
                     value={t('backup.dialog.manga', { count: preview.data.inLibrary })}
@@ -204,40 +231,59 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
                     })}
                   </p>
                 )}
-                <fieldset className="flex flex-col gap-2">
-                  <legend className="mb-2 font-medium">{t('backup.dialog.how')}</legend>
-                  {(['merge', 'replace'] as const).map((value) => (
-                    <label
-                      key={value}
-                      className={cn(
-                        'flex cursor-pointer gap-3 rounded-lg border p-3',
-                        mode === value && 'border-primary bg-primary/5',
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="restore-mode"
-                        checked={mode === value}
-                        onChange={() => setMode(value)}
-                        className="mt-0.5 accent-(--app-accent)"
-                      />
-                      <span>
-                        <span className="block font-medium">{t(`backup.dialog.${value}`)}</span>
-                        <span className="text-xs text-muted-foreground">{t(`backup.dialog.${value}Hint`)}</span>
-                      </span>
-                    </label>
-                  ))}
-                </fieldset>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={withSettings}
-                    onChange={(event) => setWithSettings(event.target.checked)}
-                    className="accent-(--app-accent)"
+                {mihon && (
+                  <MihonSources
+                    sources={mihon.sources}
+                    sourceMap={sourceMap}
+                    onChange={setChosen}
+                    onInstall={(offer) =>
+                      setRequest({
+                        kind: 'prepare',
+                        repoId: offer.repoId,
+                        extensionId: offer.extensionId,
+                        name: offer.name,
+                      })
+                    }
                   />
-                  {t('backup.dialog.settings')}
-                </label>
-                {mode === 'replace' && (
+                )}
+                {!mihon && (
+                  <fieldset className="flex flex-col gap-2">
+                    <legend className="mb-2 font-medium">{t('backup.dialog.how')}</legend>
+                    {(['merge', 'replace'] as const).map((value) => (
+                      <label
+                        key={value}
+                        className={cn(
+                          'flex cursor-pointer gap-3 rounded-lg border p-3',
+                          mode === value && 'border-primary bg-primary/5',
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="restore-mode"
+                          checked={mode === value}
+                          onChange={() => setMode(value)}
+                          className="mt-0.5 accent-(--app-accent)"
+                        />
+                        <span>
+                          <span className="block font-medium">{t(`backup.dialog.${value}`)}</span>
+                          <span className="text-xs text-muted-foreground">{t(`backup.dialog.${value}Hint`)}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </fieldset>
+                )}
+                {!mihon && (
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={withSettings}
+                      onChange={(event) => setWithSettings(event.target.checked)}
+                      className="accent-(--app-accent)"
+                    />
+                    {t('backup.dialog.settings')}
+                  </label>
+                )}
+                {!mihon && mode === 'replace' && (
                   <label className="flex items-start gap-2 rounded-lg bg-ctp-red/10 px-3 py-2 text-xs text-ctp-red">
                     <input
                       type="checkbox"
@@ -269,6 +315,7 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
             )}
           </div>
 
+          <InstallDialog request={request} onClose={() => setRequest(null)} />
           <footer className="flex justify-end gap-2 border-t p-4">
             {done ? (
               <Button onClick={onClose}>{t('common.close')}</Button>
@@ -278,12 +325,21 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
                   {t('common.cancel')}
                 </Button>
                 <Button
-                  variant={mode === 'replace' ? 'destructive' : 'default'}
-                  disabled={!preview.isSuccess || restore.isPending || (mode === 'replace' && !sure)}
+                  variant={!mihon && mode === 'replace' ? 'destructive' : 'default'}
+                  disabled={
+                    !preview.isSuccess ||
+                    restore.isPending ||
+                    (!mihon && mode === 'replace' && !sure) ||
+                    (mihon !== null && !Object.values(sourceMap).some(Boolean))
+                  }
                   onClick={() => restore.mutate()}
                 >
                   {restore.isPending && <Loader2 className="animate-spin" />}
-                  {mode === 'replace' ? t('backup.dialog.replaceAction') : t('backup.dialog.mergeAction')}
+                  {mihon
+                    ? t('backup.dialog.importAction')
+                    : mode === 'replace'
+                      ? t('backup.dialog.replaceAction')
+                      : t('backup.dialog.mergeAction')}
                 </Button>
               </>
             )}
@@ -291,6 +347,69 @@ function RestoreDialog({ path, onClose }: { path: string; onClose: () => void })
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+/** A Mihon backup's sources: where each one goes (matched by itself, or picked here). */
+function MihonSources({
+  sources,
+  sourceMap,
+  onChange,
+  onInstall,
+}: {
+  sources: NonNullable<BackupPreview['mihon']>['sources'];
+  sourceMap: Record<string, string>;
+  onChange: (update: (previous: Record<string, string>) => Record<string, string>) => void;
+  onInstall: (offer: NonNullable<NonNullable<BackupPreview['mihon']>['sources'][number]['offer']>) => void;
+}) {
+  const { t } = useTranslation();
+  const { data: all = [] } = useQuery(sourcesQuery);
+  const installed = all.filter((source) => source.installed).sort((a, b) => a.name.localeCompare(b.name));
+  return (
+    <fieldset className="flex flex-col gap-2" data-testid="mihon-sources">
+      <legend className="mb-1 font-medium">{t('backup.dialog.mihonSources')}</legend>
+      <p className="text-xs text-muted-foreground">{t('backup.dialog.mihonHint')}</p>
+      <ul className="flex flex-col divide-y rounded-lg border">
+        {sources.map((source) => {
+          const label = source.name ?? t('backup.dialog.unknownSource');
+          return (
+            <li key={source.id} className="flex items-center gap-3 px-3 py-2">
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{label}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t('backup.dialog.manga', { count: source.manga })}
+                </span>
+              </span>
+              {!sourceMap[source.id] && (
+                <span className="flex shrink-0 items-center">
+                  {source.offer ? (
+                    <Button size="sm" variant="secondary" onClick={() => onInstall(source.offer!)}>
+                      <Puzzle />
+                      {t('backup.dialog.installOffer', { name: source.offer.name })}
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">{t('backup.summary.notOffered')}</span>
+                  )}
+                </span>
+              )}
+              <select
+                aria-label={label}
+                value={sourceMap[source.id] ?? ''}
+                onChange={(event) => onChange((previous) => ({ ...previous, [source.id]: event.target.value }))}
+                className="h-8 w-48 shrink-0 rounded-md border bg-background px-2 text-xs"
+              >
+                <option value="">{t('backup.dialog.skip')}</option>
+                {installed.map((target) => (
+                  <option key={target.id} value={target.id}>
+                    {target.name} ({target.lang})
+                  </option>
+                ))}
+              </select>
+            </li>
+          );
+        })}
+      </ul>
+    </fieldset>
   );
 }
 
@@ -332,6 +451,20 @@ function RestoreSummary({ result }: { result: RestoreResult }) {
             {result.failed.map((failure) => (
               <li key={failure.title}>
                 {failure.title}: {failure.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {result.unmatched.length > 0 && (
+        <div className="rounded-lg bg-ctp-yellow/10 px-3 py-2 text-xs" data-testid="restore-unmatched">
+          <p className="mb-1 font-medium">
+            {t('backup.summary.unmatched', { count: result.unmatched.reduce((sum, u) => sum + u.manga, 0) })}
+          </p>
+          <ul>
+            {result.unmatched.map((source, index) => (
+              <li key={source.name ?? index}>
+                {source.name ?? t('backup.dialog.unknownSource')}: {t('backup.dialog.manga', { count: source.manga })}
               </li>
             ))}
           </ul>

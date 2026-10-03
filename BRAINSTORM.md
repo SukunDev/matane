@@ -780,7 +780,7 @@ covers/            # cover kustom (nama file = hash natural key manga)
 - Tip di UI: arahkan folder ke Dropbox/Syncthing/OneDrive untuk "sinkronisasi sederhana" antar perangkat, lalu restore dengan mode merge di perangkat lain.
 
 **Setelah v1**
-- **Import `.tachibk`** (Mihon/Tachiyomi: protobuf + gzip). Butuh tabel pemetaan ID source Mihon (Long) → source id kita. Hanya manga dari source yang punya extension di sini yang bisa diimpor, dan sisanya dilaporkan.
+- ~~**Import `.tachibk`**~~ (Mihon/Tachiyomi: protobuf + gzip): **sudah dikerjakan 4 Okt 2026** (ADR 0032, `docs/plans/import-mihon.md`). Source dicocokkan lewat ID Mihon yang dihitung dari nama/bahasa, lalu nama, dan bisa diubah di dialog; yang dilewati dilaporkan.
 - Sinkronisasi antar perangkat yang sesungguhnya.
 
 ### 6.8 Lain-lain (setelah v1)
@@ -1060,7 +1060,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 **Setelah v1**
 - Tracker: AniList, MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
 - Login per source (BrowserWindow).
-- Import backup Mihon/Tachiyomi (`.tachibk`).
+- ~~Import backup Mihon/Tachiyomi (`.tachibk`).~~ Selesai 4 Okt 2026 (ADR 0032).
 - Source file lokal (CBZ/folder).
 - Template extension untuk CMS populer (Madara, MangaThemesia).
 - Sinkronisasi antar perangkat yang sesungguhnya.

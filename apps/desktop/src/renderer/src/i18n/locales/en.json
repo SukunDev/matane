@@ -1438,7 +1438,15 @@
       "safety": "Backing up what is here now…",
       "restoring": "Restoring…",
       "mergeAction": "Merge",
-      "replaceAction": "Replace"
+      "replaceAction": "Replace",
+      "madeBy": "Made by",
+      "mihonApp": "Mihon / Tachiyomi",
+      "mihonSources": "Sources",
+      "mihonHint": "Pick the installed source each one goes to. Sources set to \"Skip\" are left out. Matane matches them by name and language when it can; for a source with no match it offers the extension from your repositories, if one looks like it.",
+      "unknownSource": "Unknown source",
+      "installOffer": "Install {{name}}",
+      "skip": "Skip",
+      "importAction": "Import"
     },
     "summary": {
       "done": "Restored",
@@ -1458,7 +1466,9 @@
       "failed_other": "{{count}} manga could not be restored",
       "missingTitle": "Extensions to install",
       "missingHint": "Install them to read these sources again; their settings from the backup come with them.",
-      "notOffered": "Not in your repositories"
+      "notOffered": "Not in your repositories",
+      "unmatched_one": "{{count}} manga skipped: no source chosen",
+      "unmatched_other": "{{count}} manga skipped: no source chosen"
     }
   }
 }
