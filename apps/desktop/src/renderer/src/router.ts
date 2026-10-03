@@ -1,6 +1,7 @@
 import { createHashHistory, createRouter } from '@tanstack/react-router';
 import type en from './i18n/locales/en.json';
 import { createQueryClient } from './lib/query';
+import { trackReaderOrigin } from './lib/reader-origin';
 import { routeTree } from './routeTree.gen';
 
 export const queryClient = createQueryClient();
@@ -12,6 +13,8 @@ export const router = createRouter({
   context: { queryClient },
   defaultPreload: 'intent',
 });
+
+trackReaderOrigin(router);
 
 declare module '@tanstack/react-router' {
   interface Register {

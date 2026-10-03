@@ -8,7 +8,7 @@ import {
   toMangaReaderSettings,
 } from '@manga-reader/shared';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useRouter } from '@tanstack/react-router';
 import {
   ArrowLeft,
   ArrowLeftRight,
@@ -30,6 +30,7 @@ import { ErrorState } from '../../components/ErrorState';
 import { WindowControls } from '../../components/shell/WindowControls';
 import { Button } from '../../components/ui/button';
 import { appError } from '../../lib/errors';
+import { readerOrigin } from '../../lib/reader-origin';
 import { appInfoQuery, ipc, settingsQuery, useIpcEvent, useUpdateSettings } from '../../lib/ipc';
 import { chapterQuery, chaptersQuery, mangaQuery, pagesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
@@ -64,6 +65,7 @@ export function ReaderPage({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const router = useRouter();
   // Always re-read: the saved position may have changed since the list was last fetched.
   const chapterResult = useQuery({ ...chapterQuery(chapterId), refetchOnMount: 'always' });
   const chapter = chapterResult.data;
@@ -155,9 +157,16 @@ export function ReaderPage({
     [navigate],
   );
   const exit = useCallback(() => {
-    if (mangaId > 0) void navigate({ to: '/manga/$mangaId', params: { mangaId: String(mangaId) } });
-    else void navigate({ to: '/browse/sources' });
-  }, [navigate, mangaId]);
+    if (mangaId <= 0) {
+      void navigate({ to: '/browse/sources' });
+    } else if (readerOrigin() === `/manga/${mangaId}`) {
+      // Opened from this manga: step back so Back from the manga continues to the list before it.
+      router.history.back();
+    } else {
+      // Opened from elsewhere (History, Updates…): the manga takes the reader's place in the stack.
+      void navigate({ to: '/manga/$mangaId', params: { mangaId: String(mangaId) }, replace: true });
+    }
+  }, [navigate, router, mangaId]);
 
   // One key listener for the whole reader (BRAINSTORM.md §6.1: keys can be remapped). The view on
   // screen lends the page actions (`useReaderKeys`); the reader itself handles the rest.

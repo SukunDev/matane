@@ -28,6 +28,7 @@ import { Button } from '../../components/ui/button';
 import { Skeleton } from '../../components/ui/skeleton';
 import { ipc } from '../../lib/ipc';
 import { categoriesQuery, libraryCountsQuery, libraryQuery } from '../../lib/library';
+import { useScrollRestoration } from '../../lib/scroll';
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { HandoffBanner } from '../extensions/HandoffBanner';
@@ -99,6 +100,7 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
   const onToggle = (id: number) => setSelection((current) => select(current, order, id, 'toggle'));
 
   const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
+  useScrollRestoration(scrollElement, library.data !== undefined);
   const empty = counts?.all === 0;
   const { data: sources = [] } = useQuery(sourcesQuery);
   const hasSources = sources.some((source) => source.installed);

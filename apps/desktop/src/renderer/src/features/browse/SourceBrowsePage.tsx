@@ -2,7 +2,7 @@ import type { FilterState } from '@manga-reader/shared';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { RefreshCw, Search, SearchX, SlidersHorizontal } from 'lucide-react';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '../../components/EmptyState';
 import { ErrorState } from '../../components/ErrorState';
@@ -17,6 +17,7 @@ import {
   sourceInfoQuery,
   sourcesQuery,
 } from '../../lib/sources';
+import { useScrollRestoration } from '../../lib/scroll';
 import { cn } from '../../lib/utils';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { FilterPanel, countActiveFilters } from './FilterPanel';
@@ -61,15 +62,26 @@ export function SourceBrowsePage({
     ...browseQuery(sourceId, tab, q, filters),
     enabled: tab !== 'latest' || info.isSuccess,
   });
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const [scrollElement, setScrollElement] = useState<HTMLDivElement | null>(null);
+  const attachScroll = useCallback((node: HTMLDivElement | null) => {
+    scrollRef.current = node;
+    setScrollElement(node);
+  }, []);
+  useScrollRestoration(scrollElement, listing.data !== undefined);
   const items = listing.data?.pages.flatMap((page) => page.items) ?? [];
   // Pages can repeat titles when the source list shifts between requests; show each once.
   const unique = items.filter((item, index) => items.findIndex((other) => other.mangaId === item.mangaId) === index);
 
+  // A different tab, query or filter starts at the top; opening the page (or Back to it) keeps the position.
+  const listingKey = JSON.stringify([tab, q, filters]);
+  const shownListing = useRef(listingKey);
   useEffect(() => {
+    if (shownListing.current === listingKey) return;
+    shownListing.current = listingKey;
     // Block body: Chromium's scrollTo() returns a promise, which React would treat as a cleanup.
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [tab, q, filters]);
+  }, [listingKey]);
 
   const tabs: { kind: BrowseKind; label: string }[] = [
     { kind: 'popular', label: t('browse.tabs.popular') },
@@ -81,7 +93,7 @@ export function SourceBrowsePage({
 
   return (
     <div className="flex h-full">
-      <div ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
+      <div ref={attachScroll} className="min-w-0 flex-1 overflow-y-auto">
         <header className="sticky top-0 z-10 border-b bg-background/95 px-6 pt-4 backdrop-blur">
           <div className="flex items-center gap-3">
             <SourceIcon
