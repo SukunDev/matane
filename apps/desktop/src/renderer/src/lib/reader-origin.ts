@@ -13,6 +13,11 @@ export const readerOrigin = (): string | null => origin;
 export function trackReaderOrigin(router: AnyRouter): void {
   router.subscribe('onResolved', ({ fromLocation, toLocation }) => {
     const reader = (path: string | undefined) => path?.startsWith('/reader/') ?? false;
-    if (reader(toLocation.pathname) && fromLocation && !reader(fromLocation.pathname)) origin = fromLocation.pathname;
+    if (!reader(toLocation.pathname) || !fromLocation) return;
+    if (!reader(fromLocation.pathname)) origin = fromLocation.pathname;
+    // Any other reader → reader move (the URL edited by hand, Back/Forward) leaves a reader entry
+    // below this one, so stepping back would not leave the reader. Chapter changes inside the
+    // reader replace, which keeps the history index; a hand-edited hash resets it to 0.
+    else if (toLocation.state.__TSR_index !== fromLocation.state.__TSR_index) origin = null;
   });
 }
