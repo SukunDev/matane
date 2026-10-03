@@ -2,7 +2,7 @@
 
 ## Context
 
-Fase 1 sudah selesai: extension di sandbox QuickJS, MangaDex bawaan, browse → detail → reader (single/double/webtoon, RTL), cache gambar `manga://`, E2E, dan ADR 0011–0014. Tapi app belum **mengingat** apa pun: tidak ada library, progres baca, history, atau bookmark, dan setting reader berlaku global. Fase 2 membuat app bisa dipakai sehari-hari: simpan manga ke library, lanjut baca dari posisi terakhir, cari di semua source sekaligus, dan pindah source tanpa kehilangan progres.
+Fase 1 sudah selesai: extension di sandbox QuickJS, Example Source bawaan, browse → detail → reader (single/double/webtoon, RTL), cache gambar `manga://`, E2E, dan ADR 0011–0014. Tapi app belum **mengingat** apa pun: tidak ada library, progres baca, history, atau bookmark, dan setting reader berlaku global. Fase 2 membuat app bisa dipakai sehari-hari: simpan manga ke library, lanjut baca dari posisi terakhir, cari di semua source sekaligus, dan pindah source tanpa kehilangan progres.
 
 Acuan:
 - `BRAINSTORM.md` §6.1 (progress reader, pengaturan berlapis), §6.2 (library, detail, scanlator duplikat, global search, migrasi), §6.3 (progress, lanjut baca, history, sesi, incognito, bookmark), §6.5 (cover library permanen), §7 (skema);
@@ -89,7 +89,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
 - **IPC baru:** `library.list({ categoryId, sort, filters, query })`, `library.add`, `library.remove`, `library.setCategories`, `categories.list/create/rename/delete/reorder`, `manga.setCustomCover`, `manga.resetCover`, `manga.findDuplicates`.
 - **`LibraryRepository`** menghitung query library (join `chapters` untuk belum dibaca dan terakhir dibaca, join `history`). Index tambahan (migrasi) dibuat hanya kalau diperlukan setelah diukur dengan 1.000 manga.
 
-**Checkpoint 2b:** tambah beberapa manga MangaDex ke library dan ke beberapa kategori. Sort, filter, pencarian, keempat tampilan, dan multi-select berjalan. Cover tetap tampil setelah cache gambar dikosongkan. Cover kustom dari file dan dari reader jalan. Library 1.000 manga sintetis tetap lancar di-scroll (grid tervirtualisasi). Screenshot dibandingkan dengan mockup 01.
+**Checkpoint 2b:** tambah beberapa manga Example Source ke library dan ke beberapa kategori. Sort, filter, pencarian, keempat tampilan, dan multi-select berjalan. Cover tetap tampil setelah cache gambar dikosongkan. Cover kustom dari file dan dari reader jalan. Library 1.000 manga sintetis tetap lancar di-scroll (grid tervirtualisasi). Screenshot dibandingkan dengan mockup 01.
 
 ---
 
@@ -121,7 +121,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
   - dipakai oleh daftar chapter, jumlah belum dibaca, `manga.continue`, dan `adjacentChapter`: **satu versi per nomor** = prioritas tertinggi → scanlator yang sama dengan chapter sebelumnya → versi terbaru (§6.2).
 - **Tampilan daftar chapter per manga** (`chapter_view_json`): filter, sort (urutan source / nomor / tanggal), dan scanlator disimpan per manga.
 
-**Checkpoint 2d:** manga dengan beberapa scanlator (mis. Kage no Jitsuryokusha di MangaDex) → sembunyikan satu grup → daftar, jumlah belum dibaca, "lanjut baca", dan chapter berikutnya di reader mengikuti prioritas. Override reader per manga tetap berlaku setelah restart, dan setting global tidak ikut berubah. Unit test pemilihan versi chapter hijau.
+**Checkpoint 2d:** manga dengan beberapa scanlator (mis. Kage no Jitsuryokusha di Example Source) → sembunyikan satu grup → daftar, jumlah belum dibaca, "lanjut baca", dan chapter berikutnya di reader mengikuti prioritas. Override reader per manga tetap berlaku setelah restart, dan setting global tidak ikut berubah. Unit test pemilihan versi chapter hijau.
 
 ---
 
@@ -139,7 +139,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
   - **Eksekusi di main dalam transaksi per manga:** refresh manga tujuan (detail + chapter) → salin data → tambah ke library → keluarkan yang lama sesuai opsi. Lalu tampil **ringkasan** (berhasil, dilewati, gagal, dan chapter yang tidak bisa dicocokkan).
   - **IPC:** `migration.findCandidates({ mangaId, targets })` dan `migration.run({ items, options })`, dengan event progres (`migration.progress`).
 
-**Checkpoint 2e:** global search "frieren" ke MangaDex EN dan ID tampil bertahap, dan error satu source tidak menghambat yang lain. Migrasi manga dari MangaDex EN → ID (atau antara extension tiruan di E2E) memindahkan status baca per nomor chapter, kategori, setting reader, dan cover kustom, lalu ringkasannya benar.
+**Checkpoint 2e:** global search "frieren" ke Example Source EN dan ID tampil bertahap, dan error satu source tidak menghambat yang lain. Migrasi manga dari Example Source EN → ID (atau antara extension tiruan di E2E) memindahkan status baca per nomor chapter, kategori, setting reader, dan cover kustom, lalu ringkasannya benar.
 
 ---
 
@@ -177,7 +177,7 @@ Yang dipakai ulang:
 ## Verifikasi
 
 1. Per milestone: `pnpm lint`, `format:check`, `typecheck`, `test`, dan `e2e` hijau. Unit test baru untuk repository (progres, status per nomor, history, library query + FTS, kategori, bookmark), logika lanjut baca, pemilihan versi scanlator, penilaian kandidat migrasi, dan batas incognito.
-2. Dijalankan lewat driver Playwright di app hasil build terhadap MangaDex asli sesuai checkpoint masing-masing, lalu screenshot dibandingkan dengan mockup 01, 02, 03, 06, 10, dan 15.
+2. Dijalankan lewat driver Playwright di app hasil build terhadap Example Source asli sesuai checkpoint masing-masing, lalu screenshot dibandingkan dengan mockup 01, 02, 03, 06, 10, dan 15.
 3. Isi DB setelah skenario dicek langsung (history, sesi, progres, dan tidak ada tulisan saat incognito).
 4. Performa dengan seed 1.000 manga: library terbuka < 200 ms dan scroll lancar.
 
@@ -186,7 +186,7 @@ Yang dipakai ulang:
 ## Status pelaksanaan
 
 - 23 Sep 2026: rencana disetujui dan disimpan di sini. Implementasi dimulai dari Milestone 2a setelah prasyarat `hasFixtures` beres.
-- Prasyarat selesai: `hasFixtures(dir)` di `extension-cli` (plus test). Test MangaDex dilewati dengan peringatan (bukan gagal) kalau fixture tidak ada dan tidak sedang merekam.
+- Prasyarat selesai: `hasFixtures(dir)` di `extension-cli` (plus test). Test Example Source dilewati dengan peringatan (bukan gagal) kalau fixture tidak ada dan tidak sedang merekam.
 - 24 Sep 2026: **Fase 2 selesai** (2a–2e + penutup, di bawah), menunggu review.
 
 ### Milestone 2a: selesai (23 Sep 2026), menunggu review
@@ -194,7 +194,7 @@ Yang dipakai ulang:
 - `lint` (tanpa error; 2 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau: 147 test.
   - Test baru mencakup `continueChapter` (shared), repository progres (auto-dibaca di halaman terakhir, status per nomor chapter, tandai sebelumnya, reset saat ditandai belum dibaca), history (cari, hapus, hapus semua), sesi baca (waktu aktif, idle 2 menit, ganti chapter), dan penjaga incognito.
 - E2E 11/11. Test baru: kembali ke halaman terakhir, tombol "Continue · Ch. 5", buka ulang di 3/4, dan menu "Tandai sebelumnya sudah dibaca".
-- Diverifikasi di app hasil build terhadap MangaDex asli, dengan app ditutup lalu dibuka lagi:
+- Diverifikasi di app hasil build terhadap Example Source asli, dengan app ditutup lalu dibuka lagi:
   - paged 7/52 → 7/52;
   - webtoon scrollTop 5600 → 5595 (offset 0,528 di dalam halaman yang sangat panjang);
   - "lanjut baca" untuk ketiga kasus (start → continue → next), dan chapter ditandai dibaca di halaman terakhir;
@@ -231,12 +231,12 @@ Bug yang ditemukan saat verifikasi dan sudah diperbaiki:
   - Ctrl+klik → tandai dibaca / atur kategori / keluarkan;
   - salinan cover permanen di disk, klik kanan halaman reader → jadikan cover → reset;
   - multi-select chapter (Ctrl + Shift) → bookmark.
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah):
+- Diverifikasi di app hasil build terhadap Example Source asli (profil terpisah):
   - 6 manga ditambahkan, satu lewat tombol di detail. `library.add` butuh 185–393 ms termasuk refresh detail + chapter;
   - dua kategori; tab All 6 / Favourites 2 / Plan to read 3 / Default 1;
   - screenshot keempat tampilan dan bar multi-select sesuai mockup 01;
   - **cache gambar dihapus** (file + baris `image_cache`) lalu app dibuka lagi: keenam cover tetap tampil dari `userData/covers` tanpa fetch ulang (folder cache tidak dibuat lagi);
-  - cover kustom dari halaman reader MangaDex berhasil.
+  - cover kustom dari halaman reader Example Source berhasil.
 - **Performa** (seed 1.000 manga + 50.000 chapter, total 1.006 manga di library):
   - `library.list` 40–61 ms termasuk IPC, untuk semua sort, FTS, dan filter belum dibaca;
   - library tampil 12 ms setelah navigasi, dengan 45 kartu ter-render (virtualisasi per baris);
@@ -280,7 +280,7 @@ Belum dicakup E2E: cover kustom dari **file**, karena dialog file native tidak b
   - ikon di bar atas reader menandai chapter → ikon penanda di baris chapter → filter "Bookmarked" di daftar chapter → dua manga di library → filter "Bookmarked" di library hanya menampilkan manga yang punya chapter bertanda;
   - incognito dari title bar → baca Ch. 3 → history dan `last_page` tidak berubah (dicek lewat IPC) → banner di History → matikan;
   - hapus satu entri, lalu "Hapus semua riwayat" dengan konfirmasi.
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah):
+- Diverifikasi di app hasil build terhadap Example Source asli (profil terpisah):
   - Kage no Jitsuryokusha Ch. 1 sampai hal. 6 dan Chainsaw Man Ch. 1 selesai + Ch. 2 hal. 3. History menampilkan dua entri "Today" dengan cover, badge source, "Page x/y", jam, dan bar progres, sesuai mockup 10;
   - **incognito:** Ch. 3 Kage dibaca sampai hal. 5. DB langsung: `last_page` tetap 0, tidak ada baris `history` untuknya, dan 0 baris `reading_sessions`. Sesi bacaan sebelumnya tercatat (2,1–4,3 detik aktif). Incognito tetap aktif setelah restart, dan membaca lagi tetap tidak menulis apa pun;
   - pil "Incognito" tampil di title bar dan di bar atas reader;
@@ -321,7 +321,7 @@ Bug yang ditemukan dan sudah diperbaiki: shortcut reader (Esc dan lainnya) sekar
   - tampilkan lagi + Beta prioritas pertama → dari ch. 1 ke 2 Beta, tombol "Continue · Ch. 2" mengarah ke versi Beta;
   - sort nomor naik + filter belum dibaca → pindah ke manga lain (view default) → kembali, view tetap sama (juga dicek di `manga.get`);
   - "Simpan sebagai default untuk manga ini" → webtoon + abu-abu → override tersimpan, setting global tetap `auto`/hitam → Reset.
-- Diverifikasi di app hasil build terhadap MangaDex asli, Kage no Jitsuryokusha (6 grup; ch. 39–40 Biamam+Weeaboo, 82 Biamam+My Darling, 83–84 hanya My Darling):
+- Diverifikasi di app hasil build terhadap Example Source asli, Kage no Jitsuryokusha (6 grup; ch. 39–40 Biamam+Weeaboo, 82 Biamam+My Darling, 83–84 hanya My Darling):
   - sembunyikan My Darling + Weeaboo: "Showing 94 of 99 · 5 chapters hidden", belum dibaca di library 5 → 3, dari ch. 81 reader lanjut ke **82 Biamam**;
   - tampilkan semua + prioritas My Darling: dari ch. 81 ke **82 My Darling**;
   - override reader (webtoon + abu-abu) dan view (nomor naik + belum dibaca) **tetap berlaku setelah restart**. Setting global tetap `auto`/hitam, dan Chainsaw Man tetap membuka mode single RTL dengan latar hitam.
@@ -360,9 +360,9 @@ Keputusan:
 - E2E 29/29. Extension tiruan sekarang punya **tiga source**: E2E Demo EN, E2E Demo ID (katalog sama, chapter hanya sampai 3), dan E2E Broken (pencarian selalu 503). Spec baru `e2e/search-migration.spec.ts` (2 test):
   - global search "hero": 3 baris, Broken gagal (HTTP 503, tombol Coba lagi) tanpa menahan yang lain, "Searching 3 sources · 2 done", 100%; "Hanya source dengan hasil"; set source kustom tersimpan; "See all" → tab Search source itu;
   - migrasi 2 manga dari multi-select library: Exact di source ID, cari manual → pilih lain → pilih lagi, lewati satu → ringkasan 1 berhasil / 1 dilewati / 0 gagal, "2 read chapters carried over · 1 chapter could not be matched: Ch. 5". Isi DB dicek lewat IPC: kategori, override reader, cover kustom, dibaca ch. 1–2, progres hal. 2 di ch. 3, dan entri lama keluar dari library.
-- Diverifikasi di app hasil build terhadap MangaDex asli:
-  - global search "frieren" ke MangaDex EN + ID: EN 7 hasil, ID 2 hasil (±7 detik; `curl` langsung ke API juga 7,3 detik). Pada percobaan pertama, API MangaDex timeout 20 detik: kedua baris menampilkan error + "Coba lagi" dan progres tetap 100%;
-  - migrasi Kage no Jitsuryokusha EN → ID: kandidat Exact, eksekusi 0,9 detik. **89 nomor chapter** dibaca terbawa ke 162 versi (MangaDex ID punya 170 chapter dari beberapa grup). Kategori "Isekai", cover kustom, override reader, history, dan 2 penanda (per nomor, semua versi) ikut pindah, dan entri EN keluar dari library.
+- Diverifikasi di app hasil build terhadap Example Source asli:
+  - global search "frieren" ke Example Source EN + ID: EN 7 hasil, ID 2 hasil (±7 detik; `curl` langsung ke API juga 7,3 detik). Pada percobaan pertama, API Example Source timeout 20 detik: kedua baris menampilkan error + "Coba lagi" dan progres tetap 100%;
+  - migrasi Kage no Jitsuryokusha EN → ID: kandidat Exact, eksekusi 0,9 detik. **89 nomor chapter** dibaca terbawa ke 162 versi (Example Source ID punya 170 chapter dari beberapa grup). Kategori "Isekai", cover kustom, override reader, history, dan 2 penanda (per nomor, semua versi) ikut pindah, dan entri EN keluar dari library.
 
 Implementasi:
 - **Shared:** `migrationCandidateSchema`, `migrationSearchSchema`, `migrationResultSchema`, `migrationProgressSchema` (`models.ts`); `globalSearchSettingsSchema` dan `migrationSettingsSchema` + `DEFAULT_MIGRATION_OPTIONS` (`settings.ts`); IPC `migration.findCandidates` (bisa dibatalkan) dan `migration.run`, serta event `migration.progress`.
@@ -420,5 +420,5 @@ Dikerjakan sebelum 2c atas permintaan pengguna.
   - kalau folder baru sudah ada tanpa `data.db`, isinya digabung tanpa menimpa (lock file Chromium dilewati);
   - tidak melakukan apa pun kalau folder baru sudah punya `data.db`;
   - path absolut di DB (`manga.cover_path`, `manga.custom_cover_path`, `image_cache.path`, `downloads.path`) ditulis ulang ke folder baru.
-- User-Agent: filter token app diperbarui ke `Matane` (UA extension MangaDex sekarang `Matane/<versi>`).
+- User-Agent: filter token app diperbarui ke `Matane` (UA extension Example Source sekarang `Matane/<versi>`).
 - **Logo** (sumber dari pengguna, `docs/assets/logo.png`): diturunkan menjadi `apps/desktop/resources/icon.png` (512 px, sudut transparan; ikon jendela Windows/Linux lewat `?asset`) dan `renderer/src/assets/logo-mark.png` (128 px, buku saja tanpa tulisan, karena tulisan tidak terbaca di ukuran 32 px) untuk sidebar dan About. README menampilkan logo penuh.

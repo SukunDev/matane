@@ -39,14 +39,14 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 
 **Masalah legal & sistem extension**
 - Jangan sertakan extension untuk situs bajakan di repo utama. Proyek seperti Tachiyomi pernah kena DMCA. Pola yang aman:
-  - Repo **app** hanya berisi engine + extension resmi/legal (mis. **MangaDex**, yang punya API publik).
+  - Repo **app** hanya berisi engine + extension resmi/legal (mis. **Example Source**, yang punya API publik).
   - Extension lain ada di **repo terpisah** (atau dibuat komunitas) dan dipasang lewat URL repo extension.
 - Tulis disclaimer di README: aplikasi tidak meng-host konten apa pun.
 
-**Aturan MangaDex API** (kandidat extension bawaan)
+**Aturan Example Source API** (kandidat extension bawaan)
 - Ada batas rate limit (sekitar 5 req/detik per IP, beberapa endpoint lebih ketat) → perlu rate limiter per sumber.
 - Wajib atribusi / tidak boleh menghapus kredit scanlator.
-- Gambar dari MangaDex@Home: disarankan mengirim laporan (endpoint `report`) untuk berhasil/gagal memuat gambar.
+- Gambar dari Example@Home: disarankan mengirim laporan (endpoint `report`) untuk berhasil/gagal memuat gambar.
 - Sebelum implementasi: cek ulang dokumentasi resmi, karena aturannya bisa berubah.
 
 **Lisensi**: App **GPL-3.0** (seperti Mihon), supaya fork tetap open source. `extension-sdk`, `extension-runtime`, dan CLI `mr-ext` **MIT**, supaya extension pihak ketiga tidak ikut terikat GPL (diperluas di Fase 1, ADR 0011).
@@ -98,7 +98,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 
 ```
 Renderer ──IPC──▶ Main ──MessagePort──▶ Extension Host (utilityProcess)
-                   ▲                        ├─ QuickJS runtime: ext "mangadex"
+                   ▲                        ├─ QuickJS runtime: ext "example"
                    │                        ├─ QuickJS runtime: ext "komikxyz"
                    │                        └─ ...
                    │   host call: http / html / storage / prefs
@@ -124,7 +124,7 @@ Renderer ──IPC──▶ Main ──MessagePort──▶ Extension Host (util
 Satu extension = satu paket berisi:
 
 ```
-mangadex-1.2.0/
+example-1.2.0/
 ├─ manifest.json
 ├─ index.js        # bundle ES2020 tunggal (esbuild), tanpa import apa pun
 └─ icon.png
@@ -134,12 +134,12 @@ mangadex-1.2.0/
 
 ```jsonc
 {
-  "id": "mangadex",               // TANPA bahasa; stabil, tidak boleh berubah selamanya
-  "name": "MangaDex",
+  "id": "example",               // TANPA bahasa; stabil, tidak boleh berubah selamanya
+  "name": "Example Source",
   "version": "1.2.0",             // semver extension
   "apiVersion": 1,                // versi API host; app menolak yang tidak kompatibel
   "nsfw": false,
-  "domains": ["api.mangadex.org", "uploads.mangadex.org", "*.mangadex.network"],
+  "domains": ["api.example.org", "uploads.example.org", "*.example.network"],
   "rateLimit": { "requests": 5, "perMs": 1000 },
   "sources": [                    // satu extension bisa menyediakan beberapa source
     { "key": "en", "lang": "en" },
@@ -150,8 +150,8 @@ mangadex-1.2.0/
 ```
 
 **Skema identitas:**
-- **Extension id**: `mangadex`. Unik di seluruh repo dan tidak pernah berubah.
-- **Source id**: `<extensionId>/<key>`, misalnya `mangadex/en`. `key` bebas (default-nya kode bahasa), jadi dua source dengan bahasa yang sama tetap bisa dibedakan (mis. `situsx/en-mirror`). Key juga tidak boleh berubah.
+- **Extension id**: `example`. Unik di seluruh repo dan tidak pernah berubah.
+- **Source id**: `<extensionId>/<key>`, misalnya `example/en`. `key` bebas (default-nya kode bahasa), jadi dua source dengan bahasa yang sama tetap bisa dibedakan (mis. `situsx/en-mirror`). Key juga tidak boleh berubah.
 - **Manga** unik berdasarkan `(sourceId, url)`, dan **chapter** unik berdasarkan `(mangaId, url)`.
 
 - **`domains` adalah allowlist**: `http` menolak request ke domain di luar daftar ini. Pengguna melihat daftarnya saat install, mirip izin di aplikasi mobile.
@@ -162,7 +162,7 @@ mangadex-1.2.0/
 ```ts
 // `url` = IDENTITAS STABIL yang dipilih extension (nama field mengikuti Mihon).
 // Umumnya berupa path relatif terhadap baseUrl (mis. "/title/abc") supaya library tidak rusak
-// kalau situs ganti domain, tapi boleh juga ID mentah (mis. UUID MangaDex).
+// kalau situs ganti domain, tapi boleh juga ID mentah (mis. UUID Example Source).
 // Untuk tombol "buka di browser", pakai Source.getWebUrl(), jangan menyusun URL dari field ini.
 
 interface MangaSummary {
@@ -222,7 +222,7 @@ interface Source {
   getWebUrl?(item: MangaSummary | Chapter): string;       // URL lengkap untuk "buka di browser"
                                                          // default: baseUrl + url
 
-  // Dipanggil host setelah setiap fetch gambar, fire-and-forget (mis. laporan MangaDex@Home).
+  // Dipanggil host setelah setiap fetch gambar, fire-and-forget (mis. laporan Example@Home).
   // Ditambahkan di Fase 1, termasuk apiVersion 1.
   reportImage?(result: ImageFetchResult): Promise<void> | void; // { url, success, bytes, durationMs, cached }
 
@@ -325,8 +325,8 @@ repo/
 ├─ index.json
 ├─ index.json.sig           # tanda tangan ed25519 atas isi index.json
 └─ extensions/
-   ├─ mangadex-1.2.0.zip
-   └─ icons/mangadex.png
+   ├─ example-1.2.0.zip
+   └─ icons/example.png
 ```
 
 `index.json`:
@@ -337,11 +337,11 @@ repo/
   "publicKey": "ed25519:…",       // informatif; kepercayaan ditentukan oleh app, bukan dari sini
   "extensions": [
     {
-      "id": "mangadex", "name": "MangaDex", "version": "1.2.0", "apiVersion": 1,
+      "id": "example", "name": "Example Source", "version": "1.2.0", "apiVersion": 1,
       "lang": "en", "nsfw": false,
-      "file": "extensions/mangadex-1.2.0.zip",
+      "file": "extensions/example-1.2.0.zip",
       "sha256": "…",
-      "icon": "extensions/icons/mangadex.png"
+      "icon": "extensions/icons/example.png"
     }
   ]
 }
@@ -623,7 +623,7 @@ repo/
 - **DNS-over-HTTPS**: `app.configureHostResolver({ secureDnsMode, secureDnsServers })`, mode mati / otomatis / selalu. Preset: Cloudflare, Google, Quad9, AdGuard, atau URL kustom (wajib https, template `{?dns}` boleh). Penting untuk pengguna di Indonesia, karena banyak situs diblokir lewat DNS.
 - **Proxy**: ikut sistem, tanpa proxy, HTTP, atau SOCKS5 (host, port, auth opsional). Diterapkan ke request tanpa session (`app.setProxy`), session app, dan semua partition extension termasuk yang dibuat belakangan (`session.setProxy`); koneksi yang terbuka ditutup supaya langsung berlaku. Password disimpan di main dengan `safeStorage` (atau tanpa enkripsi kalau sistem tidak punya keyring, dengan peringatan) dan tidak pernah dikirim ke renderer.
 - **User-Agent kustom**: override UA global. Ada tombol "reset ke default".
-- **Tes koneksi**: memuat `api.mangadex.org/ping` lewat pengaturan di atas dan menampilkan hasil dan waktunya. Semua perubahan berlaku tanpa restart (ADR 0028).
+- **Tes koneksi**: memuat `api.example.org/ping` lewat pengaturan di atas dan menampilkan hasil dan waktunya. Semua perubahan berlaku tanpa restart (ADR 0028).
 
 **Custom protocol `manga://`**
 - Didaftarkan sebagai scheme privileged (`standard`, `secure`, `stream`) sebelum app `ready`.
@@ -638,7 +638,7 @@ repo/
 - Beberapa request untuk gambar yang sama pada saat bersamaan (mis. preload + tampil) digabung jadi satu fetch.
 
 **Cache**
-- **Halaman**: `userData/cache/images`, key dari source + **URL chapter** + index halaman, bukan URL gambar, karena sebagian source (MangaDex@Home) memberi server gambar baru setiap kali; dengan begitu halaman yang sudah di-cache terbuka tanpa jaringan. Metadata di tabel `image_cache`: content-type dan ukuran. Dimensi halaman dan kotak crop disimpan di tabel `page_meta` (juga untuk halaman download), varian crop/segmen adalah entri cache biasa (ADR 0025). **LRU** berdasarkan waktu akses terakhir, batas default **1 GB** (ADR 0014).
+- **Halaman**: `userData/cache/images`, key dari source + **URL chapter** + index halaman, bukan URL gambar, karena sebagian source (Example@Home) memberi server gambar baru setiap kali; dengan begitu halaman yang sudah di-cache terbuka tanpa jaringan. Metadata di tabel `image_cache`: content-type dan ukuran. Dimensi halaman dan kotak crop disimpan di tabel `page_meta` (juga untuk halaman download), varian crop/segmen adalah entri cache biasa (ADR 0025). **LRU** berdasarkan waktu akses terakhir, batas default **1 GB** (ADR 0014).
 - **Cover library**: disimpan **permanen** di `userData/covers` (tidak kena LRU), diperbarui saat metadata di-refresh.
 - **Cover browse**: cache biasa (ikut LRU).
 - **Daftar halaman chapter** (`getPages`) di-cache di DB ±1 jam. Kalau source tidak bisa dihubungi, salinan lama tetap dipakai. Kalau URL gambar dari daftar cache sudah kedaluwarsa (403/404/410), daftar diambil ulang sekali.
@@ -800,11 +800,11 @@ covers/            # cover kustom (nama file = hash natural key manga)
 **Extension & source**
 ```
 extension_repos   (id PK, url UNIQUE, name, public_key, trusted, last_fetched_at)
-extensions        (id TEXT PK "mangadex", name, version, api_version, repo_id FK, nsfw,
+extensions        (id TEXT PK "example", name, version, api_version, repo_id FK, nsfw,
                    enabled, installed_at, updated_at)
 extension_storage (extension_id FK, key, value_json)         PK(extension_id, key)
 extension_prefs   (extension_id FK, key, value_json)         PK(extension_id, key)
-sources           (id TEXT PK "mangadex/en", extension_id, key, name, lang,
+sources           (id TEXT PK "example/en", extension_id, key, name, lang,
                    pinned, last_used_at)
 ```
 `sources` tidak ikut dihapus saat extension di-uninstall, supaya manga di library tetap punya referensi (ditampilkan sebagai "source tidak terpasang").
@@ -932,7 +932,7 @@ manga-reader/
 │  ├─ extension-cli/        # MIT: CLI mr-ext (create, build, test, bench) + fixture host
 │  └─ shared/               # tipe domain & kontrak IPC
 ├─ extensions/
-│  └─ mangadex/             # extension bawaan (legal)
+│  └─ example/             # extension bawaan (legal)
 ├─ docs/
 │  ├─ adr/                  # Architecture Decision Records (diturunkan dari dokumen ini)
 │  └─ ...                   # rencana fase, mockup UI, panduan repo extension
@@ -1006,7 +1006,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - `extension-runtime` (QuickJS) + batas memori/CPU/timeout + **test sandbox**. Benchmark untuk menentukan batas final.
 - Extension host di utilityProcess, host API (`http`, `html`, `storage`, `prefs`, `crypto`, …).
 - Network layer: `net.request` (bukan `net.fetch`, lihat §6.5), partition per extension, rate limit, allowlist, UA, Cloudflare (tersembunyi → tampil).
-- SDK minimal + `mr-ext create/build/test/bench` + extension **MangaDex** (bawaan) + load extension dari folder.
+- SDK minimal + `mr-ext create/build/test/bench` + extension **Example Source** (bawaan) + load extension dari folder.
 - Browse (daftar source, popular/latest/search, filter, buka dari URL), halaman detail + daftar chapter.
 - Reader: single, double, webtoon (tersambung antar chapter), LTR/RTL, fit, lebar maksimum, keyboard, preset tap zone, overlay, halaman transisi + peringatan chapter hilang.
 - `manga://` protocol + cache LRU + dimensi halaman (diukur di renderer setelah decode).
@@ -1032,13 +1032,13 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - build macOS x64 memakai runner `macos-15-intel`.
 - Penutup: E2E alur penuh (download → situs mati → baca offline → chapter baru → Updates → auto-download), ADR 0019–0021, `CHANGELOG.md`, `SECURITY.md`, dan `CONTRIBUTING.md`.
 
-**Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026; Milestone 4f (repo resmi `SukunDev/matane-extensions` di GitHub Pages, SDK di npm, extension bawaan keluar dari app) selesai 2 Okt 2026 → **0.2.0-beta.1** (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
+**Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026; Milestone 4f (repo resmi `repo extension` di GitHub Pages, SDK di npm, extension bawaan keluar dari app) selesai 2 Okt 2026 → **0.2.0-beta.1**; repo resmi, kunci resmi, auto-add, dan handoff dicabut 3 Okt 2026 untuk menghindari masalah DMCA (app tanpa repo bawaan) (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
 - Repo extension (`index.json`), **signing ed25519**, install/update/uninstall + dialog izin domain, filter NSFW.
 - Mode dev: load dari folder, hot reload, panel log. `mr-ext repo`.
 - Repo extension terpisah + smoke test harian.
 - `transformImage` (dekripsi byte + tile shuffle), `migrateUrl`.
 - Publikasi `extension-sdk` ke npm + panduan membuat extension.
-- **Ditunda (keputusan 29 Sep 2026):** peluncuran repo resmi `matane-extensions`, kunci tanda tangan resmi, dan terbit ke npm dikerjakan setelah semua fase app selesai (Milestone 4f). Sampai saat itu MangaDex tetap bawaan. Panduannya ada di [`docs/matane-extensions/`](docs/matane-extensions/README.md).
+- **Ditunda (keputusan 29 Sep 2026):** peluncuran repo resmi repo extension, kunci tanda tangan resmi, dan terbit ke npm dikerjakan setelah semua fase app selesai (Milestone 4f). Sampai saat itu Example Source tetap bawaan. Panduannya ada di panduan repo extension (dihapus).
 - Penyesuaian:
   - paket SDK/runtime/CLI bernama `@matane/*` dan siap terbit (`publishConfig` → `dist/`); penambahan repo resmi otomatis dan handoff extension bawaan sudah ada, aktif begitu URL dan kunci resmi diisi;
   - bahasa konten juga menyaring Global search dan target migrasi, dan profil lama mendapat bahasa awal dari source yang sudah dipakai;
@@ -1051,7 +1051,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Setting jaringan: DoH, proxy, User-Agent.
 - Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0**.
 - Keputusan rencana (1 Okt 2026):
-  - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), jadi v1.0 sudah memasang MangaDex dari repo resmi;
+  - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), jadi v1.0 sudah memasang Example Source dari repo resmi;
   - Discord RPC tetap masuk (default mati; tersembunyi sampai Client ID diisi);
   - situs dokumentasi VitePress di GitHub Pages;
   - PKGBUILD AUR dan manifest Flatpak disiapkan dan diuji lokal di Fase 5, submit ke AUR/Flathub bersama 4f;
@@ -1074,7 +1074,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - [x] **Nama project**: **Matane (またね)** (ditetapkan di Fase 2; appId `dev.sukun.matane`). Ketersediaan di Flathub/AUR dicek di Milestone 5g.
 
 **Yang perlu diverifikasi saat implementasi**
-- [ ] Aturan & rate limit **MangaDex API** terbaru (atribusi, laporan MangaDex@Home).
+- [ ] Aturan & rate limit **Example Source API** terbaru (atribusi, laporan Example@Home).
 - [ ] Batas memori/CPU sandbox yang final (benchmark di Fase 1).
 - [ ] API tracker (terutama MangaUpdates dan Kitsu), saat masuk tahap setelah v1.
 - [x] Persyaratan Flathub untuk app Electron (sandbox Flatpak, portal untuk folder download): manifest di `packaging/flatpak` memakai `org.electronjs.Electron2.BaseApp` + zypak, akses `~/Documents/Matane`, folder lain lewat portal file chooser. App id `dev.sukun.matane` harus diverifikasi lewat domain `sukun.dev` (alternatif `io.github.SukunDev.Matane`), dicek saat submit di 4f.
@@ -1092,7 +1092,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 | **Situs sumber berubah/rusak** | Update extension terpisah dari app, smoke test harian di repo extension, `migrateUrl` |
 | **Cloudflare/anti-bot** | BrowserWindow tersembunyi → tampil, UA konsisten, partition per extension |
 | **Pemblokiran ISP (mis. Internet Positif)** | DNS-over-HTTPS dan proxy di setting |
-| **Legal/DMCA** | Repo app hanya berisi extension legal (MangaDex); extension lain di repo terpisah; disclaimer |
+| **Legal/DMCA** | Repo app hanya berisi extension legal (Example Source); extension lain di repo terpisah; disclaimer |
 | **Keamanan extension** | QuickJS sandbox, allowlist domain, signing repo, `SECURITY.md`, test sandbox di CI |
 | **Performa QuickJS** | Parsing HTML dan pengolahan gambar di host. Benchmark Fase 1: batas aman dengan ruang besar (ADR 0003) |
 | **Performa gambar besar/webtoon panjang** | Virtualisasi, split gambar tinggi, cache disk, `img.decode()` |

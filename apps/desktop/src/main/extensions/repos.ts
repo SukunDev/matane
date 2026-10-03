@@ -40,19 +40,19 @@ export function normalizeRepoUrl(input: string): string {
 export interface TrustResult {
   trust: RepoTrust;
   problem: RepoSignatureProblem | null;
-  /** The key that made a valid signature (official, trusted, or the one named in the index). */
+  /** The key that made a valid signature (the trusted one, or the one named in the index). */
   signedBy: string | null;
 }
 
 /**
- * Trust of an index (BRAINSTORM.md §5.8): official when an official key signed it, trusted when the
- * key the user trusted for this repository did, otherwise unverified — with the reason, and the
- * signer when the index's own key made a valid signature (so the user can choose to trust it).
+ * Trust of an index (BRAINSTORM.md §5.8): trusted when the key the user trusted for this repository
+ * signed it, otherwise unverified — with the reason, and the signer when the index's own key made a
+ * valid signature (so the user can choose to trust it).
  */
 export function evaluateTrust(
   indexBytes: Uint8Array,
   signature: string | null,
-  keys: { official: readonly string[]; trusted: string | null; named: string | undefined },
+  keys: { trusted: string | null; named: string | undefined },
 ): TrustResult {
   if (!signature) return { trust: 'unverified', problem: 'unsigned', signedBy: null };
   const valid = (key: string) => {
@@ -62,8 +62,6 @@ export function evaluateTrust(
       return false;
     }
   };
-  const official = keys.official.find(valid);
-  if (official) return { trust: 'official', problem: null, signedBy: official };
   if (keys.trusted && valid(keys.trusted)) return { trust: 'trusted', problem: null, signedBy: keys.trusted };
   if (keys.named && valid(keys.named)) return { trust: 'unverified', problem: 'unknown-key', signedBy: keys.named };
   return { trust: 'unverified', problem: 'bad-signature', signedBy: null };
@@ -79,10 +77,7 @@ interface Fetched {
 export interface RepoServiceDeps {
   repo: ReposRepository;
   fetchBytes: FetchBytes;
-  officialKeys: () => readonly string[];
   isOnline: () => boolean;
-  /** The official repository's URL (added by itself; null while there is none). */
-  officialUrl?: () => string | null;
   /** How old an index may get before the schedule syncs it (default a day; a setting). */
   intervalMs?: () => number;
   /** After a repository synced successfully (e.g. to install updates by themselves). */
@@ -145,45 +140,6 @@ export class RepoService {
       lastError: null,
     });
     return { status: 'added', repo: this.info(row) };
-  }
-
-  /** The official repository, if it exists and is added. */
-  official(): RepoInfo | null {
-    const url = this.officialUrl();
-    const row = url ? this.deps.repo.byUrl(url) : undefined;
-    return row ? this.info(row) : null;
-  }
-
-  /**
-   * Adds the official repository once (Milestone 4e/4f): no dialog (its key is built into the
-   * app) and no network needed; it syncs when online. `alreadyAdded` remembers that it was added,
-   * so a user who removes it is not given it back.
-   */
-  ensureOfficial(alreadyAdded: { get(): string | null; set(url: string): void }): RepoInfo | null {
-    const url = this.officialUrl();
-    if (!url) return null;
-    const existing = this.deps.repo.byUrl(url);
-    if (existing) {
-      if (alreadyAdded.get() !== url) alreadyAdded.set(url);
-      return this.info(existing);
-    }
-    if (alreadyAdded.get() === url) return null;
-    const row = this.deps.repo.insert({
-      url,
-      name: null,
-      publicKey: null,
-      indexJson: null,
-      signature: null,
-      lastFetchedAt: null,
-      lastError: null,
-    });
-    alreadyAdded.set(url);
-    return this.info(row);
-  }
-
-  private officialUrl(): string | null {
-    const url = this.deps.officialUrl?.();
-    return url ? normalizeRepoUrl(url) : null;
   }
 
   remove(repoId: number): void {
@@ -296,7 +252,7 @@ export class RepoService {
   }
 
   private trustOf(bytes: Uint8Array, signature: string | null, trusted: string | null, index: RepoIndex): TrustResult {
-    return evaluateTrust(bytes, signature, { official: this.deps.officialKeys(), trusted, named: index.publicKey });
+    return evaluateTrust(bytes, signature, { trusted, named: index.publicKey });
   }
 
   private parse(repoId: number, text: string): RepoIndex {
@@ -319,7 +275,6 @@ export class RepoService {
       ...trust,
       extensionCount: index?.extensions.length ?? 0,
       synced: index !== null,
-      official: row.url === this.officialUrl(),
       lastSyncedAt: row.lastFetchedAt,
       lastError: row.lastError,
     };

@@ -1,8 +1,8 @@
 name: Publish SDK
 
 # Publishes @matane/extension-sdk, -runtime and -cli to npm when a tag like sdk-v0.1.0 is pushed.
-# The three packages share one version, which must equal the tag. Needs the NPM_TOKEN secret
-# (docs/matane-extensions/setup-akun-dan-kunci.md); npm provenance links each package to this run.
+# The three packages share one version, which must equal the tag. Needs the NPM_TOKEN secret;
+# npm provenance links each package to this run.
 on:
   push:
     tags: ['sdk-v*']

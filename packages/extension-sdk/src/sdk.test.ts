@@ -27,11 +27,11 @@ describe('parseRelativeDate', () => {
 
 describe('manifestSchema', () => {
   const valid = {
-    id: 'mangadex',
-    name: 'MangaDex',
+    id: 'example',
+    name: 'Example Source',
     version: '1.0.0',
     apiVersion: 1,
-    sources: [{ key: 'en', lang: 'en', name: 'MangaDex' }],
+    sources: [{ key: 'en', lang: 'en', name: 'Example Source' }],
   };
 
   it('accepts a valid manifest and defaults nsfw to false', () => {
@@ -39,11 +39,11 @@ describe('manifestSchema', () => {
   });
 
   it('ignores the former domains allowlist of older manifests', () => {
-    expect(manifestSchema.parse({ ...valid, domains: ['mangadex.org'] })).not.toHaveProperty('domains');
+    expect(manifestSchema.parse({ ...valid, domains: ['example.com'] })).not.toHaveProperty('domains');
   });
 
   it.each([
-    ['uppercase id', { id: 'MangaDex' }],
+    ['uppercase id', { id: 'ExampleSource' }],
     ['non-semver version', { version: '1.0' }],
     ['no sources', { sources: [] }],
   ])('rejects %s', (_, patch) => {

@@ -2,7 +2,7 @@
 
 /**
  * Stable identity chosen by the extension. Usually a path relative to `baseUrl` (so a domain change
- * does not break libraries), but any stable id works (e.g. a MangaDex UUID).
+ * does not break libraries), but any stable id works (e.g. a site's own UUID).
  */
 export type EntityUrl = string;
 
@@ -121,7 +121,7 @@ export interface ImageTransform {
 /** What an entity url stands for, for `migrateUrl`. */
 export type UrlKind = 'manga' | 'chapter';
 
-/** Outcome of an image fetch, passed to `Source.reportImage` (e.g. MangaDex@Home reporting). */
+/** Outcome of an image fetch, passed to `Source.reportImage` (e.g. an image network's reporting). */
 export interface ImageFetchResult {
   url: string;
   success: boolean;

@@ -1,6 +1,6 @@
 /**
  * Electron's default UA advertises "Electron/x" and the app name, which many sites block.
- * Extensions get a plain Chrome UA unless they set their own (MangaDex must, per its rules).
+ * Extensions get a plain Chrome UA unless they set their own (some sites require one).
  */
 export function browserUserAgent(electronUserAgent: string): string {
   return electronUserAgent

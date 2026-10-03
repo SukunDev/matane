@@ -1,5 +1,7 @@
 # Plan: Fase 5 (Polish & rilis v1.0) Matane
 
+> **Catatan (3 Oct 2026):** bagian yang menyebut repo extension resmi, kunci resmi, dan handoff sudah dicabut dari repo ini (DMCA); lihat ADR 0022/0023. Catatan di bawah tinggal sejarah.
+
 ## Context
 
 Fase 4 selesai, kecuali Milestone 4f. Status sekarang:
@@ -48,7 +50,7 @@ Keputusan dari diskusi (1 Okt 2026):
   - Fase 5 menyiapkan PKGBUILD dan manifest Flatpak lalu mengujinya lokal;
   - submit ke AUR/Flathub kamu lakukan bersama 4f.
   - portable, deb, dan rpm dibangun di CI.
-- **Urutan: Fase 5 (5a–5f) → Milestone 4f → 5g (rilis v1.0).** v1.0 sudah memakai repo resmi, dan MangaDex dipasang dari repo.
+- **Urutan: Fase 5 (5a–5f) → Milestone 4f → 5g (rilis v1.0).** v1.0 sudah memakai repo resmi, dan Example Source dipasang dari repo.
 - **Nama final** tetap **Matane** (sudah dipakai di appId, productName, dan userData). Di 5g ketersediaannya dicek di AUR dan Flathub.
 
 Di luar cakupan (setelah v1, sesuai §11):
@@ -82,7 +84,7 @@ Langkah pertama implementasi:
   - E2E: situs palsu menyajikan halaman bertepi putih dan satu strip 800×12000. Reader menampilkan halaman yang sudah di-crop, strip tampil sebagai 3 segmen, dan progress tersimpan dengan benar setelah restart.
 
 **Checkpoint 5a:**
-- Webtoon panjang (MangaDex/strip E2E) di-scroll tanpa lompatan layout.
+- Webtoon panjang (Example Source/strip E2E) di-scroll tanpa lompatan layout.
 - Crop dinyalakan dan dimatikan, dan halaman langsung berubah.
 - Chapter yang sudah didownload tetap terbaca offline, dengan crop dan split.
 
@@ -165,7 +167,7 @@ Langkah pertama implementasi:
   - setting `general.discord`: `enabled` (default mati) dan `hideTitle`;
   - otomatis mati untuk manga dari source NSFW dan saat incognito;
   - kalau Discord tidak jalan, fitur ini diam tanpa error dan mencoba lagi dengan jeda;
-  - `DISCORD_CLIENT_ID: string | null = null`; selama null, opsinya disembunyikan (pola yang sama dengan `OFFICIAL_REPO_URL`).
+  - `DISCORD_CLIENT_ID: string | null = null`; selama null, opsinya disembunyikan (pola yang sama dengan URL repo resmi).
 - **Test:**
   - unit test: parser changelog, ekstraksi warna dan penyesuaian kontras, dan aturan kapan presence dikirim (NSFW, incognito, hideTitle) dengan klien palsu;
   - E2E: Ctrl+K → buka manga, toggle incognito lewat palette, onboarding di profil baru (langkah 1–5, setting tersimpan), profil lama tidak menampilkan onboarding, dan What's new muncul sekali setelah versi palsu berubah.
@@ -190,7 +192,7 @@ Langkah pertama implementasi:
   - **DNS-over-HTTPS:** `app.configureHostResolver`, dengan preset Cloudflare, Google, Quad9, AdGuard, atau URL kustom (divalidasi https), dan mode mati / otomatis / wajib.
   - **Proxy:** ikut sistem, langsung, HTTP, atau SOCKS5 (host, port, auth opsional). Diterapkan dengan `session.setProxy` ke default session, semua partition `persist:ext-*` yang sudah dibuat, dan partition yang dibuat setelahnya (`NetworkManager`). Kredensial auth lewat event `login`, disimpan dengan `safeStorage`.
   - **User-Agent kustom:** prioritasnya UA extension → UA global → default (`user-agent.ts`), dengan tombol reset.
-  - Tombol **"Test connection"** (fetch ke MangaDex API / `example.com` lewat stack yang sama), lalu tampilkan hasil dan IP resolver.
+  - Tombol **"Test connection"** (fetch ke Example Source API / `example.com` lewat stack yang sama), lalu tampilkan hasil dan IP resolver.
   - Semua perubahan berlaku langsung tanpa restart.
 - **Test:**
   - unit test: agregasi statistik (minggu/bulan, zona waktu, rentang kosong), validasi setting jaringan, dan prioritas UA;
@@ -198,7 +200,7 @@ Langkah pertama implementasi:
 
 **Checkpoint 5d:**
 - Statistik dibandingkan dengan mockup 14.
-- Live check: DoH Cloudflare + proxy lokal, dan MangaDex tetap jalan.
+- Live check: DoH Cloudflare + proxy lokal, dan Example Source tetap jalan.
 
 ---
 
@@ -288,10 +290,10 @@ Langkah pertama implementasi:
 
 ## Milestone 4f (di antara 5f dan 5g)
 
-Dijalankan sesuai `docs/plans/fase-4-ekosistem-extension.md` dan `docs/matane-extensions/`:
+Dijalankan sesuai `docs/plans/fase-4-ekosistem-extension.md` dan `panduan repo extension (dihapus)`:
 - repo resmi hidup;
 - SDK diterbitkan ke npm;
-- MangaDex keluar dari app, dengan handoff untuk pengguna lama.
+- Example Source keluar dari app, dengan handoff untuk pengguna lama.
 
 Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga dilakukan di sini olehmu, dengan panduan di `packaging/README.md`.
 
@@ -309,7 +311,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - `BRAINSTORM.md` §11 (Fase 5 selesai) dan §12 (semua checklist terjawab).
 - **Pengecekan akhir:**
   - E2E penuh;
-  - live check AppImage di profil baru (onboarding → pasang MangaDex dari repo resmi → baca → download → backup);
+  - live check AppImage di profil baru (onboarding → pasang Example Source dari repo resmi → baca → download → backup);
   - profil `0.1.0-beta.1` dan `0.2.0-beta.x` (salinan) dibuka di 1.0: migrasi DB, handoff, dan What's new.
 - **Tag `v1.0.0`** di-push olehmu. Workflow rilis membangun semua paket, lalu PKGBUILD AUR dan manifest Flatpak diperbarui dengan versi dan hash.
 
@@ -350,7 +352,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
 1. **Per milestone:** `pnpm lint`, `format:check`, `typecheck`, `test`, dan `e2e` semuanya hijau, termasuk unit test baru di atas.
 2. **E2E** tetap memakai situs palsu tanpa jaringan.
 3. **Live check** di app hasil build, dengan `XDG_CONFIG_HOME` terpisah dan folder scratch:
-   - MangaDex asli untuk crop, split, dan auto-scroll;
+   - Example Source asli untuk crop, split, dan auto-scroll;
    - DoH + proxy;
    - backup dan restore antar profil;
    - dibandingkan dengan mockup 11–14.
@@ -377,9 +379,9 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - `images.test.ts` (+5): prepare dengan/tanpa crop, halaman tanpa margin disajikan apa adanya, segmen dibuat sekali lalu dibuat ulang setelah keluar dari cache, halaman download tidak diubah, dan gambar baru di key yang sama diukur ulang.
   - `e2e/reader-images.spec.ts` (4): strip 100×12000 tampil sebagai 3 segmen dengan tinggi benar sebelum dimuat, crop langsung berlaku, posisi di tengah halaman tinggi kembali tepat setelah restart, dan chapter download terbaca dengan crop + segmen saat situs mati dan cache kosong.
 - Live check (app hasil build, profil `XDG_CONFIG_HOME` terpisah, folder download scratch):
-  - MangaDex tidak bisa dipakai: DNS ISP membelokkan `api.mangadex.org` ke halaman blokir (alasan DoH di 5d). Dipakai source Indonesia bawaan.
-  - "Riches Can't Buy Loyalty" (Ainz Scans) halaman 800×14770 → 4 segmen (3692/3692/3692/3694), tinggi kotak 14770 sebelum dan sesudah dimuat, sambungan antarsegmen tidak terlihat.
-  - Halaman WestManga 836×1200 → 813×1172 dengan crop; screenshot sebelum/sesudah menunjukkan margin putih hilang.
+  - Example Source tidak bisa dipakai: DNS ISP membelokkan `api.example.org` ke halaman blokir (alasan DoH di 5d). Dipakai source Indonesia bawaan.
+  - "Riches Can't Buy Loyalty" (Example Source C) halaman 800×14770 → 4 segmen (3692/3692/3692/3694), tinggi kotak 14770 sebelum dan sesudah dimuat, sambungan antarsegmen tidak terlihat.
+  - Halaman Example Source B 836×1200 → 813×1172 dengan crop; screenshot sebelum/sesudah menunjukkan margin putih hilang.
   - Chapter tinggi di-download, cache halaman dikosongkan, app dibuka lagi dengan `--proxy-server=http://127.0.0.1:9` (tanpa jaringan): keempat segmen tetap tampil.
 - Implementasi:
   - **Shared:** `pageSegments` + `SPLIT_ABOVE_PX` (5000) / `SEGMENT_HEIGHT_PX` (4000); setting `reader.cropBorders` (default mati) dan `reader.splitTall` (default nyala), keduanya bisa per manga; IPC `reader.preparePage` dan `reader.pageSizes`.
@@ -393,7 +395,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - Crop dihitung sendiri dari satu decode greyscale (bukan `sharp.trim()`), supaya aturannya pasti dan bisa diuji.
   - Halaman tetap satu item di strip (progress dan offset per halaman); segmennya dimuat lazy saat mendekat.
 - Catatan:
-  - `e2e/content.spec.ts` gagal karena extension bawaan baru di commit terakhirmu (aarlas, ainzscansid, westmanga) menambah source Indonesia yang tersembunyi. Jumlah yang diharapkan sekarang dihitung dari daftar source.
+  - `e2e/content.spec.ts` gagal karena extension bawaan baru di commit terakhirmu (example-d, example-c, example-b) menambah source Indonesia yang tersembunyi. Jumlah yang diharapkan sekarang dihitung dari daftar source.
   - Setting Reader lengkap (termasuk crop/split) masuk Settings → Reader di 5b; untuk sekarang toggle-nya ada di panel reader.
 
 ### Milestone 5b: selesai (1 Okt 2026), menunggu review
@@ -406,8 +408,8 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - `e2e/reader-controls.spec.ts` (8): remap tombol di Settings → Reader + tombol bentrok ditolak, tombol baru membalik halaman, zoom Ctrl+wheel/Ctrl+= tanpa men-zoom jendela + drag untuk menggeser, filter hanya di halaman, simpan dan salin gambar (clipboard berisi PNG), swipe dan pinch sentuh (CDP touch), auto-scroll (Space berhenti, berhenti sendiri di akhir chapter terakhir), dan default per jenis.
 - Live check (app hasil build, profil terpisah):
   - Settings → Reader dibandingkan dengan mockup 11: bagian Bawaan, Per jenis, Navigasi (kartu tap zone dengan pratinjau, balik zona, roda gulir), Pintasan keyboard, Tampilan, dan Performa.
-  - Auto-scroll pada strip Ainz Scans asli: 300 px/s → bergerak ±900 px dalam 3 detik, berhenti total setelah Space.
-  - Zoom pada halaman WestManga asli: Ctrl+wheel → 331% di sekitar kursor, zoom jendela tetap 1.
+  - Auto-scroll pada strip Example Source C asli: 300 px/s → bergerak ±900 px dalam 3 detik, berhenti total setelah Space.
+  - Zoom pada halaman Example Source B asli: Ctrl+wheel → 331% di sekitar kursor, zoom jendela tetap 1.
   - Live check menemukan bug yang lolos dari E2E: CSS `zoom` tidak memperbesar halaman yang sudah dibatasi layar (fit screen), lalu kotak `min-h-full` ikut membesar dan halaman tergeser keluar layar. Diperbaiki dengan menskalakan spread (`transform`) di dalam kotak seukuran hasil zoom. E2E sekarang memeriksa bahwa halaman yang di-zoom tetap di layar; asersi ini terbukti gagal pada versi yang salah.
 - Implementasi:
   - **Shared:** `READER_ACTIONS`, `DEFAULT_KEYMAP`, `keyId`, `effectiveKeymap`, `actionForKey`; setting reader baru `typeDefaults`, `invertTapZones`, `wheelTurnsPages`, `preloadPages`, `backgroundColor` (+ latar `custom`), `filters`, `autoScrollSpeed`, `pageIndicator`, `keymap`; `filters`/`backgroundColor` ikut override per manga; `resolveMode`/`resolveDirection` memakai default per jenis (tipe kosong = "other").
@@ -437,7 +439,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - Profil lama dari live check 5a/5b: onboarding tidak muncul, What's new 0.1.0-beta.1 muncul sekali (profil ini memang dibuat sebelum fitur ini).
   - Palette (mockup 12) dengan "ki": hasil library dengan cover dan "Continue", Lanjut baca, Search sources + Tab.
   - Onboarding (mockup 13) di profil baru, langkah 1–5.
-  - Header detail dengan cover asli WestManga dan Ainz Scans: Mocha → tan pastel rgb(209 162 133) dengan teks crust; Latte → cokelat pekat rgb(152 93 58) dengan teks base.
+  - Header detail dengan cover asli Example Source B dan Example Source C: Mocha → tan pastel rgb(209 162 133) dengan teks crust; Latte → cokelat pekat rgb(152 93 58) dengan teks base.
   - Live check menemukan dua masalah yang lolos dari E2E dan sudah diperbaiki: (1) `stats().dominant` sharp memberi `#f8f8f8` untuk kedua cover asli (latar putih menang), diganti pemilihan hue berbobot chroma; (2) tombol utama tetap ungu karena tema memakai `@theme inline`, jadi yang di-override sekarang `--app-accent`/`--app-on-accent`.
 - Implementasi:
   - **Shared:** setting `onboarding.done` dan `general.discord {enabled, hideTitle}`, `MangaInfo.coverColor`, `AppInfo.discord`, IPC `app.whatsNew`/`app.whatsNewSeen`.
@@ -462,9 +464,9 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - E2E `statistics.spec.ts` (3): profil baru kosong; chapter yang dibaca di reader terhitung tetapi yang hanya ditandai tidak, 30/7/12 kolom, tooltip, dan tabel; hapus statistik dari Settings → Data tanpa menyentuh progres.
   - E2E `network.spec.ts` (4): User-Agent kustom sampai ke situs lalu reset; proxy HTTP membawa request extension dan "Test connection", lalu "Tanpa proxy" kembali langsung; password proxy dipakai saat proxy meminta login (407 → kredensial) dan tidak pernah kembali ke renderer; DoH preset dan URL kustom wajib https.
 - Live check (app hasil build):
-  - **DoH Cloudflare (mode Selalu)**: Test connection ke `api.mangadex.org/ping` → HTTP 200, popular MangaDex 24 manga.
-  - **Proxy HTTP lokal** (dengan CONNECT) + DoH: request HTTPS asli lewat proxy (`api.mangadex.org:443`), MangaDex tetap jalan, dan screenshot halaman Network.
-  - Kali ini MangaDex juga terbuka **tanpa** DoH (DNS sistem), padahal di 5a diblokir; jadi efek DoH membuka blokir DNS belum bisa dibuktikan di jaringan ini.
+  - **DoH Cloudflare (mode Selalu)**: Test connection ke `api.example.org/ping` → HTTP 200, popular Example Source 24 manga.
+  - **Proxy HTTP lokal** (dengan CONNECT) + DoH: request HTTPS asli lewat proxy (`api.example.org:443`), Example Source tetap jalan, dan screenshot halaman Network.
+  - Kali ini Example Source juga terbuka **tanpa** DoH (DNS sistem), padahal di 5a diblokir; jadi efek DoH membuka blokir DNS belum bisa dibuktikan di jaringan ini.
   - Mesin ini tidak punya keyring (`safeStorage` backend `basic_text`), sehingga halaman Network benar menampilkan peringatan password disimpan tanpa enkripsi.
   - Statistik dengan profil scratch berisi 142 chapter dalam 11 bulan, di Mocha dan Latte, dibandingkan dengan mockup 14.
   - Live check menemukan dan memperbaiki: label sumbu teratas terpotong, persen genre yang dihitung dari jumlah tag (Fantasy 28% padahal ada di semua chapter → sekarang 100%), waktu di bawah satu jam tampil "0 h" (sekarang menit), dan grafik yang menahan lebar lama saat jendela menyempit (halaman jadi bisa digeser ke samping).
@@ -496,7 +498,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - E2E `backup.spec.ts` (4): profil A (kategori, progres, bookmark, download, tema) → "Back up now"; profil B menolak file rusak; merge memulihkan semuanya + setting, lalu extension yang hilang dipasang dari repo yang ikut di backup dan source-nya jalan lagi; replace meminta konfirmasi dan membuat backup pengaman.
 - Pengukuran (mesin senggang): backup 1.000 manga / 50.000 chapter 307 ms, restore 914 ms, langkah terpanjang 272 ms (parse `backup.json`), langkah berikutnya ±30 ms. Batas di test dilonggarkan (jumlah langkah ≥ 20, langkah < 3 detik) karena `pnpm test` paralel membuat angka waktu tidak stabil.
 - Live check (app hasil build):
-  - Profil statistik (2 manga asli WestManga/Ainz Scans, 142 chapter dibaca, 1 download) → "Back up now" 172 ms, 9 KB.
+  - Profil statistik (2 manga asli Example Source B/Example Source C, 142 chapter dibaca, 1 download) → "Back up now" 172 ms, 9 KB.
   - Dipulihkan ke profil baru dengan merge dalam 89 ms: library identik (120/120 dan 22/22 dibaca, download tersambung lagi), statistik sama (142 chapter, 38 jam).
   - Auto-backup tertulis ±1 menit setelah app dibuka (`matane-backup-2026-10-02-0245.zip`).
   - Screenshot bagian Backup dan dialog pemulihan.
@@ -516,7 +518,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
 ### Milestone 5f: selesai (2 Okt 2026), menunggu review
 
 - `pnpm lint` 0 error (7 warning lama `useVirtualizer`), `typecheck` dan `pnpm test` hijau: desktop 281 test, shared 31. E2E 117/117. `actionlint` (1.7.12, binary resmi di folder scratch) lolos untuk keempat workflow.
-- `format:check` hanya menandai 13 file di `extensions/aarlas`, `extensions/ainzscansid`, dan `extensions/westmanga` (dari commit extension kamu, bukan bagian 5f). Sesuai aturan repo, file itu tidak aku format.
+- `format:check` hanya menandai 13 file di `extensions/example-d`, `extensions/example-c`, dan `extensions/example-b` (dari commit extension kamu, bukan bagian 5f). Sesuai aturan repo, file itu tidak aku format.
 - Test baru:
   - `app/packaging.test.ts` (4): deteksi jenis paket per OS/variabel, `MATANE_PACKAGE` menang, jenis updater per paket, dan isi info debug (versi, paket, extension, 100 baris log terakhir; home, nama user, query URL, Bearer/token/password disamarkan).
   - `app/updater.test.ts` (+1): Flatpak memberi tahu "update lewat package manager", tar.gz tetap "Lihat Setting → Tentang".
@@ -558,10 +560,10 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
     - Setting → Tentang: "Terpasang sebagai …", pesan updater package manager, tautan dokumentasi/kode sumber/lapor masalah, dan dialog lisensi (`LicensesDialog.tsx`, dengan filter).
     - `lib/links.ts`.
   - **Rilis:** target `electron-builder.yml` (Windows `portable`, Linux AppImage/deb/rpm/tar.gz x64, `Keywords` desktop, maintainer/vendor); `release.yml` memasang `rpm` di runner Linux.
-  - **Komunitas:** `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `.github/ISSUE_TEMPLATE/` (bug dengan info debug, fitur, `config.yml`: permintaan source → repo `matane-extensions`, dokumentasi, keamanan), `PULL_REQUEST_TEMPLATE.md`, dan tautan dari `CONTRIBUTING.md`.
+  - **Komunitas:** `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), `.github/ISSUE_TEMPLATE/` (bug dengan info debug, fitur, `config.yml`: permintaan source → repo repo extension, dokumentasi, keamanan), `PULL_REQUEST_TEMPLATE.md`, dan tautan dari `CONTRIBUTING.md`.
   - **Dokumentasi:**
     - panduan extension pindah ke `apps/docs/extensions/` (dipecah: menulis extension dan menerbitkan repo); `docs/extensions.md` sekarang berisi tautan;
-    - link di README, CONTRIBUTING, README/`homepage` paket SDK/runtime/CLI, dan template matane-extensions diarahkan ke situs;
+    - link di README, CONTRIBUTING, README/`homepage` paket SDK/runtime/CLI, dan template repo extension diarahkan ke situs;
     - ADR 0021 diperbarui, `BRAINSTORM.md` §10 dan §12, dan `packaging/README.md` (langkah submit AUR/Flathub).
   - **Benchmark:** `apps/desktop/scripts/bench/run.mts` (`pnpm bench`, opsi `--only`, `--runs`, `--pages`, `--json`), dengan server dan extension sendiri sehingga E2E tidak terpengaruh.
 - Beda dari rencana:
@@ -578,4 +580,4 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
 ### Keputusan rilis (2 Okt 2026)
 
 - Rilis hanya di GitHub dulu (Releases, Pages, Actions). AUR, Flathub, dan pengumuman ditunda sampai app lengkap; SDK diterbitkan ke npm (keputusan menyusul di hari yang sama).
-- Berikutnya: Milestone 4f, yaitu memisahkan repo extension, mengikuti [`docs/matane-extensions/langkah-pemisahan.md`](../matane-extensions/langkah-pemisahan.md). SDK dari npm (`@matane/*`, tag `sdk-v0.1.0`).
+- Berikutnya: Milestone 4f, yaitu memisahkan repo extension, mengikuti panduan repo extension (dihapus). SDK dari npm (`@matane/*`, tag `sdk-v0.1.0`).

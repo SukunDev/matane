@@ -2,7 +2,7 @@
 
 # Matane (またね)
 
-> **Beta** (0.2): install sources from the official extension repository, read, keep a library with reading progress, download chapters for offline reading, get told about new chapters, back up your library. Expect rough edges; please [report them](https://github.com/SukunDev/matane/issues/new/choose).
+> **Beta** (0.2): add extension repositories, install sources, read, keep a library with reading progress, download chapters for offline reading, get told about new chapters, back up your library. Expect rough edges; please [report them](https://github.com/SukunDev/matane/issues/new/choose).
 
 _Matane_ is Japanese for "see you later": close the app now and pick up on the same page next time.
 
@@ -42,7 +42,7 @@ Phases 0–4 are done, and Phase 5 (polish) up to the v1.0 release:
 - **Extensions & reading:** the QuickJS extension sandbox; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
 - **Library & progress:** library with categories, sort/filter, full-text search, multi-select and permanent/custom covers; reading progress and "continue reading"; history with an incognito mode; chapter bookmarks; per-manga reader settings and scanlator preferences; global search and source migration.
 - **Downloads & updates:** CBZ/folder downloads with a managed queue, download ahead, delete after reading and a size limit; the library update checker with the Updates page, notifications and auto-download; tray, start at login, offline mode; installers with auto-update.
-- **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. The [official repository](https://github.com/SukunDev/matane-extensions) (MangaDex, WestManga, Ainz Scans ID, Aarlas) is added by itself, and the SDK is on npm (`@matane/extension-sdk`, `-cli`, `-runtime`).
+- **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. Matane ships without any extension; add a repository by its URL. The SDK is on npm (`@matane/extension-sdk`, `-cli`, `-runtime`).
 - **Polish:** reader image processing (border cropping, tall pages in parts), zoom and touch gestures, remappable keys, colour filters, auto-scroll; command palette, first-run setup, What's new, cover colours, Discord Rich Presence; statistics; DNS-over-HTTPS, proxy and User-Agent settings; backup and restore; diagnostics, more package formats and the documentation site.
 
 See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the phase plans in [`docs/plans/`](docs/plans), the [changelog](CHANGELOG.md) and the [architecture decisions](docs/adr/README.md). Next: the v1.0 release.
@@ -74,11 +74,10 @@ packages/extension-sdk/      Extension author SDK (MIT)
 packages/extension-runtime/  QuickJS sandbox host (MIT)
 packages/extension-cli/      mr-ext: create, build, test, bench and publish extensions (MIT)
 apps/docs/             Documentation site (VitePress): user guide and extension guide
-docs/matane-extensions/  How to set up the official extension repository (with templates)
 docs/adr/              Architecture decision records
 docs/ui/               UI mockups (design source of truth)
 ```
 
 ## License
 
-[GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) are [MIT](packages/extension-sdk/LICENSE), like the extensions in [matane-extensions](https://github.com/SukunDev/matane-extensions).
+[GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) are [MIT](packages/extension-sdk/LICENSE).

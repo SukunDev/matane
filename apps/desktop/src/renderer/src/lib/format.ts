@@ -28,7 +28,7 @@ export function languageName(code: string, uiLanguage: string): string {
 /** Two-letter badge for extensions/sources without an icon. */
 export function initials(name: string): string {
   const words = name
-    // "MangaDex" → "Manga Dex" so camel-cased names get two letters (MD).
+    // "ExampleSource" → "Example Source" so camel-cased names get two letters (MD).
     .replace(/(\p{Ll})(\p{Lu})/gu, '$1 $2')
     .replace(/[^\p{L}\p{N} ]/gu, ' ')
     .split(/\s+/)

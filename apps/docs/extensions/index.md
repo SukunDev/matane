@@ -2,7 +2,7 @@
 
 > Extension API version **1**. Users install extensions from signed repositories (Extensions → Repositories), developers load them from a folder.
 >
-> The SDK, runtime and CLI are on npm (`@matane/extension-*`). Official extensions live in [matane-extensions](https://github.com/SukunDev/matane-extensions); contributions go there.
+> The SDK, runtime and CLI are on npm (`@matane/extension-*`). Extensions live in repositories of their own, never in the Matane repository; see [Publishing a repository](./repository).
 
 An extension is a small JavaScript bundle plus a `manifest.json`. It turns a website into one or more **sources**: lists of manga, details, chapters and page images. Extensions run in a **QuickJS sandbox** (ADR 0003): no Node.js, no `fetch`, no DOM. Everything that touches the outside world goes through a few host APIs (`http`, `html`, `storage`, …) that the app controls.
 
@@ -20,7 +20,7 @@ npx mr-ext build                 # → dist/index.js + dist/manifest.json
 npx mr-ext test                  # popular → details → chapters → pages → first image, against the real site
 ```
 
-Inside a pnpm workspace, pick the layout that matches: `--layout catalog` in matane-extensions (versions from the workspace catalog), `--layout workspace` next to the SDK sources in the matane repository (dependencies `workspace:*`). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
+Inside a pnpm workspace, pick the layout that matches: `--layout catalog` in a workspace that keeps SDK versions in a pnpm `catalog:`, `--layout workspace` next to the SDK sources in the matane repository (dependencies `workspace:*`). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
 
 ```sh
 pnpm exec mr-ext create my-site --domain example.com --lang en --dir extensions --layout catalog
@@ -194,13 +194,13 @@ QuickJS is roughly 50× slower than V8 on tight loops, so keep heavy work (HTML 
 ## Testing
 
 - `mr-ext test [dir]`: runs the reading flow against the real site and prints a summary. Options: `-s <source>`, `-q <query>`, `-u <web url>` (tests `resolveUrl`), `--pref key=value`, `--filter id=value`, `--no-image`, `--out <dir>` (where a page restored by `transformImage` is written), `-v` (every request).
-- **Fixture tests** (what CI runs): use `createFixtureHost` from `@matane/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. See [`extensions/mangadex/test/`](https://github.com/SukunDev/matane-extensions/tree/main/extensions/mangadex/test) in matane-extensions.
+- **Fixture tests** (what CI runs): use `createFixtureHost` from `@matane/extension-cli` with Vitest; `MR_RECORD=1 pnpm test` records missing responses into `test/fixtures/`, later runs replay them without network. Put them next to the extension, in `my-site/test/`.
 - `mr-ext bench [dir]`: call times (sandbox vs network), heap after each call, and synthetic worst cases. `--fixtures <dir> --manga <url>` makes it repeatable offline.
 
 Ready to share it? See [Publishing a repository](./repository).
 
 ## Being a good citizen
 
-- Follow the site's rules: API terms, rate limits, required `User-Agent` (MangaDex, for example, forbids browser User-Agents and asks for `reportImage` reports).
+- Follow the site's rules: API terms, rate limits, required `User-Agent` (some sites forbid browser User-Agents or ask for `reportImage` reports).
 - Keep `rateLimit` conservative. The app also retries 429/5xx for you, honouring `Retry-After`.
-- Do not bypass paywalls or scrape sites that forbid it. Extensions that break these rules will not be accepted into official repositories.
+- Do not bypass paywalls or scrape sites that forbid it. You are responsible for the extensions you publish.

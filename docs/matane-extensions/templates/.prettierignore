@@ -1,6 +1,0 @@
-node_modules
-public
-vendor
-pnpm-lock.yaml
-.mr-ext
-extensions/*/test/fixtures

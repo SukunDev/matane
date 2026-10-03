@@ -12,6 +12,6 @@ Covers come through the `manga://` image cache (ADR 0014), which evicts least-re
 - The renderer identifies a cover by `coverKey` (custom path ?? source cover URL) and appends a short hash of it to the URL, so Chromium never shows a stale image after a change.
 
 ## Consequences
-- Covers of library manga show offline and after clearing the image cache (verified against MangaDex).
+- Covers of library manga show offline and after clearing the image cache (verified against Example Source).
 - Paths are stored absolutely in the database; moving the data folder (the MangaReader → Matane rename) rewrites them.
 - Migration copies a custom cover to the new manga.

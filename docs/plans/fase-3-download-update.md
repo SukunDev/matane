@@ -60,7 +60,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-3-download-
 - Setting sementara: folder default `Documents/Matane`, format CBZ.
 
 **Checkpoint 3a:**
-- Download beberapa chapter MangaDex (paralel 2 × 4), buka `.cbz`-nya dengan pembaca CBZ lain, dan periksa `ComicInfo.xml`.
+- Download beberapa chapter Example Source (paralel 2 × 4), buka `.cbz`-nya dengan pembaca CBZ lain, dan periksa `ComicInfo.xml`.
 - Matikan jaringan (atau situs E2E ditutup), lalu chapter yang sudah didownload tetap terbaca.
 - Kill app di tengah download, lalu setelah dibuka lagi tidak ada CBZ setengah jadi dan antrean lanjut.
 - Unit test: sanitasi nama, ComicInfo, retry/backoff, penulisan atomik, dan pembacaan CBZ.
@@ -123,7 +123,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-3-download-
 - Situs E2E menambah chapter baru. "Cek library" menampilkannya di Updates dan notifikasinya terkirim.
 - Aturan lewati bekerja, dan cek otomatis berjalan saat app dibuka kalau interval sudah lewat.
 - Auto-download per kategori memasukkan chapter baru ke antrean.
-- Cek MangaDex asli dengan beberapa manga di library: progres, pembatalan, dan error per manga.
+- Cek Example Source asli dengan beberapa manga di library: progres, pembatalan, dan error per manga.
 - Unit test: jadwal, aturan lewati, aturan hapus chapter hilang, dan query Updates.
 
 ---
@@ -186,7 +186,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-3-download-
   - `BRAINSTORM.md` §11 ditandai Fase 3 selesai (beta).
 
 **Checkpoint 3e:**
-- `pnpm dist:linux` menghasilkan AppImage yang jalan di mesinmu: DB, extension MangaDex, dan migrasi folder data berfungsi.
+- `pnpm dist:linux` menghasilkan AppImage yang jalan di mesinmu: DB, extension Example Source, dan migrasi folder data berfungsi.
 - Auto-update diuji lokal: AppImage v0.1.0-beta.1 menemukan beta.2 dari server generic lokal (`dev-app-update.yml`/feed uji), mengunduh, lalu memasang ulang.
 - Workflow rilis lolos lint (`actionlint`). Build Windows/macOS dibuktikan saat kamu push tag `v0.1.0-beta.1`.
 
@@ -229,7 +229,7 @@ Semuanya akan dicek terawat dan versinya di-pin sesuai ADR 0009.
 
 1. **Per milestone:** `pnpm lint`, `format:check`, `typecheck`, `test`, dan `e2e` hijau. Unit test baru untuk: sanitasi path, ComicInfo, penulis CBZ atomik + pembaca, antrean/retry/backoff, aturan hapus-setelah-dibaca, batas ukuran, jadwal dan aturan lewati update, query Updates, dan aturan chapter hilang.
 2. **E2E** memakai situs palsu (tanpa jaringan): download → situs mati → baca offline; pause/resume/batal/coba lagi; situs menambah chapter → Updates; auto-download.
-3. **Live check** di app hasil build terhadap MangaDex asli sesuai checkpoint:
+3. **Live check** di app hasil build terhadap Example Source asli sesuai checkpoint:
    - download, lalu buka CBZ di pembaca lain;
    - cek update library;
    - dibandingkan dengan mockup 07 dan 08.
@@ -252,10 +252,10 @@ Semuanya akan dicek terawat dan versinya di-pin sesuai ADR 0009.
   - download dari tombol baris dan dari multi-select → CBZ berisi `001–004.png` + `ComicInfo.xml` (dibaca dengan `yauzl`) → filter "Downloaded" di chapter → badge "3 downloaded chapters" di library;
   - situs dimatikan → ch. 2 terbaca dari CBZ (halaman 1 dan 2);
   - hapus download dari menu baris → file terhapus.
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil dan folder download terpisah):
+- Diverifikasi di app hasil build terhadap Example Source asli (profil dan folder download terpisah):
   - Kage no Jitsuryokusha ch. 1–3 (37–38 halaman, 15–30 MB per chapter) selesai dalam 16,7 detik, dengan maksimal 2 chapter berjalan bersamaan;
   - **app di-kill** (SIGKILL) saat ch. 4 di halaman 3/37 dan ch. 5 baru mulai: tidak ada CBZ setengah jadi, hanya folder `.tmp` berisi halaman yang sudah selesai. Setelah dibuka lagi, antrean lanjut sendiri dan kelima chapter selesai;
-  - kelima CBZ lolos `zipfile.testzip()` (CRC benar). `ComicInfo.xml` berisi judul, seri, nomor, ringkasan, penulis/artist, scanlator, genre, URL MangaDex, jumlah halaman, bahasa, dan `YesAndRightToLeft`;
+  - kelima CBZ lolos `zipfile.testzip()` (CRC benar). `ComicInfo.xml` berisi judul, seri, nomor, ringkasan, penulis/artist, scanlator, genre, URL Example Source, jumlah halaman, bahasa, dan `YesAndRightToLeft`;
   - **tanpa jaringan** (semua request diarahkan ke port tertutup): Browse gagal seperti seharusnya, tapi ch. 2 yang sudah didownload tetap terbuka di reader.
 
 Implementasi:
@@ -296,7 +296,7 @@ Keputusan:
   - ganti folder lewat dialog (pemilih folder dijawab dari main) → "Pindahkan file" → path pindah, file lama hilang, chapter terbaca dengan situs mati;
   - batas ukuran: download ahead tertahan, banner muncul, download manual meminta konfirmasi.
   - Situs E2E sekarang bisa memperlambat halaman (`pageDelayMs`) dan menggagalkannya (`failPages`). `launchApp` selalu mengarahkan folder download ke profil test, karena download ahead sekarang aktif secara default.
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil dan folder download terpisah), Kage no Jitsuryokusha:
+- Diverifikasi di app hasil build terhadap Example Source asli (profil dan folder download terpisah), Kage no Jitsuryokusha:
   - antrean ch. 1–5 (2 paralel): halaman Downloads menampilkan grup manga, halaman x/y, kecepatan (±3 MB/dtk), ETA, dan ukuran berjalan; Pause semua menjeda di antara halaman (ch. 1 di 16/37, ch. 2 di 14/38), Alt+↑ memindah ch. 5 (di satu run, tekan cepat kedua hilang; lihat bug di bawah, sudah diperbaiki dan dicek ulang di E2E), ch. 4 dibatalkan, Lanjut semua menyelesaikan sisanya (14,7–29,7 MB per chapter) tanpa mengunduh ulang halaman yang sudah ada;
   - download ahead: membuka ch. 5 memasukkan ch. 6 dan 7;
   - hapus setelah dibaca dengan tunda 1: selesai membaca ch. 1 → ch. 1 tetap; selesai ch. 2 → ch. 1 dan file-nya terhapus; ch. 3 bertanda tetap ada setelah ch. 4 dibaca;
@@ -349,7 +349,7 @@ Bug yang ditemukan dan diperbaiki:
   - app ditutup, waktu cek terakhir dimundurkan 13 jam di DB, lalu dibuka lagi → cek berjalan sendiri dan chapter baru muncul.
   - Situs E2E sekarang bisa menambah chapter (`addChapter`) dan menggagalkan detail manga tertentu (`failManga`). `restart` menerima fungsi yang dijalankan saat app tertutup.
   - Dua test lama yang flaky ikut diperbaiki: di global search, "See all" diperiksa sebelum halaman lama hilang; di Updates, nama tombol "Read" bentrok (tombol baca sekarang bernama "Read now").
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah), dengan 10 manga di library:
+- Diverifikasi di app hasil build terhadap Example Source asli (profil terpisah), dengan 10 manga di library:
   - "Cek library": 4 manga tamat dilewati, 6 dicek dalam 1,8 detik; banner progres "3 / 6 judul · Sedang dicek: One Punch-Man, Sakamoto Days, SPY×FAMILY" (3 paralel); Batal menghentikan cek di 3 dari 6;
   - simulasi lewat DB saat app tertutup: 3 chapter terbaru Kage no Jitsuryokusha dan 1 chapter Blue Lock dihapus (jadi "baru" lagi), URL One Punch-Man dirusak, dan waktu cek terakhir dimundurkan 13 jam;
   - app dibuka → cek otomatis berjalan sendiri: 4 chapter baru dari 2 manga, satu error per manga (HTTP 404, One Punch-Man), badge sidebar 4 (hilang setelah Updates dibuka), keempat chapter otomatis masuk antrean download;
@@ -400,7 +400,7 @@ Bug yang ditemukan dan diperbaiki: tidak ada bug app baru; yang diperbaiki hanya
   - offline (dipaksa lewat hook test): title bar "Offline", Browse dan Global search menampilkan "Kamu sedang offline", antrean menunggu dengan banner, chapter yang sudah didownload tetap terbaca, lalu setelah online antrean lanjut dan Browse kembali;
   - app dibuka offline dengan cek update yang sudah jatuh tempo: cek tidak jalan selama offline, lalu jalan sendiri begitu online;
   - Data & penyimpanan: penggunaan cache halaman setelah membaca, "Hapus cache halaman" → "0 B dari 1 GB", ukuran cache 256 MB tersimpan.
-- Diverifikasi di app hasil build terhadap MangaDex asli (profil terpisah), di desktop Hyprland dengan StatusNotifierWatcher:
+- Diverifikasi di app hasil build terhadap Example Source asli (profil terpisah), di desktop Hyprland dengan StatusNotifierWatcher:
   - **tray**: menu dibaca dan diklik lewat D-Bus (`com.canonical.dbusmenu`). Menu idle: "Nothing running · Open Matane · Check for updates now · Resume downloads (nonaktif) · Quit". Saat mengunduh dengan jendela tertutup: "Downloading 2 · Pause downloads", dan kedua chapter selesai saat jendela tersembunyi. "Check for updates now" menjalankan cek ("Checking for updates 0/1"), dan "Open Matane" menampilkan jendela lagi. Tooltip ikut status;
   - **mulai tersembunyi**: dibuka dengan `--hidden` (tutup ke tray + login + mulai tersembunyi aktif) → jendela tidak tampil, dan "Open Matane" dari tray menampilkannya. Awalnya jendela tetap tampil (lihat bug di bawah);
   - **autostart**: `Exec=<electron> <folder app> --hidden`, lolos `desktop-file-validate`, dan terhapus setelah dimatikan;
@@ -452,7 +452,7 @@ Bug yang ditemukan dan diperbaiki:
 - `actionlint` 1.7.12 (binari resmi, checksum dicek) lolos untuk `release.yml` dan `ci.yml`. Integrasi shellcheck-nya tidak ikut jalan karena shellcheck tidak terpasang. Skrip awk catatan rilis dicoba pada `CHANGELOG.md`.
 - **`pnpm dist:linux`** menghasilkan `Matane-0.1.0-beta.1-linux-x86_64.AppImage` (±143 MB). Dijalankan dengan profil terpisah yang berisi folder data lama `MangaReader`:
   - folder dipindah ke `Matane`, dan DB serta migrasi jalan: library dan 3 download lama terbaca;
-  - MangaDex bawaan (`resources/extensions`) memuat Popular (24 item).
+  - Example Source bawaan (`resources/extensions`) memuat Popular (24 item).
 - **Auto-update diuji lokal**:
   - AppImage `beta.1` disalin ke folder scratch; `beta.2` dibangun dan disajikan dari server HTTP lokal (`MATANE_UPDATE_FEED`);
   - `beta.1` menemukan `beta.2`, mengunduhnya (kartu Tentang menampilkan "Matane 0.1.0-beta.2 is ready" + "Restart to update"), lalu "Restart to update" mengganti file AppImage (SHA-512 sama dengan build `beta.2`) dan membuka app lagi;

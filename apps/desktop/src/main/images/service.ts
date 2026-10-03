@@ -91,9 +91,9 @@ export class ImageService {
   }
 
   /**
-   * Page `index` of a chapter. The cache key ignores the image URL (MangaDex hands out a new server
-   * every visit), so cached pages open without any network. Image URLs can expire (MangaDex@Home
-   * ~15 min): on 403/404/410 with a cached page list, the list is fetched again once.
+   * Page `index` of a chapter. The cache key ignores the image URL (some sites hand out a new server
+   * every visit), so cached pages open without any network. Image URLs can expire (minutes on
+   * some sites): on 403/404/410 with a cached page list, the list is fetched again once.
    */
   async page(chapterId: number, index: number): Promise<ServedImage> {
     const downloaded = await this.deps.downloads?.page(chapterId, index);
@@ -276,7 +276,7 @@ export class ImageService {
   }
 
   /**
-   * Runs `fetch` with the page's image URL. Image URLs can expire (MangaDex@Home ~15 min): on
+   * Runs `fetch` with the page's image URL. Image URLs can expire (minutes on some sites): on
    * 403/404/410 with a cached page list, the list is fetched again once.
    */
   private async withPageUrl<T>(

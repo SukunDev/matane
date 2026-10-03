@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-24)
 
 ## Context
-Sources often list the same chapter several times, once per scanlation group (MangaDex: Kage no Jitsuryokusha has six groups; chapter 82 exists by two of them). Mihon shows every version but counts them separately, so reading one version leaves the others "unread" and the unread badge inflates. Navigation ("next chapter", "continue reading") must also pick *one* version (BRAINSTORM.md §6.2).
+Sources often list the same chapter several times, once per scanlation group (Example Source: Kage no Jitsuryokusha has six groups; chapter 82 exists by two of them). Mihon shows every version but counts them separately, so reading one version leaves the others "unread" and the unread badge inflates. Navigation ("next chapter", "continue reading") must also pick *one* version (BRAINSTORM.md §6.2).
 
 ## Decision
 - **Read status is per chapter number.** Marking a chapter read or unread marks every chapter with the same `number` in that manga, in one transaction. Unread counts, "reading" filters and the library badge count distinct numbers (chapters without a number count one by one).

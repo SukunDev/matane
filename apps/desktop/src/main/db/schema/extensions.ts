@@ -16,7 +16,7 @@ export const extensionRepos = sqliteTable('extension_repos', {
 });
 
 export const extensions = sqliteTable('extensions', {
-  /** Stable extension id without language, e.g. "mangadex". */
+  /** Stable extension id without language, e.g. "example". */
   id: text().primaryKey(),
   name: text().notNull(),
   version: text().notNull(),
@@ -59,7 +59,7 @@ export const extensionPrefs = sqliteTable(
 export const sources = sqliteTable(
   'sources',
   {
-    /** `<extensionId>/<key>`, e.g. "mangadex/en". */
+    /** `<extensionId>/<key>`, e.g. "example/en". */
     id: text().primaryKey(),
     extensionId: text().notNull(),
     key: text().notNull(),

@@ -25,10 +25,3 @@ export function useSyncRepos() {
 export const extensionIconUrl = (extensionId: string) => `manga://extension-icon/${encodeURIComponent(extensionId)}`;
 export const repoIconUrl = (repoId: number, extensionId: string) =>
   `manga://repo-icon/${repoId}/${encodeURIComponent(extensionId)}`;
-
-/** Extensions still moving from the app to the official repository (see `HandoffBanner`). */
-export const handoffQuery = queryOptions({
-  queryKey: ['extensions', 'handoff'],
-  queryFn: () => ipc.invoke('extensions.handoff'),
-  ...localQueryDefaults,
-});

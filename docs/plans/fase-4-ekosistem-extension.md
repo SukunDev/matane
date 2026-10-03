@@ -1,8 +1,10 @@
 # Plan: Fase 4 (Ekosistem extension) Matane
 
+> **Catatan (3 Oct 2026):** repo extension resmi, kunci resmi, auto-add, dan *handoff* dicabut dari repo ini untuk menghindari masalah DMCA; app tidak punya repo bawaan, dan panduan pemisahan repo extension dihapus. Dokumen ini tinggal catatan sejarah; yang berlaku ada di ADR 0022/0023 dan `apps/docs/extensions/`.
+
 ## Context
 
-Fase 3 selesai (beta `0.1.0-beta.1`, commit terakhir 3e). Saat ini extension hanya bisa masuk lewat dua jalan: **bawaan** (MangaDex dibundel di `resources/extensions`) dan **load dari folder** (mode dev). Pengguna belum bisa memasang, memperbarui, atau menghapus extension, dan pembuat extension belum punya cara mendistribusikannya.
+Fase 3 selesai (beta `0.1.0-beta.1`, commit terakhir 3e). Saat ini extension hanya bisa masuk lewat dua jalan: **bawaan** (Example Source dibundel di `resources/extensions`) dan **load dari folder** (mode dev). Pengguna belum bisa memasang, memperbarui, atau menghapus extension, dan pembuat extension belum punya cara mendistribusikannya.
 
 Fase 4 menambahkan:
 - **repo extension** bertanda tangan ed25519 (§5.8): pasang / update / uninstall dengan dialog izin domain, filter NSFW, dan bahasa konten;
@@ -16,8 +18,8 @@ Acuan:
 
 Keputusan dari diskusi:
 - **5 milestone** dengan checkpoint. Aku berhenti untuk review dan commit olehmu di setiap checkpoint, dan tidak pernah commit sendiri.
-- **Repo resmi terpisah**: repo GitHub baru (mis. `SukunDev/matane-extensions`), di-host lewat GitHub Pages, dengan CI build + sign + publish dan smoke test harian. Repo GitHub-nya, GitHub Pages, dan secret-nya dibuat olehmu.
-- **MangaDex tidak dibundel lagi.** Setelah repo resmi hidup, MangaDex hanya dipasang dari repo. Repo resmi ditambahkan otomatis. Pengguna beta lama yang library-nya berisi manga MangaDex mendapat MangaDex terpasang otomatis sekali ("handoff").
+- **Repo resmi terpisah**: repo GitHub baru (mis. `repo extension`), di-host lewat GitHub Pages, dengan CI build + sign + publish dan smoke test harian. Repo GitHub-nya, GitHub Pages, dan secret-nya dibuat olehmu.
+- **Example Source tidak dibundel lagi.** Setelah repo resmi hidup, Example Source hanya dipasang dari repo. Repo resmi ditambahkan otomatis. Pengguna beta lama yang library-nya berisi manga Example Source mendapat Example Source terpasang otomatis sekali ("handoff").
 - **npm: `@matane/extension-sdk`** (plus `@matane/extension-cli` dan `@matane/extension-runtime`, karena repo terpisah butuh CLI dan runtime untuk build/test). Organisasi npm `matane` dan token-nya dibuat olehmu. Hanya tiga paket ini yang berganti nama. `@manga-reader/shared` dan app tetap.
 
 Yang sudah ada dan dipakai ulang:
@@ -52,7 +54,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
 - **Unit test:** sign/verify, index yang diubah, sha256 tidak cocok, output deterministik, dan zip yang berisi file terlarang ditolak.
 
 **Checkpoint 4a:**
-- Repo dibangun dari MangaDex + extension E2E, lalu diverifikasi.
+- Repo dibangun dari Example Source + extension E2E, lalu diverifikasi.
 - Satu byte `index.json` atau zip diubah, lalu `verify` gagal dengan pesan yang jelas.
 - Build dua kali menghasilkan hash yang sama.
 
@@ -136,7 +138,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
 
 ## Milestone 4e: Paket npm siap terbit, repo resmi dan handoff siap pakai, panduan
 
-> **Perubahan rencana (29 Sep 2026):** kamu belum punya repo `matane-extensions`, kunci tanda tangan, maupun organisasi npm, dan memutuskan menyiapkannya **setelah semua fase app selesai**. Karena itu 4e hanya berisi pekerjaan yang tidak butuh akun atau rahasia. Peluncurannya (membuat repo, kunci, terbit ke npm, dan MangaDex keluar dari app) pindah ke **Milestone 4f**, yang dikerjakan setelah Fase 5. Panduan lengkap untuk membangun repo itu sudah disiapkan di [`docs/matane-extensions/`](../matane-extensions/README.md).
+> **Perubahan rencana (29 Sep 2026):** kamu belum punya repo repo extension, kunci tanda tangan, maupun organisasi npm, dan memutuskan menyiapkannya **setelah semua fase app selesai**. Karena itu 4e hanya berisi pekerjaan yang tidak butuh akun atau rahasia. Peluncurannya (membuat repo, kunci, terbit ke npm, dan Example Source keluar dari app) pindah ke **Milestone 4f**, yang dikerjakan setelah Fase 5. Panduan lengkap untuk membangun repo itu sudah disiapkan di panduan repo extension (dihapus).
 
 - **Paket npm** `@matane/extension-sdk`, `-runtime`, dan `-cli` (MIT), disiapkan tapi **belum diterbitkan**:
   - ganti nama tiga paket ini di monorepo;
@@ -144,10 +146,10 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
   - `npm pack --dry-run` dicek, dan paket hasil pack dipasang di proyek kosong untuk membuktikan `mr-ext create/build/test` jalan dari npm;
   - workflow `publish-sdk.yml` (tag `sdk-v*`, `NPM_TOKEN`, provenance) sudah ada, tapi baru dipakai di 4f.
 - **App, siap untuk repo resmi** (aktif begitu 4f mengisi URL dan kunci):
-  - `OFFICIAL_REPO_URL` di samping `OFFICIAL_KEYS` (masih kosong); repo resmi ditambahkan otomatis sekali saat start, dan tidak dipaksakan lagi kalau pengguna menghapusnya;
+  - URL repo resmi di samping kunci repo resmi (masih kosong); repo resmi ditambahkan otomatis sekali saat start, dan tidak dipaksakan lagi kalau pengguna menghapusnya;
   - **handoff**: extension yang dipakai library, tidak terpasang, dan ditawarkan repo resmi dipasang otomatis sekali (dengan notifikasi). Kalau offline atau gagal, muncul banner dengan tombol pasang;
   - semua itu diuji E2E dengan repo resmi test (kunci + URL lewat variabel `MATANE_E2E_*`);
-  - **MangaDex tetap bawaan** sampai 4f.
+  - **Example Source tetap bawaan** sampai 4f.
 - **UI:** empty state Sources/Library mengarah ke Extensions → Tersedia.
 - **Dokumentasi:**
   - `docs/extensions.md` menjadi panduan lengkap: SDK dari npm (dengan catatan belum terbit), create/test, repo sendiri + signing, transformImage/migrateUrl;
@@ -162,16 +164,16 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
 
 ## Milestone 4f: Peluncuran repo resmi (setelah semua fase app selesai)
 
-Mengikuti [`docs/matane-extensions/README.md`](../matane-extensions/README.md):
+Mengikuti panduan repo extension (dihapus):
 
-- 🧑 Organisasi npm + `NPM_TOKEN`, repo GitHub `matane-extensions` + Pages, dan kunci `mr-ext repo keygen` (`MR_REPO_KEY`, `MR_REPO_PUBLIC_KEY`, dan `REPO_URL`).
-- Terbitkan SDK (tag `sdk-v0.1.0`), lalu isi repo dari `docs/matane-extensions/templates/` + `extensions/mangadex`, dan push → Publish ke Pages.
-- Isi `OFFICIAL_KEYS` + `OFFICIAL_REPO_URL`, hapus `extensions/` bawaan dan `extraResources`-nya (lihat [`perubahan-di-app.md`](../matane-extensions/perubahan-di-app.md)).
+- 🧑 Organisasi npm + `NPM_TOKEN`, repo GitHub repo extension + Pages, dan kunci `mr-ext repo keygen` (`MR_REPO_KEY`, `MR_REPO_PUBLIC_KEY`, dan `REPO_URL`).
+- Terbitkan SDK (tag `sdk-v0.1.0`), lalu isi repo dari `template repo extension (dihapus)/` + `extensions/example`, dan push → Publish ke Pages.
+- Isi kunci repo resmi + URL repo resmi, hapus `extensions/` bawaan dan `extraResources`-nya (lihat panduan repo extension (dihapus)).
 
 **Checkpoint 4f:**
 - Repo resmi hidup di GitHub Pages.
-- App hasil build memasang MangaDex dari repo itu dengan status "Official · Verified".
-- Profil `0.1.0-beta.1` dengan manga MangaDex dibuka di build baru: MangaDex terpasang otomatis dan library utuh.
+- App hasil build memasang Example Source dari repo itu dengan status "Official · Verified".
+- Profil `0.1.0-beta.1` dengan manga Example Source dibuka di build baru: Example Source terpasang otomatis dan library utuh.
 - SDK tersedia di npm.
 
 ---
@@ -211,16 +213,16 @@ Mengikuti [`docs/matane-extensions/README.md`](../matane-extensions/README.md):
 2. **E2E** memakai situs palsu tanpa jaringan: repo bertanda tangan, pasang/update/hapus, gambar teracak dan terenkripsi, dan migrasi url.
 3. **Live check** di app hasil build (profil dan folder terpisah):
    - repo lokal lewat server HTTP;
-   - di 4e: repo resmi di GitHub Pages + MangaDex asli;
+   - di 4e: repo resmi di GitHub Pages + Example Source asli;
    - handoff dari profil `0.1.0-beta.1`;
    - dibandingkan dengan mockup 09/09b.
 4. **Paket:** AppImage dengan `sharp` jalan, `npm pack --dry-run` ketiga paket berhasil, dan `actionlint` lolos untuk workflow baru.
 
 ## Yang perlu kamu siapkan (untuk 4f, setelah semua fase app selesai)
 
-Langkah lengkapnya ada di [`docs/matane-extensions/setup-akun-dan-kunci.md`](../matane-extensions/setup-akun-dan-kunci.md):
+Langkah lengkapnya ada di panduan repo extension (dihapus):
 
-- Repo GitHub `matane-extensions` + GitHub Pages.
+- Repo GitHub repo extension + GitHub Pages.
 - Kunci ed25519: kamu menjalankan `mr-ext repo keygen` sendiri, memasukkan kunci privat ke secret `MR_REPO_KEY`, dan memberiku kunci publiknya.
 - Organisasi npm `matane` + `NPM_TOKEN`.
 
@@ -230,7 +232,7 @@ Langkah lengkapnya ada di [`docs/matane-extensions/setup-akun-dan-kunci.md`](../
 
 ### Milestone 4a: selesai (27 Sep 2026), menunggu review
 
-- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (sdk 18, shared 17, runtime 35, cli 13, mangadex 16, desktop 174). E2E 56/56.
+- `lint` (tanpa error; 7 warning virtualizer lama), `format:check`, `typecheck`, dan `test` hijau (sdk 18, shared 17, runtime 35, cli 13, example 16, desktop 174). E2E 56/56.
 - Test baru:
   - **runtime** (`repo.test.ts`, 21):
     - tanda tangan diverifikasi, tapi gagal kalau satu byte index berubah, kuncinya lain, atau tanda tangannya rusak;
@@ -246,11 +248,11 @@ Langkah lengkapnya ada di [`docs/matane-extensions/setup-akun-dan-kunci.md`](../
     - `keygen` menulis file mode 600 dan tidak menimpa kunci yang sudah ada.
 - Checkpoint, dicek dengan CLI asli (`pnpm exec mr-ext repo …`):
   - `keygen` mencetak kunci publik, dan menolak saat dijalankan kedua kali. `build` tanpa kunci menolak (butuh `--key`, `$MR_REPO_KEY`, atau `--unsigned`).
-  - Repo dari MangaDex (dibangun dari sumber) + extension E2E (bundle jadi dari `extensionFiles`) → `verify --public-key` OK, baik dari folder maupun lewat HTTP (`python -m http.server`).
+  - Repo dari Example Source (dibangun dari sumber) + extension E2E (bundle jadi dari `extensionFiles`) → `verify --public-key` OK, baik dari folder maupun lewat HTTP (`python -m http.server`).
   - Build ulang lewat `$MR_REPO_KEY` dengan urutan argumen dibalik → sha256 `index.json`, `.sig`, dan kedua zip identik.
   - Diubah satu byte:
-    - `index.json` (`size` 8157 → 8158): tanda tangan tidak cocok, dan ukuran zip MangaDex tidak cocok;
-    - zip MangaDex: hanya sha256 zip itu yang dilaporkan, sementara tanda tangan tetap valid;
+    - `index.json` (`size` 8157 → 8158): tanda tangan tidak cocok, dan ukuran zip Example Source tidak cocok;
+    - zip Example Source: hanya sha256 zip itu yang dilaporkan, sementara tanda tangan tetap valid;
     - kunci publik lain: tanda tangan tidak cocok.
     - Setiap kasus keluar dengan kode 1.
 
@@ -294,7 +296,7 @@ Catatan:
     - uninstall menghapus folder, storage, prefs, dan session, sementara source tetap ada; pasang lagi jalan; setelah uninstall, versi bawaan dengan id yang sama aktif lagi;
     - pemulihan install yang terputus (`.tmp` dihapus, `.old` tanpa folder dikembalikan).
   - `network/fetch-bytes.test.ts` (4): 404 → null, error HTTP/jaringan, batas ukuran (dengan dan tanpa `content-length`), timeout.
-- E2E 64/64. Spec baru `e2e/extensions.spec.ts` (8 test). Situs palsu menyajikan repo yang dibangun dengan `mr-ext repo build`, dan kunci "resmi" adalah kunci test (`MATANE_E2E_OFFICIAL_KEY`):
+- E2E 64/64. Spec baru `e2e/extensions.spec.ts` (8 test). Situs palsu menyajikan repo yang dibangun dengan `mr-ext repo build`, dan kunci "resmi" adalah kunci test (`env e2e repo resmi`):
   - tambah repo resmi → badge "Verified" → tab Tersedia → dialog pasang (repo resmi, domain, API version, "SHA-256 verified") → terpasang, "Up to date", ikon tampil;
   - source dari extension terpasang bisa di-browse, lalu manga masuk library;
   - update dengan domain baru: titik di sidebar, tab Update, dialog menandai domain "New" dan menampilkan peringatan; update tanpa domain baru lewat "Update all" terpasang tanpa dialog;
@@ -303,12 +305,12 @@ Catatan:
   - repo tidak terverifikasi: peringatan saat menambah ("Signed with a key this app does not know"), "Add anyway", peringatan di dialog pasang, "Trust this key" (kuncinya ditampilkan) → "Trusted key";
   - index yang diubah setelah ditandatangani → "The signature does not match the index";
   - setelah restart, extension terpasang dan repo (beserta tingkat kepercayaannya) tetap ada, dan source-nya jalan.
-- Live check di app hasil build (profil `XDG_CONFIG_HOME` dan folder download terpisah; repo lokal lewat `python -m http.server`; kunci resmi di-override lewat `MATANE_E2E_OFFICIAL_KEY`):
-  - repo resmi berisi **MangaDex asli** (bundle `dist/` + ikon, 1.1.0) dan repo komunitas bertanda tangan kunci lain → dialog tambah repo tidak terverifikasi, tab Tersedia, dialog pasang (09b) untuk keduanya, lalu terpasang;
-  - MangaDex dari repo menggantikan versi bawaan (`origin: repo`, `repoId` 1), dan Popular/Latest MangaDex asli tampil (48 dan 41 manga);
-  - MangaDex 1.2.0 dengan domain tambahan `mangadex.org` → dialog update menandai domain itu "New" → terpasang;
+- Live check di app hasil build (profil `XDG_CONFIG_HOME` dan folder download terpisah; repo lokal lewat `python -m http.server`; kunci resmi di-override lewat `env e2e repo resmi`):
+  - repo resmi berisi **Example Source asli** (bundle `dist/` + ikon, 1.1.0) dan repo komunitas bertanda tangan kunci lain → dialog tambah repo tidak terverifikasi, tab Tersedia, dialog pasang (09b) untuk keduanya, lalu terpasang;
+  - Example Source dari repo menggantikan versi bawaan (`origin: repo`, `repoId` 1), dan Popular/Latest Example Source asli tampil (48 dan 41 manga);
+  - Example Source 1.2.0 dengan domain tambahan `example.org` → dialog update menandai domain itu "New" → terpasang;
   - uninstall Nebula dari menu baris → foldernya hilang dan extension muncul lagi di tab Tersedia;
-  - **AppImage** (`pnpm dist:linux`) dengan profil yang sama memuat `mangadex@1.2.0 (repo)` dari `userData/extensions`.
+  - **AppImage** (`pnpm dist:linux`) dengan profil yang sama memuat `example@1.2.0 (repo)` dari `userData/extensions`.
   - Dibandingkan dengan mockup 09/09b: struktur sama (judul + badge jumlah update, Repositories / Update all, tab dengan jumlah, pencarian + filter bahasa, baris dengan ikon, versi, bahasa, garis kepercayaan, deskripsi, tombol update/setting/menu; panel repositori dengan badge, jumlah, waktu sinkron, sinkron, menu, dan "Add repository"; dialog pasang sama persis susunannya).
   - Hyprland men-tile jendela (lebar 992 px dan `setSize` diabaikan), jadi tata letak sempit ikut teruji: baris membungkus tombol aksinya ke bawah, dan garis kepercayaan tidak terlipat.
 
@@ -318,7 +320,7 @@ Implementasi:
   - `ReposRepository` (repo + asal repo extension); `ExtensionsRepository.remove` (storage/prefs ikut terhapus lewat cascade).
 - **Main:**
   - `network/fetch-bytes.ts`: `net.fetch` dengan revalidasi cache, timeout, dan batas ukuran yang dicek saat streaming.
-  - `extensions/official.ts`: `OFFICIAL_KEYS` (masih kosong sampai 4e), plus kunci test lewat `MATANE_E2E_OFFICIAL_KEY` (hanya dengan `MATANE_E2E`).
+  - `extensions/official.ts`: kunci repo resmi (masih kosong sampai 4e), plus kunci test lewat `env e2e repo resmi` (hanya dengan `MATANE_E2E`).
   - `extensions/repos.ts` (`RepoService`):
     - `normalizeRepoUrl`, `evaluateTrust`, add/remove/sync/trustKey;
     - sync terjadwal: 15 detik setelah start, lalu tiap jam untuk repo yang lebih tua dari 24 jam, hanya saat online;
@@ -354,18 +356,18 @@ Catatan:
     - `content.test.ts`: bahasa awal untuk profil lama (source yang di-pin, pernah dipakai, atau punya manga di library);
     - `services.test.ts`: source NSFW ditolak (`nsfw_hidden`) di browse dan `resolveUrl` selama tersembunyi, lalu jalan setelah dinyalakan; request HTTP dan jawaban extension yang tidak valid tercatat di log.
 - E2E: spec baru `e2e/content.spec.ts` (6 test), plus 1 test di `extensions.spec.ts`. Extension baru di situs palsu: **E2E Adult** (NSFW, request-nya membawa `lang=nsfw`).
-  - default: hanya EN, sementara 3 source tersembunyi (MangaDex ID, Mirror ID, Adult) beserta keterangan jumlahnya; tab Tersedia menyembunyikan 2 extension;
+  - default: hanya EN, sementara 3 source tersembunyi (Example Source ID, Mirror ID, Adult) beserta keterangan jumlahnya; tab Tersedia menyembunyikan 2 extension;
   - bahasa konten dipilih dari toolbar Extensions (menjadi setting `['en','id']`), lalu Mirror muncul di Tersedia dan Sources;
   - selama NSFW mati: source Adult tidak ada di Sources, URL langsung menampilkan "Adult sources are hidden", dan global search tidak pernah mengirim request `lang=nsfw`;
   - menyalakan NSFW meminta konfirmasi (Cancel tidak mengubah apa pun); setelah dinyalakan, source Adult ada di Sources, bisa di-browse, ikut dicari global search, dan extension-nya tampil di Tersedia dengan badge 18+;
   - Settings → Browse & extensions berisi kartu repositori ("Verified"), toggle update otomatis, dan interval sinkron (12 jam tersimpan);
   - dialog log extension dev: baris `log.info` extension, `GET … → 200`, `→ 404`, dan error panggilan `search (en): …` tampil live; filter "Errors" menyisakan 1 baris; Clear mengosongkan;
   - update otomatis: sinkron memasang 1.4.0 sendiri, sedangkan 1.5.0 yang menambah domain tetap menunggu tombol "Update to v1.5.0".
-- Live check di app hasil build (profil terpisah, MangaDex asli):
-  - profil lama tanpa setting `browse` yang pernah memakai MangaDex ID → saat start, bahasa konten diisi `["en","id"]`;
-  - dengan default, Sources menampilkan MangaDex EN dan "1 source hidden by your content settings";
+- Live check di app hasil build (profil terpisah, Example Source asli):
+  - profil lama tanpa setting `browse` yang pernah memakai Example Source ID → saat start, bahasa konten diisi `["en","id"]`;
+  - dengan default, Sources menampilkan Example Source EN dan "1 source hidden by your content settings";
   - Settings → Browse & extensions dan pemilih bahasa (bahasa umum + bahasa source/repo, dengan satu bahasa minimal tetap aktif) tampil rapi;
-  - dialog log MangaDex menampilkan request API asli (`GET https://api.mangadex.org/manga?… → 200 (176 ms)`) secara live.
+  - dialog log Example Source menampilkan request API asli (`GET https://api.example.org/manga?… → 200 (176 ms)`) secara live.
 
 Implementasi:
 - **Shared:**
@@ -414,7 +416,7 @@ Beda dari rencana:
   - extension demo v1 → v2 (manga `m:<id>`, chapter `c:<id>/<n>`, lewat hot reload folder dev): url 1 manga + 4 chapter dimigrasi, refresh dengan v2 tidak menambah atau menghapus chapter (id sama, status dibaca tetap), chapter yang didownload tetap terbuka tanpa jaringan, chapter lain diambil lewat skema baru, dan log extension mencatat `migrateUrl 1.0.0 → 2.0.0: 1 manga and 4 chapters updated, 0 kept`.
 - Live check:
   - **AppImage** (`pnpm dist:linux`, di-extract): `sharp` dan `@img/sharp-linux-x64` + `sharp-libvips-linux-x64` ada di `app.asar.unpacked`. Dengan E2E Secure dimuat dari folder, keempat mode kembali ke warna aslinya persis (termasuk tile yang disusun `sharp`), dan reader menampilkannya.
-  - MangaDex asli di AppImage yang sama tetap normal: "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1, halaman 1 `200 image/jpeg` 376 KB. Run pertama sempat gagal di browse MangaDex, dan run ulang langsung berhasil.
+  - Example Source asli di AppImage yang sama tetap normal: "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1, halaman 1 `200 image/jpeg` 376 KB. Run pertama sempat gagal di browse Example Source, dan run ulang langsung berhasil.
   - `mr-ext test` terhadap E2E Secure: langkah `transformImage` menulis `.mr-ext/en-page-1.png`, dan hasilnya benar saat dilihat.
 
 Implementasi:
@@ -450,13 +452,13 @@ Catatan:
 
 ### Perubahan rencana: peluncuran repo resmi ditunda (29 Sep 2026)
 
-- **Keputusanmu:** repo `matane-extensions`, kunci tanda tangan, dan organisasi npm disiapkan setelah semua fase app selesai. Sebelum 4e dilanjutkan, siapkan dulu dokumen yang membantu membangun repo itu.
+- **Keputusanmu:** repo repo extension, kunci tanda tangan, dan organisasi npm disiapkan setelah semua fase app selesai. Sebelum 4e dilanjutkan, siapkan dulu dokumen yang membantu membangun repo itu.
 - Rencana diubah: 4e hanya berisi pekerjaan tanpa akun atau rahasia, dan milestone baru **4f** (peluncuran repo resmi) dikerjakan setelah Fase 5. `BRAINSTORM.md` §11 ikut diperbarui.
-- **Dokumen yang disiapkan** di `docs/matane-extensions/`:
-  - `README.md`: gambaran (repo matane → npm → matane-extensions → GitHub Pages → app), urutan kerja sebagai checklist (🧑 kamu / 🤖 aku), dan keputusan yang tersisa (scope npm, pemilik repo, custom domain);
+- **Dokumen yang disiapkan** di `panduan repo extension (dihapus)`:
+  - `README.md`: gambaran (repo matane → npm → repo extension → GitHub Pages → app), urutan kerja sebagai checklist (🧑 kamu / 🤖 aku), dan keputusan yang tersisa (scope npm, pemilik repo, custom domain);
   - `setup-akun-dan-kunci.md`: organisasi dan token npm (granular, 2FA, provenance), repo + Pages (sumber GitHub Actions, proteksi branch, custom domain), pembuatan kunci di komputer sendiri, tempat setiap nilai (secret `MR_REPO_KEY` / `NPM_TOKEN`, variable `MR_REPO_PUBLIC_KEY` / `REPO_URL`), serta cara mengganti kunci yang hilang atau bocor tanpa memutus pengguna;
   - `struktur-repo.md`: tata letak repo, aturan setiap extension (id, versi, domain, NSFW, rate limit, url stabil, ikon), kebijakan fixture, versi `@matane/*` lewat `catalog:`, dan cara kerja workflow CI / Publish / Smoke;
-  - `perubahan-di-app.md`: checklist sisi Matane untuk 4e/4f (kunci + URL resmi, repo default, handoff MangaDex, MangaDex keluar dari app, verifikasi);
+  - `perubahan-di-app.md`: checklist sisi Matane untuk 4e/4f (kunci + URL resmi, repo default, handoff Example Source, Example Source keluar dari app, verifikasi);
   - `templates/` (siap salin ke repo baru): `package.json` (skrip `repo:build`, `repo:build:unsigned`, `repo:verify`), `pnpm-workspace.yaml` (catalog `@matane/*`), `tsconfig.base.json`, `.node-version`, `.gitignore` (termasuk `public/`, fixture, dan `*.pem`), `LICENSE`, `README.md`, `CONTRIBUTING.md` (dengan checklist PR), `scripts/check-versions.mjs`, workflow `ci.yml`, `publish.yml`, dan `smoke.yml`, serta kerangka `extension/` (package.json + tsconfig).
 - **Dicek:**
   - ketiga workflow template lolos `actionlint` 1.7;
@@ -485,11 +487,11 @@ Catatan:
     - `repo keygen/build/verify` → OK;
     - skrip Node yang mengimpor `ExtensionRuntime`, `createFixtureHost`, `/image` (`applyTiles` dengan sharp), dan `/repo` → OK;
     - `mr-ext test` terhadap situs E2E, termasuk `transformImage` AES + tile → halaman pulih benar.
-- **Live check** (AppImage hasil build, profil terpisah, MangaDex asli):
-  - profil "lama" dengan MangaDex bawaan + "Na Honjaman Level-Up" di library;
-  - salinan AppImage tanpa `resources/extensions/mangadex` (menyimulasikan build 4f) dengan repo resmi lokal bertanda tangan kunci scratch;
-  - repo belum terjangkau → banner "MangaDex will be installed from the official repository" di Library;
-  - repo terjangkau → `handoff: installed mangadex from the official repository`, `mangadex@1.0.0 repo`, banner hilang, repo "Verified", baris "Official · Verified", dan chapter asli "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1 terbaca (`200 image/jpeg`).
+- **Live check** (AppImage hasil build, profil terpisah, Example Source asli):
+  - profil "lama" dengan Example Source bawaan + "Na Honjaman Level-Up" di library;
+  - salinan AppImage tanpa `resources/extensions/example` (menyimulasikan build 4f) dengan repo resmi lokal bertanda tangan kunci scratch;
+  - repo belum terjangkau → banner "Example Source will be installed from the official repository" di Library;
+  - repo terjangkau → `handoff: installed example from the official repository`, `example@1.0.0 repo`, banner hilang, repo "Verified", baris "Official · Verified", dan chapter asli "Kage no Jitsuryokusha ni Naritakute!" Vol. 1 Ch. 1 terbaca (`200 image/jpeg`).
 
 Implementasi:
 - **Paket `@matane/*`:**
@@ -502,7 +504,7 @@ Implementasi:
   - README per paket, dan LICENSE atas nama "Matane contributors".
 - **Workflow** `.github/workflows/publish-sdk.yml`: tag `sdk-v*` → install hanya paket SDK → cek versi tag = versi paket → typecheck dan test → `pnpm publish` dengan `NPM_TOKEN` + provenance. Dipakai di 4f.
 - **App:**
-  - `official.ts`: `OFFICIAL_REPO_URL` (masih `null`) dan `officialRepoUrl()` (override test lewat `MATANE_E2E_OFFICIAL_REPO`);
+  - `official.ts`: URL repo resmi (masih `null`) dan `officialRepoUrl()` (override test lewat `env e2e repo resmi`);
   - `RepoService.ensureOfficial/official`, dan `RepoInfo.synced/official`;
   - `extensions/handoff.ts` (`Handoff`) dengan setting `extensions.officialRepo` dan `extensions.handoffDone`;
   - saat start: repo resmi ditambahkan, disinkronkan kalau belum pernah (lalu handoff jalan, berhasil atau tidak); saat kembali online: sinkron ulang; setiap sinkron repo resmi: handoff;
@@ -513,7 +515,7 @@ Implementasi:
   - route `/browse/extensions?tab=…`; empty state Sources dan Library (kalau belum ada source) → "Get extensions" (tab Tersedia); teks EN/ID.
 - **Dokumentasi:**
   - `docs/extensions.md`: quick start dari npm dengan catatan belum terbit, layout `create`, View logs, dan `--out`;
-  - `docs/matane-extensions/`: checklist dan bagian yang sudah dikerjakan ditandai, dan template CONTRIBUTING memakai `--layout catalog`;
+  - `panduan repo extension (dihapus)`: checklist dan bagian yang sudah dikerjakan ditandai, dan template CONTRIBUTING memakai `--layout catalog`;
   - README (status Fase 4 dan struktur), CHANGELOG `0.2.0-beta.1 — unreleased`, dan `BRAINSTORM.md` §11 (Fase 4 selesai kecuali 4f, plus penyesuaiannya).
 
 Beda dari rencana:
@@ -526,24 +528,24 @@ Catatan:
 
 ### Milestone 4f: selesai (2 Okt 2026), menunggu review
 
-Dikerjakan mengikuti [`docs/matane-extensions/langkah-pemisahan.md`](../matane-extensions/langkah-pemisahan.md). Strategi rilis: app hanya di GitHub dulu; SDK di npm.
+Dikerjakan mengikuti panduan repo extension (dihapus). Strategi rilis: app hanya di GitHub dulu; SDK di npm.
 
-- **Repo resmi:** `SukunDev/matane-extensions`, terbit di `https://sukundev.github.io/matane-extensions/`.
-  - Isinya 4 extension: mangadex, westmanga, ainzscansid, aarlas.
+- **Repo resmi:** `repo extension`, terbit di `URL repo extension`.
+  - Isinya 4 extension: example, example-b, example-c, example-d.
   - `mr-ext repo verify` terhadap kunci `ed25519:MorWEtba…Abw=` lolos.
   - Workflow Publish memverifikasi dengan kunci yang sama. Kunci itu tertulis di workflow sebagai cadangan, karena variable `MR_REPO_PUBLIC_KEY` tidak terbaca job.
 - **SDK di npm:** `@matane/extension-{sdk,runtime,cli}` 0.1.0 (tag `sdk-v0.1.0`). Token npm butuh "Bypass 2FA".
 - **App:**
-  - `official.ts` berisi kunci dan URL resmi. Dalam mode `MATANE_E2E`, URL hanya diambil dari `MATANE_E2E_OFFICIAL_REPO`, sehingga E2E tidak pernah menyentuh repo asli. Unit test baru: `official.test.ts`.
+  - `official.ts` berisi kunci dan URL resmi. Dalam mode `MATANE_E2E`, URL hanya diambil dari `env e2e repo resmi`, sehingga E2E tidak pernah menyentuh repo asli. Unit test baru: `official.test.ts`.
   - `extensions/` dihapus dari repo matane, beserta `extraResources`, build extension di skrip root, `release.yml`, dan workspace pnpm.
   - Asal `builtin` tetap ada di registry; folder yang tidak ada dibaca sebagai kosong (ADR 0023).
 - **Test:**
   - lint 0 error (7 warning lama), `format:check`, `typecheck`, dan `test` hijau (desktop 283);
-  - E2E: `content.spec` disesuaikan (tidak ada lagi MangaDex bawaan), dan spec yang terdampak hijau.
+  - E2E: `content.spec` disesuaikan (tidak ada lagi Example Source bawaan), dan spec yang terdampak hijau.
 - **Live check** (app hasil build, profil scratch):
-  - Profil baru: repo resmi ditambahkan sendiri dan tersinkron (official, 4 extension). MangaDex dan WestManga dipasang dari repo dengan status "Official · Verified". WestManga menampilkan 20 manga; MangaDex menampilkan 24 manga dengan DoH Cloudflare (DNS ISP di jaringan ini memblokir MangaDex).
-  - Handoff: profil dengan MangaDex "bawaan" (disimulasikan dengan folder yang lalu dihapus) dan satu manga di library dengan chapter terbaca. Setelah "update", MangaDex terpasang dari repo resmi, library dan status baca utuh, dan tidak ada handoff tertunda.
-- **Dokumentasi:** README, CHANGELOG (0.2.0-beta.1), CONTRIBUTING, situs dokumentasi (panduan extension: SDK dari npm, kontribusi ke matane-extensions), ADR 0013 dan 0023, `BRAINSTORM.md` §11.
+  - Profil baru: repo resmi ditambahkan sendiri dan tersinkron (official, 4 extension). Example Source dan Example Source B dipasang dari repo dengan status "Official · Verified". Example Source B menampilkan 20 manga; Example Source menampilkan 24 manga dengan DoH Cloudflare (DNS ISP di jaringan ini memblokir Example Source).
+  - Handoff: profil dengan Example Source "bawaan" (disimulasikan dengan folder yang lalu dihapus) dan satu manga di library dengan chapter terbaca. Setelah "update", Example Source terpasang dari repo resmi, library dan status baca utuh, dan tidak ada handoff tertunda.
+- **Dokumentasi:** README, CHANGELOG (0.2.0-beta.1), CONTRIBUTING, situs dokumentasi (panduan extension: SDK dari npm, kontribusi ke repo extension), ADR 0013 dan 0023, `BRAINSTORM.md` §11.
 - Catatan:
   - Handoff diuji dengan simulasi. Uji dengan salinan profil `0.1.0-beta.1` asli dilakukan di 5g.
   - Submit AUR/Flathub ditunda sampai rilis global.

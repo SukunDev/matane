@@ -352,7 +352,7 @@
         "hours_other": "{{count}} jam",
         "week": "Mingguan"
       },
-      "reposHint": "Asal extension. Terverifikasi = ditandatangani dengan kunci resmi."
+      "reposHint": "Asal extension. Dipercaya = ditandatangani dengan kunci yang kamu percaya."
     },
     "reader": {
       "intro": "Aturan tampilan bawaan, arah baca, tap zone, dan tombol. Perubahan langsung tersimpan.",
@@ -482,7 +482,7 @@
       },
       "userAgent": {
         "title": "User-Agent",
-        "description": "Cara app memperkenalkan diri ke situs. Extension yang punya User-Agent sendiri (seperti MangaDex) tetap memakainya.",
+        "description": "Cara app memperkenalkan diri ke situs. Extension yang punya User-Agent sendiri tetap memakainya.",
         "reset": "Reset",
         "usingDefault": "Memakai User-Agent browser bawaan.",
         "usingCustom": "Memakai User-Agent milikmu."
@@ -564,7 +564,7 @@
     },
     "openUrl": {
       "label": "Buka manga dari link web",
-      "placeholder": "Tempel link manga, mis. https://mangadex.org/title/…",
+      "placeholder": "Tempel link manga, mis. https://example.com/title/…",
       "open": "Buka",
       "noMatch": "Tidak ada source terpasang yang mengenali link ini."
     }
@@ -611,10 +611,8 @@
       "description": "Repositori dicek sekali sehari; sinkronkan di panel Repositori untuk mengecek sekarang."
     },
     "trust": {
-      "verified": "Terverifikasi",
       "trustedKey": "Kunci dipercaya",
       "unverified": "Tidak terverifikasi",
-      "officialLine": "Resmi · Terverifikasi",
       "trustedLine": "{{repo}} · Kunci dipercaya",
       "unverifiedLine": "{{repo}} · Tidak terverifikasi"
     },
@@ -658,7 +656,6 @@
       "install": "Pasang",
       "update": "Update",
       "failed": "Extension ini tidak bisa dipasang",
-      "repoOfficial": "{{repo}} (resmi)",
       "repoTrusted": "{{repo}} (kunci dipercaya)",
       "repoUnverified": "{{repo}} (tidak terverifikasi)"
     },
@@ -689,13 +686,7 @@
       "empty": "Belum ada log. Pakai extension-nya (browse, buka manga) dan barisnya muncul di sini.",
       "lines": "Baris log"
     },
-    "getExtensions": "Cari extension",
-    "handoff": {
-      "failed_other": "{{names}} tidak bisa dipasang dari repositori resmi",
-      "waiting_other": "{{names}} akan dipasang dari repositori resmi",
-      "waitingHint": "Dulu ikut terpasang bersama Matane. Akan terpasang sendiri begitu Matane online; library-mu tetap seperti sekarang.",
-      "install": "Pasang sekarang"
-    }
+    "getExtensions": "Cari extension"
   },
   "manga": {
     "author": "Penulis: {{name}}",
@@ -1283,12 +1274,11 @@
     "sources": {
       "title": "Source",
       "description": "Source adalah extension yang mengambil manga dari sebuah situs.",
-      "official": "Dari repositori resmi",
       "install": "Pasang",
       "installed": "Terpasang",
       "ready": "Siap dipakai",
       "none": "Belum ada source dalam bahasamu.",
-      "later": "Source lain, dan repositori milikmu sendiri, ada di Browse → Extensions."
+      "later": "Tambahkan repositori di Browse → Extensions untuk mendapat source."
     },
     "reader": {
       "title": "Membaca",

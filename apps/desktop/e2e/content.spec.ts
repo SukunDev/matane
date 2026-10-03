@@ -1,12 +1,12 @@
 import { generateRepoKey } from '@matane/extension-runtime/repo';
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, addTrustedRepo, launchApp } from './support/app';
 
 // Phase 4c: content languages, adult content and the extension log panel. "E2E Adult" is marked
 // NSFW (its requests carry lang=nsfw); "E2E Mirror" is Indonesian.
 test.describe.configure({ mode: 'serial' });
 
-const official = generateRepoKey();
+const publisher = generateRepoKey();
 let t: TestApp;
 let page: Page;
 
@@ -20,19 +20,19 @@ const sourceLink = (id: string) => page.locator(`a[href*="/browse/sources/${id}/
 const nsfwHits = () => t.site.hits.filter((hit) => hit.includes('lang=nsfw'));
 
 test.beforeAll(async () => {
-  t = await launchApp(['demo', 'mirror', 'adult'], { MATANE_E2E_OFFICIAL_KEY: official.publicKey });
+  t = await launchApp(['demo', 'mirror', 'adult']);
   page = t.page;
   // A repository offering the adult extension too (the Available tab hides it the same way).
   await t.site.publishRepo({
-    path: 'official',
-    name: 'Test Official',
-    privateKeyPem: official.privateKeyPem,
+    path: 'repo',
+    name: 'Test Repo',
+    privateKeyPem: publisher.privateKeyPem,
     extensions: [
       { which: 'adult', version: '2.0.0' },
       { which: 'mirror', version: '2.0.0' },
     ],
   });
-  await page.evaluate((url) => window.api.invoke('repos.add', { url }), `${t.site.origin}/official`);
+  await addTrustedRepo(page, `${t.site.origin}/repo`);
 });
 
 test.afterAll(async () => {
@@ -120,8 +120,8 @@ test('turning adult content on asks first, then shows it everywhere', async () =
 test('Settings → Browse & extensions holds the repository list and extension updates', async () => {
   await goto('#/settings/browse');
   const repos = page.getByRole('region', { name: 'Repositories' });
-  await expect(repos.getByTestId('repo-card')).toContainText('Test Official');
-  await expect(repos.getByTestId('repo-card')).toContainText('Verified');
+  await expect(repos.getByTestId('repo-card')).toContainText('Test Repo');
+  await expect(repos.getByTestId('repo-card')).toContainText('Trusted key');
   await page.getByRole('switch', { name: 'Update extensions by themselves' }).click();
   await page.getByRole('radiogroup', { name: 'Check repositories' }).getByRole('radio', { name: '12 h' }).click();
   expect(await page.evaluate(async () => (await window.api.invoke('settings.get')).browse)).toMatchObject({

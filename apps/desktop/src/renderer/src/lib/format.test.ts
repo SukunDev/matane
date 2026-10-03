@@ -3,7 +3,7 @@ import { formatBytes, formatDuration, formatRelative, initials, languageName } f
 
 describe('format helpers', () => {
   it('builds two-letter initials', () => {
-    expect(initials('MangaDex')).toBe('MD');
+    expect(initials('ExampleSource')).toBe('ES');
     expect(initials('Starry Archive')).toBe('SA');
     expect(initials('komiku')).toBe('KO');
   });

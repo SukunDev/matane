@@ -8,7 +8,7 @@ import type { ExtensionService } from './service';
 import { validate } from './validate';
 import type { DownloadStore } from '../downloads/store';
 
-/** BRAINSTORM.md §6.5; MangaDex image URLs live ~15 min, so the reader re-fetches on 403 (1d). */
+/** BRAINSTORM.md §6.5; some sites' image URLs live only minutes, so the reader re-fetches on 403 (1d). */
 export const PAGE_LIST_TTL_MS = 60 * 60_000;
 
 export type BrowseKind = 'popular' | 'latest' | 'search';
@@ -154,7 +154,7 @@ export class SourceService {
     return validate.imageTransform(raw);
   }
 
-  /** Extra request headers for this source's images (e.g. Referer, or MangaDex's own User-Agent). */
+  /** Extra request headers for this source's images (e.g. Referer, or the site's own User-Agent). */
   async imageHeaders(sourceId: string): Promise<Record<string, string>> {
     const cached = this.headersCache.get(sourceId);
     if (cached) return cached;
@@ -175,7 +175,7 @@ export class SourceService {
     return headers;
   }
 
-  /** Fire-and-forget `reportImage` (MangaDex@Home asks for one per image). Never blocks images. */
+  /** Fire-and-forget `reportImage` (some image networks ask for one per image). Never blocks images. */
   reportImage(sourceId: string, result: ImageFetchResult): void {
     const capabilities = this.infoCache.get(sourceId)?.capabilities;
     if (!capabilities?.includes('reportImage')) return;

@@ -2,21 +2,21 @@
 
 ## Context
 
-Fase 0 sudah selesai: monorepo, shell UI Catppuccin, kontrak IPC typed (`packages/shared/src/ipc/contract.ts`), seluruh skema SQLite §7, i18n, CI, dan ADR 0001–0010. Fase 1 membuat app **benar-benar bisa dipakai membaca**: extension berjalan di sandbox QuickJS, MangaDex sebagai source bawaan, browse → detail → baca chapter, dengan gambar disajikan lewat protokol `manga://` dan cache disk.
+Fase 0 sudah selesai: monorepo, shell UI Catppuccin, kontrak IPC typed (`packages/shared/src/ipc/contract.ts`), seluruh skema SQLite §7, i18n, CI, dan ADR 0001–0010. Fase 1 membuat app **benar-benar bisa dipakai membaca**: extension berjalan di sandbox QuickJS, Example Source sebagai source bawaan, browse → detail → baca chapter, dengan gambar disajikan lewat protokol `manga://` dan cache disk.
 
 Acuan: `BRAINSTORM.md` §5 (extension), §6.1 (reader), §6.2 (browse/detail), §6.5 (network/cache/protokol), ADR 0003/0004/0005/0010, dan mockup `docs/ui/screens/02-detail`, `03-reader-single`, `04-reader-webtoon`, `05-browse`.
 
 Keputusan dari diskusi:
 - Dikerjakan dalam **4 milestone**. Aku berhenti di setiap checkpoint untuk review dan commit olehmu.
 - `extension-runtime` dan CLI `mr-ext` berlisensi **MIT**, seperti SDK. App tetap GPL.
-- Extension terpasang sebagai **bawaan** (MangaDex dibundel di app), ditambah **"Load extension from folder"** (mode dev, dengan hot reload).
-- Source MangaDex: **EN dan ID** saja dulu.
+- Extension terpasang sebagai **bawaan** (Example Source dibundel di app), ditambah **"Load extension from folder"** (mode dev, dengan hot reload).
+- Source Example Source: **EN dan ID** saja dulu.
 
 Di luar cakupan Fase 1: library dan progress baca (Fase 2), download dan update checker (Fase 3), repo, signing, `transformImage`, dan `migrateUrl` (Fase 4), serta crop, split, filter warna, zoom, remap keyboard, dan gesture (Fase 5).
 
 ---
 
-## Milestone 1a: Runtime, SDK, CLI, extension MangaDex (tanpa Electron)
+## Milestone 1a: Runtime, SDK, CLI, extension Example Source (tanpa Electron)
 
 **`packages/extension-sdk`** (MIT)
 - Tipe sesuai §5.3–5.5:
@@ -47,19 +47,19 @@ Di luar cakupan Fase 1: library dan progress baca (Fase 2), download dan update 
 - `mr-ext build [dir]`: bundle dengan esbuild ke ES2020 IIFE, validasi (tidak ada `import` tersisa, manifest valid), lalu output ke `dist/`: `index.js` + `manifest.json` + ikon.
 - `mr-ext test [dir] [--source en] [--query …]`: menjalankan `getPopular` → `getMangaDetails` → `getChapters` → `getPages` dengan runtime yang sama (http lewat Node `fetch`), lalu mencetak ringkasannya.
 
-**`extensions/mangadex`**
+**`extensions/example`**
 - Source EN dan ID. Rate limit 5 request/detik.
-- Dibangun di atas MangaDex API:
+- Dibangun di atas Example Source API:
   - popular (urut berdasarkan follow), latest, search dengan filter (tag tri-state, status, content rating Safe/Suggestive, sort);
   - detail manga, chapter dari feed (paginasi, disaring per bahasa terjemahan);
   - daftar halaman lewat at-home server;
-  - `getWebUrl` dan `resolveUrl` (untuk URL `mangadex.org/title/<uuid>`);
+  - `getWebUrl` dan `resolveUrl` (untuk URL `example.org/title/<uuid>`);
   - preference kualitas gambar (data saver).
 - `url` manga dan chapter berupa UUID.
-- **Aturan API MangaDex dicek ulang di dokumentasi resmi** sebelum implementasi: User-Agent, rate limit, laporan MangaDex@Home, dan atribusi.
-- Test memakai fixture HTTP yang direkam, supaya CI tidak menyentuh MangaDex.
+- **Aturan API Example Source dicek ulang di dokumentasi resmi** sebelum implementasi: User-Agent, rate limit, laporan Example@Home, dan atribusi.
+- Test memakai fixture HTTP yang direkam, supaya CI tidak menyentuh Example Source.
 
-**Checkpoint 1a:** `pnpm --filter mangadex mr-ext test` menampilkan data MangaDex asli. Test sandbox dan test fixture hijau.
+**Checkpoint 1a:** `pnpm --filter example mr-ext test` menampilkan data Example Source asli. Test sandbox dan test fixture hijau.
 
 ---
 
@@ -102,7 +102,7 @@ Di luar cakupan Fase 1: library dan progress baca (Fase 2), download dan update 
 - `requests.cancel(requestId)` untuk pembatalan dari TanStack Query (lewat `AbortSignal`)
 - Event: `db.changed`, `cloudflare.status`
 
-**Checkpoint 1b:** dari DevTools, `window.api.invoke('sources.browse', …)` mengembalikan data MangaDex, dan barisnya tersimpan di DB. Crash host tidak menjatuhkan app. Unit test untuk rate limiter, allowlist, sinkronisasi chapter, dan RPC hijau.
+**Checkpoint 1b:** dari DevTools, `window.api.invoke('sources.browse', …)` mengembalikan data Example Source, dan barisnya tersimpan di DB. Crash host tidak menjatuhkan app. Unit test untuk rate limiter, allowlist, sinkronisasi chapter, dan RPC hijau.
 
 ---
 
@@ -125,7 +125,7 @@ Acuan mockup: `05-browse`, `02-detail`, `06-global-search` (hanya kerangkanya; g
 - Query key dan pemetaan `db.changed` ke query key dibuat terpusat di `lib/ipc.ts`.
 - String UI baru ditambahkan ke `en.json` dan `id.json`.
 
-**Checkpoint 1c:** browse MangaDex EN dan ID, filter, infinite scroll, dan buka detail. Screenshot dibandingkan dengan mockup.
+**Checkpoint 1c:** browse Example Source EN dan ID, filter, infinite scroll, dan buka detail. Screenshot dibandingkan dengan mockup.
 
 ---
 
@@ -156,13 +156,13 @@ Acuan mockup: `05-browse`, `02-detail`, `06-global-search` (hanya kerangkanya; g
 - **Preload:** 4 halaman ke depan (`img.decode()`) dan halaman awal chapter berikutnya.
 - **Pengaturan reader** disimpan secara global di settings (mode, arah, fit, tap zone, lebar webtoon). Override per manga ada di Fase 2.
 
-**Checkpoint 1d:** membaca chapter MangaDex dalam mode single (RTL), double, dan webtoon yang tersambung ke chapter berikutnya. Dibuka ulang dari cache juga harus berjalan tanpa jaringan.
+**Checkpoint 1d:** membaca chapter Example Source dalam mode single (RTL), double, dan webtoon yang tersambung ke chapter berikutnya. Dibuka ulang dari cache juga harus berjalan tanpa jaringan.
 
 ---
 
 ## Penutup Fase 1
 
-- **Benchmark runtime:** skrip yang mengukur durasi panggilan dan memori QuickJS dengan MangaDex, lalu angka batas final dimasukkan ke ADR 0003.
+- **Benchmark runtime:** skrip yang mengukur durasi panggilan dan memori QuickJS dengan Example Source, lalu angka batas final dimasukkan ke ADR 0003.
 - **E2E (Playwright `_electron`):** memakai extension tiruan + server fixture lokal untuk alur browse → detail → baca. Masuk ke CI lewat `xvfb-run`.
 - **Dokumentasi:**
   - `docs/extensions.md` sebagai draf panduan membuat extension;
@@ -171,7 +171,7 @@ Acuan mockup: `05-browse`, `02-detail`, `06-global-search` (hanya kerangkanya; g
 
 ## File kunci
 
-- `packages/extension-sdk/src/**`, `packages/extension-runtime/src/**`, `packages/extension-cli/src/**`, `extensions/mangadex/src/**`
+- `packages/extension-sdk/src/**`, `packages/extension-runtime/src/**`, `packages/extension-cli/src/**`, `extensions/example/src/**`
 - `packages/shared/src/ipc/{channels,contract}.ts`
 - `apps/desktop/src/main/{network,extensions,protocol}/**`, `src/extension-host/index.ts`, `src/main/db/repositories/*.ts`, `src/main/ipc/handlers.ts`
 - `apps/desktop/electron.vite.config.ts` (entry utility process), `src/renderer/index.html` (CSP)
@@ -181,8 +181,8 @@ Yang dipakai ulang: `registerIpcHandlers` / `broadcast` (`src/main/ipc/register.
 
 ## Verifikasi
 
-1. `pnpm lint`, `format:check`, `typecheck`, dan `test` hijau, termasuk test sandbox, fixture MangaDex, network, dan repository.
-2. `mr-ext build` + `mr-ext test` untuk MangaDex berjalan terhadap API asli (manual).
+1. `pnpm lint`, `format:check`, `typecheck`, dan `test` hijau, termasuk test sandbox, fixture Example Source, network, dan repository.
+2. `mr-ext build` + `mr-ext test` untuk Example Source berjalan terhadap API asli (manual).
 3. App (build dan `pnpm dev`) dijalankan lewat driver Playwright: browse → filter → detail → baca dalam mode single, double, dan webtoon; screenshot dibandingkan dengan mockup.
 4. Membuka chapter yang sama saat offline berjalan dari cache. Ukuran cache terhitung, dan LRU menghapus entri terlama saat batas dikecilkan.
 5. Crash host (proses di-kill manual) dipulihkan tanpa menjatuhkan UI.
@@ -190,13 +190,13 @@ Yang dipakai ulang: `registerIpcHandlers` / `broadcast` (`src/main/ipc/register.
 
 ---
 
-## Catatan riset API MangaDex (dicek di dokumentasi resmi, 23 Sep 2026)
+## Catatan riset API Example Source (dicek di dokumentasi resmi, 23 Sep 2026)
 
-- Batas global sekitar **5 request/detik per IP** untuk `api.mangadex.org` (429, lalu ban 403 kalau terus dilanggar). `/at-home/server`: **40 request/menit**.
-- **User-Agent wajib ada dan tidak boleh dipalsukan.** Extension MangaDex memasang UA milik app sendiri (`MangaReader/<versi>`), bukan UA Chrome. Host mengizinkan extension mengganti UA (§5.5).
+- Batas global sekitar **5 request/detik per IP** untuk `api.example.org` (429, lalu ban 403 kalau terus dilanggar). `/at-home/server`: **40 request/menit**.
+- **User-Agent wajib ada dan tidak boleh dipalsukan.** Extension Example Source memasang UA milik app sendiri (`MangaReader/<versi>`), bukan UA Chrome. Host mengizinkan extension mengganti UA (§5.5).
 - Header `Via` dilarang. Gambar tidak boleh di-hotlink dan harus di-proxy: sudah sesuai, karena renderer tidak pernah fetch langsung (§6.5).
 - URL gambar = `{baseUrl}/{data|data-saver}/{hash}/{file}`. **`baseUrl` hanya dijamin berlaku ±15 menit.** Kalau fetch gambar mendapat 403, host membuang `page_list_cache` untuk chapter itu dan memanggil `getPages` ulang sekali.
-- **Laporan MangaDex@Home wajib dikirim** (`POST https://api.mangadex.network/report`: `url`, `success`, `bytes`, `duration`, `cached`) untuk gambar dari host non-`mangadex.org`. Gambar dari `uploads.mangadex.org` tidak dilaporkan.
+- **Laporan Example@Home wajib dikirim** (`POST https://api.example.network/report`: `url`, `success`, `bytes`, `duration`, `cached`) untuk gambar dari host non-`example.org`. Gambar dari `uploads.example.org` tidak dilaporkan.
   - Solusinya, SDK mendapat hook opsional baru `reportImage(result)` yang dipanggil host setelah setiap fetch gambar (fire-and-forget, 1d). Karena menambah permukaan API, hook ini dimasukkan ke apiVersion 1 sejak awal.
 
 ---
@@ -205,27 +205,27 @@ Yang dipakai ulang: `registerIpcHandlers` / `broadcast` (`src/main/ipc/register.
 
 ### Milestone 1a: selesai (23 Sep 2026), menunggu review
 
-- `lint`, `format:check`, `typecheck`, dan `test` hijau: 63 test. Rinciannya 18 SDK, 12 sandbox runtime, 5 CLI, 16 fixture MangaDex, dan 12 test Fase 0.
-- `pnpm --filter mangadex mr-ext test` jalan ke API asli untuk EN dan ID: popular, latest, filter, detail, chapter, halaman, gambar pertama, dan laporan MangaDex@Home. Opsi `-q`, `-u`, dan `--pref dataSaver=true` juga dicek.
-- Bundle MangaDex berukuran 13,9 KB (7,2 KB kalau di-minify).
+- `lint`, `format:check`, `typecheck`, dan `test` hijau: 63 test. Rinciannya 18 SDK, 12 sandbox runtime, 5 CLI, 16 fixture Example Source, dan 12 test Fase 0.
+- `pnpm --filter example mr-ext test` jalan ke API asli untuk EN dan ID: popular, latest, filter, detail, chapter, halaman, gambar pertama, dan laporan Example@Home. Opsi `-q`, `-u`, dan `--pref dataSaver=true` juga dicek.
+- Bundle Example Source berukuran 13,9 KB (7,2 KB kalau di-minify).
 
 Penyesuaian terhadap rencana:
 - **SDK dipisah menjadi subpath `@manga-reader/extension-sdk/manifest`** (skema zod + `isAllowedHost`). Alasannya, kalau skema itu diekspor dari index, zod ikut masuk ke bundle extension dan ukurannya jadi 724 KB. Index SDK sekarang bebas zod.
-- **CLI dijalankan lewat `tsx`**, langsung dari source TypeScript, tanpa langkah build. Script `mr-ext` ditambahkan di `extensions/mangadex/package.json`, karena `pnpm --filter` tidak otomatis menjalankan bin.
+- **CLI dijalankan lewat `tsx`**, langsung dari source TypeScript, tanpa langkah build. Script `mr-ext` ditambahkan di `extensions/example/package.json`, karena `pnpm --filter` tidak otomatis menjalankan bin.
 - **Fixture host** (`createFixtureHost` di extension-cli) bisa dipakai ulang oleh extension lain:
   - `MR_RECORD=1 pnpm test` merekam hanya fixture yang belum ada;
-  - `shrink` merampingkan respons saat direkam. Hasilnya 364 KB untuk MangaDex.
-- **`mr-ext test` melewati manga yang tidak punya chapter** dan mencoba sampai 5 manga pertama. Alasannya, judul populer seperti Solo Leveling dan Bisque Doll di MangaDex hanya punya chapter eksternal atau berlisensi.
+  - `shrink` merampingkan respons saat direkam. Hasilnya 364 KB untuk Example Source.
+- **`mr-ext test` melewati manga yang tidak punya chapter** dan mencoba sampai 5 manga pertama. Alasannya, judul populer seperti Solo Leveling dan Bisque Doll di Example Source hanya punya chapter eksternal atau berlisensi.
 
 Catatan untuk milestone berikutnya:
 - Interrupt QuickJS hanya dicek di antara bytecode. Operasi native yang panjang (mis. `'x'.repeat` besar) bisa melewati `syncMs`, walaupun tetap dibatasi memori dan timeout per panggilan. Ini perlu diukur di benchmark penutup Fase 1.
-- Endpoint laporan `api.mangadex.network/report` saat ini sering mengembalikan 522 setelah ±20 detik. Di 1b/1d, host wajib memanggil `reportImage` secara fire-and-forget, di luar jalur render gambar.
+- Endpoint laporan `api.example.network/report` saat ini sering mengembalikan 522 setelah ±20 detik. Di 1b/1d, host wajib memanggil `reportImage` secara fire-and-forget, di luar jalur render gambar.
 
 ### Milestone 1b: selesai (23 Sep 2026), menunggu review
 
 - `lint`, `format:check`, `typecheck`, dan `test` hijau: 107 test (desktop 50, shared 6, ditambah paket-paket 1a).
   - Test baru mencakup network (redirect allowlist, retry/Retry-After, deteksi Cloudflare, token bucket, UA), RPC dua arah, extension host (lazy load, prefs, pemetaan error, reload setelah OOM, idle unload), repository (sinkronisasi chapter, `source_missing`, page cache, `db.changed`), dan integrasi service (SQLite + registry + host sungguhan).
-- Diverifikasi di app hasil build lewat `window.api` (driver Playwright) terhadap MangaDex asli:
+- Diverifikasi di app hasil build lewat `window.api` (driver Playwright) terhadap Example Source asli:
   - `sources.browse`, `sources.filters`, `manga.refresh` (99 chapter tersinkron), `chapter.pages` (cache kena di panggilan kedua), `sources.resolveUrl`;
   - error bertipe sampai ke renderer (`not_installed`, `cancelled`);
   - `requests.cancel` jalan;
@@ -243,13 +243,13 @@ Penyesuaian terhadap rencana:
 
 Belum dikerjakan / catatan:
 - **Konfigurasi electron-builder `extraResources` belum ada**, karena packaging belum disiapkan. Path `resources/extensions` sudah ditangani di kode.
-- **Solver Cloudflare belum diuji ke situs asli yang memakai challenge.** MangaDex tidak memakainya. Logikanya (single-flight, tampil setelah 10 detik, batas 2 menit) baru diuji lewat fetcher dengan fake. Perlu dicoba di 1c dengan source yang memakai Cloudflare.
+- **Solver Cloudflare belum diuji ke situs asli yang memakai challenge.** Example Source tidak memakainya. Logikanya (single-flight, tampil setelah 10 detik, batas 2 menit) baru diuji lewat fetcher dengan fake. Perlu dicoba di 1c dengan source yang memakai Cloudflare.
 - Event `db.changed` tidak dipancarkan untuk baris manga baru dari browse, karena hasil browse langsung dikembalikan ke pemanggil. Tag dipancarkan untuk perubahan baris yang sudah ada, chapter, sources, dan extensions.
 
 ### Milestone 1c: selesai (23 Sep 2026), menunggu review
 
 - `lint` (tanpa error; 1 warning yang diketahui: `useVirtualizer` tidak bisa di-memo oleh React Compiler), `format:check`, `typecheck`, dan `test` hijau: 116 test, desktop 59.
-- Diverifikasi lewat driver Playwright di app hasil build, terhadap MangaDex asli (jendela ±980 px CSS karena skala layar), tanpa error console:
+- Diverifikasi lewat driver Playwright di app hasil build, terhadap Example Source asli (jendela ±980 px CSS karena skala layar), tanpa error console:
   - daftar source dikelompokkan per bahasa, dengan pin dan "dipakai …";
   - browse Popular/Latest dengan cover lewat `manga://` dan infinite scroll (24 → 72 kartu);
   - panel filter: tag tri-state, status, content rating, dan sort; filter tersimpan di URL, jadi tombol Back memulihkan listing;
@@ -259,7 +259,7 @@ Belum dikerjakan / catatan:
   - Elemen mockup yang datanya belum ada (subtitle "Ch. 128 · 15m ago" di kartu browse, "In library", Migrate, Downloaded) menunggu Fase 2/3.
 
 Penyesuaian terhadap rencana:
-- **Bagian cover dari protokol `manga://` ditarik maju dari 1d**, karena renderer tidak boleh hotlink gambar (§6.5, juga aturan MangaDex).
+- **Bagian cover dari protokol `manga://` ditarik maju dari 1d**, karena renderer tidak boleh hotlink gambar (§6.5, juga aturan Example Source).
   - Sudah ada `ImageCache` (disk + tabel `image_cache`, LRU 1 GB) dan `ImageService` (dedupe request, cek content-type, `reportImage`, header dari `imageHeaders()`). Bagian halaman (`manga://page/...`) tetap di 1d.
   - Gambar memakai bucket rate limit terpisah (20/detik), dan domain gambar juga harus ada di allowlist manifest.
 - **URL cover memakai `?v=<hash thumbnailUrl>`**, supaya cover yang diganti source tidak tampil basi dari cache Chromium.
@@ -274,14 +274,14 @@ Bug yang ditemukan saat verifikasi dan sudah diperbaiki:
 - Cover tidak muncul setelah detail mengisi `thumbnailUrl` (misalnya manga yang dibuka dari URL).
 
 Catatan:
-- Fixture MangaDex (`extensions/mangadex/test/fixtures/`) sempat hilang dari disk dan tidak ikut di commit terakhir, sehingga test MangaDex gagal. Sudah direkam ulang (364 KB). Perlu diputuskan apakah fixture ini ikut di-commit; test dan CI membutuhkannya.
+- Fixture Example Source (`extensions/example/test/fixtures/`) sempat hilang dari disk dan tidak ikut di commit terakhir, sehingga test Example Source gagal. Sudah direkam ulang (364 KB). Perlu diputuskan apakah fixture ini ikut di-commit; test dan CI membutuhkannya.
 - Mengklik chapter membuka `/reader/$chapterId` yang masih placeholder, karena reader dikerjakan di 1d.
 
 ### Milestone 1d: selesai (23 Sep 2026), menunggu review
 
 - `lint` (tanpa error; 2 warning `useVirtualizer` yang sudah diketahui), `format:check`, `typecheck`, dan `test` hijau: 127 test, desktop 70.
   - Test baru mencakup halaman dari cache tanpa memanggil source, refresh daftar halaman saat URL gambar kedaluwarsa (403), dan logika reader (mode/arah otomatis, chapter berikut/sebelumnya dengan preferensi scanlator, deteksi chapter hilang, pasangan halaman double, dan zona ketuk).
-- Diverifikasi lewat driver Playwright di app hasil build, terhadap MangaDex asli, tanpa error console:
+- Diverifikasi lewat driver Playwright di app hasil build, terhadap Example Source asli, tanpa error console:
   - **Single RTL** (mode otomatis untuk manga): ←/→ terbalik sesuai RTL, dan slider dibalik.
   - **Double**: halaman 1 di kanan, halaman 2 di kiri.
   - End → layar transisi "Selesai Ch. 1 / Berikutnya Ch. 2" → Ch. 2.
@@ -312,7 +312,7 @@ Catatan:
 ### Penutup Fase 1: selesai (23 Sep 2026)
 
 - **Benchmark runtime** (`mr-ext bench`, dengan fixture + live):
-  - panggilan MangaDex ≤ 11 ms di sandbox, dan sisanya jaringan;
+  - panggilan Example Source ≤ 11 ms di sandbox, dan sisanya jaringan;
   - kasus terburuk sintetis: JSON 2,9 MB/10k chapter 0,24 s dan ≤ 4 MB, HTML 1 MB dengan 9k panggilan bridge 0,6–0,8 s, loop CPU 5 juta iterasi 0,33 s.
   - **Batas final tetap** (64 MB, 2 detik, 30/60 detik). Angkanya ada di ADR 0003.
 - **Bug quickjs-emscripten 0.32 ditemukan lewat benchmark.** Job promise yang memperbesar memori WASM membuat context liar, sehingga `dispose()` abort. Sudah ada workaround di `runtime.ts` dan test regresi.
@@ -331,4 +331,4 @@ Belum dijalankan / catatan:
 - Job E2E di GitHub Actions belum pernah jalan, karena repo belum punya remote. Langkahnya sudah diuji secara lokal (tanpa xvfb, jendela tampil di layar).
 - Konfigurasi electron-builder (packaging + `extraResources` untuk extension bawaan) belum ada. Ini masuk persiapan rilis.
 
-**Keputusan fixture (23 Sep 2026):** fixture HTTP semua extension (`extensions/*/test/fixtures/`) **tidak di-commit** dan sudah masuk `.gitignore`. Kalau fixture belum direkam, test fixture dilewati secara otomatis (`hasFixtures()` dari `@manga-reader/extension-cli`). Artinya clone baru dan CI tidak menjalankan test MangaDex. Untuk menjalankannya secara lokal, rekam dulu dengan `MR_RECORD=1 pnpm test` di folder extension.
+**Keputusan fixture (23 Sep 2026):** fixture HTTP semua extension (`extensions/*/test/fixtures/`) **tidak di-commit** dan sudah masuk `.gitignore`. Kalau fixture belum direkam, test fixture dilewati secara otomatis (`hasFixtures()` dari `@manga-reader/extension-cli`). Artinya clone baru dan CI tidak menjalankan test Example Source. Untuk menjalankannya secara lokal, rekam dulu dengan `MR_RECORD=1 pnpm test` di folder extension.

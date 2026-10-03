@@ -9,7 +9,6 @@ import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useContentFilter } from '../../lib/content';
-import { HandoffBanner } from '../extensions/HandoffBanner';
 import { useErrorText } from '../../lib/errors';
 import { formatRelative, languageName } from '../../lib/format';
 import { ipc } from '../../lib/ipc';
@@ -53,7 +52,6 @@ export function SourcesPage() {
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <HandoffBanner className="mx-6 mt-4" />
         {hidden > 0 && (
           <p className="mx-auto max-w-5xl px-6 pt-4 text-xs text-muted-foreground" data-testid="hidden-by-content">
             {t('browse.sources.hiddenByContent', { count: hidden })}{' '}

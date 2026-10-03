@@ -5,8 +5,8 @@ import { CLI_VERSION } from './node-host.js';
 
 /**
  * Where the extension lives: on its own (dependencies from npm, a complete tsconfig), or inside a
- * pnpm workspace whose root has `tsconfig.base.json` (matane-extensions: `catalog:` versions; the
- * Matane monorepo itself: `workspace:*`).
+ * pnpm workspace whose root has `tsconfig.base.json` (`catalog:` versions; the Matane monorepo
+ * itself: `workspace:*`).
  */
 export type CreateLayout = 'standalone' | 'catalog' | 'workspace';
 

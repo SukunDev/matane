@@ -31,7 +31,6 @@ import { categoriesQuery, libraryCountsQuery, libraryQuery } from '../../lib/lib
 import { useScrollRestoration } from '../../lib/scroll';
 import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
-import { HandoffBanner } from '../extensions/HandoffBanner';
 import { isTyping } from '../reader/keymap';
 import { CategoryDialog } from './CategoryDialog';
 import { LibraryToolbar } from './LibraryToolbar';
@@ -149,7 +148,6 @@ export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onT
         </nav>
       )}
 
-      <HandoffBanner className="mx-6 mt-4" />
       <div ref={setScrollElement} className="min-h-0 flex-1 overflow-y-auto" data-testid="library-scroll">
         {empty ? (
           <EmptyState

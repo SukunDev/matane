@@ -11,7 +11,6 @@ import { runMigrations } from '../db/migrate';
 import { ExtensionsRepository } from '../db/repositories/extensions';
 import { ReposRepository } from '../db/repositories/repos';
 import type { FetchBytes } from '../network/fetch-bytes';
-import { Handoff } from './handoff';
 import { ExtensionInstaller } from './installer';
 import { ExtensionRegistry } from './registry';
 import { RepoService, evaluateTrust, normalizeRepoUrl } from './repos';
@@ -21,7 +20,7 @@ const migrationsFolder = resolve(__dirname, '../../../drizzle');
 const REPO_URL = 'https://repo.test/ext/';
 const OTHER_URL = 'https://other.test/';
 
-const official = generateRepoKey();
+const publisher = generateRepoKey();
 const community = generateRepoKey();
 
 let dir: string;
@@ -35,7 +34,6 @@ let extensions: ExtensionService;
 let extensionsRepo: ExtensionsRepository;
 let clearedSessions: string[];
 let unloaded: string[];
-let officialUrl: string | null;
 
 function writeExtension(folder: string, version: string, extra: object = {}) {
   mkdirSync(folder, { recursive: true });
@@ -83,7 +81,6 @@ beforeEach(async () => {
   fetched = [];
   clearedSessions = [];
   unloaded = [];
-  officialUrl = null;
   connection = openDatabase(join(dir, 'data.db'));
   await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });
   const changes = new DbChanges(() => undefined);
@@ -111,8 +108,6 @@ beforeEach(async () => {
   repos = new RepoService({
     repo: reposRepo,
     fetchBytes,
-    officialKeys: () => [official.publicKey],
-    officialUrl: () => officialUrl,
     isOnline: () => true,
   });
   installer = new ExtensionInstaller({
@@ -133,11 +128,12 @@ afterEach(() => {
   rmSync(dir, { recursive: true, force: true });
 });
 
-const addOfficial = async () => {
-  await publish(REPO_URL, '1.0.0', official);
-  const result = await repos.add(REPO_URL);
+/** A repository signed by `publisher`, added and its key trusted. */
+const addTrusted = async () => {
+  await publish(REPO_URL, '1.0.0', publisher);
+  const result = await repos.add(REPO_URL, true);
   if (result.status !== 'added') throw new Error('not added');
-  return result.repo;
+  return repos.trustKey(result.repo.id);
 };
 
 describe('normalizeRepoUrl', () => {
@@ -160,32 +156,33 @@ describe('normalizeRepoUrl', () => {
 
 describe('evaluateTrust', () => {
   const bytes = Buffer.from('{"index":1}');
-  const keys = { official: [official.publicKey], trusted: null, named: undefined };
+  const keys = { trusted: null, named: undefined };
 
-  it('tells official, trusted, unknown, unsigned and forged apart', () => {
-    expect(evaluateTrust(bytes, signIndex(bytes, official.privateKeyPem), keys)).toEqual({
-      trust: 'official',
+  it('tells trusted, unknown, unsigned and forged apart', () => {
+    const byPublisher = signIndex(bytes, publisher.privateKeyPem);
+    expect(evaluateTrust(bytes, byPublisher, { ...keys, trusted: publisher.publicKey })).toEqual({
+      trust: 'trusted',
       problem: null,
-      signedBy: official.publicKey,
+      signedBy: publisher.publicKey,
     });
     const byCommunity = signIndex(bytes, community.privateKeyPem);
-    expect(evaluateTrust(bytes, byCommunity, { ...keys, trusted: community.publicKey }).trust).toBe('trusted');
     expect(evaluateTrust(bytes, byCommunity, { ...keys, named: community.publicKey })).toEqual({
       trust: 'unverified',
       problem: 'unknown-key',
       signedBy: community.publicKey,
     });
     expect(evaluateTrust(bytes, null, keys).problem).toBe('unsigned');
-    // The index names the official key, but someone else signed it.
-    expect(evaluateTrust(bytes, byCommunity, { ...keys, named: official.publicKey }).problem).toBe('bad-signature');
+    // The index names one key, but someone else signed it.
+    expect(evaluateTrust(bytes, byCommunity, { ...keys, trusted: publisher.publicKey }).trust).toBe('unverified');
+    expect(evaluateTrust(bytes, byCommunity, { ...keys, named: publisher.publicKey }).problem).toBe('bad-signature');
     expect(evaluateTrust(bytes, 'garbage', keys).problem).toBe('bad-signature');
   });
 });
 
 describe('RepoService', () => {
-  it('adds an official repository right away', async () => {
-    const repo = await addOfficial();
-    expect(repo).toMatchObject({ url: REPO_URL, name: `Repo ${REPO_URL}`, trust: 'official', extensionCount: 1 });
+  it('adds a repository and trusts its key', async () => {
+    const repo = await addTrusted();
+    expect(repo).toMatchObject({ url: REPO_URL, name: `Repo ${REPO_URL}`, trust: 'trusted', extensionCount: 1 });
     expect(repos.index(repo.id)?.extensions[0]?.version).toBe('1.0.0');
     await expect(repos.add(`${REPO_URL}index.json`)).rejects.toThrow(/already added/);
   });
@@ -216,8 +213,8 @@ describe('RepoService', () => {
   });
 
   it('syncs a new index, but keeps the old one when a signed repository loses its signature', async () => {
-    const repo = await addOfficial();
-    await publish(REPO_URL, '1.1.0', official);
+    const repo = await addTrusted();
+    await publish(REPO_URL, '1.1.0', publisher);
     await repos.sync(repo.id);
     expect(repos.index(repo.id)?.extensions[0]?.version).toBe('1.1.0');
 
@@ -226,7 +223,7 @@ describe('RepoService', () => {
     const indexFile = join(folder, 'index.json');
     writeFileSync(indexFile, readFileSync(indexFile, 'utf8').replace('"nsfw": false', '"nsfw": true'));
     const [info] = await repos.sync(repo.id);
-    expect(info).toMatchObject({ trust: 'official', lastError: expect.stringMatching(/previous one is kept/) });
+    expect(info).toMatchObject({ trust: 'trusted', lastError: expect.stringMatching(/previous one is kept/) });
     expect(repos.index(repo.id)?.extensions[0]?.version).toBe('1.1.0');
 
     // Re-signed by a different key: refused the same way.
@@ -234,12 +231,12 @@ describe('RepoService', () => {
     expect((await repos.sync(repo.id))[0]?.lastError).toMatch(/previous one is kept/);
 
     // Fixed: the error goes away.
-    await publish(REPO_URL, '1.3.0', official);
-    expect((await repos.sync(repo.id))[0]).toMatchObject({ lastError: null, trust: 'official' });
+    await publish(REPO_URL, '1.3.0', publisher);
+    expect((await repos.sync(repo.id))[0]).toMatchObject({ lastError: null, trust: 'trusted' });
   });
 
   it('records a failed sync without losing the index', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     served.clear();
     const [info] = await repos.sync(repo.id);
     expect(info?.lastError).toMatch(/unreachable/);
@@ -249,12 +246,12 @@ describe('RepoService', () => {
 
 describe('ExtensionInstaller', () => {
   it('installs after preparing, lists it with its repository, and loads it', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     expect(installer.available()).toEqual([
       expect.objectContaining({
         id: 'demo',
         repoId: repo.id,
-        trust: 'official',
+        trust: 'trusted',
         installedVersion: null,
         update: false,
       }),
@@ -279,24 +276,24 @@ describe('ExtensionInstaller', () => {
   });
 
   it('updates from the same repository', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     await installer.install((await installer.prepare(repo.id, 'demo')).token);
 
-    await publish(REPO_URL, '1.1.0', official);
+    await publish(REPO_URL, '1.1.0', publisher);
     await repos.sync(repo.id);
     expect(installer.available()[0]).toMatchObject({ installedVersion: '1.0.0', installedHere: true, update: true });
     expect(await installer.updateAll()).toEqual({ updated: ['demo'], failed: [] });
     expect(extensions.get('demo')?.manifest?.version).toBe('1.1.0');
     expect(unloaded).toContain('demo');
 
-    await publish(REPO_URL, '1.2.0', official);
+    await publish(REPO_URL, '1.2.0', publisher);
     await repos.sync(repo.id);
     expect(await installer.updateAll()).toEqual({ updated: ['demo'], failed: [] });
     expect(extensions.get('demo')?.manifest?.version).toBe('1.2.0');
   });
 
   it('never takes an installed extension from another repository', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     await installer.install((await installer.prepare(repo.id, 'demo')).token);
     await publish(OTHER_URL, '9.0.0', community);
     const other = await repos.add(OTHER_URL, true);
@@ -310,7 +307,7 @@ describe('ExtensionInstaller', () => {
   });
 
   it('refuses an archive that does not match the signed index', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     const zip = join(served.get(REPO_URL)!, 'extensions', 'demo-1.0.0.zip');
     const bytes = readFileSync(zip);
     bytes[bytes.length - 50]! ^= 1;
@@ -320,7 +317,7 @@ describe('ExtensionInstaller', () => {
   });
 
   it('uninstalls with storage, preferences and session; sources stay', async () => {
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     await installer.install((await installer.prepare(repo.id, 'demo')).token);
     extensionsRepo.setStorage('demo', 'token', 'abc');
     extensionsRepo.setPref('demo', 'hd', true);
@@ -343,7 +340,7 @@ describe('ExtensionInstaller', () => {
   it('falls back to a built-in with the same id after an uninstall', async () => {
     writeExtension(join(dir, 'builtin', 'demo'), '0.9.0');
     await extensions.reload();
-    const repo = await addOfficial();
+    const repo = await addTrusted();
     await installer.install((await installer.prepare(repo.id, 'demo')).token);
     expect(extensions.list()[0]).toMatchObject({ origin: 'repo', version: '1.0.0' });
     await installer.uninstall('demo');
@@ -358,120 +355,5 @@ describe('ExtensionInstaller', () => {
     writeExtension(join(installed, 'kept.old'), '0.1.0');
     await installer.recover();
     expect(readdirSync(installed).sort()).toEqual(['demo', 'kept']);
-  });
-});
-
-describe('official repository and handoff', () => {
-  const added = () => {
-    let value: string | null = null;
-    return { get: () => value, set: (url: string) => (value = url) };
-  };
-
-  it('adds the official repository once, without the network, and not again after a removal', () => {
-    const store = added();
-    expect(repos.ensureOfficial(store)).toBeNull();
-    officialUrl = REPO_URL;
-    const repo = repos.ensureOfficial(store)!;
-    expect(repo).toMatchObject({ url: REPO_URL, official: true, synced: false, extensionCount: 0 });
-    expect(fetched).toEqual([]);
-    expect(repos.ensureOfficial(store)?.id).toBe(repo.id);
-    repos.remove(repo.id);
-    expect(repos.ensureOfficial(store)).toBeNull();
-    // A new official URL (a later app version) is added again.
-    officialUrl = OTHER_URL;
-    expect(repos.ensureOfficial(store)).toMatchObject({ url: OTHER_URL, official: true });
-  });
-
-  /** "demo" used to be built in and has a manga in the library; now the app no longer has it. */
-  async function formerBuiltin() {
-    writeExtension(join(dir, 'builtin', 'demo'), '0.9.0');
-    await extensions.reload();
-    connection.sqlite
-      .prepare(
-        "INSERT INTO manga (source_id, url, title, in_library, created_at, updated_at) VALUES ('demo/en', '/a', 'A', 1, 0, 0)",
-      )
-      .run();
-    rmSync(join(dir, 'builtin', 'demo'), { recursive: true });
-    await extensions.reload();
-    expect(extensions.isInstalled('demo')).toBe(false);
-  }
-
-  function handoff(notified: string[][] = []) {
-    let done: string[] = [];
-    return new Handoff({
-      sqlite: connection.sqlite,
-      official: () => {
-        const repo = repos.official();
-        if (!repo) return null;
-        const index = repos.index(repo.id);
-        return { id: repo.id, offers: index ? (id) => index.extensions.some((e) => e.id === id) : null };
-      },
-      isInstalled: (id) => extensions.isInstalled(id),
-      install: async (repoId, id) => {
-        await installer.install((await installer.prepare(repoId, id)).token);
-      },
-      done: { get: () => done, set: (ids) => (done = ids) },
-      notify: (names) => notified.push(names),
-      log: () => undefined,
-      changed: () => undefined,
-    });
-  }
-
-  it('waits for the official index, installs a former built-in once, and leaves it alone afterwards', async () => {
-    await formerBuiltin();
-    officialUrl = REPO_URL;
-    const repo = repos.ensureOfficial(added())!;
-    const notified: string[][] = [];
-    const run = handoff(notified);
-    await expect(run.run()).resolves.toEqual([{ id: 'demo', name: 'Demo', state: 'waiting', error: null }]);
-
-    await publish(REPO_URL, '1.0.0', official);
-    await repos.sync(repo.id);
-    await expect(run.run()).resolves.toEqual([]);
-    expect(extensions.list()).toEqual([expect.objectContaining({ id: 'demo', origin: 'repo', repoId: repo.id })]);
-    expect(notified).toEqual([['Demo']]);
-
-    // Uninstalled by the user: its record goes, so it is never installed by itself again.
-    await installer.uninstall('demo');
-    await expect(handoff().run()).resolves.toEqual([]);
-    expect(extensions.isInstalled('demo')).toBe(false);
-  });
-
-  it('shows a failed install, and succeeds on a retry once the archive is fine', async () => {
-    await formerBuiltin();
-    officialUrl = REPO_URL;
-    const repo = repos.ensureOfficial(added())!;
-    const folder = await publish(REPO_URL, '1.0.0', official);
-    await repos.sync(repo.id);
-    const zip = join(folder, 'extensions', 'demo-1.0.0.zip');
-    const good = readFileSync(zip);
-    const bad = Buffer.from(good);
-    bad[bad.length - 50]! ^= 1;
-    writeFileSync(zip, bad);
-    const run = handoff();
-    await expect(run.run()).resolves.toEqual([
-      { id: 'demo', name: 'Demo', state: 'failed', error: expect.stringMatching(/sha256 mismatch/) },
-    ]);
-    writeFileSync(zip, good);
-    await expect(run.run()).resolves.toEqual([]);
-    expect(extensions.isInstalled('demo')).toBe(true);
-  });
-
-  it('does nothing without an official repository, or when it does not offer the extension', async () => {
-    await formerBuiltin();
-    await expect(handoff().run()).resolves.toEqual([]);
-    officialUrl = OTHER_URL;
-    const repo = repos.ensureOfficial(added())!;
-    await publish(OTHER_URL, '1.0.0', official);
-    const indexFile = join(served.get(OTHER_URL)!, 'index.json');
-    // An official index without "demo".
-    const index = JSON.parse(readFileSync(indexFile, 'utf8')) as { extensions: unknown[] };
-    index.extensions = [];
-    const bytes = Buffer.from(`${JSON.stringify(index, null, 2)}\n`);
-    writeFileSync(indexFile, bytes);
-    writeFileSync(join(served.get(OTHER_URL)!, 'index.json.sig'), signIndex(bytes, official.privateKeyPem));
-    await repos.sync(repo.id);
-    await expect(handoff().run()).resolves.toEqual([]);
-    expect(extensions.isInstalled('demo')).toBe(false);
   });
 });

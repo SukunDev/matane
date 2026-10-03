@@ -28,7 +28,7 @@ The password is stored on this computer, encrypted when the system has a keyring
 
 ## User-Agent
 
-How Matane introduces itself to websites. By default it is a regular browser's. Change it if a site insists on another; **Reset** goes back. Extensions that set their own (MangaDex does) keep theirs.
+How Matane introduces itself to websites. By default it is a regular browser's. Change it if a site insists on another; **Reset** goes back. Extensions that set their own keep theirs.
 
 ## Test connection
 

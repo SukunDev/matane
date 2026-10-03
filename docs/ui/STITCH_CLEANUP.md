@@ -15,7 +15,7 @@ Saran tata letak di kanvas: baris 1 = 01–05 (alur membaca), baris 2 = 06–09b
 | 02 | Blade of the Ashen Sky - Manga Detail Refined *(versi Catppuccin)* | `7bda56fe863047c4b006e7a1dc1ca696` |
 | 03 | Blade of the Ashen Sky - Manga Reader RTL **(Catppuccin Mocha)** | `958bab3a923545f4867859d34ceffc34` |
 | 04 | Spirit Garden Academy - Webtoon Reader **(Catppuccin Mocha)** | `c0acb2b3f16640d2b8abe3099461a9aa` |
-| 05 | MangaReader - Browse MangaDex (EN) *(versi Catppuccin)* | `e29e2fc707324ccfaf75aeb5f1b89e23` |
+| 05 | MangaReader - Browse Example Source (EN) *(versi Catppuccin)* | `e29e2fc707324ccfaf75aeb5f1b89e23` |
 | 06 | MangaReader - Global Search Refined *(versi Catppuccin)* | `a01f2d12eb3445fa895e6acb97f90043` |
 | 07 | MangaReader - Updates *(versi Catppuccin)* | `e9534da175324f1da99ef6ed9fa1db64` |
 | 08 | MangaReader - Downloads *(versi Catppuccin)* | `174d8b2703b9410f8b4e2fa4eaa03a1c` |
@@ -46,7 +46,7 @@ Saran: ganti nama layar di Stitch sesuai kolom "Urutan" (mis. `01 Library`, `02 
 | Blade of the Ashen Sky - Manga Reader RTL Refined *(campuran)* | `6fe30ca7a1024b34b5e6b172eaf90046` | Hasil apply-theme yang masih violet |
 | Spirit Garden Academy - Webtoon Reader Continuous Mode *(violet)* | `fd6d80df79bb41a7bf26939d3a399593` | Diganti versi Catppuccin |
 | Spirit Garden Academy - Webtoon Reader Continuous Mode *(campuran)* | `d0c4624a92534606b1d94483f1d29eed` | Hasil apply-theme yang masih violet |
-| MangaReader - Browse MangaDex (EN) *(violet)* | `576f73d8f9ca47a6878015897afaf518` | Diganti versi Catppuccin |
+| MangaReader - Browse Example Source (EN) *(violet)* | `576f73d8f9ca47a6878015897afaf518` | Diganti versi Catppuccin |
 | MangaReader - Global Search | `9a8a90fb43d3427b9de3e3d7be458fad` | Versi pertama (ada rating) |
 | MangaReader - Global Search Refined *(violet)* | `f7576ea4daa940dfaad9988de845aebd` | Diganti versi Catppuccin |
 | MangaReader - Updates *(violet)* | `dcdb26e5daa84cf386dd51f3ede83c95` | Diganti versi Catppuccin |

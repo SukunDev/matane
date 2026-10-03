@@ -353,7 +353,7 @@
         "hours_other": "{{count}} h",
         "week": "Weekly"
       },
-      "reposHint": "Where extensions come from. Verified = signed with the official key."
+      "reposHint": "Where extensions come from. Trusted = signed with a key you chose to trust."
     },
     "reader": {
       "intro": "Default display rules, reading direction, tap zones and keys. Changes save at once.",
@@ -483,7 +483,7 @@
       },
       "userAgent": {
         "title": "User-Agent",
-        "description": "How the app introduces itself to sites. An extension that sets its own (MangaDex does) keeps it.",
+        "description": "How the app introduces itself to sites. An extension that sets its own keeps it.",
         "reset": "Reset",
         "usingDefault": "Using the default browser User-Agent.",
         "usingCustom": "Using your User-Agent."
@@ -568,7 +568,7 @@
     },
     "openUrl": {
       "label": "Open a manga from its web link",
-      "placeholder": "Paste a manga link, e.g. https://mangadex.org/title/…",
+      "placeholder": "Paste a manga link, e.g. https://example.com/title/…",
       "open": "Open",
       "noMatch": "No installed source recognises this link."
     }
@@ -616,10 +616,8 @@
       "description": "Repositories are checked once a day; sync one in the Repositories panel to check now."
     },
     "trust": {
-      "verified": "Verified",
       "trustedKey": "Trusted key",
       "unverified": "Unverified",
-      "officialLine": "Official · Verified",
       "trustedLine": "{{repo}} · Trusted key",
       "unverifiedLine": "{{repo}} · Unverified"
     },
@@ -665,7 +663,6 @@
       "install": "Install",
       "update": "Update",
       "failed": "Cannot install this extension",
-      "repoOfficial": "{{repo}} (official)",
       "repoTrusted": "{{repo}} (trusted key)",
       "repoUnverified": "{{repo}} (unverified)"
     },
@@ -697,15 +694,7 @@
       "empty": "Nothing logged yet. Use the extension (browse, open a manga) and lines appear here.",
       "lines": "Log lines"
     },
-    "getExtensions": "Get extensions",
-    "handoff": {
-      "failed_one": "{{names}} could not be installed from the official repository",
-      "failed_other": "{{names}} could not be installed from the official repository",
-      "waiting_one": "{{names}} will be installed from the official repository",
-      "waiting_other": "{{names}} will be installed from the official repository",
-      "waitingHint": "It used to come with Matane. It installs by itself once Matane is online; your library stays as it is.",
-      "install": "Install now"
-    }
+    "getExtensions": "Get extensions"
   },
   "manga": {
     "author": "Author: {{name}}",
@@ -1313,12 +1302,11 @@
     "sources": {
       "title": "Sources",
       "description": "Sources are extensions that bring manga from a website.",
-      "official": "From the official repository",
       "install": "Install",
       "installed": "Installed",
       "ready": "Ready to use",
       "none": "No source in your languages yet.",
-      "later": "More sources, and your own repositories, are in Browse → Extensions."
+      "later": "Add a repository in Browse → Extensions to get more sources."
     },
     "reader": {
       "title": "Reading",

@@ -3,7 +3,7 @@
 Matane (またね, Japanese for "see you later") is an open-source manga reader for the desktop: close it now and pick up on the same page next time. It keeps a library with your reading progress, reads in paged or webtoon mode, downloads chapters for offline reading and tells you when new chapters come out.
 
 ::: warning Matane hosts no content
-The app does not host or distribute manga. Sources are provided by **extensions**, small programs that read a website for you. The official repository only ships extensions for services that allow it.
+The app does not host or distribute manga. Sources are provided by **extensions**, small programs that read a website for you.
 :::
 
 ## How it fits together

@@ -130,3 +130,12 @@ export async function leaveReader(page: Page): Promise<void> {
   await page.getByTitle('Back to manga').click();
   await expect.poll(() => page.evaluate(() => location.hash)).not.toContain('/reader/');
 }
+
+/** Adds a repository by URL and trusts the key that signed its index (the app has no built-in keys). */
+export async function addTrustedRepo(page: Page, url: string): Promise<void> {
+  await page.evaluate(async (target) => {
+    const result = await window.api.invoke('repos.add', { url: target, confirmUnverified: true });
+    if (result.status !== 'added') throw new Error(`repository not added: ${result.status}`);
+    await window.api.invoke('repos.trustKey', { repoId: result.repo.id });
+  }, url);
+}

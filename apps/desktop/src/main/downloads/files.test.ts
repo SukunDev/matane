@@ -33,13 +33,13 @@ describe('sanitizeSegment', () => {
   it('builds <folder>/<Source (LANG)>/<Title>/<Chapter [group]>', () => {
     expect(
       chapterBasePath('/dl', {
-        sourceName: 'MangaDex',
+        sourceName: 'Example Source',
         sourceLang: 'en',
         mangaTitle: 'Kage: Shadow',
         chapterName: 'Ch. 2',
         scanlator: 'Group/A',
       }),
-    ).toBe(join('/dl', 'MangaDex (EN)', 'Kage_ Shadow', 'Ch. 2 [Group_A]'));
+    ).toBe(join('/dl', 'Example Source (EN)', 'Kage_ Shadow', 'Ch. 2 [Group_A]'));
     expect(pageFileName(6, '.jpg')).toBe('007.jpg');
   });
 });

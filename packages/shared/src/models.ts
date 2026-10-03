@@ -8,7 +8,7 @@ export type { Filter, FilterState, Page, Preference };
 export const MANGA_STATUSES = ['ongoing', 'completed', 'hiatus', 'cancelled', 'unknown'] as const;
 export const MANGA_TYPES = ['manga', 'manhwa', 'manhua', 'comic'] as const;
 
-/** `<extensionId>/<sourceKey>`, e.g. "mangadex/en". */
+/** `<extensionId>/<sourceKey>`, e.g. "example/en". */
 export const sourceIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]*\/[a-z0-9-]+$/, 'source id');
 
 export const extensionEntrySchema = z.object({
@@ -34,10 +34,10 @@ export const extensionEntrySchema = z.object({
 export type ExtensionEntry = z.infer<typeof extensionEntrySchema>;
 
 /**
- * How far a repository is trusted (BRAINSTORM.md §5.8): signed with the key built into the app,
- * signed with a key the user chose to trust, or neither.
+ * How far a repository is trusted (BRAINSTORM.md §5.8): signed with a key the user chose to trust,
+ * or not.
  */
-export const repoTrustSchema = z.enum(['official', 'trusted', 'unverified']);
+export const repoTrustSchema = z.enum(['trusted', 'unverified']);
 export type RepoTrust = z.infer<typeof repoTrustSchema>;
 
 /** Why an unverified repository is unverified. */
@@ -55,8 +55,6 @@ export const repoInfoSchema = z.object({
   extensionCount: z.number(),
   /** An index was fetched at least once (a repository added offline has none yet). */
   synced: z.boolean(),
-  /** The official repository built into the app (added by itself). */
-  official: z.boolean(),
   lastSyncedAt: z.number().nullable(),
   /** The last sync failed (the previous index is kept). */
   lastError: z.string().nullable(),
@@ -115,19 +113,6 @@ export const installPreviewSchema = z.object({
   hasIcon: z.boolean(),
 });
 export type InstallPreview = z.infer<typeof installPreviewSchema>;
-
-/**
- * An extension that used to be built into the app and is now installed from the official
- * repository by itself, once ("handoff", Milestone 4e/4f).
- */
-export const handoffItemSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  /** Waiting for the official repository (offline), or the install failed (it is retried). */
-  state: z.enum(['waiting', 'failed']),
-  error: z.string().nullable(),
-});
-export type HandoffItem = z.infer<typeof handoffItemSchema>;
 
 export const updateAllResultSchema = z.object({
   updated: z.array(z.string()),

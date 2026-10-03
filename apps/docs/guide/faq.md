@@ -2,7 +2,7 @@
 
 ## Is Matane legal? Where does the content come from?
 
-Matane is a reader. It does not host, upload or distribute any manga. Sources are provided by extensions, which read websites on your behalf, just like a web browser. Which sources you use, and whether that is allowed where you live, is up to you. The official extension repository only includes services that allow it. Support the creators: buy the books and use official platforms when you can.
+Matane is a reader. It does not host, upload or distribute any manga. Sources are provided by extensions, which read websites on your behalf, just like a web browser. Which sources you use, and whether that is allowed where you live, is up to you. Support the creators: buy the books and use official platforms when you can.
 
 ## A source shows an error or no chapters
 

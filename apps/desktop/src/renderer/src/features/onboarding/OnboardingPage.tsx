@@ -1,20 +1,19 @@
 import { DOWNLOAD_FORMATS } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArrowRight, Check, FolderOpen, Puzzle, Search } from 'lucide-react';
+import { ArrowRight, Check, FolderOpen, Search } from 'lucide-react';
 import { type ReactNode, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { WindowControls } from '../../components/shell/WindowControls';
 import { Button } from '../../components/ui/button';
 import { useContentFilter } from '../../lib/content';
 import { downloadFolderQuery } from '../../lib/downloads';
-import { availableExtensionsQuery, reposQuery } from '../../lib/extensions';
+import { availableExtensionsQuery } from '../../lib/extensions';
 import { languageName } from '../../lib/format';
 import { appInfoQuery, ipc, settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { extensionsQuery, sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { COMMON_LANGUAGES, NsfwToggle } from '../extensions/ContentControls';
-import { InstallDialog, type InstallRequest } from '../extensions/InstallDialog';
 import { ZONE_COLUMNS, zoneGrid } from '../reader/navigation';
 import { AccentPicker, LanguagePicker, ThemePicker } from '../settings/appearance';
 import { Segmented } from '../settings/controls';
@@ -287,54 +286,12 @@ function DownloadsStep() {
 function SourcesStep() {
   const { t } = useTranslation();
   const { visible } = useContentFilter();
-  const { data: repos = [] } = useQuery(reposQuery);
-  const { data: available = [] } = useQuery(availableExtensionsQuery);
   const { data: installed = [] } = useQuery(extensionsQuery);
-  const [request, setRequest] = useState<InstallRequest | null>(null);
-  const official = repos.find((repo) => repo.official);
-  const offered = available.filter((extension) => extension.repoId === official?.id && visible(extension));
   const ready = installed.filter((extension) => extension.error === null && visible(extension));
 
   return (
     <>
       <StepTitle title={t('onboarding.sources.title')} description={t('onboarding.sources.description')} />
-      {offered.length > 0 && (
-        <Field label={t('onboarding.sources.official')}>
-          <ul className="flex flex-col divide-y rounded-lg border">
-            {offered.map((extension) => (
-              <li key={extension.id} className="flex items-center gap-3 px-3 py-2.5">
-                <Puzzle className="size-4 text-muted-foreground" />
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium">{extension.name}</span>
-                  <span className="block truncate text-xs text-muted-foreground">
-                    {extension.langs.map((l) => l.toUpperCase()).join(', ')}
-                  </span>
-                </span>
-                {extension.installedVersion ? (
-                  <span className="flex items-center gap-1 text-xs text-ctp-green">
-                    <Check className="size-3.5" />
-                    {t('onboarding.sources.installed')}
-                  </span>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      setRequest({
-                        kind: 'prepare',
-                        repoId: extension.repoId,
-                        extensionId: extension.id,
-                        name: extension.name,
-                      })
-                    }
-                  >
-                    {t('onboarding.sources.install')}
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </Field>
-      )}
       <Field label={t('onboarding.sources.ready')}>
         {ready.length > 0 ? (
           <ul data-testid="onboarding-ready" className="flex flex-wrap gap-2">
@@ -350,7 +307,6 @@ function SourcesStep() {
         )}
       </Field>
       <p className="mt-2 text-xs text-muted-foreground">{t('onboarding.sources.later')}</p>
-      <InstallDialog request={request} onClose={() => setRequest(null)} />
     </>
   );
 }

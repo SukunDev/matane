@@ -2,13 +2,13 @@ import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { generateRepoKey } from '@matane/extension-runtime/repo';
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, addTrustedRepo, launchApp } from './support/app';
 
 // Milestone 5e: a backup made on one profile restores on another: library, categories, progress,
 // bookmarks, downloads, settings; the missing extension is offered from the repository it had.
 test.describe.configure({ mode: 'serial' });
 
-const official = generateRepoKey();
+const publisher = generateRepoKey();
 let a: TestApp;
 let b: TestApp;
 let file: string;
@@ -30,17 +30,16 @@ const pickFile = (t: TestApp, path: string) =>
   }, path);
 
 test.beforeAll(async () => {
-  const env = { MATANE_E2E_OFFICIAL_KEY: official.publicKey };
-  a = await launchApp(['demo'], env);
-  b = await launchApp([], env);
+  a = await launchApp(['demo']);
+  b = await launchApp([]);
   // Profile A reads from a dev folder but also has the repository that offers the extension.
   await a.site.publishRepo({
-    path: 'official',
-    name: 'Test Official',
-    privateKeyPem: official.privateKeyPem,
+    path: 'repo',
+    name: 'Test Repo',
+    privateKeyPem: publisher.privateKeyPem,
     extensions: [{ which: 'demo', version: '1.0.0' }],
   });
-  await a.page.evaluate((url) => window.api.invoke('repos.add', { url }), `${a.site.origin}/official/`);
+  await addTrustedRepo(a.page, `${a.site.origin}/repo/`);
 });
 
 test.afterAll(async () => {

@@ -41,7 +41,7 @@ program
   .option('--dir <dir>', 'parent directory', '.')
   .option(
     '--layout <layout>',
-    'standalone (dependencies from npm), catalog (a pnpm workspace like matane-extensions) or workspace',
+    'standalone (dependencies from npm), catalog (a pnpm workspace with a shared `catalog:`) or workspace',
     'standalone',
   )
   .action(async (id: string, opts: { name?: string; domain: string; lang: string; dir: string; layout: string }) => {

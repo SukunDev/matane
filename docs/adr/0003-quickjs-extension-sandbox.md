@@ -12,11 +12,11 @@ Every extension runs in its own QuickJS (WASM) runtime hosted by one `utilityPro
 Extension authors write sandbox-safe JS only (no `require`, no Node APIs). HTML parsing must happen host-side because QuickJS is slow.
 
 ## Update: limits after the Phase 1 benchmark (2026-09-23)
-Measured with `mr-ext bench` (MangaDex, recorded fixtures and live, 5–9 runs; Node 24, QuickJS via quickjs-emscripten 0.32):
+Measured with `mr-ext bench` (Example Source, recorded fixtures and live, 5–9 runs; Node 24, QuickJS via quickjs-emscripten 0.32):
 
 | Case | Sandbox time p50 / p95 | Heap needed |
 |---|---|---|
-| MangaDex calls (popular, details, chapters, pages), live | ≤ 11 / 24 ms; wall time is network (p95 ≈ 0.5 s) | < 1 MB |
+| Example Source calls (popular, details, chapters, pages), live | ≤ 11 / 24 ms; wall time is network (p95 ≈ 0.5 s) | < 1 MB |
 | Synthetic: 2.9 MB JSON feed → 10k chapters | 237 / 242 ms | ≤ 4 MB |
 | Synthetic: 1 MB HTML, 3k cards → 9k `html` bridge calls | 608 / 798 ms | ≤ 2 MB |
 | Synthetic: 5M-iteration CPU loop | 334 / 338 ms | ≤ 2 MB |

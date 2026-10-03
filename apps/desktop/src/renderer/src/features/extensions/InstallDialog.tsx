@@ -1,6 +1,6 @@
 import type { InstallPreview } from '@manga-reader/shared';
 import { useMutation } from '@tanstack/react-query';
-import { AlertTriangle, CircleCheck, Download, Info, Loader2, Shield, ShieldAlert, ShieldCheck, X } from 'lucide-react';
+import { AlertTriangle, CircleCheck, Download, Info, Loader2, Shield, ShieldAlert, X } from 'lucide-react';
 import { Dialog } from 'radix-ui';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -166,14 +166,6 @@ export function InstallDialog({ request, onClose }: { request: InstallRequest | 
 
 function RepoLine({ preview }: { preview: InstallPreview }) {
   const { t } = useTranslation();
-  if (preview.trust === 'official') {
-    return (
-      <p className="flex items-center gap-1 text-xs text-ctp-green">
-        <ShieldCheck className="size-3.5" />
-        {t('extensions.install.repoOfficial', { repo: preview.repoName })}
-      </p>
-    );
-  }
   if (preview.trust === 'trusted') {
     return (
       <p className="flex items-center gap-1 text-xs text-ctp-blue">

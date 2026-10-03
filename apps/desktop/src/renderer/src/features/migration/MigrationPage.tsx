@@ -244,7 +244,7 @@ function RunError({ error }: { error: unknown }) {
   );
 }
 
-/** "Target order: 1. MangaDex (EN) · 2. …" with an editor (checkbox + up/down per source). */
+/** "Target order: 1. Example Source (EN) · 2. …" with an editor (checkbox + up/down per source). */
 function TargetOrder({
   sources,
   targets,

@@ -2,13 +2,13 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { generateRepoKey } from '@matane/extension-runtime/repo';
 import { type Page, expect, test } from '@playwright/test';
-import { type TestApp, launchApp } from './support/app';
+import { type TestApp, addTrustedRepo, launchApp } from './support/app';
 
 // Phase 4b: extension repositories. The fake site serves repositories built with `mr-ext repo`;
-// the "official" key is the test's own (MATANE_E2E_OFFICIAL_KEY).
+// the main repository's key is trusted through the same IPC calls as the UI's "Trust this key".
 test.describe.configure({ mode: 'serial' });
 
-const official = generateRepoKey();
+const publisher = generateRepoKey();
 const community = generateRepoKey();
 
 let t: TestApp;
@@ -17,11 +17,11 @@ let page: Page;
 const goto = (hash: string) => page.evaluate((h) => (location.hash = h), hash);
 const tab = (name: RegExp) => page.getByRole('tab', { name });
 const dialog = () => page.getByRole('dialog');
-const publishOfficial = (version: string) =>
+const publishMain = (version: string) =>
   t.site.publishRepo({
-    path: 'official',
-    name: 'Test Official',
-    privateKeyPem: official.privateKeyPem,
+    path: 'main',
+    name: 'Test Repo',
+    privateKeyPem: publisher.privateKeyPem,
     extensions: [{ which: 'demo', version, description: 'Everything the tests need' }],
   });
 const installedVersion = () =>
@@ -41,31 +41,31 @@ async function addRepo(url: string) {
 
 test.beforeAll(async () => {
   // No dev folders: everything comes from repositories.
-  t = await launchApp([], { MATANE_E2E_OFFICIAL_KEY: official.publicKey });
+  t = await launchApp([]);
   page = t.page;
-  await publishOfficial('1.0.0');
+  await publishMain('1.0.0');
 });
 
 test.afterAll(async () => {
   await t?.close();
 });
 
-test('adds the official repository and installs from it through the install dialog', async () => {
+test('adds a repository, trusts its key and installs from it through the install dialog', async () => {
   await goto('#/browse/extensions');
   await tab(/^Available/).click();
   await expect(page.getByText('No repositories yet')).toBeVisible();
 
-  await addRepo(`${t.site.origin}/official`);
-  const card = page.getByTestId('repo-card').filter({ hasText: 'Test Official' });
-  await expect(card).toContainText('Verified');
+  await addTrustedRepo(page, `${t.site.origin}/main`);
+  const card = page.getByTestId('repo-card').filter({ hasText: 'Test Repo' });
+  await expect(card).toContainText('Trusted key');
   await expect(card).toContainText('1 extension');
 
   const row = page.getByTestId('available-row').filter({ hasText: 'E2E Demo' });
-  await expect(row).toContainText('Official · Verified');
+  await expect(row).toContainText('Test Repo · Trusted key');
   await expect(row).toContainText('Everything the tests need');
   await row.getByRole('button', { name: 'Install' }).click();
 
-  await expect(dialog()).toContainText('Test Official (official)');
+  await expect(dialog()).toContainText('Test Repo (trusted key)');
   await expect(dialog()).toContainText('API version 1');
   await expect(dialog()).toContainText('SHA-256 verified');
   await expect(dialog()).not.toContainText('not verified');
@@ -75,7 +75,7 @@ test('adds the official repository and installs from it through the install dial
   await tab(/^Installed/).click();
   await expect(installedRow()).toContainText('v1.0.0');
   await expect(installedRow()).toContainText('Up to date');
-  await expect(installedRow()).toContainText('Official · Verified');
+  await expect(installedRow()).toContainText('Test Repo · Trusted key');
   // The icon comes from the installed bundle.
   await expect
     .poll(() =>
@@ -96,7 +96,7 @@ test('the installed source browses, and a manga goes into the library', async ()
 });
 
 test('updates install without asking, one by one or all at once', async () => {
-  await publishOfficial('1.1.0');
+  await publishMain('1.1.0');
   await syncRepos();
   await goto('#/browse/extensions');
   await expect(page.getByRole('status', { name: 'Update available: 1' })).toBeVisible();
@@ -107,7 +107,7 @@ test('updates install without asking, one by one or all at once', async () => {
   await expect(dialog()).toHaveCount(0);
   await expect(page.getByRole('status', { name: /Update available/ })).toHaveCount(0);
 
-  await publishOfficial('1.2.0');
+  await publishMain('1.2.0');
   await syncRepos();
   await page.getByRole('button', { name: 'Update all' }).click();
   await expect.poll(installedVersion).toBe('1.2.0');
@@ -115,7 +115,7 @@ test('updates install without asking, one by one or all at once', async () => {
 });
 
 test('a tampered archive is refused', async () => {
-  const folder = await publishOfficial('1.3.0');
+  const folder = await publishMain('1.3.0');
   await syncRepos();
   const zip = join(folder, 'extensions', 'e2e-demo-1.3.0.zip');
   const bytes = readFileSync(zip);
@@ -129,7 +129,7 @@ test('a tampered archive is refused', async () => {
   await dialog().getByRole('button', { name: 'Cancel' }).click();
   expect(await installedVersion()).toBe('1.2.0');
   // Repaired for the next tests.
-  await publishOfficial('1.3.0');
+  await publishMain('1.3.0');
 });
 
 test('uninstalling keeps the manga as "not installed"; installing again brings it back', async () => {
@@ -213,7 +213,7 @@ test('installed extensions and repositories survive a restart', async () => {
   expect(await installedVersion()).toBe('1.3.0');
   const repos = await page.evaluate(() => window.api.invoke('repos.list'));
   expect(repos.map((r) => [r.name, r.trust])).toEqual([
-    ['Test Official', 'official'],
+    ['Test Repo', 'trusted'],
     ['Community Repo', 'trusted'],
   ]);
   await goto('#/browse/sources/e2e-demo/en?tab=popular');
@@ -225,7 +225,7 @@ test('with automatic updates on, a sync installs updates', async () => {
     const { browse } = await window.api.invoke('settings.get');
     await window.api.invoke('settings.set', { browse: { ...browse, autoUpdateExtensions: true } });
   });
-  await publishOfficial('1.4.0');
+  await publishMain('1.4.0');
   await syncRepos();
   await expect.poll(installedVersion).toBe('1.4.0');
 });

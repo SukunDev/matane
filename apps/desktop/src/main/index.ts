@@ -31,8 +31,6 @@ import { ExtensionIcons } from './extensions/icons';
 import { ExtensionInstaller } from './extensions/installer';
 import { initialContentLanguages } from './extensions/content';
 import { ExtensionLogs } from './extensions/logs';
-import { Handoff } from './extensions/handoff';
-import { officialKeys, officialRepoUrl } from './extensions/official';
 import { RepoService } from './extensions/repos';
 import { URL_VERSIONS_KEY, UrlMigration } from './extensions/url-migration';
 import { ReposRepository } from './db/repositories/repos';
@@ -76,10 +74,6 @@ import { BackupService } from './backup/service';
 import { CoverColors } from './images/cover-color';
 
 const DEV_FOLDERS_KEY = 'extensions.devFolders';
-/** The official repository URL that was added once (a user who removes it keeps it removed). */
-const OFFICIAL_REPO_KEY = 'extensions.officialRepo';
-/** Extensions already moved to the official repository (never installed by themselves again). */
-const HANDOFF_DONE_KEY = 'extensions.handoffDone';
 /** Settings key (not an app setting): the last version whose release notes were shown or skipped. */
 const WHATS_NEW_KEY = 'app.whatsNewSeen';
 const MB = 1024 * 1024;
@@ -107,9 +101,8 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 /**
- * Built-in extensions: none ship since the official repository went live (Milestone 4f), but the
- * folder is still read (`resources/extensions` when packaged, `extensions/` at the repo root in
- * development) as a way back (ADR 0023).
+ * Built-in extensions: none ship, but the folder is still read (`resources/extensions` when
+ * packaged, `extensions/` at the repo root in development) as a way back (ADR 0023).
  */
 function builtinExtensionsDir(): string {
   return app.isPackaged ? join(process.resourcesPath, 'extensions') : join(app.getAppPath(), '../../extensions');
@@ -247,13 +240,10 @@ async function bootstrap(): Promise<void> {
   const repos = new RepoService({
     repo: reposRepo,
     fetchBytes,
-    officialKeys: () => officialKeys(),
-    officialUrl: () => officialRepoUrl(),
     isOnline: () => online.isOnline(),
     intervalMs: () => settings.getAppSettings().browse.repoSyncHours * 3_600_000,
-    onSynced: (repoId) => {
+    onSynced: () => {
       if (settings.getAppSettings().browse.autoUpdateExtensions) autoUpdateExtensions();
-      if (repoId === repos.official()?.id) void handoff.run();
     },
     log: (message) => extLog.warn(`repos: ${message}`),
   });
@@ -289,38 +279,6 @@ async function bootstrap(): Promise<void> {
     fetchBytes,
   });
   await installer.recover();
-  // Extensions that used to come with the app move to the official repository by themselves.
-  const handoff = new Handoff({
-    sqlite: connection.sqlite,
-    official: () => {
-      const repo = repos.official();
-      if (!repo) return null;
-      const index = repos.index(repo.id);
-      return { id: repo.id, offers: index ? (id) => index.extensions.some((e) => e.id === id) : null };
-    },
-    isInstalled: (id) => extensions.isInstalled(id),
-    install: async (repoId, id) => {
-      const preview = await installer.prepare(repoId, id);
-      await installer.install(preview.token);
-    },
-    done: {
-      get: () => settings.getValue<string[]>(HANDOFF_DONE_KEY, []),
-      set: (ids) => settings.setValue(HANDOFF_DONE_KEY, ids),
-    },
-    notify: (names) => {
-      if (!Notification.isSupported()) return;
-      const id = (settings.getAppSettings().language ?? app.getLocale()).startsWith('id');
-      const list = names.join(', ');
-      new Notification({
-        title: id ? `${list} sekarang dari repositori resmi` : `${list} now comes from the official repository`,
-        body: id
-          ? 'Terpasang otomatis; library dan progresmu tetap sama.'
-          : 'Installed by itself; your library and progress stay the same.',
-      }).show();
-    },
-    log: (message) => extLog.info(message),
-    changed: () => changes.mark('extensions'),
-  });
   const installed = await extensions.init();
   const urlMigration = new UrlMigration({
     sqlite: connection.sqlite,
@@ -555,8 +513,6 @@ async function bootstrap(): Promise<void> {
     void downloads.setOnline(isOnline);
     // A check that came due while offline runs now.
     if (isOnline) updates.tick();
-    const officialRepo = repos.official();
-    if (isOnline && officialRepo && !officialRepo.synced) void repos.sync(officialRepo.id);
     refreshTray();
   });
 
@@ -688,7 +644,6 @@ async function bootstrap(): Promise<void> {
       extensions,
       repos,
       installer,
-      handoff,
       extensionLogs,
       sources,
       chapters: chaptersRepo,
@@ -783,14 +738,6 @@ async function bootstrap(): Promise<void> {
   if (!online.isOnline()) void downloads.setOnline(false);
   downloads.start(settings.getAppSettings().downloads.resumeOnStart);
   updates.start();
-  const official = repos.ensureOfficial({
-    get: () => settings.getValue<string | null>(OFFICIAL_REPO_KEY, null),
-    set: (url) => settings.setValue(OFFICIAL_REPO_KEY, url),
-  });
-  // A repository never synced (added just now, or offline so far) syncs right away; the handoff
-  // runs after that either way (waiting while there is still no index), or now with the index it has.
-  if (official && !official.synced && online.isOnline()) void repos.sync(official.id).finally(() => handoff.run());
-  else void handoff.run();
   repos.start();
   online.start();
   appUpdater.start();

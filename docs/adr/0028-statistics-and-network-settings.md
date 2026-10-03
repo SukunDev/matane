@@ -16,4 +16,4 @@ Phase 5 adds the statistics page (BRAINSTORM.md ยง6.3, mockup 14) and Settings โ
 
 ## Consequences
 - The app's own requests through `net.fetch` (repositories, update checks) use the proxy but cannot answer a proxy password; an authenticating proxy works for sources, images and Cloudflare.
-- "Test connection" loads MangaDex's ping endpoint, so it fails where MangaDex itself is blocked: that is the point of the test.
+- "Test connection" loads Example Source's ping endpoint, so it fails where Example Source itself is blocked: that is the point of the test.

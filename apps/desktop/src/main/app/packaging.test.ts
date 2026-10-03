@@ -69,13 +69,13 @@ describe('debug info', () => {
         arch: 'x64',
         locale: 'id',
         packaging: 'appimage',
-        extensions: [{ id: 'mangadex', version: '1.2.0', origin: 'repo', error: null }],
+        extensions: [{ id: 'example', version: '1.2.0', origin: 'repo', error: null }],
         log,
       },
       (t) => t,
     );
     expect(text).toContain('Matane 1.0.0 (appimage)');
-    expect(text).toContain('- mangadex@1.2.0 (repo)');
+    expect(text).toContain('- example@1.2.0 (repo)');
     expect(text).toContain('line 149');
     expect(text).toContain('line 50');
     expect(text).not.toContain('line 49\n');

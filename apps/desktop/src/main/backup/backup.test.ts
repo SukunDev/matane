@@ -106,7 +106,7 @@ function seed(connection: DatabaseConnection): void {
   db.prepare(`INSERT INTO extension_prefs (extension_id, key, value_json) VALUES ('demo', 'quality', '"high"')`).run();
   db.prepare(`INSERT INTO extension_storage (extension_id, key, value_json) VALUES ('demo', 'token', '{"a":1}')`).run();
   db.prepare(
-    `INSERT INTO settings (key, value_json) VALUES ('theme', '"latte"'), ('extensions.handoffDone', '[]')`,
+    `INSERT INTO settings (key, value_json) VALUES ('theme', '"latte"'), ('extensions.devFolders', '[]')`,
   ).run();
 }
 

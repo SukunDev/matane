@@ -10,8 +10,8 @@ import { hostResolverOptions, proxyConfig } from './settings';
  * where nothing can encrypt it; the settings page says so.
  */
 export const PROXY_PASSWORD_KEY = 'network.proxyPassword';
-/** What "Test connection" loads: a tiny page of the site most readers use. */
-const TEST_URL = 'https://api.mangadex.org/ping';
+/** What "Test connection" loads: a tiny plain-text page from a large, reliable host. */
+const TEST_URL = 'https://www.cloudflare.com/cdn-cgi/trace';
 const TEST_TIMEOUT_MS = 15_000;
 
 /**
