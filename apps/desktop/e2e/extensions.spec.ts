@@ -31,9 +31,14 @@ const installedVersion = () =>
 const syncRepos = () => page.evaluate(() => window.api.invoke('repos.sync'));
 const installedRow = () => page.getByTestId('extension-row').filter({ hasText: 'E2E Demo' });
 
-async function addRepo(url: string) {
+async function openRepositories() {
   const panel = page.getByTestId('repositories-panel');
   if (!(await panel.isVisible())) await page.getByRole('button', { name: 'Repositories', exact: true }).click();
+  return panel;
+}
+
+async function addRepo(url: string) {
+  const panel = await openRepositories();
   await panel.getByRole('button', { name: 'Add repository' }).click();
   await dialog().getByLabel('Repository URL').fill(url);
   await dialog().getByRole('button', { name: 'Add', exact: true }).click();
@@ -56,6 +61,7 @@ test('adds a repository, trusts its key and installs from it through the install
   await expect(page.getByText('No repositories yet')).toBeVisible();
 
   await addTrustedRepo(page, `${t.site.origin}/main`);
+  await openRepositories();
   const card = page.getByTestId('repo-card').filter({ hasText: 'Test Repo' });
   await expect(card).toContainText('Trusted key');
   await expect(card).toContainText('1 extension');
