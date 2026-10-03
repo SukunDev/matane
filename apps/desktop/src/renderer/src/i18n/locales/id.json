@@ -751,7 +751,12 @@
     },
     "cover": {
       "change": "Ganti cover…",
-      "reset": "Pakai cover dari source"
+      "reset": "Pakai cover dari source",
+      "view": "Lihat cover",
+      "preview": "Pratinjau cover",
+      "zoomIn": "Perbesar",
+      "zoomOut": "Perkecil",
+      "zoomReset": "Reset zoom"
     },
     "moreActions": "Aksi lainnya",
     "scanlators": {

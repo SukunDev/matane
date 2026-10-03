@@ -760,7 +760,12 @@
     },
     "cover": {
       "change": "Change cover…",
-      "reset": "Use the source's cover"
+      "reset": "Use the source's cover",
+      "view": "View cover",
+      "preview": "Cover preview",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "zoomReset": "Reset zoom"
     },
     "moreActions": "More actions",
     "scanlators": {

@@ -437,7 +437,7 @@ function MigrationRow({
   return (
     <li
       data-testid="migration-row"
-      className="grid items-center gap-4 rounded-xl border bg-card/40 p-3 md:grid-cols-[1fr_auto_1fr]"
+      className="grid items-center gap-4 rounded-xl border bg-card/40 p-3 md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
     >
       <div className="flex min-w-0 items-center gap-3">
         <CoverImage
@@ -447,7 +447,9 @@ function MigrationRow({
           className="aspect-[2/3] w-14 shrink-0 rounded-md border"
         />
         <div className="min-w-0">
-          <p className="truncate font-medium">{manga.title}</p>
+          <p className="truncate font-medium" title={manga.title}>
+            {manga.title}
+          </p>
           <p className="truncate text-xs text-muted-foreground">{sourceName(manga.sourceId)}</p>
           <p className="mt-1 flex gap-2 text-xs">
             <span className="rounded border px-1.5">{t('manga.chapterCount', { count: chapters?.length ?? 0 })}</span>
@@ -461,7 +463,7 @@ function MigrationRow({
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-1 text-[11px] text-muted-foreground">
+      <div className="flex shrink-0 flex-col items-center gap-1 whitespace-nowrap text-[11px] text-muted-foreground">
         {search.isPending ? (
           <Loader2 className="size-5 animate-spin text-primary" />
         ) : choice === 'skip' ? (
@@ -509,7 +511,9 @@ function MigrationRow({
           ) : picked ? (
             <>
               <p className="flex min-w-0 items-center gap-2">
-                <span className="truncate text-sm font-medium">{picked.item.title}</span>
+                <span className="min-w-0 truncate text-sm font-medium" title={picked.item.title}>
+                  {picked.item.title}
+                </span>
                 <MatchBadge choice={picked} />
               </p>
               <p className="truncate text-xs text-muted-foreground">{sourceName(picked.sourceId)}</p>

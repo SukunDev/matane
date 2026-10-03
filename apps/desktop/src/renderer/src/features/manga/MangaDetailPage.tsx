@@ -19,6 +19,7 @@ import { cn } from '../../lib/utils';
 import { useColorScheme } from '../../theme/useColorScheme';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { ChapterList } from './ChapterList';
+import { CoverPreview } from './CoverPreview';
 import { LibraryButton, MoreMenu } from './LibraryActions';
 
 const STATUS_VARIANT = {
@@ -116,6 +117,7 @@ function MangaHeader({
   const { t, i18n } = useTranslation();
   const scheme = useColorScheme();
   const [expanded, setExpanded] = useState(false);
+  const [coverOpen, setCoverOpen] = useState(false);
   const openInBrowser = useMutation({ mutationFn: () => ipc.invoke('manga.openInBrowser', { mangaId: manga.id }) });
   // Main decides where "Continue" goes (last chapter read, next unread, or the first one).
   const { data: next } = useQuery(continueQuery(manga.id));
@@ -171,12 +173,32 @@ function MangaHeader({
       )}
 
       <div className="relative flex gap-8 px-6 py-6">
-        <CoverImage
-          mangaId={manga.id}
-          coverKey={manga.coverKey}
-          alt={manga.title}
-          className="aspect-[2/3] w-52 shrink-0 rounded-xl border shadow-2xl shadow-black/40"
-        />
+        {manga.coverKey ? (
+          <>
+            <button
+              type="button"
+              aria-label={t('manga.cover.view')}
+              title={t('manga.cover.view')}
+              onClick={() => setCoverOpen(true)}
+              className="shrink-0 cursor-zoom-in self-start rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <CoverImage
+                mangaId={manga.id}
+                coverKey={manga.coverKey}
+                alt={manga.title}
+                className="aspect-[2/3] w-52 rounded-xl border shadow-2xl shadow-black/40"
+              />
+            </button>
+            <CoverPreview manga={manga} open={coverOpen} onOpenChange={setCoverOpen} />
+          </>
+        ) : (
+          <CoverImage
+            mangaId={manga.id}
+            coverKey={manga.coverKey}
+            alt={manga.title}
+            className="aspect-[2/3] w-52 shrink-0 rounded-xl border shadow-2xl shadow-black/40"
+          />
+        )}
         <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex flex-wrap gap-1.5">
             <Badge variant={STATUS_VARIANT[manga.status]}>{t(`manga.status.${manga.status}`)}</Badge>
