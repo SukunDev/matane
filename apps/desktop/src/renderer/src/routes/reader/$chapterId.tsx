@@ -31,12 +31,16 @@ function ReaderRoute() {
   const { page } = Route.useSearch();
   const navigate = Route.useNavigate();
 
-  // A reading session restarts on explicit navigation, but not when webtoon mode scrolls into the
-  // next chapter and only moves the URL along.
+  // A reading session restarts on explicit navigation (even back to the chapter it began with),
+  // but not when the strip scrolls into another chapter and only moves the URL along.
   const followed = useReaderPosition((state) => state.followedChapterId);
-  const [session, setSession] = useState({ chapterId, start: page });
-  if (chapterId !== session.chapterId && chapterId !== followed) {
-    setSession({ chapterId, start: page });
+  const [session, setSession] = useState({ chapterId, start: page, url: chapterId, count: 0 });
+  if (chapterId !== session.url) {
+    setSession(
+      chapterId === followed
+        ? { ...session, url: chapterId }
+        : { chapterId, start: page, url: chapterId, count: session.count + 1 },
+    );
   }
 
   const onVisibleChapter = useCallback(
@@ -50,7 +54,7 @@ function ReaderRoute() {
 
   return (
     <ReaderPage
-      key={session.chapterId}
+      key={session.count}
       chapterId={Number(session.chapterId)}
       start={session.start}
       onVisibleChapter={onVisibleChapter}

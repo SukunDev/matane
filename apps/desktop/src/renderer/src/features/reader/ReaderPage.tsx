@@ -140,14 +140,18 @@ export function ReaderPage({
   const next = shown ? adjacentChapter(list, shown, 1, prefs) : undefined;
 
   const goChapter = useCallback(
-    (target: ChapterInfo, at: 'start' | 'last' = 'start') =>
+    (target: ChapterInfo, at: 'start' | 'last' = 'start') => {
+      // The strip has it loaded: scroll there without reloading the reader.
+      if (at === 'start' && useReaderPosition.getState().jumpToChapter?.(target.id)) return;
+      useReaderPosition.setState({ followedChapterId: null });
       void navigate({
         to: '/reader/$chapterId',
         params: { chapterId: String(target.id) },
         search: at === 'last' ? { page: 'last' } : {},
         // Chapters replace each other so Back leaves the reader instead of stepping through them.
         replace: true,
-      }),
+      });
+    },
     [navigate],
   );
   const exit = useCallback(() => {

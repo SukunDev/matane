@@ -2,6 +2,10 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
+## Unreleased
+
+- Webtoon and vertical modes now read on in both directions: scrolling up continues into the previous chapter, and the previous/next chapter keys scroll within the strip instead of reloading the reader. Chapters far from the one on screen are unloaded.
+
 ## 0.2.0-beta.1 — 2026-10-02
 
 The second beta: sources now come from the official extension repository ([SukunDev/matane-extensions](https://github.com/SukunDev/matane-extensions)), added by itself, and most of the polish planned for 1.0 is in. Nothing is built into the app anymore: MangaDex from 0.1 moves to the repository by itself and keeps your library and progress.

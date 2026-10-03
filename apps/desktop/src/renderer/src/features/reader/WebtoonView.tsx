@@ -10,6 +10,7 @@ import { adjacentChapter, tapAction } from './navigation';
 import { PageImage } from './PageImage';
 import { preloadPage, seedPageSizes, sizeKey, usePageSizes } from './pages';
 import { useReaderPosition } from './store';
+import { STRIP_WINDOW, pruneSegments } from './strip';
 import { STRIP_ZOOM, ZOOM_STEP, clampZoom } from './gestures';
 import { type ReaderHandlers, useReaderKeys } from './keymap';
 import { useReaderNotice } from './notice';
@@ -28,9 +29,12 @@ const DEFAULT_RATIO = 1.45;
 const DIVIDER_HEIGHT = 260;
 const SCROLL_STEP_PX = 120;
 
+const itemKey = (item: Item) => (item.kind === 'page' ? `${item.chapter.id}:${item.index}` : `divider:${item.from.id}`);
+
 /**
  * Continuous strip (webtoon: no gaps; vertical: gaps between pages). The next chapter is appended
- * below the current one as the reader nears the end, separated by a transition card.
+ * below, and the previous one put above, as the reader nears an end, separated by transition cards.
+ * Only a window of chapters around the one on screen stays loaded.
  */
 export function WebtoonView({
   chapter,
@@ -68,6 +72,7 @@ export function WebtoonView({
   const queryClient = useQueryClient();
   const [segments, setSegments] = useState<Segment[]>([{ chapter, pages }]);
   const [loadingNext, setLoadingNext] = useState(false);
+  const [loadingPrev, setLoadingPrev] = useState(false);
   const sizes = usePageSizes((s) => s.sizes);
   const crop = settings.cropBorders;
   const split = settings.splitTall;
@@ -118,11 +123,25 @@ export function WebtoonView({
     getScrollElement: () => scroller.current,
     estimateSize: estimate,
     overscan: 3,
-    getItemKey: (i) => {
-      const item = items[i]!;
-      return item.kind === 'page' ? `${item.chapter.id}:${item.index}` : `divider:${item.from.id}`;
-    },
+    getItemKey: (i) => itemKey(items[i]!),
   });
+
+  // Chapters added or dropped above the screen shift everything: keep the row on top where it was.
+  const anchor = useRef<{ key: string; delta: number } | null>(null);
+  const captureAnchor = useCallback(() => {
+    const el = scroller.current;
+    if (!el) return;
+    const row = virtualizer.getVirtualItems().find((r) => r.end > el.scrollTop + 1);
+    if (row) anchor.current = { key: String(row.key), delta: el.scrollTop - row.start };
+  }, [virtualizer]);
+  useLayoutEffect(() => {
+    const kept = anchor.current;
+    anchor.current = null;
+    if (!kept || !scroller.current) return;
+    const index = items.findIndex((item) => itemKey(item) === kept.key);
+    const row = index >= 0 ? virtualizer.measurementsCache[index] : undefined;
+    if (row) scroller.current.scrollTop = row.start + kept.delta;
+  }, [items, virtualizer]);
   // Page sizes arrive as images decode; re-measure so the strip does not jump.
   useEffect(() => {
     virtualizer.measure();
@@ -130,12 +149,18 @@ export function WebtoonView({
 
   // Initial position (e.g. coming back from the next chapter lands on the last page).
   const positioned = useRef(false);
+  // Loading the previous chapter waits until the start position is in place.
+  const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (positioned.current) return;
     positioned.current = true;
     const target = start === 'last' ? pages.length - 1 : start;
     if (target > 0) virtualizer.scrollToIndex(target, { align: 'start' });
   }, [virtualizer, start, pages.length]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setSettled(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   // Resume inside the start page once its real height is known (long strips can be many screens
   // tall, so the estimated height would land far off).
@@ -199,6 +224,63 @@ export function WebtoonView({
     return () => setJump(null);
   }, [setJump, items, currentChapter, virtualizer]);
 
+  // Previous/next chapter: scroll there when it is loaded, instead of reloading the reader.
+  const setJumpToChapter = useReaderPosition((s) => s.setJumpToChapter);
+  useEffect(() => {
+    setJumpToChapter((chapterId) => {
+      const target = items.findIndex(
+        (item) => item.kind === 'page' && item.chapter.id === chapterId && item.index === 0,
+      );
+      if (target < 0) return false;
+      virtualizer.scrollToIndex(target, { align: 'start' });
+      return true;
+    });
+    return () => setJumpToChapter(null);
+  }, [setJumpToChapter, items, virtualizer]);
+
+  const currentId = currentChapter?.id;
+  const currentSegment = segments.findIndex((segment) => segment.chapter.id === currentId);
+
+  // Drop chapters far from the one on screen.
+  useEffect(() => {
+    if (currentId === undefined || pruneSegments(segments, currentId) === segments) return;
+    captureAnchor();
+    setSegments((list) => pruneSegments(list, currentId));
+  }, [segments, currentId, captureAnchor]);
+
+  // Put the previous chapter above when the top comes into view.
+  const firstIndex = range[0]?.index ?? 0;
+  useEffect(() => {
+    const head = segments[0]!;
+    const before = adjacentChapter(chapters, head.chapter, -1, prefs);
+    if (!before || loadingPrev || !settled || restoring || firstIndex > 3) return;
+    // Only while the chapter on screen is near the top, or it would be dropped again.
+    if (currentSegment < 0 || currentSegment > STRIP_WINDOW - 1) return;
+    setLoadingPrev(true);
+    queryClient
+      .fetchQuery(pagesQuery(before.id))
+      .then(({ pages: earlier }) =>
+        setSegments((list) => {
+          if (list[0]?.chapter.id !== head.chapter.id) return list;
+          captureAnchor();
+          return [{ chapter: before, pages: earlier }, ...list];
+        }),
+      )
+      .catch(() => undefined)
+      .finally(() => setLoadingPrev(false));
+  }, [
+    firstIndex,
+    segments,
+    chapters,
+    prefs,
+    loadingPrev,
+    settled,
+    restoring,
+    currentSegment,
+    queryClient,
+    captureAnchor,
+  ]);
+
   // Append the next chapter when the end comes into view; preload pages just below the fold.
   const lastIndex = range.at(-1)?.index ?? 0;
   useEffect(() => {
@@ -209,13 +291,27 @@ export function WebtoonView({
     const tail = segments.at(-1)!;
     const next = adjacentChapter(chapters, tail.chapter, 1, prefs);
     if (!next || loadingNext || lastIndex < items.length - 4) return;
+    // Only while the chapter on screen is near the end, or it would be dropped again.
+    if (currentSegment >= 0 && currentSegment < segments.length - STRIP_WINDOW) return;
     setLoadingNext(true);
     queryClient
       .fetchQuery(pagesQuery(next.id))
       .then(({ pages: nextPages }) => setSegments((list) => [...list, { chapter: next, pages: nextPages }]))
       .catch(() => undefined)
       .finally(() => setLoadingNext(false));
-  }, [lastIndex, items, segments, chapters, prefs, loadingNext, queryClient, crop, split, settings.preloadPages]);
+  }, [
+    lastIndex,
+    items,
+    segments,
+    chapters,
+    prefs,
+    loadingNext,
+    currentSegment,
+    queryClient,
+    crop,
+    split,
+    settings.preloadPages,
+  ]);
 
   const scrollByScreen = useCallback((dir: 1 | -1) => {
     const el = scroller.current;
@@ -291,13 +387,19 @@ export function WebtoonView({
       pageLeft: () => scrollByScreen(-1),
       scrollDown: () => scroller.current?.scrollBy({ top: SCROLL_STEP_PX }),
       scrollUp: () => scroller.current?.scrollBy({ top: -SCROLL_STEP_PX }),
-      firstPage: () => virtualizer.scrollToIndex(0),
-      lastPage: () => virtualizer.scrollToIndex(items.length - 1, { align: 'end' }),
+      firstPage: () => {
+        const first = items.findIndex((item) => item.kind === 'page' && item.chapter.id === currentId);
+        virtualizer.scrollToIndex(Math.max(first, 0), { align: 'start' });
+      },
+      lastPage: () => {
+        const last = items.findLastIndex((item) => item.kind === 'page' && item.chapter.id === currentId);
+        virtualizer.scrollToIndex(last >= 0 ? last : items.length - 1, { align: 'end' });
+      },
       zoomIn: () => zoomTo(zoom * ZOOM_STEP),
       zoomOut: () => zoomTo(zoom / ZOOM_STEP),
       zoomReset: () => zoomTo(1),
     };
-  }, [autoScroll, onAutoScrollEnd, scrollByScreen, virtualizer, items.length, zoomTo, zoom]);
+  }, [autoScroll, onAutoScrollEnd, scrollByScreen, virtualizer, items, currentId, zoomTo, zoom]);
   useReaderKeys(handlers);
 
   // Touch scrolls natively; the mouse can drag the strip, and pinch or Ctrl+wheel zoom.
@@ -332,7 +434,7 @@ export function WebtoonView({
       role="presentation"
       data-zoom={zoom}
       onClick={onClick}
-      className="h-full w-full cursor-pointer touch-pan-x touch-pan-y overflow-auto"
+      className="h-full w-full cursor-pointer touch-pan-x touch-pan-y overflow-auto [overflow-anchor:none]"
     >
       <div className="relative mx-auto" style={{ height: virtualizer.getTotalSize(), width: columnWidth }}>
         {range.map((row) => {

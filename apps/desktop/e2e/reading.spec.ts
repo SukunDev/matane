@@ -191,6 +191,22 @@ test('reads a manhwa as a continuous webtoon into the next chapter', async () =>
   await expect(page.getByText('Scroll down', { exact: true })).toHaveCount(2);
   await setReader({ tapZones: 'l' });
   await expect(page.getByText('Ch. 2 · Test Scans').first()).toBeVisible();
+
+  // Scrolling back up goes on into chapter 1 without reloading the reader, and the chapter keys
+  // scroll within the strip.
+  const second = page.url();
+  await page.evaluate(() => ((document.querySelector('[data-zoom]') as HTMLElement).dataset.kept = 'yes'));
+  for (let i = 0; i < 60 && page.url() === second; i++) {
+    await page.mouse.move(640, 430);
+    await page.mouse.wheel(0, -900);
+    await page.waitForTimeout(150);
+  }
+  expect(page.url()).toBe(first);
+  await page.keyboard.press(']');
+  await expect.poll(() => page.url()).toBe(second);
+  await page.keyboard.press('[');
+  await expect.poll(() => page.url()).toBe(first);
+  await expect(page.locator('[data-zoom]')).toHaveAttribute('data-kept', 'yes'); // never remounted
 });
 
 test('opens a read chapter again with the site down', async () => {
