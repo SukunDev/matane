@@ -16,6 +16,7 @@ import { ipc } from '../../lib/ipc';
 import { extensionsQuery, sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { SourceIcon } from './SourceIcon';
+import { extensionIconUrl } from '../../lib/extensions';
 
 /** UI language first, then English, then the rest alphabetically. */
 function groupByLanguage(sources: SourceEntry[], uiLanguage: string): [string, SourceEntry[]][] {
@@ -133,7 +134,11 @@ function SourceRow({ source, extension }: { source: SourceEntry; extension?: Ext
         search={{ tab: 'popular' }}
         className="flex min-w-0 flex-1 items-center gap-3 outline-offset-4"
       >
-        <SourceIcon id={source.extensionId} name={source.name} />
+        <SourceIcon
+          id={source.extensionId}
+          name={source.name}
+          src={source.installed && source.hasIcon ? extensionIconUrl(source.extensionId) : null}
+        />
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className="truncate font-semibold">{source.name}</span>

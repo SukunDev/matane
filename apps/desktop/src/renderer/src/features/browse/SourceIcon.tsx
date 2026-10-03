@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { initials } from '../../lib/format';
 import { cn } from '../../lib/utils';
 
@@ -10,7 +11,29 @@ function colorFor(id: string): string {
   return COLORS[hash % COLORS.length]!;
 }
 
-export function SourceIcon({ id, name, className }: { id: string; name: string; className?: string }) {
+/** The extension's icon.png when `src` is given and loads; otherwise coloured initials. */
+export function SourceIcon({
+  id,
+  name,
+  src = null,
+  className,
+}: {
+  id: string;
+  name: string;
+  src?: string | null;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState<string | null>(null);
+  if (src && failed !== src) {
+    return (
+      <img
+        src={src}
+        alt=""
+        onError={() => setFailed(src)}
+        className={cn('size-10 shrink-0 rounded-xl border bg-muted object-cover', className)}
+      />
+    );
+  }
   const color = colorFor(id);
   return (
     <span

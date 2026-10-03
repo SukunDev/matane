@@ -27,6 +27,7 @@ import { sourcesQuery } from '../../lib/sources';
 import { cn } from '../../lib/utils';
 import { MangaCard, MangaCardSkeleton } from '../browse/MangaGrid';
 import { SourceIcon } from '../browse/SourceIcon';
+import { extensionIconUrl } from '../../lib/extensions';
 
 /**
  * One query across the chosen sources (BRAINSTORM.md §6.2; mockup 06). Each source is its own query,
@@ -221,7 +222,12 @@ function SourceRow({
   return (
     <section aria-label={source.name} data-testid="search-source" className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
-        <SourceIcon id={source.id} name={source.name} className="size-7 rounded-md text-[10px]" />
+        <SourceIcon
+          id={source.id}
+          name={source.name}
+          src={source.installed && source.hasIcon ? extensionIconUrl(extensionId) : null}
+          className="size-7 rounded-md text-[10px]"
+        />
         <h2 className="font-semibold">
           {source.name} <span className="font-normal text-muted-foreground">({source.lang.toUpperCase()})</span>
         </h2>

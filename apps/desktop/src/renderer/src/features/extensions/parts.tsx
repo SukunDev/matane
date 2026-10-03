@@ -1,33 +1,12 @@
 import type { RepoTrust } from '@manga-reader/shared';
 import { Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge } from '../../components/ui/badge';
-import { cn } from '../../lib/utils';
 import { SourceIcon } from '../browse/SourceIcon';
 
 /** The extension's icon.png, or its initials when it has none (or it fails to load). */
-export function ExtensionIcon({
-  id,
-  name,
-  src,
-  className,
-}: {
-  id: string;
-  name: string;
-  src: string | null;
-  className?: string;
-}) {
-  const [failed, setFailed] = useState<string | null>(null);
-  if (!src || failed === src) return <SourceIcon id={id} name={name} className={className} />;
-  return (
-    <img
-      src={src}
-      alt=""
-      onError={() => setFailed(src)}
-      className={cn('size-10 shrink-0 rounded-xl border bg-muted object-cover', className)}
-    />
-  );
+export function ExtensionIcon(props: { id: string; name: string; src: string | null; className?: string }) {
+  return <SourceIcon {...props} />;
 }
 
 /** "Verified" / "Trusted key" / "Unverified" for a repository. */

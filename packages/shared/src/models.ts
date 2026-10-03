@@ -165,6 +165,8 @@ export const sourceEntrySchema = z.object({
   lastUsedAt: z.number().nullable(),
   /** False when the extension is gone; its manga stay in the library. */
   installed: z.boolean(),
+  /** Its extension has an icon (`manga://extension-icon/<extensionId>`). */
+  hasIcon: z.boolean(),
 });
 export type SourceEntry = z.infer<typeof sourceEntrySchema>;
 

@@ -50,6 +50,7 @@ export class SourceService {
       installed:
         this.deps.extensions.isInstalled(row.extensionId) &&
         (this.deps.extensions.get(row.extensionId)?.manifest?.sources.some((s) => s.key === row.key) ?? false),
+      hasIcon: (this.deps.extensions.get(row.extensionId)?.iconPath ?? null) !== null,
     }));
   }
 

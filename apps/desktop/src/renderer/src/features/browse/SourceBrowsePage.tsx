@@ -22,6 +22,7 @@ import { usePageCrumbs } from '../../stores/crumbs';
 import { FilterPanel, countActiveFilters } from './FilterPanel';
 import { GRID_CLASS, MangaCardSkeleton, MangaGrid } from './MangaGrid';
 import { SourceIcon } from './SourceIcon';
+import { extensionIconUrl } from '../../lib/extensions';
 
 export interface BrowseSearch {
   tab: BrowseKind;
@@ -83,7 +84,11 @@ export function SourceBrowsePage({
       <div ref={scrollRef} className="min-w-0 flex-1 overflow-y-auto">
         <header className="sticky top-0 z-10 border-b bg-background/95 px-6 pt-4 backdrop-blur">
           <div className="flex items-center gap-3">
-            <SourceIcon id={extensionId} name={source?.name ?? extensionId} />
+            <SourceIcon
+              id={extensionId}
+              name={source?.name ?? extensionId}
+              src={source?.installed && source.hasIcon ? extensionIconUrl(extensionId) : null}
+            />
             <h1 className="min-w-0 truncate text-2xl font-semibold">{source?.name ?? sourceId}</h1>
             {source && <Badge>{source.lang.toUpperCase()}</Badge>}
             {source && !source.installed && <Badge variant="danger">{t('browse.notInstalled')}</Badge>}
