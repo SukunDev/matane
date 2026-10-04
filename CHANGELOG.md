@@ -2,16 +2,9 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
-## Unreleased
+## 0.2.0-beta.1 — 2026-10-04
 
-- Restore can import a Mihon/Tachiyomi backup (`.tachibk`): library, categories, read chapters, bookmarks, progress, history and reading time. Each source in the backup is matched to an installed source (by Mihon's source id, else by name) and can be changed or skipped in the dialog (an extension that is not installed yet can be installed from there when a repository has it); manga of skipped sources are reported, not imported. Trackers, repositories and app settings are not imported.
-- A source's manga list has a cover size slider and the same display modes as the library (comfortable grid, compact grid, covers only, list); the choice is remembered.
-- Matane no longer ships with, links to, or adds any extension repository by itself. Add a repository by its URL (Extensions → Repositories); the "official" trust level is gone, so a repository is either signed with a key you chose to trust or unverified. A repository that was added automatically by 0.2.0-beta.1 stays in your list as unverified until you trust its key or remove it. The "handoff" of extensions that came with 0.1 is gone too.
-- Documentation about writing extensions and publishing a repository of your own stays; the setup guides for a specific repository were removed.
-
-## 0.2.0-beta.1 — 2026-10-03
-
-The second beta: sources now come from extension repositories you add, and most of the polish planned for 1.0 is in. Nothing is built into the app anymore.
+The second beta: sources now come from extension repositories you add, and most of the polish planned for 1.0 is in. Nothing is built into the app, and no repository is added for you.
 
 ### Reading and library
 
@@ -23,6 +16,7 @@ The second beta: sources now come from extension repositories you add, and most 
 - Right-click a page to save or copy it.
 - Webtoon and vertical modes read on in both directions: scrolling up continues into the previous chapter, and the previous/next chapter keys scroll within the strip instead of reloading the reader. Chapters far from the one on screen are unloaded.
 - The manga page takes its colour from the cover.
+- A source's manga list has a cover size slider and the same display modes as the library (comfortable grid, compact grid, covers only, list); the choice is remembered.
 - Statistics: chapters read, reading time, streaks, favourite genres and sources over 30 days, 12 months or all time.
 
 ### Getting around
@@ -36,6 +30,7 @@ The second beta: sources now come from extension repositories you add, and most 
 
 - Settings → Network: DNS-over-HTTPS (Cloudflare, Google, Quad9, AdGuard or your own), HTTP/SOCKS5 proxy, a custom User-Agent, and a connection test. Useful where providers block sites through DNS.
 - Backup and restore: one file with your library, progress, history, statistics, repositories, extension settings and app settings; merge or replace; daily automatic backups (the last 7 kept).
+- Restore can also import a Mihon/Tachiyomi backup (`.tachibk`): library, categories, read chapters, bookmarks, progress, history and reading time. Each source in the backup is matched to an installed source (by Mihon's source id, else by name) and can be changed or skipped in the dialog (an extension that is not installed yet can be installed from there when a repository has it); manga of skipped sources are reported, not imported. Trackers, repositories and app settings are not imported.
 
 ### Diagnostics and packages
 
@@ -46,7 +41,8 @@ The second beta: sources now come from extension repositories you add, and most 
 
 ### Extensions
 
-- Extension repositories: add one by its URL, see what it offers, install, update ("Update all") and uninstall extensions. Every repository index is signed (ed25519): a key you chose to trust, or unverified (asked before adding, warned before installing). Every archive must match the signed SHA-256 before anything is written.
+- Matane does not ship with, link to, or add any extension repository by itself. Add one by its URL (Extensions → Repositories); a repository is either signed with a key you chose to trust or unverified.
+- Extension repositories: add one by its URL, see what it offers, install, update ("Update all") and uninstall extensions. Every repository index is signed (ed25519), unverified ones are asked about before adding and warned about before installing. Every archive must match the signed SHA-256 before anything is written.
 - The install dialog shows the repository's trust, its API version and size. Extensions no longer declare the sites they reach: requests are limited to http(s) and still go through the app, so install only extensions from repositories you trust.
 - Uninstalling removes an extension's settings, data and cookies; its manga stay in the library as "source not installed" until it comes back.
 - Content languages and adult content: extensions and sources in other languages, and adult ones until you turn them on, are hidden in Extensions, Sources, browse, global search and migration.
@@ -60,7 +56,7 @@ The second beta: sources now come from extension repositories you add, and most 
 - `mr-ext repo keygen | build | verify`: reproducible, signed repositories for static hosting (GitHub Pages).
 - `mr-ext test` runs `transformImage` on the first page and writes the restored page to `.mr-ext/`; it also accepts built bundles. `mr-ext create --layout standalone | catalog | workspace`.
 - The packages are now `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli`, published on npm.
-- Guide: the [extension guide](https://sukundev.github.io/matane/extensions/).
+- Guide for writing extensions and publishing a repository of your own: the [extension guide](https://sukundev.github.io/matane/extensions/).
 
 ### Fixes
 
