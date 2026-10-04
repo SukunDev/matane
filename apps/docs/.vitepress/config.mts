@@ -44,6 +44,7 @@ export default defineConfig({
           text: 'Extensions',
           items: [
             { text: 'Writing extensions', link: '/extensions/' },
+            { text: 'Templates (Madara, MangaThemesia)', link: '/extensions/templates' },
             { text: 'Publishing a repository', link: '/extensions/repository' },
           ],
         },

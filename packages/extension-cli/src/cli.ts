@@ -2,7 +2,7 @@
 import { Command, InvalidArgumentError } from 'commander';
 import { runBenchmark } from './bench.js';
 import { buildExtension } from './build.js';
-import { type CreateLayout, createExtension } from './create.js';
+import { CREATE_TEMPLATES, type CreateLayout, type CreateTemplate, createExtension } from './create.js';
 import { CLI_NAME, CLI_VERSION } from './node-host.js';
 import { KEY_ENV, buildRepo, loadPrivateKey, repoKeygen, verifyRepo } from './repo.js';
 import { runSmokeTest } from './smoke.js';
@@ -40,23 +40,37 @@ program
   .option('--lang <lang>', 'source language', 'en')
   .option('--dir <dir>', 'parent directory', '.')
   .option(
+    '--template <template>',
+    'html (selectors written by hand), madara or mangathemesia (ready-made sources for sites on those themes)',
+    'html',
+  )
+  .option(
     '--layout <layout>',
     'standalone (dependencies from npm), catalog (a pnpm workspace with a shared `catalog:`) or workspace',
     'standalone',
   )
-  .action(async (id: string, opts: { name?: string; domain: string; lang: string; dir: string; layout: string }) => {
-    if (!['standalone', 'catalog', 'workspace'].includes(opts.layout)) {
-      throw new InvalidArgumentError(`--layout must be standalone, catalog or workspace, not ${opts.layout}`);
-    }
-    const dir = await createExtension(opts.dir, {
-      id,
-      name: opts.name,
-      domain: opts.domain,
-      lang: opts.lang,
-      layout: opts.layout as CreateLayout,
-    });
-    console.log(`Created ${dir}`);
-  });
+  .action(
+    async (
+      id: string,
+      opts: { name?: string; domain: string; lang: string; dir: string; layout: string; template: string },
+    ) => {
+      if (!['standalone', 'catalog', 'workspace'].includes(opts.layout)) {
+        throw new InvalidArgumentError(`--layout must be standalone, catalog or workspace, not ${opts.layout}`);
+      }
+      if (!(CREATE_TEMPLATES as readonly string[]).includes(opts.template)) {
+        throw new InvalidArgumentError(`--template must be ${CREATE_TEMPLATES.join(', ')}, not ${opts.template}`);
+      }
+      const dir = await createExtension(opts.dir, {
+        id,
+        name: opts.name,
+        domain: opts.domain,
+        lang: opts.lang,
+        layout: opts.layout as CreateLayout,
+        template: opts.template as CreateTemplate,
+      });
+      console.log(`Created ${dir}`);
+    },
+  );
 
 program
   .command('build')

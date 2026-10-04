@@ -81,6 +81,7 @@ packages/
   shared/                      Domain types and the typed IPC contract (zod)
   extension-sdk/               Types and helpers for extension authors (MIT)
   extension-runtime/           QuickJS sandbox host (MIT)
+  extension-templates/         Ready-made sources for Madara and MangaThemesia sites (MIT)
   extension-cli/               mr-ext: create, build, test, bench and publish extensions (MIT)
 packaging/                     AUR and Flathub packages and the scripts that update them
 docs/
@@ -118,7 +119,7 @@ All user-visible text goes through i18next. The strings are in `apps/desktop/src
 
 ## Writing an extension
 
-The extension SDK, runtime and CLI are published on npm as `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli`. This repository does not host any extension; publish yours in a repository of your own.
+The extension SDK, runtime, templates and CLI are published on npm as `@matane/extension-sdk`, `@matane/extension-runtime`, `@matane/extension-templates` and `@matane/extension-cli`. This repository does not host any extension; publish yours in a repository of your own.
 
 ```sh
 mr-ext create      # scaffold a new extension

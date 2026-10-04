@@ -10,12 +10,20 @@ import { CLI_VERSION } from './node-host.js';
  */
 export type CreateLayout = 'standalone' | 'catalog' | 'workspace';
 
+/**
+ * What the scaffold starts from: `html` is a source written by hand with CSS selectors; `madara` and
+ * `mangathemesia` are ready-made sources for sites on those WordPress themes (`@matane/extension-templates`).
+ */
+export type CreateTemplate = 'html' | 'madara' | 'mangathemesia';
+export const CREATE_TEMPLATES: readonly CreateTemplate[] = ['html', 'madara', 'mangathemesia'];
+
 export interface CreateOptions {
   id: string;
   name?: string;
   domain?: string;
   lang?: string;
   layout?: CreateLayout;
+  template?: CreateTemplate;
 }
 
 /** A tsconfig for an extension outside any workspace (same rules as the Matane packages). */
@@ -36,7 +44,7 @@ const STANDALONE_TSCONFIG = {
   include: ['src'],
 };
 
-/** Scaffolds an HTML-scraping extension in `<parent>/<id>`. */
+/** Scaffolds an extension in `<parent>/<id>`. */
 export async function createExtension(parent: string, options: CreateOptions): Promise<string> {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(options.id)) throw new Error('id must use lowercase letters, digits and dashes');
   const dir = path.resolve(parent, options.id);
@@ -47,6 +55,8 @@ export async function createExtension(parent: string, options: CreateOptions): P
   const domain = options.domain ?? 'example.com';
   const lang = options.lang ?? 'en';
   const layout = options.layout ?? 'standalone';
+  const kind = options.template ?? 'html';
+  if (!CREATE_TEMPLATES.includes(kind)) throw new Error(`template must be one of ${CREATE_TEMPLATES.join(', ')}`);
   const dependency = layout === 'standalone' ? `^${CLI_VERSION}` : layout === 'catalog' ? 'catalog:' : 'workspace:*';
   const files: Record<string, string> = {
     'manifest.json': json({
@@ -67,6 +77,7 @@ export async function createExtension(parent: string, options: CreateOptions): P
       devDependencies: {
         '@matane/extension-cli': dependency,
         '@matane/extension-sdk': dependency,
+        ...(kind === 'html' ? {} : { '@matane/extension-templates': dependency }),
         ...(layout === 'standalone' ? { typescript: '^6.0.0' } : {}),
       },
     }),
@@ -77,7 +88,7 @@ export async function createExtension(parent: string, options: CreateOptions): P
     ),
     'src/env.d.ts':
       "// Sandbox globals (http, html, storage, prefs, …) injected by the host.\nimport '@matane/extension-sdk/globals';\n",
-    'src/index.ts': template(domain),
+    'src/index.ts': kind === 'html' ? template(domain) : cmsTemplate(kind, domain),
     '.gitignore': 'node_modules/\ndist/\n# Pages restored by transformImage during `mr-ext test`\n.mr-ext/\n',
   };
   for (const [file, content] of Object.entries(files)) {
@@ -88,6 +99,23 @@ export async function createExtension(parent: string, options: CreateOptions): P
 }
 
 const json = (value: unknown) => `${JSON.stringify(value, null, 2)}\n`;
+
+/** An extension that is one line of configuration on top of a CMS template. */
+const cmsTemplate = (kind: 'madara' | 'mangathemesia', domain: string) => {
+  const factory = kind === 'madara' ? 'madara' : 'mangaThemesia';
+  return `import { defineExtension } from '@matane/extension-sdk';
+import { ${factory} } from '@matane/extension-templates';
+
+const BASE_URL = 'https://${domain}';
+
+// The template reads the theme's default markup. A site that changed it can adjust \`selectors\`, the
+// listing paths and more (see ${factory}'s config), or replace one method:
+//   createSource: () => ({ ...${factory}({ baseUrl: BASE_URL }), search: async (query, page) => { … } })
+export default defineExtension({
+  createSource: () => ${factory}({ baseUrl: BASE_URL }),
+});
+`;
+};
 
 const template = (
   domain: string,

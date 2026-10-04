@@ -37,3 +37,4 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0031](0031-no-domain-allowlist.md) | No domain allowlist for extensions |
 | [0032](0032-mihon-backup-import.md) | Importing Mihon/Tachiyomi backups: sources matched by Mihon id or name, merge only |
 | [0033](0033-local-files-source.md) | Local files source: a native source in main reading CBZ files and folders |
+| [0034](0034-cms-templates.md) | CMS templates (Madara, MangaThemesia): a bundled library, plain `Source` objects to override |

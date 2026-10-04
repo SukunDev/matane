@@ -1,7 +1,7 @@
 name: Publish SDK
 
-# Publishes @matane/extension-sdk, -runtime and -cli to npm when a tag like sdk-v0.1.0 is pushed.
-# The three packages share one version, which must equal the tag. Needs the NPM_TOKEN secret;
+# Publishes @matane/extension-sdk, -runtime, -templates and -cli to npm when a tag like sdk-v0.1.0 is
+# pushed. The four packages share one version, which must equal the tag. Needs the NPM_TOKEN secret;
 # npm provenance links each package to this run.
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - name: Tag and package versions agree
         run: |
           tag="${GITHUB_REF_NAME#sdk-v}"
-          for pkg in extension-sdk extension-runtime extension-cli; do
+          for pkg in extension-sdk extension-runtime extension-templates extension-cli; do
             version=$(node -p "require('./packages/$pkg/package.json').version")
             if [ "$version" != "$tag" ]; then
               echo "::error::packages/$pkg is $version, the tag says $tag"

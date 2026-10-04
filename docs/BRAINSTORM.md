@@ -89,7 +89,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 |---|---|---|
 | Format | **Format sendiri (JS/TS), model data meniru Mihon** | Bebas mendesain sendiri, dan porting extension Mihon (Kotlin) ke TS tetap mudah |
 | Runtime | **QuickJS (WASM) sejak awal**, dijalankan di dalam `utilityProcess` | Sandbox sungguhan: extension tidak punya akses Node/fs/jaringan kecuali lewat API host. `utilityProcess` memberi isolasi crash |
-| Gaya API | **Imperatif** (fungsi/class TS biasa) | Fleksibel untuk semua jenis situs. Template untuk CMS populer (Madara, MangaThemesia) bisa ditambah nanti |
+| Gaya API | **Imperatif** (fungsi/class TS biasa) | Fleksibel untuk semua jenis situs. Template untuk CMS populer (Madara, MangaThemesia): paket `@matane/extension-templates`, ADR 0034 |
 | Keamanan repo | **Hash sha256 + signing ed25519** | Repo yang kuncinya dipercaya pengguna ditandai terpercaya, repo lain "tidak terverifikasi" (app tidak membawa repo atau kunci bawaan, ADR 0022) |
 
 > Catatan: `utilityProcess` saja **bukan** sandbox, karena itu proses Node penuh. Yang memberi keamanan adalah QuickJS. `utilityProcess` hanya menjaga agar extension yang hang atau crash tidak menjatuhkan UI dan main process.
@@ -1056,7 +1056,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Tracker: AniList, MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
 - ~~Import backup Mihon/Tachiyomi (`.tachibk`).~~ Selesai 4 Okt 2026 (ADR 0032).
 - ~~Source file lokal (CBZ/folder).~~ Selesai 4 Okt 2026 (ADR 0033).
-- Template extension untuk CMS populer (Madara, MangaThemesia).
+- ~~Template extension untuk CMS populer (Madara, MangaThemesia).~~ Selesai 4 Okt 2026 (ADR 0034).
 - Code signing (kalau pengguna sudah cukup banyak).
 
 ---

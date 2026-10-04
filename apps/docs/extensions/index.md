@@ -20,6 +20,8 @@ npx mr-ext build                 # → dist/index.js + dist/manifest.json
 npx mr-ext test                  # popular → details → chapters → pages → first image, against the real site
 ```
 
+Many sites run on one of two popular WordPress themes. For those, start from a [template](/extensions/templates): `--template madara` or `--template mangathemesia` scaffolds an extension that is one line of configuration.
+
 Inside a pnpm workspace, pick the layout that matches: `--layout catalog` in a workspace that keeps SDK versions in a pnpm `catalog:`, `--layout workspace` next to the SDK sources in the matane repository (dependencies `workspace:*`). Both extend the root `tsconfig.base.json`; the default `standalone` layout writes a complete `tsconfig.json`.
 
 ```sh

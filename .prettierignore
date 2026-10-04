@@ -15,3 +15,5 @@ docs
 **/test/fixtures/
 test-results
 playwright-report
+# Hand-made pages with the irregular whitespace real sites have (template tests)
+packages/extension-cli/test/templates/

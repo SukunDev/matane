@@ -1,26 +1,24 @@
 {
-  "name": "@matane/extension-cli",
+  "name": "@matane/extension-templates",
   "version": "0.2.0",
-  "description": "mr-ext: create, build, test and publish Matane extensions",
+  "description": "Ready-made sources for sites on popular CMS themes (Madara, MangaThemesia), for Matane extensions",
   "keywords": [
     "matane",
     "manga",
     "extension",
-    "cli"
+    "madara",
+    "mangathemesia"
   ],
   "license": "MIT",
   "author": "SukunDev",
-  "homepage": "https://sukundev.github.io/matane/extensions/",
+  "homepage": "https://sukundev.github.io/matane/extensions/templates",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SukunDev/matane.git",
-    "directory": "packages/extension-cli"
+    "directory": "packages/extension-templates"
   },
   "bugs": "https://github.com/SukunDev/matane/issues",
   "type": "module",
-  "bin": {
-    "mr-ext": "bin/mr-ext.js"
-  },
   "exports": {
     ".": "./src/index.ts"
   },
@@ -40,9 +38,6 @@
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
       }
-    },
-    "bin": {
-      "mr-ext": "dist/cli.js"
     }
   },
   "scripts": {
@@ -52,15 +47,6 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
-    "@matane/extension-runtime": "workspace:*",
-    "@matane/extension-sdk": "workspace:*",
-    "commander": "15.0.0",
-    "esbuild": "0.28.2",
-    "yazl": "3.3.1"
-  },
-  "devDependencies": {
-    "@matane/extension-templates": "workspace:*",
-    "@types/yazl": "3.3.1",
-    "tsx": "4.23.15"
+    "@matane/extension-sdk": "workspace:*"
   }
 }
