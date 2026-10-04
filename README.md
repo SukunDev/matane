@@ -59,7 +59,7 @@ _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux*
 
 - Back up your library, progress and settings to one file, restore it any time
 - Import a Mihon/Tachiyomi backup (`.tachibk`)
-- Keep your AniList up to date as you read (more trackers to come)
+- Keep AniList and MyAnimeList up to date as you read (more trackers to come)
 - Search across all your sources at once, and move a manga to another source
 
 **Yours to customise**

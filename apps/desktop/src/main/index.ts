@@ -41,10 +41,17 @@ import { ReposRepository } from './db/repositories/repos';
 import { createFetchBytes } from './network/fetch-bytes';
 import { sessionFetch } from './network/electron-fetch';
 import { TrackersRepository } from './db/repositories/trackers';
-import { ANILIST_AUTHORIZE, createAniList } from './trackers/anilist';
-import { ANILIST_LOOPBACK_PORT, anilistClientId, loopbackRedirect } from './trackers/client-ids';
+import { createAniList } from './trackers/anilist';
+import {
+  ANILIST_LOOPBACK_PORT,
+  MAL_LOOPBACK_PORT,
+  anilistClientId,
+  loopbackRedirect,
+  malClientId,
+} from './trackers/client-ids';
+import { anilistLogin, malLogin } from './trackers/logins';
+import { createMyAnimeList } from './trackers/mal';
 import { TrackerManager } from './trackers/manager';
-import { loopbackLogin } from './trackers/oauth';
 import { SecretBox } from './trackers/secret';
 import { ExtensionRegistry } from './extensions/registry';
 import { ExtensionService } from './extensions/service';
@@ -74,6 +81,7 @@ import {
   type AppSettings,
   DEFAULT_SETTINGS,
   LOCAL_SOURCE_ID,
+  type TrackerService,
   appSettingsSchema,
   contentLanguages,
   effectiveReaderSettings,
@@ -398,31 +406,43 @@ async function bootstrap(): Promise<void> {
   // Trackers (ADR 0035): chapters read are sent to the trackers a manga is linked to.
   const e2e = process.env['MATANE_E2E'] !== undefined;
   const trackersLog = log.scope('trackers');
+  const trackerFetch = sessionFetch(session.defaultSession);
+  const anilist = createAniList({
+    fetch: trackerFetch,
+    // Tests point the trackers at fake servers.
+    url: e2e ? process.env['MATANE_E2E_ANILIST_API'] : undefined,
+  });
+  const myAnimeList = createMyAnimeList({
+    fetch: trackerFetch,
+    clientId: malClientId,
+    apiUrl: e2e ? process.env['MATANE_E2E_MAL_API'] : undefined,
+    tokenUrl: e2e ? process.env['MATANE_E2E_MAL_TOKEN'] : undefined,
+  });
+  const loginPort = (service: TrackerService) => {
+    const own = service === 'mal' ? MAL_LOOPBACK_PORT : ANILIST_LOOPBACK_PORT;
+    return e2e ? Number(process.env['MATANE_E2E_OAUTH_PORT'] ?? own) : own;
+  };
   const trackers = new TrackerManager({
     repo: new TrackersRepository(connection.db, changes),
-    clients: {
-      anilist: createAniList({
-        fetch: sessionFetch(session.defaultSession),
-        // Tests point it at a fake server.
-        url: e2e ? process.env['MATANE_E2E_ANILIST_API'] : undefined,
-      }),
-    },
+    clients: { anilist, mal: myAnimeList },
     secrets: new SecretBox(safeStorage),
-    configured: () => anilistClientId() !== null,
-    redirectUrl: () => loopbackRedirect(ANILIST_LOOPBACK_PORT),
-    login: (_service, signal) =>
-      loopbackLogin({
-        port: e2e ? Number(process.env['MATANE_E2E_OAUTH_PORT'] ?? ANILIST_LOOPBACK_PORT) : ANILIST_LOOPBACK_PORT,
-        authorizeUrl: (state) =>
-          `${ANILIST_AUTHORIZE}?${new URLSearchParams({ client_id: anilistClientId() ?? '', response_type: 'token', state })}`,
+    configured: (service) => (service === 'mal' ? malClientId() : anilistClientId()) !== null,
+    redirectUrl: (service) => loopbackRedirect(service === 'mal' ? MAL_LOOPBACK_PORT : ANILIST_LOOPBACK_PORT),
+    login: (service, signal) => {
+      const context = {
+        port: loginPort(service),
+        signal,
         // Tests cannot open a browser: they read the address and play the browser's part.
         open: e2e
-          ? (url) => void Object.assign((globalThis as { __matane?: object }).__matane ?? {}, { loginUrl: url })
-          : (url) => shell.openExternal(url),
-        onListening: (port) =>
+          ? (url: string) => void Object.assign((globalThis as { __matane?: object }).__matane ?? {}, { loginUrl: url })
+          : (url: string) => shell.openExternal(url),
+        onListening: (port: number) =>
           e2e && Object.assign((globalThis as { __matane?: object }).__matane ?? {}, { oauthPort: port }),
-        signal,
-      }),
+      };
+      return service === 'mal'
+        ? malLogin(context, malClientId() ?? '', myAnimeList)
+        : anilistLogin(context, anilistClientId() ?? '');
+    },
     manga: mangaRepo,
     progress: progressRepo,
     incognito: () => settings.getAppSettings().incognito,

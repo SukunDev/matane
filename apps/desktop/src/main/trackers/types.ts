@@ -13,6 +13,14 @@ export interface RemoteEntry {
   finishedAt: number | null;
 }
 
+/** What a login gives: the token, and (for trackers that expire it) the way to get the next one. */
+export interface TrackerLogin {
+  accessToken: string;
+  refreshToken: string | null;
+  /** Seconds the access token lasts, when the tracker says. */
+  expiresInSec: number | null;
+}
+
 export interface TrackerViewer {
   userId: string;
   username: string;
@@ -23,6 +31,8 @@ export interface TrackerClient {
   readonly service: TrackerService;
   readonly name: string;
   viewer(token: string): Promise<TrackerViewer>;
+  /** A new login from a refresh token; only for trackers whose tokens expire. */
+  refresh?(refreshToken: string): Promise<TrackerLogin>;
   search(token: string, query: string): Promise<TrackSearchResult[]>;
   /** The user's entry for a manga, or null when it is not on their list (nothing is created). */
   getEntry(token: string, remoteId: string): Promise<RemoteEntry | null>;

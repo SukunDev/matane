@@ -4,17 +4,14 @@ import { AppError } from '@manga-reader/shared/errors';
 
 export const LOGIN_TIMEOUT_MS = 180_000;
 
-export interface LoginResult {
-  accessToken: string;
-  /** Seconds the token lasts, when the tracker says. */
-  expiresInSec: number | null;
-}
-
-export interface LoopbackLoginOptions {
+export interface LoopbackOptions {
   /** The port the tracker's app is registered to send the browser to (0: any, for tests). */
   port: number;
   /** The address to open in the browser. */
-  authorizeUrl: (state: string) => string;
+  /** The address to open; `port` is where the server listens (the redirect URL for a port-less test). */
+  authorizeUrl: (state: string, port: number) => string;
+  /** The tracker sends `state` back (the code flow always does): a login without it is refused. */
+  requireState?: boolean;
   open: (url: string) => Promise<void> | void;
   timeoutMs?: number;
   signal?: AbortSignal;
@@ -26,15 +23,20 @@ const PAGE = (body: string, script = '') =>
   `<!doctype html><meta charset="utf-8"><title>Matane</title><body style="font:16px system-ui;margin:3em;text-align:center">${body}${script}`;
 
 /**
- * Logs in through the system browser with the implicit grant: the tracker redirects the browser to
- * `http://127.0.0.1:<port>/callback#access_token=…`. A fragment never reaches a server, so that page
- * (ours, with one inline script and nothing from outside) forwards it to `/done`. The server lives
- * only while the login runs, answers only to this machine's own address, and takes the first token
- * that comes with the right `state` (when the tracker sends one back).
+ * Sends the user to a tracker's login in the system browser and waits for the browser to come back to
+ * `http://127.0.0.1:<port>/callback`, resolving with what the redirect carried (`access_token` for the
+ * implicit grant, `code` for the code flow, plus `state` and the rest).
+ *
+ * - The code flow comes back as `/callback?code=…`.
+ * - The implicit grant puts the token in the URL *fragment*, which never reaches a server, so that
+ *   page (ours: one inline script, nothing from outside) forwards it to `/done`.
+ *
+ * The server lives only while the login runs, answers only to this machine's own address, and takes
+ * the first answer with the right `state` (always checked when `requireState`, else when it is sent).
  */
-export function loopbackLogin(options: LoopbackLoginOptions): Promise<LoginResult> {
+export function loopbackAuthorize(options: LoopbackOptions): Promise<Record<string, string>> {
   const state = randomBytes(16).toString('hex');
-  return new Promise<LoginResult>((resolve, reject) => {
+  return new Promise<Record<string, string>>((resolve, reject) => {
     let settled = false;
     const server = createServer();
     const timer = setTimeout(
@@ -50,7 +52,7 @@ export function loopbackLogin(options: LoopbackLoginOptions): Promise<LoginResul
     const onAbort = () => finish(new AppError('cancelled', 'Login cancelled'));
     options.signal?.addEventListener('abort', onAbort, { once: true });
 
-    function finish(outcome: LoginResult | Error) {
+    function finish(outcome: Record<string, string> | Error) {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
@@ -79,11 +81,22 @@ export function loopbackLogin(options: LoopbackLoginOptions): Promise<LoginResul
         return;
       }
       const url = new URL(req.url ?? '/', `http://127.0.0.1:${port}`);
+      const params = Object.fromEntries(url.searchParams);
+      const stateMatches = (returned: string | undefined) =>
+        returned === undefined ? !options.requireState : returned === state;
+      const mismatch = () =>
+        send(res, 400, PAGE('This login does not match the one Matane started. You can close this window.'));
       if (url.pathname === '/callback') {
         const error = url.searchParams.get('error');
         if (error) {
           send(res, 200, PAGE('The login was refused. You can close this window.'));
           finish(new AppError('unknown', `The tracker refused the login (${error})`));
+          return;
+        }
+        if (params['code'] !== undefined) {
+          if (params['code'].length > 4096 || !stateMatches(params['state'])) return mismatch();
+          send(res, 200, PAGE('<h2>Connected</h2><p>You can close this window and go back to Matane.</p>'));
+          finish(params);
           return;
         }
         send(
@@ -95,15 +108,10 @@ export function loopbackLogin(options: LoopbackLoginOptions): Promise<LoginResul
           ),
         );
       } else if (url.pathname === '/done') {
-        const token = url.searchParams.get('access_token');
-        const returned = url.searchParams.get('state');
-        if (!token || token.length > 4096 || (returned !== null && returned !== state)) {
-          send(res, 400, PAGE('This login does not match the one Matane started. You can close this window.'));
-          return;
-        }
-        const expires = Number(url.searchParams.get('expires_in'));
+        const token = params['access_token'];
+        if (!token || token.length > 4096 || !stateMatches(params['state'])) return mismatch();
         send(res, 200, PAGE('<h2>Connected</h2><p>You can close this window and go back to Matane.</p>'));
-        finish({ accessToken: token, expiresInSec: Number.isFinite(expires) && expires > 0 ? expires : null });
+        finish(params);
       } else {
         send(res, 404, PAGE('Not found'));
       }
@@ -122,7 +130,7 @@ export function loopbackLogin(options: LoopbackLoginOptions): Promise<LoginResul
     server.listen(options.port, '127.0.0.1', () => {
       const port = (server.address() as { port: number }).port;
       options.onListening?.(port);
-      Promise.resolve(options.open(options.authorizeUrl(state))).catch((error: unknown) =>
+      Promise.resolve(options.open(options.authorizeUrl(state, port))).catch((error: unknown) =>
         finish(error instanceof Error ? error : new Error(String(error))),
       );
     });

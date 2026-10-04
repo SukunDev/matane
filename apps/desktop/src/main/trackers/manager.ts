@@ -7,12 +7,12 @@ import {
   type TrackerService,
 } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
-import type { TrackRow, TrackersRepository } from '../db/repositories/trackers';
-import type { LoginResult } from './oauth';
+import type { AccountRow, TrackRow, TrackersRepository } from '../db/repositories/trackers';
 import type { SecretBox } from './secret';
 import {
   type RemoteEntry,
   type TrackerClient,
+  type TrackerLogin,
   TrackerAuthError,
   TrackerRateLimitError,
   TrackerRequestError,
@@ -24,6 +24,27 @@ export const retryDelay = (attempts: number) => Math.min(MINUTE * 2 ** Math.max(
 /** After a change, wait a moment so a burst (a chapter marked read a few times) goes out as one. */
 const KICK_MS = 1_500;
 const FLUSH_EVERY_MS = MINUTE;
+/** A token that runs out within this is renewed before it is used. */
+const REFRESH_MARGIN_MS = MINUTE;
+
+/** What is kept sealed for a login: the token and, when the tracker has one, its refresh token. */
+interface Credentials {
+  accessToken: string;
+  refreshToken: string | null;
+}
+const encode = (credentials: Credentials) =>
+  JSON.stringify({ a: credentials.accessToken, r: credentials.refreshToken });
+function decode(text: string): Credentials {
+  try {
+    const parsed = JSON.parse(text) as { a?: unknown; r?: unknown } | null;
+    if (parsed && typeof parsed === 'object' && typeof parsed.a === 'string') {
+      return { accessToken: parsed.a, refreshToken: typeof parsed.r === 'string' ? parsed.r : null };
+    }
+  } catch {
+    // A bare token.
+  }
+  return { accessToken: text, refreshToken: null };
+}
 
 export interface TrackerManagerDeps {
   repo: TrackersRepository;
@@ -34,7 +55,7 @@ export interface TrackerManagerDeps {
   /** The address to register as the app's redirect URL. */
   redirectUrl: (service: TrackerService) => string;
   /** Logs in through the browser. */
-  login: (service: TrackerService, signal: AbortSignal) => Promise<LoginResult>;
+  login: (service: TrackerService, signal: AbortSignal) => Promise<TrackerLogin>;
   manga: { get(id: number): { id: number } | undefined };
   /** Chapters read of a manga, as a tracker counts them (null: none read). */
   progress: { highestRead(mangaId: number): number | null };
@@ -53,6 +74,7 @@ export interface TrackerManagerDeps {
 export class TrackerManager {
   private readonly logins = new Map<TrackerService, AbortController>();
   private readonly lastError = new Map<TrackerService, string>();
+  private readonly refreshes = new Map<TrackerService, Promise<string>>();
   private flushing: Promise<void> | null = null;
   private kickTimer: ReturnType<typeof setTimeout> | undefined;
   private interval: ReturnType<typeof setInterval> | undefined;
@@ -68,15 +90,19 @@ export class TrackerManager {
   list(): TrackerInfo[] {
     return TRACKER_SERVICES.map((service) => {
       const account = this.deps.repo.account(service);
-      const connected = account !== undefined && this.deps.secrets.open(account.tokenEncrypted) !== null;
+      const credentials = account ? this.credentials(account) : null;
+      const connected = credentials !== null;
       return {
         service,
         name: this.deps.clients[service].name,
         configured: this.deps.configured(service),
         connected,
         username: account?.username ?? null,
+        // A token that ran out is fine while a refresh token can make the next one.
         expired:
-          account !== undefined && (!connected || (account.expiresAt !== null && account.expiresAt <= this.now())),
+          account !== undefined &&
+          (credentials === null ||
+            (account.expiresAt !== null && account.expiresAt <= this.now() && credentials.refreshToken === null)),
         encrypted: account ? this.deps.secrets.isEncrypted(account.tokenEncrypted) : null,
         queued: this.deps.repo.queued(service),
         lastError: this.lastError.get(service) ?? null,
@@ -98,7 +124,7 @@ export class TrackerManager {
     this.logins.set(service, controller);
     try {
       const login = await this.deps.login(service, controller.signal);
-      return await this.saveLogin(service, login.accessToken, login.expiresInSec);
+      return await this.saveLogin(service, login);
     } finally {
       if (this.logins.get(service) === controller) this.logins.delete(service);
     }
@@ -110,18 +136,23 @@ export class TrackerManager {
 
   /** Connects with a token made elsewhere. */
   async setToken(service: TrackerService, token: string): Promise<TrackerInfo> {
-    return this.saveLogin(service, token, null);
+    return this.saveLogin(service, { accessToken: token, refreshToken: null, expiresInSec: null });
   }
 
-  private async saveLogin(service: TrackerService, token: string, expiresInSec: number | null): Promise<TrackerInfo> {
+  private async saveLogin(service: TrackerService, login: TrackerLogin): Promise<TrackerInfo> {
     // Asking who this is proves the token works, and gives the name to show.
-    const viewer = await this.call(service, () => this.deps.clients[service].viewer(token));
+    let viewer;
+    try {
+      viewer = await this.deps.clients[service].viewer(login.accessToken);
+    } catch (error) {
+      throw this.toAppError(service, error);
+    }
     this.deps.repo.saveAccount({
       service,
       userId: viewer.userId,
       username: viewer.username,
-      tokenEncrypted: this.deps.secrets.seal(token),
-      expiresAt: expiresInSec ? this.now() + expiresInSec * 1000 : null,
+      tokenEncrypted: this.deps.secrets.seal(encode(login)),
+      expiresAt: login.expiresInSec ? this.now() + login.expiresInSec * 1000 : null,
     });
     this.lastError.delete(service);
     this.deps.log?.(`${service}: connected as ${viewer.username}`);
@@ -136,22 +167,91 @@ export class TrackerManager {
     this.lastError.delete(service);
   }
 
-  /** The token, or why there is none. */
-  private token(service: TrackerService): string {
+  private credentials(account: AccountRow): Credentials | null {
+    const text = this.deps.secrets.open(account.tokenEncrypted);
+    return text === null ? null : decode(text);
+  }
+
+  /** A token that works now: the stored one, or a fresh one when it is about to run out. */
+  private async accessToken(service: TrackerService): Promise<string> {
     const name = this.deps.clients[service].name;
     const account = this.deps.repo.account(service);
     if (!account) throw new AppError('tracker', `${name} is not connected (Settings → Tracking)`);
-    const token = this.deps.secrets.open(account.tokenEncrypted);
-    if (token === null || (account.expiresAt !== null && account.expiresAt <= this.now())) {
-      throw new AppError('tracker', `The ${name} login has expired; connect again in Settings → Tracking`);
+    const expired = new AppError('tracker', `The ${name} login has expired; connect again in Settings → Tracking`);
+    const credentials = this.credentials(account);
+    if (!credentials) throw expired;
+    const due = account.expiresAt !== null && account.expiresAt - REFRESH_MARGIN_MS <= this.now();
+    if (!due) return credentials.accessToken;
+    if (credentials.refreshToken !== null && this.deps.clients[service].refresh) {
+      return this.refreshLogin(service, credentials.refreshToken);
     }
-    return token;
+    if (account.expiresAt! <= this.now()) throw expired;
+    return credentials.accessToken;
   }
 
-  /** One request to a tracker, its failures as app errors (and a refused token marks the login expired). */
-  private async call<T>(service: TrackerService, run: () => Promise<T>): Promise<T> {
+  /** One refresh at a time per tracker, however many requests ask for it. */
+  private refreshLogin(service: TrackerService, refreshToken: string): Promise<string> {
+    let pending = this.refreshes.get(service);
+    if (!pending) {
+      pending = this.renew(service, refreshToken).finally(() => this.refreshes.delete(service));
+      this.refreshes.set(service, pending);
+    }
+    return pending;
+  }
+
+  private async renew(service: TrackerService, refreshToken: string): Promise<string> {
     try {
-      return await run();
+      const login = await this.deps.clients[service].refresh!(refreshToken);
+      const account = this.deps.repo.account(service);
+      if (account) {
+        this.deps.repo.saveAccount({
+          ...account,
+          // Some trackers do not send a new refresh token: the old one keeps working.
+          tokenEncrypted: this.deps.secrets.seal(
+            encode({ accessToken: login.accessToken, refreshToken: login.refreshToken ?? refreshToken }),
+          ),
+          expiresAt: login.expiresInSec ? this.now() + login.expiresInSec * 1000 : null,
+        });
+      }
+      this.deps.log?.(`${service}: login renewed`);
+      return login.accessToken;
+    } catch (error) {
+      // The refresh token is no good either: only a new login helps.
+      if (error instanceof TrackerAuthError) this.expire(service);
+      throw error;
+    }
+  }
+
+  /**
+   * Runs a request with a working token. A token the tracker refuses is renewed once and the request
+   * repeated; when that fails too the login is marked expired. Failures stay the tracker's own errors.
+   */
+  private async authed<T>(service: TrackerService, run: (token: string) => Promise<T>): Promise<T> {
+    let token = await this.accessToken(service);
+    try {
+      return await run(token);
+    } catch (error) {
+      if (!(error instanceof TrackerAuthError)) throw error;
+      const account = this.deps.repo.account(service);
+      const credentials = account ? this.credentials(account) : null;
+      if (credentials?.refreshToken && this.deps.clients[service].refresh) {
+        token = await this.refreshLogin(service, credentials.refreshToken);
+        try {
+          return await run(token);
+        } catch (again) {
+          if (again instanceof TrackerAuthError) this.expire(service);
+          throw again;
+        }
+      }
+      this.expire(service);
+      throw error;
+    }
+  }
+
+  /** A request on behalf of the user, its failures as app errors. */
+  private async call<T>(service: TrackerService, run: (token: string) => Promise<T>): Promise<T> {
+    try {
+      return await this.authed(service, run);
     } catch (error) {
       throw this.toAppError(service, error);
     }
@@ -160,7 +260,6 @@ export class TrackerManager {
   private toAppError(service: TrackerService, error: unknown): Error {
     if (error instanceof AppError) return error;
     if (error instanceof TrackerAuthError) {
-      this.expire(service);
       return new AppError('tracker', `The ${this.deps.clients[service].name} login no longer works; connect again`);
     }
     if (error instanceof TrackerRateLimitError) return new AppError('rate_limited', error.message);
@@ -168,14 +267,22 @@ export class TrackerManager {
     return new AppError('network', error instanceof Error ? error.message : String(error));
   }
 
+  /** The login no longer works: no more refreshing, until the next login. */
   private expire(service: TrackerService): void {
     const account = this.deps.repo.account(service);
-    if (account) this.deps.repo.saveAccount({ ...account, expiresAt: this.now() });
+    if (!account) return;
+    const credentials = this.credentials(account);
+    this.deps.repo.saveAccount({
+      ...account,
+      expiresAt: this.now(),
+      tokenEncrypted: credentials
+        ? this.deps.secrets.seal(encode({ accessToken: credentials.accessToken, refreshToken: null }))
+        : account.tokenEncrypted,
+    });
   }
 
   async search(service: TrackerService, query: string): Promise<TrackSearchResult[]> {
-    const token = this.token(service);
-    return this.call(service, () => this.deps.clients[service].search(token, query));
+    return this.call(service, (token) => this.deps.clients[service].search(token, query));
   }
 
   // ------------------------------------------------------------ links
@@ -199,8 +306,7 @@ export class TrackerManager {
   }): Promise<TrackEntry> {
     const { mangaId, service, remoteId } = input;
     if (!this.deps.manga.get(mangaId)) throw new AppError('not_found', `Manga ${mangaId} not found`);
-    const token = this.token(service);
-    const remote = await this.call(service, () => this.deps.clients[service].getEntry(token, remoteId));
+    const remote = await this.call(service, (token) => this.deps.clients[service].getEntry(token, remoteId));
     const read = this.deps.progress.highestRead(mangaId) ?? 0;
     const row: TrackRow = {
       mangaId,
@@ -334,24 +440,14 @@ export class TrackerManager {
       if (paused.has(row.service)) continue;
       const service = row.service as TrackerService;
       const track = this.deps.repo.track(row.mangaId, service);
-      const account = this.deps.repo.account(service);
-      const token = account ? this.deps.secrets.open(account.tokenEncrypted) : null;
       if (!track) {
         // Unlinked meanwhile.
         this.deps.repo.complete(row.id, row.payloadJson);
         continue;
       }
-      if (!account || token === null || (account.expiresAt !== null && account.expiresAt <= this.now())) {
-        // Nothing to send with: kept for after the next login.
-        paused.add(row.service);
-        if (account) this.lastError.set(service, 'The login has expired; connect again');
-        continue;
-      }
       try {
-        const remote = await this.deps.clients[service].save(
-          token,
-          track.remoteId,
-          JSON.parse(row.payloadJson) as TrackPatch,
+        const remote = await this.authed(service, (token) =>
+          this.deps.clients[service].save(token, track.remoteId, JSON.parse(row.payloadJson) as TrackPatch),
         );
         this.deps.repo.complete(row.id, row.payloadJson);
         this.refreshTitle(track, remote);
@@ -361,8 +457,8 @@ export class TrackerManager {
         const message = error instanceof Error ? error.message : String(error);
         this.lastError.set(service, message);
         this.deps.log?.(`${service}: update of manga ${row.mangaId} failed: ${message}`);
-        if (error instanceof TrackerAuthError) {
-          this.expire(service);
+        if (error instanceof TrackerAuthError || (error instanceof AppError && error.code === 'tracker')) {
+          // No login that works (already marked expired): kept for after the next login.
         } else if (error instanceof TrackerRateLimitError) {
           this.deps.repo.retryLater(row.id, row.attempts, this.now() + error.retryAfterMs);
         } else {

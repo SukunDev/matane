@@ -10,6 +10,7 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 
 ### Library and trackers
 
+- **MyAnimeList tracking** (in builds that have a MyAnimeList app registration): the same as AniList, with a login that renews itself, whole-number scores, and a title search of at least 3 letters.
 - **AniList tracking:** connect AniList in Settings → Tracking (the login happens in your browser), link a manga to its AniList entry from its page (**Tracking**), and the chapters you read are sent for you. Edit status, score, chapters read and dates there too. Nothing waits on the network: updates are queued, sent when AniList can be reached and retried if it is down, and never sent while incognito. Links are in your backups; the login is not.
 
 ### Extensions

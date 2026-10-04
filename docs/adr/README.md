@@ -39,3 +39,4 @@ Short records of decisions that shape the codebase. The full design discussion (
 | [0033](0033-local-files-source.md) | Local files source: a native source in main reading CBZ files and folders |
 | [0034](0034-cms-templates.md) | CMS templates (Madara, MangaThemesia): a bundled library, plain `Source` objects to override |
 | [0035](0035-trackers.md) | Trackers: a queue fed by one hook, loopback login, AniList first |
+| [0036](0036-mal-code-flow-and-refresh.md) | MyAnimeList: the code flow with PKCE, and logins that are renewed |

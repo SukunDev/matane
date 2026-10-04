@@ -42,6 +42,15 @@ let viewerError: Error | null;
 let saveError: Error | null;
 let gate: Promise<void> | null;
 let logins: number;
+/** The tokens the fake trackers were called with, and one they refuse. */
+let tokensSeen: string[];
+let rejectToken: string | null;
+let refreshCalls: string[];
+let refreshError: Error | null;
+const use = (token: string) => {
+  tokensSeen.push(token);
+  if (rejectToken === '*' || token === rejectToken) throw new TrackerAuthError('refused');
+};
 
 const entryOf = (remoteId: string, patch: TrackPatch = {}): RemoteEntry => ({
   remoteId,
@@ -61,7 +70,8 @@ const client: TrackerClient = {
     if (viewerError) throw viewerError;
     return { userId: '7', username: 'mika' };
   },
-  async search(_token, query) {
+  async search(token, query) {
+    use(token);
     return [
       {
         remoteId: '30013',
@@ -72,10 +82,12 @@ const client: TrackerClient = {
       },
     ];
   },
-  async getEntry(_token, remoteId) {
+  async getEntry(token, remoteId) {
+    use(token);
     return remote.get(remoteId) ?? null;
   },
-  async save(_token, remoteId, patch) {
+  async save(token, remoteId, patch) {
+    use(token);
     await gate;
     if (saveError) throw saveError;
     saved.push({ remoteId, patch });
@@ -85,6 +97,19 @@ const client: TrackerClient = {
     };
     remote.set(remoteId, updated as RemoteEntry);
     return updated as RemoteEntry;
+  },
+};
+
+/** MyAnimeList's kind of tracker: tokens that expire and are renewed. */
+const malClient: TrackerClient = {
+  ...client,
+  service: 'mal',
+  name: 'MyAnimeList',
+  async refresh(refreshToken) {
+    refreshCalls.push(refreshToken);
+    await gate;
+    if (refreshError) throw refreshError;
+    return { accessToken: `access-${refreshCalls.length + 1}`, refreshToken: 'refresh-2', expiresInSec: 3600 };
   },
 };
 
@@ -117,9 +142,13 @@ beforeEach(async () => {
   saveError = null;
   gate = null;
   logins = 0;
+  tokensSeen = [];
+  rejectToken = null;
+  refreshCalls = [];
+  refreshError = null;
   manager = new TrackerManager({
     repo,
-    clients: { anilist: client },
+    clients: { anilist: client, mal: malClient },
     secrets: new SecretBox({
       isEncryptionAvailable: () => keyring,
       encryptString: (text) => Buffer.from(`sealed:${text}`),
@@ -127,9 +156,11 @@ beforeEach(async () => {
     }),
     configured: () => true,
     redirectUrl: () => 'http://127.0.0.1:47653/callback',
-    login: async () => {
+    login: async (service) => {
       logins++;
-      return { accessToken: 'token-1', expiresInSec: 31_536_000 };
+      return service === 'mal'
+        ? { accessToken: 'access-1', refreshToken: 'refresh-1', expiresInSec: 3600 }
+        : { accessToken: 'token-1', refreshToken: null, expiresInSec: 31_536_000 };
     },
     manga,
     progress,
@@ -179,7 +210,8 @@ describe('accounts', () => {
       redirectUrl: 'http://127.0.0.1:47653/callback',
     });
     const stored = repo.account('anilist')!;
-    expect(stored.tokenEncrypted).toBe(`enc:${Buffer.from('sealed:token-1').toString('base64')}`);
+    expect(stored.tokenEncrypted).toBe(`enc:${Buffer.from('sealed:{"a":"token-1","r":null}').toString('base64')}`);
+    // Sealed: the token is not in the clear.
     expect(stored.tokenEncrypted).not.toContain('token-1');
     expect(stored.expiresAt).toBe(T0 + 31_536_000_000);
   });
@@ -187,7 +219,7 @@ describe('accounts', () => {
   it('says when the token is not encrypted (no keyring)', async () => {
     keyring = false;
     expect(await connect()).toMatchObject({ connected: true, encrypted: false });
-    expect(repo.account('anilist')!.tokenEncrypted).toBe('plain:token-1');
+    expect(repo.account('anilist')!.tokenEncrypted).toBe('plain:{"a":"token-1","r":null}');
   });
 
   it('does not save a login the tracker refuses', async () => {
@@ -489,6 +521,116 @@ describe('edits', () => {
 
   it('refuses edits for a manga that is not linked', async () => {
     expect(() => manager.update(mangaId, 'anilist', { score: 5 })).toThrow(/not linked/);
+  });
+});
+
+describe('logins that are renewed', () => {
+  const connectMal = () => manager.connect('mal');
+  const search = () => manager.search('mal', 'moon');
+  const stored = () => repo.account('mal')!;
+  const secretOf = (sealed: string) =>
+    Buffer.from(sealed.slice('enc:'.length), 'base64').toString().slice('sealed:'.length);
+
+  it('keeps the refresh token with the access token, sealed', async () => {
+    expect(await connectMal()).toMatchObject({ connected: true, expired: false, name: 'MyAnimeList' });
+    expect(JSON.parse(secretOf(stored().tokenEncrypted!))).toEqual({ a: 'access-1', r: 'refresh-1' });
+    expect(stored().expiresAt).toBe(T0 + 3_600_000);
+  });
+
+  it('uses the stored token while it is good, and renews it shortly before it runs out', async () => {
+    await connectMal();
+    now = T0 + 30 * 60_000;
+    await search();
+    expect(tokensSeen).toEqual(['access-1']);
+    expect(refreshCalls).toEqual([]);
+
+    now = T0 + 3_600_000 - 30_000;
+    await search();
+    expect(refreshCalls).toEqual(['refresh-1']);
+    expect(tokensSeen.at(-1)).toBe('access-2');
+    expect(JSON.parse(secretOf(stored().tokenEncrypted!))).toEqual({ a: 'access-2', r: 'refresh-2' });
+    expect(stored().expiresAt).toBe(now + 3_600_000);
+    expect(stored().username).toBe('mika');
+  });
+
+  it('renews once for requests that come at the same time', async () => {
+    await connectMal();
+    now = T0 + 3_600_000;
+    let release!: () => void;
+    gate = new Promise<void>((r) => (release = r));
+    const both = Promise.all([search(), search()]);
+    await new Promise((r) => setTimeout(r, 10));
+    release();
+    await both;
+    expect(refreshCalls).toHaveLength(1);
+    expect(tokensSeen).toEqual(['access-2', 'access-2']);
+  });
+
+  it('treats a run-out access token as fine while a refresh token can make the next, and as expired when not', async () => {
+    await connectMal();
+    await connect();
+    now = T0 + 3_600_000 + 1;
+    expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ connected: true, expired: false });
+    now = T0 + 31_536_000_001;
+    expect(manager.list().find((i) => i.service === 'anilist')).toMatchObject({ expired: true });
+  });
+
+  it('marks the login expired when the refresh token is refused, and stops trying', async () => {
+    await connectMal();
+    now = T0 + 3_600_000;
+    refreshError = new TrackerAuthError('invalid_grant');
+    await expect(search()).rejects.toMatchObject({ code: 'tracker' });
+    expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ connected: true, expired: true });
+    expect(JSON.parse(secretOf(stored().tokenEncrypted!)).r).toBeNull();
+    refreshError = null;
+    await expect(search()).rejects.toMatchObject({ code: 'tracker', message: expect.stringContaining('expired') });
+    expect(refreshCalls).toHaveLength(1);
+  });
+
+  it('keeps the login when the refresh fails for another reason (no network)', async () => {
+    await connectMal();
+    now = T0 + 3_600_000;
+    refreshError = new Error('socket hang up');
+    await expect(search()).rejects.toMatchObject({ code: 'network' });
+    expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ connected: true, expired: false });
+    refreshError = null;
+    await search();
+    expect(refreshCalls).toHaveLength(2);
+    expect(tokensSeen.at(-1)).toBe('access-3');
+  });
+
+  it('renews a token the tracker refuses and repeats the request once', async () => {
+    await connectMal();
+    rejectToken = 'access-1';
+    await search();
+    expect(tokensSeen).toEqual(['access-1', 'access-2']);
+    // Refused again after the renewal: the login is over.
+    rejectToken = '*';
+    await expect(search()).rejects.toMatchObject({ code: 'tracker' });
+    expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ expired: true });
+  });
+
+  it('sends queued updates with a renewed token', async () => {
+    await connectMal();
+    await manager.link({ mangaId, service: 'mal', remoteId: '44', title: 'Moon Garden' });
+    now = T0 + 3_600_000;
+    await manager.flush();
+    expect(refreshCalls).toEqual(['refresh-1']);
+    expect(saved).toHaveLength(1);
+    expect(tokensSeen.at(-1)).toBe('access-2');
+  });
+
+  it('still reads a login stored as a bare token, from before refresh tokens', async () => {
+    repo.saveAccount({
+      service: 'mal',
+      userId: '1',
+      username: 'old',
+      tokenEncrypted: `enc:${Buffer.from('sealed:legacy-token').toString('base64')}`,
+      expiresAt: null,
+    });
+    expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ connected: true, expired: false });
+    await search();
+    expect(tokensSeen).toEqual(['legacy-token']);
   });
 });
 

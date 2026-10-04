@@ -637,7 +637,7 @@ export type StatsOverview = z.infer<typeof statsOverviewSchema>;
 
 // ------------------------------------------------------------------ trackers (ADR 0035)
 
-export const TRACKER_SERVICES = ['anilist'] as const;
+export const TRACKER_SERVICES = ['anilist', 'mal'] as const;
 export type TrackerService = (typeof TRACKER_SERVICES)[number];
 
 /** What every tracker's list status maps to. */
