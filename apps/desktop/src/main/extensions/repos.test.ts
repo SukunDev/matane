@@ -337,6 +337,17 @@ describe('ExtensionInstaller', () => {
     expect(extensions.isInstalled('demo')).toBe(true);
   });
 
+  it.each(['..', '../builtin', 'a/b', '.hidden', 'Demo', ''])('never touches the disk for the id "%s"', async (id) => {
+    mkdirSync(join(dir, 'installed'));
+    writeFileSync(join(dir, 'marker.txt'), 'keep');
+    await expect(installer.uninstall(id)).rejects.toThrow(/Invalid extension id/);
+    // `..` would be the folder that holds installed/, builtin/ and the database.
+    expect(readFileSync(join(dir, 'marker.txt'), 'utf8')).toBe('keep');
+    expect(existsSync(join(dir, 'builtin'))).toBe(true);
+    expect(existsSync(join(dir, 'installed'))).toBe(true);
+    expect(existsSync(join(dir, 'installed.old'))).toBe(false);
+  });
+
   it('falls back to a built-in with the same id after an uninstall', async () => {
     writeExtension(join(dir, 'builtin', 'demo'), '0.9.0');
     await extensions.reload();

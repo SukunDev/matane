@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Filter, Page, Preference } from '@matane/extension-sdk';
+import { extensionIdSchema } from '@matane/extension-sdk/manifest';
 import {
   addRepoResultSchema,
   extensionLogEntrySchema,
@@ -158,7 +159,8 @@ export const invokeContract = {
   'extensions.cancelInstall': invoke(z.object({ token: z.string() }), z.void()),
   /** Installs every available update. */
   'extensions.updateAll': invoke(z.void(), updateAllResultSchema),
-  'extensions.uninstall': invoke(z.object({ extensionId: z.string() }), z.void()),
+  // The id names a folder under userData/extensions, so only a valid id (no `..`, no separators) gets through.
+  'extensions.uninstall': invoke(z.object({ extensionId: extensionIdSchema }), z.void()),
   /** The last 500 log lines of an extension (developer panel). */
   'extensions.logs': invoke(z.object({ extensionId: z.string() }), z.array(extensionLogEntrySchema)),
   'extensions.clearLogs': invoke(z.object({ extensionId: z.string() }), z.void()),

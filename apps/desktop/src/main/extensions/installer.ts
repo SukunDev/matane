@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdir, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { type ExtensionArchive, checkArchiveHash, readExtensionArchive } from '@matane/extension-runtime/repo';
+import { extensionIdSchema } from '@matane/extension-sdk/manifest';
 import { REPO_LIMITS, type RepoEntry } from '@matane/extension-sdk/repo';
 import type { AvailableExtension, ExtensionEntry, InstallPreview, UpdateAllResult } from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
@@ -57,6 +58,12 @@ export class ExtensionInstaller {
 
   private now(): number {
     return this.deps.now?.() ?? Date.now();
+  }
+
+  /** The folder of an extension; an id that is not a plain extension id (`..`, a path) never reaches the disk. */
+  private folderOf(id: string): string {
+    if (!extensionIdSchema.safeParse(id).success) throw new AppError('extension', `Invalid extension id "${id}"`);
+    return join(this.deps.dir, id);
   }
 
   /** Finishes or undoes an install the app was closed in the middle of. */
@@ -186,7 +193,7 @@ export class ExtensionInstaller {
    * so library entries are shown as "source not installed" (§5.8).
    */
   async uninstall(extensionId: string): Promise<void> {
-    const folder = join(this.deps.dir, extensionId);
+    const folder = this.folderOf(extensionId);
     if (!(await exists(folder))) {
       throw new AppError('not_installed', `${extensionId} is not installed from a repository`);
     }
@@ -220,8 +227,8 @@ export class ExtensionInstaller {
 
   /** `<id>.tmp` → (`<id>` → `<id>.old`) → `<id>`: an interrupted install never leaves half a bundle. */
   private async write(id: string, archive: ExtensionArchive): Promise<void> {
+    const target = this.folderOf(id);
     await mkdir(this.deps.dir, { recursive: true });
-    const target = join(this.deps.dir, id);
     const tmp = `${target}.tmp`;
     const old = `${target}.old`;
     await rm(tmp, { recursive: true, force: true });

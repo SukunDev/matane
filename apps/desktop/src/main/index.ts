@@ -8,6 +8,7 @@ import { initLogging, log, setLogLevel } from './app/log';
 import { debugInfo, logTail, readLicenses, scrub } from './app/debug-info';
 import { HIDDEN_ARG, applyLoginItem } from './app/login-item';
 import { OnlineMonitor } from './app/online';
+import { APP_PERMISSIONS, denyPermissionsByDefault, restrictPermissions } from './app/permissions';
 import { AppTray } from './app/tray';
 import { AppUpdater, fetchGithubReleases } from './app/updater';
 import { detectPackaging, updaterKindFor } from './app/packaging';
@@ -93,6 +94,8 @@ initLogging();
 // Crash dumps stay on this computer (Settings → Advanced opens the folder); nothing is uploaded.
 crashReporter.start({ uploadToServer: false });
 registerMangaScheme();
+// Before any session exists: pages of extension sessions (Cloudflare window) get no web permissions.
+denyPermissionsByDefault(app);
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -123,6 +126,8 @@ function refreshTray(): void {
 
 async function bootstrap(): Promise<void> {
   await app.whenReady();
+  // The app's own window may copy text; nothing else.
+  restrictPermissions(session.defaultSession, APP_PERMISSIONS);
 
   const userData = app.getPath('userData');
   mkdirSync(userData, { recursive: true });

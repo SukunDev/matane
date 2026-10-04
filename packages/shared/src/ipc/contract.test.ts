@@ -16,6 +16,16 @@ describe('ipc contract', () => {
     expect(input.safeParse({ accent: 'mauve', language: null }).success).toBe(true);
   });
 
+  it('lets only a plain extension id reach uninstall, which names a folder', () => {
+    const input = invokeContract['extensions.uninstall'].input;
+    for (const extensionId of ['demo', 'example-2', '9lives']) {
+      expect(input.safeParse({ extensionId }).success, extensionId).toBe(true);
+    }
+    for (const extensionId of ['..', '../x', 'a/b', 'a\\b', 'A', '', '.hidden', '-x']) {
+      expect(input.safeParse({ extensionId }).success, extensionId).toBe(false);
+    }
+  });
+
   it('ships valid default settings', () => {
     expect(appSettingsSchema.parse(DEFAULT_SETTINGS)).toEqual(DEFAULT_SETTINGS);
   });
