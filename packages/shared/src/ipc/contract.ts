@@ -282,6 +282,9 @@ export const invokeContract = {
   /** Picks the folder automatic backups go to. Null = cancelled. */
   'backup.chooseFolder': invoke(z.void(), z.string().nullable()),
   'backup.openFolder': invoke(z.void(), z.void()),
+  /** Settings → Browse: picks the local files folder and saves it; null when cancelled. */
+  'local.chooseFolder': invoke(z.void(), z.string().nullable()),
+  'local.openFolder': invoke(z.void(), z.void()),
   'stats.overview': invoke(z.object({ range: z.enum(STATS_RANGES) }), statsOverviewSchema),
   /** Forgets every reading session (Settings → Data); progress and history stay. */
   'stats.clear': invoke(z.void(), z.void()),

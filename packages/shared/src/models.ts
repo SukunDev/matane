@@ -409,6 +409,11 @@ export type MigrationProgress = z.infer<typeof migrationProgressSchema>;
 
 export const DOWNLOAD_STATUSES = ['queued', 'downloading', 'paused', 'error', 'done'] as const;
 export type DownloadStatus = (typeof DOWNLOAD_STATUSES)[number];
+/** The local files source (ADR 0033): an extension of its own that runs in main. */
+export const LOCAL_EXTENSION_ID = 'local';
+export const LOCAL_SOURCE_KEY = 'files';
+export const LOCAL_SOURCE_ID = `${LOCAL_EXTENSION_ID}/${LOCAL_SOURCE_KEY}`;
+
 export const DOWNLOAD_FORMATS = ['cbz', 'folder'] as const;
 export type DownloadFormat = (typeof DOWNLOAD_FORMATS)[number];
 

@@ -8,6 +8,7 @@ import type { ExtensionsRepository } from '../db/repositories/extensions';
 import { sourceIdOf } from '../db/repositories/extensions';
 import type { HostMethods, MainMethods } from '../../extension-host/protocol';
 import type { RpcHandlers, RpcPeer } from '../../extension-host/rpc';
+import type { NativeExtension } from './native';
 import type { ExtensionRegistry, RegisteredExtension } from './registry';
 
 export type HostCaller = Pick<RpcPeer<MainMethods, HostMethods>, 'request'>;
@@ -37,6 +38,8 @@ export interface ExtensionServiceDeps {
   hostTimeoutMs?: number;
   /** Called with the ids whose runtimes were dropped by a reload. */
   onReload?: (extensionIds: string[]) => void;
+  /** Extensions implemented in main; their calls never reach the sandbox. */
+  native?: readonly NativeExtension[];
 }
 
 /** Races a promise against an AbortSignal (the host keeps working; the result is dropped). */
@@ -61,7 +64,11 @@ export function withSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promis
 
 /** Installed extensions: discovery, DB records, and calls into the sandbox. */
 export class ExtensionService {
-  constructor(private readonly deps: ExtensionServiceDeps) {}
+  private readonly native: ReadonlyMap<string, NativeExtension>;
+
+  constructor(private readonly deps: ExtensionServiceDeps) {
+    this.native = new Map((deps.native ?? []).map((n) => [n.entry.id, n]));
+  }
 
   /** What the extension host may ask of main. */
   readonly mainHandlers: RpcHandlers<MainMethods> = {
@@ -163,11 +170,14 @@ export class ExtensionService {
     parse?: (value: unknown) => T,
   ): Promise<T> {
     this.require(extensionId);
-    const pending = this.deps.host.request(
-      'call',
-      { extensionId, sourceKey, method, args, prefs: this.deps.repo.getPrefs(extensionId) },
-      { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
-    );
+    const native = this.native.get(extensionId);
+    const pending = native
+      ? native.call(sourceKey, method, args)
+      : this.deps.host.request(
+          'call',
+          { extensionId, sourceKey, method, args, prefs: this.deps.repo.getPrefs(extensionId) },
+          { timeoutMs: this.deps.hostTimeoutMs ?? 90_000 },
+        );
     return this.settle(extensionId, sourceKey, method, pending, signal, parse);
   }
 
@@ -180,6 +190,8 @@ export class ExtensionService {
     signal?: AbortSignal,
   ): Promise<RawImageTransform> {
     this.require(extensionId);
+    if (this.native.has(extensionId))
+      return Promise.reject(new AppError('parse', 'Native sources have no image transform'));
     const pending = this.deps.host.request(
       'transformImage',
       { extensionId, sourceKey, page, bytes, prefs: this.deps.repo.getPrefs(extensionId) },
@@ -196,6 +208,8 @@ export class ExtensionService {
     fromVersion: string,
   ): Promise<MigratedUrls> {
     this.require(extensionId);
+    // Native sources keep their urls (relative paths); nothing to migrate.
+    if (this.native.has(extensionId)) return Promise.resolve({ urls: items.map(() => null), errors: [] });
     const pending = this.deps.host.request(
       'migrateUrls',
       { extensionId, sourceKey, items, fromVersion, prefs: this.deps.repo.getPrefs(extensionId) },

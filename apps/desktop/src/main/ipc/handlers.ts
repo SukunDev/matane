@@ -344,6 +344,25 @@ export function createIpcHandlers({
       const error = await shell.openPath(backups.folder());
       if (error) throw new AppError('unknown', error);
     },
+    'local.chooseFolder': async (_input, event) => {
+      const current = settings.getAppSettings().local.folder;
+      const options: Electron.OpenDialogOptions = {
+        properties: ['openDirectory'],
+        ...(current ? { defaultPath: current } : {}),
+      };
+      const window = windowOf(event);
+      const picked = window ? await dialog.showOpenDialog(window, options) : await dialog.showOpenDialog(options);
+      const folder = picked.canceled ? null : (picked.filePaths[0] ?? null);
+      if (!folder) return null;
+      broadcast('settings.changed', settings.updateAppSettings({ local: { folder } }));
+      return folder;
+    },
+    'local.openFolder': async () => {
+      const folder = settings.getAppSettings().local.folder;
+      if (!folder) throw new AppError('not_found', 'No local folder is chosen');
+      const error = await shell.openPath(folder);
+      if (error) throw new AppError('unknown', error);
+    },
     'stats.overview': ({ range }) => stats.overview(range),
     'stats.clear': () => stats.clear(),
     'network.info': () => networkControl.info(),

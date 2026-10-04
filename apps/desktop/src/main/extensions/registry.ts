@@ -97,6 +97,8 @@ export interface RegistryOptions {
   /** Extensions installed from repositories. */
   installedDir?: string;
   devFolders: () => string[];
+  /** Extensions implemented in main (the local files source); their ids cannot be taken by a bundle. */
+  native?: readonly RegisteredExtension[];
   /** Called (debounced) when a dev extension's bundle changes on disk. */
   onDevChange?: (extensionId: string) => void;
 }
@@ -122,6 +124,7 @@ export class ExtensionRegistry {
       if (current && entry.error && !current.error) continue;
       next.set(entry.id, entry);
     }
+    for (const entry of this.options.native ?? []) next.set(entry.id, entry);
     this.entries = next;
     this.watchDevFolders();
     return this.list();

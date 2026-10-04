@@ -1,4 +1,4 @@
-import type { ChapterInfo, MangaInfo } from '@manga-reader/shared';
+import { type ChapterInfo, LOCAL_SOURCE_ID, type MangaInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import { ArrowRightLeft, BookOpen, ChevronDown, ChevronUp, ExternalLink, Globe, Play, RefreshCw } from 'lucide-react';
@@ -274,10 +274,12 @@ function MangaHeader({
                 </Link>
               </Button>
             )}
-            <Button variant="secondary" className="h-10" onClick={() => openInBrowser.mutate()}>
-              <ExternalLink />
-              {t('manga.openInBrowser')}
-            </Button>
+            {manga.sourceId !== LOCAL_SOURCE_ID && (
+              <Button variant="secondary" className="h-10" onClick={() => openInBrowser.mutate()}>
+                <ExternalLink />
+                {t('manga.openInBrowser')}
+              </Button>
+            )}
             <Button
               variant="secondary"
               size="icon"

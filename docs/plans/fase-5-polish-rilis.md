@@ -54,7 +54,7 @@ Keputusan dari diskusi (1 Okt 2026):
 - **Nama final** tetap **Matane** (sudah dipakai di appId, productName, dan userData). Di 5g ketersediaannya dicek di AUR dan Flathub.
 
 Di luar cakupan (setelah v1, sesuai §11):
-- tracker, login per source, import `.tachibk`, source file lokal, template CMS, sinkronisasi antar perangkat, dan code signing.
+- tracker, import `.tachibk`, source file lokal, template CMS, dan code signing.
 
 Langkah pertama implementasi:
 - simpan rencana ini ke `docs/plans/fase-5-polish-rilis.md` (sudah, 1 Okt 2026);

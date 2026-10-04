@@ -2,6 +2,12 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
+## 0.3.0-beta.1 — unreleased
+
+### Reading
+
+- **Local files:** read CBZ files and folders of images from your computer as a source of their own. Pick the folder in Settings → Browse & extensions → Local files; it has one folder per manga, with chapters as `.cbz`/`.zip` files or sub-folders of images, an optional `cover.jpg` and `ComicInfo.xml` details. Add the manga to the library, keep progress and history, and read with the same reader. Matane only reads inside the folder you chose.
+
 ## 0.2.0-beta.1 — 2026-10-04
 
 The second beta: sources now come from extension repositories you add, and most of the polish planned for 1.0 is in. Nothing is built into the app, and no repository is added for you.

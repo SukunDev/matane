@@ -76,6 +76,8 @@ export const INVOKE_CHANNELS = [
   'backup.restore',
   'backup.chooseFolder',
   'backup.openFolder',
+  'local.chooseFolder',
+  'local.openFolder',
   'stats.overview',
   'stats.clear',
   'network.info',

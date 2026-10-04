@@ -32,7 +32,7 @@ Yang sudah ada dan dipakai ulang:
 
 Di luar cakupan:
 - Onboarding penuh, VitePress, dan paket deb/rpm/AUR/Flatpak masuk Fase 5.
-- Template CMS (Madara dan sejenisnya) dan login per source dikerjakan setelah v1.
+- Template CMS (Madara dan sejenisnya) dikerjakan setelah v1.
 
 Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem-extension.md`, dengan format seperti plan Fase 3.
 

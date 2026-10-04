@@ -31,6 +31,7 @@ export default defineConfig({
             { text: 'Library', link: '/guide/library' },
             { text: 'Reader', link: '/guide/reader' },
             { text: 'Downloads and offline', link: '/guide/downloads' },
+            { text: 'Local files', link: '/guide/local' },
             { text: 'Extensions and repositories', link: '/guide/extensions' },
             { text: 'Network (DNS-over-HTTPS, proxy)', link: '/guide/network' },
             { text: 'Backup and restore', link: '/guide/backup' },

@@ -189,6 +189,9 @@ export class SourceService {
     const row = this.mangaRow(mangaId);
     const source = this.source(row.sourceId);
     const { baseUrl, capabilities } = await this.info(row.sourceId);
+    if (!capabilities.includes('getWebUrl') && !/^https?:\/\//.test(baseUrl)) {
+      throw new AppError('not_found', 'This source has no web page');
+    }
     const url = capabilities.includes('getWebUrl')
       ? await this.deps.extensions.call(source.extensionId, source.key, 'getWebUrl', [
           { url: row.url, title: row.title },

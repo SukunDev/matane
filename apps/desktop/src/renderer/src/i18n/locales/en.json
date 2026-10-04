@@ -353,7 +353,16 @@
         "hours_other": "{{count}} h",
         "week": "Weekly"
       },
-      "reposHint": "Where extensions come from. Trusted = signed with a key you chose to trust."
+      "reposHint": "Where extensions come from. Trusted = signed with a key you chose to trust.",
+      "local": {
+        "title": "Local files",
+        "hint": "A folder on this computer with one folder per manga; chapters are .cbz or .zip files, or folders of images. It shows up as the source \"Local files\".",
+        "folder": "Folder",
+        "none": "No folder chosen yet",
+        "choose": "Choose folder",
+        "open": "Open",
+        "forget": "Stop using"
+      }
     },
     "reader": {
       "intro": "Default display rules, reading direction, tap zones and keys. Changes save at once.",

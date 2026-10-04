@@ -378,7 +378,6 @@ repo/
 - [x] Gambar diacak/dienkripsi: hook `transformImage` berbasis instruksi, didesain sekarang, implementasi Fase 4 (§5.6).
 - [x] Cookie: session partition terpisah per extension (§5.1).
 - [x] Extension **bawaan** (`extensions/*`, dibundel di app) + **load dari folder** untuk mode dev, sebelum repo tersedia di Fase 4 (ADR 0013).
-- [x] Login per source: **ditunda setelah v1**. Kalau nanti dibuat, arahnya login lewat BrowserWindow di partition milik extension tersebut, jadi password tidak melewati extension.
 
 - [x] Hook opsional `migrateUrl(oldUrl, fromVersion)` di apiVersion 1. Dipanggil host setelah extension diperbarui, untuk memperbarui `url` manga/chapter di DB.
 - [x] Helper tanggal relatif ("2 hours ago", "kemarin") ada di **SDK** (JS murni, ikut ter-bundle), bukan di host.
@@ -780,10 +779,9 @@ covers/            # cover kustom (nama file = hash natural key manga)
 
 **Setelah v1**
 - ~~**Import `.tachibk`**~~ (Mihon/Tachiyomi: protobuf + gzip): **sudah dikerjakan 4 Okt 2026** (ADR 0032, `docs/plans/import-mihon.md`). Source dicocokkan lewat ID Mihon yang dihitung dari nama/bahasa, lalu nama, dan bisa diubah di dialog; yang dilewati dilaporkan.
-- Sinkronisasi antar perangkat yang sesungguhnya.
 
 ### 6.8 Lain-lain (setelah v1)
-- Dukungan file lokal (CBZ/folder) sebagai "source" bawaan. Mudah ditambahkan karena memakai interface yang sama.
+- ~~Dukungan file lokal (CBZ/folder) sebagai "source" bawaan.~~ **Sudah dikerjakan 4 Okt 2026** (ADR 0033): source native di main yang memakai interface `Source` dan `DownloadReader`.
 
 ---
 
@@ -1056,11 +1054,9 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 
 **Setelah v1**
 - Tracker: AniList, MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
-- Login per source (BrowserWindow).
 - ~~Import backup Mihon/Tachiyomi (`.tachibk`).~~ Selesai 4 Okt 2026 (ADR 0032).
-- Source file lokal (CBZ/folder).
+- ~~Source file lokal (CBZ/folder).~~ Selesai 4 Okt 2026 (ADR 0033).
 - Template extension untuk CMS populer (Madara, MangaThemesia).
-- Sinkronisasi antar perangkat yang sesungguhnya.
 - Code signing (kalau pengguna sudah cukup banyak).
 
 ---

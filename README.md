@@ -51,6 +51,7 @@ _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux*
 **Read offline, stay up to date**
 
 - Download chapters as CBZ files or folders, with a queue, "download ahead" and automatic cleanup
+- Read CBZ files and folders of images that are already on your computer
 - Matane checks your library for new chapters and notifies you
 - Works offline, can start with your computer and live in the system tray
 

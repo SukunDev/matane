@@ -352,7 +352,16 @@
         "hours_other": "{{count}} jam",
         "week": "Mingguan"
       },
-      "reposHint": "Asal extension. Dipercaya = ditandatangani dengan kunci yang kamu percaya."
+      "reposHint": "Asal extension. Dipercaya = ditandatangani dengan kunci yang kamu percaya.",
+      "local": {
+        "title": "File lokal",
+        "hint": "Folder di komputer ini dengan satu folder per manga; chapter berupa file .cbz atau .zip, atau folder berisi gambar. Muncul sebagai source \"Local files\".",
+        "folder": "Folder",
+        "none": "Belum ada folder yang dipilih",
+        "choose": "Pilih folder",
+        "open": "Buka",
+        "forget": "Berhenti memakai"
+      }
     },
     "reader": {
       "intro": "Aturan tampilan bawaan, arah baca, tap zone, dan tombol. Perubahan langsung tersimpan.",

@@ -80,7 +80,7 @@ function tallPage(index: number): Buffer {
   return tallPages[index]!;
 }
 
-function png(width: number, height: number, rgb: Rgb | ((x: number, y: number) => Rgb)): Buffer {
+export function png(width: number, height: number, rgb: Rgb | ((x: number, y: number) => Rgb)): Buffer {
   const chunk = (type: string, data: Buffer) => {
     const length = Buffer.alloc(4);
     length.writeUInt32BE(data.length);

@@ -32,6 +32,9 @@ import { ExtensionIcons } from './extensions/icons';
 import { ExtensionInstaller } from './extensions/installer';
 import { initialContentLanguages } from './extensions/content';
 import { ExtensionLogs } from './extensions/logs';
+import { LocalFiles } from './local/files';
+import { createLocalExtension } from './local/source';
+import { LocalStore } from './local/store';
 import { RepoService } from './extensions/repos';
 import { URL_VERSIONS_KEY, UrlMigration } from './extensions/url-migration';
 import { ReposRepository } from './db/repositories/repos';
@@ -63,6 +66,7 @@ import { DownloadsRepository } from './db/repositories/downloads';
 import {
   type AppSettings,
   DEFAULT_SETTINGS,
+  LOCAL_SOURCE_ID,
   appSettingsSchema,
   contentLanguages,
   effectiveReaderSettings,
@@ -204,9 +208,14 @@ async function bootstrap(): Promise<void> {
     log: (level, message) => extLog[level](message),
   });
   const installedExtensionsDir = join(userData, 'extensions');
+  // The local files source (ADR 0033) runs in main, not in the sandbox.
+  const localFiles = new LocalFiles({ folder: () => settings.getAppSettings().local.folder });
+  const localExtension = createLocalExtension(localFiles, app.getVersion());
+  const localStore = new LocalStore({ files: localFiles, chapters: chaptersRepo, manga: mangaRepo });
   const registry = new ExtensionRegistry({
     builtinDir: builtinExtensionsDir(),
     installedDir: installedExtensionsDir,
+    native: [localExtension.entry],
     devFolders: () => settings.getValue<string[]>(DEV_FOLDERS_KEY, []),
     onDevChange: (extensionId) => {
       extLog.info(`Dev extension ${extensionId} changed on disk, reloading`);
@@ -224,6 +233,7 @@ async function bootstrap(): Promise<void> {
     },
     log: (extensionId, level, message) => extLog[level](`[${extensionId}] ${message}`),
     record: (extensionId, level, kind, message) => extensionLogs.append(extensionId, level, kind, message),
+    native: [localExtension],
     onReload: (ids) => {
       for (const id of ids) sources.clearCache(id);
       // An update may change how urls look (migrateUrl).
@@ -236,7 +246,7 @@ async function bootstrap(): Promise<void> {
     manga: mangaRepo,
     chapters: chaptersRepo,
     // Declared further down; only used once requests arrive.
-    downloads: { pages: (chapterId) => downloadStore.pages(chapterId) },
+    downloads: { pages: async (chapterId) => (await localStore.pages(chapterId)) ?? downloadStore.pages(chapterId) },
     showNsfw: () => settings.getAppSettings().browse.showNsfw,
   });
   // Extension repositories and installs (docs/BRAINSTORM.md §5.8). `online` is declared further down.
@@ -346,7 +356,11 @@ async function bootstrap(): Promise<void> {
     chapters: chaptersRepo,
     sources,
     covers,
-    downloads: downloadStore,
+    downloads: {
+      page: async (chapterId, index) =>
+        (await localStore.page(chapterId, index)) ?? downloadStore.page(chapterId, index),
+    },
+    local: { sourceId: LOCAL_SOURCE_ID, cover: (url) => localStore.cover(url) },
     log: (message) => log.scope('images').warn(message),
     fetcher: {
       fetchImage: (extensionId, url, headers) => {

@@ -17,7 +17,8 @@ const CONTENT_TYPES: Record<string, string> = {
   '.gif': 'image/gif',
   '.avif': 'image/avif',
 };
-const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
+/** Natural order: "Ch 2" before "Ch 10". */
+export const byName = (a: string, b: string) => a.localeCompare(b, 'en', { numeric: true });
 /** Page images of a download, in reading order. */
 export const pageNames = (names: readonly string[]) => names.filter((n) => IMAGE.test(n)).sort(byName);
 export const contentTypeOf = (name: string) => CONTENT_TYPES[extname(name).toLowerCase()] ?? 'application/octet-stream';

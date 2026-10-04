@@ -14,13 +14,17 @@ const optionalText = (max: number) =>
     .nullish()
     .catch(undefined)
     .transform((v) => v || undefined);
-const optionalHttpUrl = z
-  .string()
-  .max(4096)
-  .regex(/^https?:\/\//)
-  .nullish()
-  .catch(undefined)
-  .transform((v) => v ?? undefined);
+const optionalUrl = (scheme: RegExp) =>
+  z
+    .string()
+    .max(4096)
+    .regex(scheme)
+    .nullish()
+    .catch(undefined)
+    .transform((v) => v ?? undefined);
+const optionalHttpUrl = optionalUrl(/^https?:\/\//);
+/** Covers may also be `local:cover/…`, which only the local files source reads (for others it just fails to load). */
+const optionalThumbnailUrl = optionalUrl(/^(https?:\/\/|local:cover\/)/);
 const optionalNumber = z
   .number()
   .finite()
@@ -29,7 +33,7 @@ const optionalNumber = z
   .transform((v) => v ?? undefined);
 const entityUrl = text(2048).min(1);
 
-const summary = z.object({ url: entityUrl, title: text(1000), thumbnailUrl: optionalHttpUrl });
+const summary = z.object({ url: entityUrl, title: text(1000), thumbnailUrl: optionalThumbnailUrl });
 
 const mangaPageSchema = z.object({ items: z.array(summary).max(1000), hasNextPage: z.boolean().catch(false) });
 

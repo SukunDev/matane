@@ -58,6 +58,8 @@ export class ImageService {
       coverColors?: Pick<CoverColors, 'noticed'>;
       /** Pages of downloaded chapters are served from the download first. */
       downloads?: Pick<DownloadStore, 'page'>;
+      /** The local files source: its covers come from disk, not through an extension's network. */
+      local?: { sourceId: string; cover(url: string): Promise<{ bytes: Uint8Array; contentType: string }> };
       log?: (message: string) => void;
     },
   ) {}
@@ -323,6 +325,7 @@ export class ImageService {
    * images (`anyType`) may come with any content type; they are checked after restoring.
    */
   private async fetchBytes(sourceId: string, url: string, anyType = false): Promise<ImageBytes> {
+    if (this.deps.local && sourceId === this.deps.local.sourceId) return this.deps.local.cover(url);
     const source = this.deps.sources.source(sourceId);
     const headers = await this.deps.sources.imageHeaders(sourceId);
     const started = Date.now();

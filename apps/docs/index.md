@@ -27,5 +27,5 @@ features:
   - title: Offline
     details: Download chapters as CBZ or folders, download ahead while reading, and get told about new chapters.
   - title: Safe extensions
-    details: Every source runs in a QuickJS sandbox, reaches only the sites it lists, and comes from a signed repository.
+    details: Every source runs in a QuickJS sandbox, cannot touch your files, and comes from a repository whose signature you can trust or not.
 ---

@@ -1,7 +1,12 @@
 import { mkdir, readdir, rename, rm, rmdir, stat, statfs, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import type { Page } from '@matane/extension-sdk';
-import type { DownloadFormat, DownloadMoveProgress, DownloadProgress } from '@manga-reader/shared';
+import {
+  type DownloadFormat,
+  type DownloadMoveProgress,
+  type DownloadProgress,
+  LOCAL_SOURCE_ID,
+} from '@manga-reader/shared';
 import { AppError, toAppErrorData } from '@manga-reader/shared/errors';
 import { createLimiter } from '@manga-reader/shared/limit';
 import type { ChaptersRepository } from '../db/repositories/chapters';
@@ -108,8 +113,16 @@ export class DownloadManager {
   }
 
   enqueue(chapterIds: readonly number[]): void {
-    this.deps.repo.enqueue(chapterIds, this.deps.settings().format);
+    // Chapters of the local files source are on this computer already.
+    const wanted = chapterIds.filter((id) => !this.isLocal(id));
+    if (wanted.length === 0) return;
+    this.deps.repo.enqueue(wanted, this.deps.settings().format);
     this.pump();
+  }
+
+  private isLocal(chapterId: number): boolean {
+    const chapter = this.deps.chapters.get(chapterId);
+    return chapter !== undefined && this.deps.manga.get(chapter.mangaId)?.sourceId === LOCAL_SOURCE_ID;
   }
 
   /**

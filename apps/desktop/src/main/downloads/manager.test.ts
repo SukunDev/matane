@@ -133,6 +133,28 @@ describe('DownloadManager', () => {
     expect(repo.stats()).toMatchObject({ done: 3, queued: 0 });
   });
 
+  it('never queues chapters of the local files source, which are on this computer already', async () => {
+    connection.sqlite
+      .prepare(
+        "INSERT INTO sources (id, extension_id, key, name, lang) VALUES ('local/files', 'local', 'files', 'Local files', 'all')",
+      )
+      .run();
+    const changes = new DbChanges(() => undefined);
+    const localManga = new MangaRepository(connection.db, changes).ensure('local/files', {
+      url: 'Alpha',
+      title: 'Alpha',
+    });
+    const localChapters = new ChaptersRepository(connection.db, changes).sync(localManga, [
+      { url: 'Alpha/Ch 1.cbz', name: 'Ch 1' },
+    ]).added;
+    manager.start(true);
+    manager.enqueue([...localChapters, chapterIds[0]!]);
+    expect(manager.enqueueAuto(localChapters)).toBe(true);
+    await manager.idle();
+    expect(repo.byChapter(localChapters[0]!)).toBeUndefined();
+    expect(status(chapterIds[0]!)).toBe('done');
+  });
+
   it('retries a page with backoff and fails the chapter after the last retry, keeping finished pages', async () => {
     let flaky = 2;
     let attemptsOn4 = 0;

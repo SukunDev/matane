@@ -462,6 +462,8 @@ export const appSettingsSchema = z.object({
       folder: z.string().nullable().catch(null),
     })
     .catch({ auto: 'daily', folder: null }),
+  /** The local files source (ADR 0033): the folder that holds the manga, null until one is chosen. */
+  local: z.object({ folder: z.string().nullable().catch(null) }).catch({ folder: null }),
   /** Settings → Advanced: how much goes into the log file (docs/BRAINSTORM.md §10). */
   advanced: z
     .object({ logLevel: z.enum(['error', 'warn', 'info', 'debug']).catch('info') })
@@ -513,6 +515,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     userAgent: null,
   },
   backup: { auto: 'daily', folder: null },
+  local: { folder: null },
   advanced: { logLevel: 'info' },
   onboarding: { done: false },
 };
