@@ -20,6 +20,12 @@ export interface SavedProgress {
  * counts do not double up.
  */
 export class ProgressRepository {
+  /**
+   * Told after chapters of a manga became read (the reader reaching the end, "mark as read", a
+   * migration), so trackers can follow (ADR 0035). Not called for restores or marking unread.
+   */
+  onRead?: (mangaId: number) => void;
+
   constructor(
     private readonly db: AppDatabase,
     private readonly changes: DbChanges,
@@ -39,6 +45,7 @@ export class ProgressRepository {
       if (finished && !row.read) this.setRead(tx, [row.id], true, now);
     });
     this.changes.mark(`chapters:${row.mangaId}`);
+    if (finished && !row.read) this.onRead?.(row.mangaId);
     return { mangaId: row.mangaId, finished: finished && !row.read };
   }
 
@@ -46,6 +53,21 @@ export class ProgressRepository {
   markRead(chapterIds: readonly number[], read: boolean, now = Date.now()): void {
     const mangaIds = this.db.transaction((tx) => this.setRead(tx, chapterIds, read, now));
     for (const id of mangaIds) this.changes.mark(`chapters:${id}`);
+    if (read) for (const id of mangaIds) this.onRead?.(id);
+  }
+
+  /**
+   * Chapters read of a manga as a tracker counts them: the highest chapter number read (rounded
+   * down), or the number of chapters read when none has a number. Null when nothing is read.
+   */
+  highestRead(mangaId: number): number | null {
+    const row = this.db
+      .select({ highest: sql<number | null>`max(${chapters.number})`, count: sql<number>`count(*)` })
+      .from(chapters)
+      .where(and(eq(chapters.mangaId, mangaId), eq(chapters.read, true)))
+      .get();
+    if (!row || row.count === 0) return null;
+    return row.highest === null ? row.count : Math.floor(row.highest);
   }
 
   /** Everything before `chapterId`: lower numbers, or older in source order when unnumbered. */

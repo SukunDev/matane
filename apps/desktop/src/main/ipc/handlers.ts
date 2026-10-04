@@ -28,6 +28,7 @@ import type { ImageCache } from '../images/cache';
 import type { ImageService } from '../images/service';
 import type { NetworkControl } from '../network/control';
 import type { StatsService } from '../stats/service';
+import type { TrackerManager } from '../trackers/manager';
 import type { BackupService } from '../backup/service';
 import type { AppLicense, AppSettings, PackageKind } from '@manga-reader/shared';
 import type { ReadingService } from '../reading/service';
@@ -68,6 +69,7 @@ export interface IpcDeps {
   whatsNew: { get(): { version: string; seen: boolean }; markSeen(): void };
   stats: Pick<StatsService, 'overview' | 'clear'>;
   backups: BackupService;
+  trackers: TrackerManager;
   networkControl: Pick<NetworkControl, 'info' | 'setProxyPassword' | 'test'>;
   /** Discord Rich Presence can be offered. */
   discord: boolean;
@@ -112,6 +114,7 @@ export function createIpcHandlers({
   discord,
   stats,
   backups,
+  trackers,
   networkControl,
   readingActivity,
   settingsChanged,
@@ -363,6 +366,17 @@ export function createIpcHandlers({
       const error = await shell.openPath(folder);
       if (error) throw new AppError('unknown', error);
     },
+    'trackers.list': () => trackers.list(),
+    'trackers.connect': ({ service }) => trackers.connect(service),
+    'trackers.cancelConnect': ({ service }) => trackers.cancelConnect(service),
+    'trackers.setToken': ({ service, token }) => trackers.setToken(service, token),
+    'trackers.disconnect': ({ service }) => trackers.disconnect(service),
+    'trackers.search': ({ service, query }) => trackers.search(service, query),
+    'trackers.tracks': ({ mangaId }) => trackers.tracks(existing(mangaId)),
+    'trackers.link': (input) => trackers.link({ ...input, mangaId: existing(input.mangaId) }),
+    'trackers.unlink': ({ mangaId, service }) => trackers.unlink(existing(mangaId), service),
+    'trackers.update': ({ mangaId, service, patch }) => trackers.update(existing(mangaId), service, patch),
+    'trackers.retry': () => trackers.retry(),
     'stats.overview': ({ range }) => stats.overview(range),
     'stats.clear': () => stats.clear(),
     'network.info': () => networkControl.info(),

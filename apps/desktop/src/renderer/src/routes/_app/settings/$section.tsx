@@ -11,6 +11,7 @@ import { GeneralSettings } from '../../../features/settings/GeneralSettings';
 import { LibrarySettings } from '../../../features/settings/LibrarySettings';
 import { NetworkSettings } from '../../../features/settings/NetworkSettings';
 import { ReaderSettings } from '../../../features/settings/ReaderSettings';
+import { TrackingSettings } from '../../../features/settings/TrackingSettings';
 import { UpdateSettings } from '../../../features/settings/UpdateSettings';
 import { READY_SECTIONS, SETTINGS_SECTIONS, isSettingsSection } from '../../../features/settings/sections';
 import { cn } from '../../../lib/utils';
@@ -64,6 +65,7 @@ function SettingsPage() {
           {current === 'reader' && <ReaderSettings />}
           {current === 'downloads' && <DownloadSettings />}
           {current === 'browse' && <BrowseSettings />}
+          {current === 'tracking' && <TrackingSettings />}
           {current === 'network' && <NetworkSettings />}
           {current === 'data' && <DataSettings />}
           {current === 'advanced' && <AdvancedSettings />}

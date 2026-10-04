@@ -1,0 +1,1 @@
+ALTER TABLE `manga_tracks` ADD `remote_title` text;

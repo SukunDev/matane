@@ -1,7 +1,7 @@
 import { integer, primaryKey, real, sqliteTable, text } from 'drizzle-orm/sqlite-core';
 import { manga } from './library';
 
-// Trackers ship after v1; the tables exist from the start so later migrations stay additive.
+// The tables exist since the first migration; trackers (ADR 0035) use them, with `remote_title` added later.
 
 export const trackerAccounts = sqliteTable('tracker_accounts', {
   service: text().primaryKey(),
@@ -21,6 +21,8 @@ export const mangaTracks = sqliteTable(
     service: text().notNull(),
     remoteId: text().notNull(),
     remoteUrl: text(),
+    /** The title on the tracker, for the tracking dialog. */
+    remoteTitle: text(),
     status: text(),
     score: real(),
     progress: real(),

@@ -505,6 +505,26 @@
         "http": "The site answered HTTP {{status}}",
         "failed": "No connection: {{error}}"
       }
+    },
+    "tracking": {
+      "intro": "Keep your reading lists on trackers up to date. Matane sends the chapters you read, once you link a manga to its entry; nothing is sent while incognito.",
+      "connect": "Connect",
+      "disconnect": "Disconnect",
+      "waiting": "Waiting for the browser… (cancel)",
+      "connectedAs": "Connected as {{name}}",
+      "notConnected": "Not connected",
+      "expired": "The login stopped working. Connect again.",
+      "notConfigured": "This build has no app registration for {{name}}, so it cannot log in.",
+      "plain": "No system keyring was found: the login is stored on this computer without encryption.",
+      "queued_one": "{{count}} update waiting to be sent",
+      "queued_other": "{{count}} updates waiting to be sent",
+      "lastError": "Last problem: {{message}}",
+      "retry": "Send now",
+      "tokenTitle": "Use an access token instead",
+      "tokenHint": "If the login in the browser does not come back to Matane, paste an access token you made yourself.",
+      "tokenPlaceholder": "Access token",
+      "tokenSave": "Connect with token",
+      "redirectHint": "The app's redirect URL is {{url}} (only needed by whoever registers the app)."
     }
   },
   "common": {
@@ -532,6 +552,7 @@
     "cancelled": "Cancelled",
     "not_installed": "The extension for this source is not installed",
     "repo": "Problem with the extension repository",
+    "tracker": "Problem with the tracker",
     "unknown": "Something went wrong",
     "verify": "Verify",
     "verifying": "Waiting for the check…",
@@ -1483,6 +1504,34 @@
       "notOffered": "Not in your repositories",
       "unmatched_one": "{{count}} manga skipped: no source chosen",
       "unmatched_other": "{{count}} manga skipped: no source chosen"
+    }
+  },
+  "tracking": {
+    "button": "Tracking",
+    "title": "Tracking",
+    "description": "Link this manga to its entry on a tracker. Chapters you read are sent for you; what you change here is sent when the tracker can be reached.",
+    "none": "No tracker is connected.",
+    "openSettings": "Connect one in Settings",
+    "search": "Search {{name}}",
+    "searching": "Searching",
+    "noResults": "Nothing found. Try another title.",
+    "link": "Link",
+    "linkTo": "Link to {{title}}",
+    "linkedTo": "Linked to {{title}}",
+    "openOn": "Open on {{name}}",
+    "unlink": "Unlink",
+    "status": "Status",
+    "progress": "Chapters read",
+    "score": "Score (0–10)",
+    "started": "Started",
+    "finished": "Finished",
+    "pending": "Waiting to be sent",
+    "statuses": {
+      "reading": "Reading",
+      "completed": "Completed",
+      "on_hold": "On hold",
+      "dropped": "Dropped",
+      "planning": "Planning to read"
     }
   }
 }

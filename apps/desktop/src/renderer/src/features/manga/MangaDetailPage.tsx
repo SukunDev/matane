@@ -1,7 +1,17 @@
 import { type ChapterInfo, LOCAL_SOURCE_ID, type MangaInfo } from '@manga-reader/shared';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
-import { ArrowRightLeft, BookOpen, ChevronDown, ChevronUp, ExternalLink, Globe, Play, RefreshCw } from 'lucide-react';
+import {
+  ArrowRightLeft,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Globe,
+  Link2,
+  Play,
+  RefreshCw,
+} from 'lucide-react';
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CoverImage, coverSrc } from '../../components/CoverImage';
@@ -20,6 +30,7 @@ import { useColorScheme } from '../../theme/useColorScheme';
 import { usePageCrumbs } from '../../stores/crumbs';
 import { ChapterList } from './ChapterList';
 import { CoverPreview } from './CoverPreview';
+import { TrackingDialog } from './TrackingDialog';
 import { LibraryButton, MoreMenu } from './LibraryActions';
 
 const STATUS_VARIANT = {
@@ -118,6 +129,7 @@ function MangaHeader({
   const scheme = useColorScheme();
   const [expanded, setExpanded] = useState(false);
   const [coverOpen, setCoverOpen] = useState(false);
+  const [trackingOpen, setTrackingOpen] = useState(false);
   const openInBrowser = useMutation({ mutationFn: () => ipc.invoke('manga.openInBrowser', { mangaId: manga.id }) });
   // Main decides where "Continue" goes (last chapter read, next unread, or the first one).
   const { data: next } = useQuery(continueQuery(manga.id));
@@ -190,6 +202,7 @@ function MangaHeader({
               />
             </button>
             <CoverPreview manga={manga} open={coverOpen} onOpenChange={setCoverOpen} />
+            <TrackingDialog manga={manga} open={trackingOpen} onOpenChange={setTrackingOpen} />
           </>
         ) : (
           <CoverImage
@@ -274,6 +287,10 @@ function MangaHeader({
                 </Link>
               </Button>
             )}
+            <Button variant="secondary" className="h-10" onClick={() => setTrackingOpen(true)}>
+              <Link2 />
+              {t('tracking.button')}
+            </Button>
             {manga.sourceId !== LOCAL_SOURCE_ID && (
               <Button variant="secondary" className="h-10" onClick={() => openInBrowser.mutate()}>
                 <ExternalLink />

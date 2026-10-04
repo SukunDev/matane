@@ -152,6 +152,7 @@ export function collectBackup(
     service: string;
     remote_id: string;
     remote_url: string | null;
+    remote_title: string | null;
     status: string | null;
     score: number | null;
     progress: number | null;
@@ -165,6 +166,7 @@ export function collectBackup(
         service: track.service,
         remoteId: track.remote_id,
         remoteUrl: track.remote_url,
+        remoteTitle: track.remote_title,
         status: track.status,
         score: track.score,
         progress: track.progress,

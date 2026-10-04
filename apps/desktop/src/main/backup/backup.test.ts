@@ -192,6 +192,42 @@ describe('backup and restore', () => {
     expect(kv.get(PENDING_KEY)).toEqual({ demo: { prefs: { quality: 'high' }, storage: { token: { a: 1 } } } });
   });
 
+  it('carries tracker links to a new profile, never the logins', async () => {
+    const source = await database('a');
+    seed(source);
+    source.sqlite
+      .prepare(
+        `INSERT INTO manga_tracks (manga_id, service, remote_id, remote_url, remote_title, status, score, progress, started_at,
+           finished_at, sync_back) VALUES (1, 'anilist', '30013', 'https://anilist.co/manga/30013', 'Moon Garden', 'reading', 8.5, 12, 1000, NULL, 0)`,
+      )
+      .run();
+    source.sqlite
+      .prepare(
+        "INSERT INTO tracker_accounts (service, user_id, username, token_encrypted) VALUES ('anilist', '7', 'mika', 'plain:SECRET-TOKEN')",
+      )
+      .run();
+    const file = join(dir, 'tracks.zip');
+    await service(source).backups.create(file);
+
+    const target = await database('b');
+    await service(target, { installed: [] }).backups.restore(file, { mode: 'merge', settings: false });
+    expect(target.sqlite.prepare('SELECT * FROM manga_tracks').all()).toEqual([
+      expect.objectContaining({
+        service: 'anilist',
+        remote_id: '30013',
+        remote_url: 'https://anilist.co/manga/30013',
+        remote_title: 'Moon Garden',
+        status: 'reading',
+        score: 8.5,
+        progress: 12,
+        started_at: 1000,
+        finished_at: null,
+        sync_back: 0,
+      }),
+    ]);
+    expect(target.sqlite.prepare('SELECT * FROM tracker_accounts').all()).toEqual([]);
+  });
+
   it('merges: read = either, furthest progress, both categories, newest history, local settings kept', async () => {
     const source = await database('a');
     seed(source);

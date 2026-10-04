@@ -19,6 +19,7 @@ export const READY_SECTIONS: readonly SettingsSection[] = [
   'reader',
   'downloads',
   'browse',
+  'tracking',
   'network',
   'data',
   'advanced',

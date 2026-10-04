@@ -159,10 +159,12 @@ export function keysForTag(tag: DbChangeTag): readonly (readonly unknown[])[] {
   // The Updates page lists library manga only.
   if (tag === 'library') return [['library'], ['updates']];
   if (tag === 'updates') return [['updates']];
+  if (tag === 'trackers') return [['trackers'], ['tracks']];
   if (tag === 'categories') return [['categories'], ['library']];
   // Library rows count downloaded chapters.
   if (tag === 'downloads') return [['downloads'], ['library', 'list']];
   const [kind, id] = tag.split(':');
+  if (kind === 'tracks') return [['tracks', Number(id)]];
   // History rows show the manga's title and cover, and chapter names and read state.
   if (kind === 'manga') return [queryKeys.manga(Number(id)), ['history'], ['updates', 'list']];
   if (kind === 'chapters') {

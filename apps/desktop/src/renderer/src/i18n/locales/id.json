@@ -504,6 +504,25 @@
         "http": "Situs menjawab HTTP {{status}}",
         "failed": "Tidak tersambung: {{error}}"
       }
+    },
+    "tracking": {
+      "intro": "Perbarui daftar bacaanmu di tracker. Matane mengirim chapter yang kamu baca setelah manga ditautkan ke entrinya; tidak ada yang dikirim saat incognito.",
+      "connect": "Hubungkan",
+      "disconnect": "Putuskan",
+      "waiting": "Menunggu browser… (batal)",
+      "connectedAs": "Terhubung sebagai {{name}}",
+      "notConnected": "Belum terhubung",
+      "expired": "Login tidak berlaku lagi. Hubungkan ulang.",
+      "notConfigured": "Build ini tidak punya registrasi aplikasi untuk {{name}}, jadi tidak bisa login.",
+      "plain": "Keyring sistem tidak ditemukan: login disimpan di komputer ini tanpa enkripsi.",
+      "queued_other": "{{count}} pembaruan menunggu dikirim",
+      "lastError": "Masalah terakhir: {{message}}",
+      "retry": "Kirim sekarang",
+      "tokenTitle": "Pakai access token",
+      "tokenHint": "Kalau login di browser tidak kembali ke Matane, tempel access token yang kamu buat sendiri.",
+      "tokenPlaceholder": "Access token",
+      "tokenSave": "Hubungkan dengan token",
+      "redirectHint": "Redirect URL aplikasi: {{url}} (hanya perlu bagi yang mendaftarkan aplikasi)."
     }
   },
   "common": {
@@ -530,6 +549,7 @@
     "host_crashed": "Host extension dimulai ulang, coba lagi",
     "cancelled": "Dibatalkan",
     "not_installed": "Extension untuk source ini tidak terpasang",
+    "tracker": "Masalah pada tracker",
     "repo": "Ada masalah dengan repositori extension",
     "unknown": "Terjadi kesalahan",
     "verify": "Verifikasi",
@@ -1455,6 +1475,34 @@
       "notOffered": "Tidak ada di repositorimu",
       "unmatched_one": "{{count}} manga dilewati: source belum dipilih",
       "unmatched_other": "{{count}} manga dilewati: source belum dipilih"
+    }
+  },
+  "tracking": {
+    "button": "Tracking",
+    "title": "Tracking",
+    "description": "Tautkan manga ini ke entrinya di tracker. Chapter yang kamu baca dikirim otomatis; perubahanmu di sini dikirim saat tracker bisa dijangkau.",
+    "none": "Belum ada tracker yang terhubung.",
+    "openSettings": "Hubungkan di Setting",
+    "search": "Cari di {{name}}",
+    "searching": "Mencari",
+    "noResults": "Tidak ditemukan. Coba judul lain.",
+    "link": "Tautkan",
+    "linkTo": "Tautkan ke {{title}}",
+    "linkedTo": "Tertaut ke {{title}}",
+    "openOn": "Buka di {{name}}",
+    "unlink": "Putuskan tautan",
+    "status": "Status",
+    "progress": "Chapter dibaca",
+    "score": "Skor (0–10)",
+    "started": "Mulai",
+    "finished": "Selesai",
+    "pending": "Menunggu dikirim",
+    "statuses": {
+      "reading": "Sedang dibaca",
+      "completed": "Selesai",
+      "on_hold": "Ditahan",
+      "dropped": "Dihentikan",
+      "planning": "Rencana baca"
     }
   }
 }

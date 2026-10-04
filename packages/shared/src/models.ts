@@ -267,8 +267,8 @@ export type CloudflareStatus = z.infer<typeof cloudflareStatusSchema>;
 
 /**
  * Entity tags carried by `db.changed` (ADR 0010). The renderer maps them to query keys.
- * "extensions" · "repos" · "sources" · "library" · "categories" · "history" · "downloads" · "updates" · "manga:<id>" ·
- * "chapters:<mangaId>"
+ * "extensions" · "repos" · "sources" · "library" · "categories" · "history" · "downloads" · "updates" · "trackers" ·
+ * "manga:<id>" · "chapters:<mangaId>" · "tracks:<mangaId>"
  */
 export type DbChangeTag =
   | 'extensions'
@@ -279,8 +279,10 @@ export type DbChangeTag =
   | 'history'
   | 'downloads'
   | 'updates'
+  | 'trackers'
   | `manga:${number}`
-  | `chapters:${number}`;
+  | `chapters:${number}`
+  | `tracks:${number}`;
 
 export const categorySchema = z.object({
   id: z.number(),
@@ -632,3 +634,68 @@ export const statsOverviewSchema = z.object({
   sources: z.array(z.object({ sourceId: z.string(), name: z.string(), chapters: z.number() })),
 });
 export type StatsOverview = z.infer<typeof statsOverviewSchema>;
+
+// ------------------------------------------------------------------ trackers (ADR 0035)
+
+export const TRACKER_SERVICES = ['anilist'] as const;
+export type TrackerService = (typeof TRACKER_SERVICES)[number];
+
+/** What every tracker's list status maps to. */
+export const TRACK_STATUSES = ['reading', 'completed', 'on_hold', 'dropped', 'planning'] as const;
+export type TrackStatus = (typeof TRACK_STATUSES)[number];
+
+export const trackerInfoSchema = z.object({
+  service: z.enum(TRACKER_SERVICES),
+  name: z.string(),
+  /** An app registration (client id) exists; without one nobody can log in. */
+  configured: z.boolean(),
+  connected: z.boolean(),
+  username: z.string().nullable(),
+  /** The token stopped working (expired or revoked): connect again. */
+  expired: z.boolean(),
+  /** The token is stored encrypted; false means the system has no keyring and it is plain text. */
+  encrypted: z.boolean().nullable(),
+  /** Updates waiting to be sent (offline, or the tracker said no). */
+  queued: z.number(),
+  lastError: z.string().nullable(),
+  /** The address to register as the redirect URL of the tracker's app (for whoever owns the client id). */
+  redirectUrl: z.string(),
+});
+export type TrackerInfo = z.infer<typeof trackerInfoSchema>;
+
+export const trackSearchResultSchema = z.object({
+  remoteId: z.string(),
+  title: z.string(),
+  coverUrl: z.string().nullable(),
+  url: z.string(),
+  /** "Manga · 2019 · 120 chapters", for telling same-titled entries apart. */
+  detail: z.string().nullable(),
+});
+export type TrackSearchResult = z.infer<typeof trackSearchResultSchema>;
+
+export const trackEntrySchema = z.object({
+  mangaId: z.number(),
+  service: z.enum(TRACKER_SERVICES),
+  remoteId: z.string(),
+  remoteUrl: z.string().nullable(),
+  remoteTitle: z.string().nullable(),
+  status: z.enum(TRACK_STATUSES).nullable(),
+  /** 0 to 10 whatever the tracker's own scale. */
+  score: z.number().nullable(),
+  /** Chapters read. */
+  progress: z.number().nullable(),
+  startedAt: z.number().nullable(),
+  finishedAt: z.number().nullable(),
+  /** A change is waiting to be sent to the tracker. */
+  pending: z.boolean(),
+});
+export type TrackEntry = z.infer<typeof trackEntrySchema>;
+
+export const trackPatchSchema = z.object({
+  status: z.enum(TRACK_STATUSES).nullable().optional(),
+  score: z.number().min(0).max(10).nullable().optional(),
+  progress: z.number().int().min(0).max(100_000).nullable().optional(),
+  startedAt: z.number().nullable().optional(),
+  finishedAt: z.number().nullable().optional(),
+});
+export type TrackPatch = z.infer<typeof trackPatchSchema>;

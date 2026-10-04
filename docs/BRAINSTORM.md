@@ -537,8 +537,8 @@ repo/
 - "Chapter dibaca" = chapter yang selesai di reader (ditandai dibaca **dan** punya sesi baca), jadi "tandai semua dibaca" tidak menggelembungkan angka.
 - Tidak menghitung data dari sesi incognito. Setting → Data bisa menghapus statistik (sesi baca) tanpa menyentuh progres dan history (ADR 0028).
 
-**Tracker (setelah v1)**
-- Login OAuth lewat **browser sistem** → callback via **deep link** `matane://oauth/<service>` (`app.setAsDefaultProtocolClient`). Token disimpan terenkripsi dengan `safeStorage`.
+**Tracker** (AniList dikerjakan 4 Okt 2026, ADR 0035; MyAnimeList, Kitsu, MangaUpdates dan sinkron dua arah menyusul)
+- Login OAuth lewat **browser sistem** → callback lewat **server loopback** `http://127.0.0.1:<port>/callback` selama login (bukan deep link `matane://`: registrasi protokol tidak andal di AppImage/portable). AniList memakai implicit grant (hanya Client ID, tanpa secret). Token disimpan dengan `safeStorage` (teks biasa bila tidak ada keyring, dan UI mengatakannya).
 - Satu manga bisa di-link ke satu entri per tracker. Pencarian entri otomatis memakai judul manga.
 - **Lokal → tracker**: saat chapter ditandai dibaca, progress di tracker diperbarui kalau nomornya lebih tinggi. Status, skor, dan tanggal mulai/selesai bisa diedit dari app.
 - **Tracker → lokal (dua arah)**: saat refresh, kalau progress di tracker lebih tinggi, chapter lokal sampai nomor itu ikut ditandai dibaca. Bisa dimatikan per tracker.
@@ -858,10 +858,10 @@ page_meta         (key PK, bytes, width, height,                  -- key = key h
 - Chapter dianggap "didownload" kalau punya baris `downloads` dengan `status = 'done'`.
 - LRU cache: hapus berdasarkan `last_access_at` terlama sampai total `size_bytes` di bawah batas.
 
-**Tracker (setelah v1, tabelnya disiapkan dari awal)**
+**Tracker (tabelnya disiapkan dari awal; `remote_title` ditambah di migrasi 0005)**
 ```
 tracker_accounts  (service PK, user_id, username, token_encrypted, expires_at)
-manga_tracks      (manga_id FK, service, remote_id, remote_url, status, score,
+manga_tracks      (manga_id FK, service, remote_id, remote_url, remote_title, status, score,
                    progress, started_at, finished_at, sync_back)
                    PK(manga_id, service)
 tracker_queue     (id PK, manga_id, service, payload_json, attempts, next_attempt_at)
@@ -1053,7 +1053,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - grafik statistik memakai komponen SVG sendiri, tanpa library grafik.
 
 **Setelah v1**
-- Tracker: AniList, MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
+- Tracker: ~~AniList~~ (selesai 4 Okt 2026, ADR 0035), MyAnimeList, MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
 - ~~Import backup Mihon/Tachiyomi (`.tachibk`).~~ Selesai 4 Okt 2026 (ADR 0032).
 - ~~Source file lokal (CBZ/folder).~~ Selesai 4 Okt 2026 (ADR 0033).
 - ~~Template extension untuk CMS populer (Madara, MangaThemesia).~~ Selesai 4 Okt 2026 (ADR 0034).

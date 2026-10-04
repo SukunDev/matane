@@ -32,6 +32,7 @@ export default defineConfig({
             { text: 'Reader', link: '/guide/reader' },
             { text: 'Downloads and offline', link: '/guide/downloads' },
             { text: 'Local files', link: '/guide/local' },
+            { text: 'Trackers (AniList)', link: '/guide/tracking' },
             { text: 'Extensions and repositories', link: '/guide/extensions' },
             { text: 'Network (DNS-over-HTTPS, proxy)', link: '/guide/network' },
             { text: 'Backup and restore', link: '/guide/backup' },

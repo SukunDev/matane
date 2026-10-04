@@ -471,8 +471,8 @@ function restoreManga(
     }
   }
   const insertTrack = sqlite.prepare(
-    `INSERT OR IGNORE INTO manga_tracks (manga_id, service, remote_id, remote_url, status, score, progress, started_at,
-       finished_at, sync_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT OR IGNORE INTO manga_tracks (manga_id, service, remote_id, remote_url, remote_title, status, score, progress,
+       started_at, finished_at, sync_back) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
   for (const track of manga.tracks) {
     insertTrack.run(
@@ -480,6 +480,7 @@ function restoreManga(
       track.service,
       track.remoteId,
       track.remoteUrl,
+      track.remoteTitle,
       track.status,
       track.score,
       track.progress,

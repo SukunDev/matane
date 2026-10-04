@@ -43,6 +43,11 @@ import {
   STATS_RANGES,
   PACKAGE_KINDS,
   appLicenseSchema,
+  TRACKER_SERVICES,
+  trackEntrySchema,
+  trackPatchSchema,
+  trackSearchResultSchema,
+  trackerInfoSchema,
 } from '../models';
 import type { DbChangeTag } from '../models';
 import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
@@ -285,6 +290,39 @@ export const invokeContract = {
   /** Settings → Browse: picks the local files folder and saves it; null when cancelled. */
   'local.chooseFolder': invoke(z.void(), z.string().nullable()),
   'local.openFolder': invoke(z.void(), z.void()),
+  // Trackers (ADR 0035). Updates to a tracker are queued in main and sent when online.
+  'trackers.list': invoke(z.void(), z.array(trackerInfoSchema)),
+  /** Opens the tracker's login in the system browser and waits (up to 3 minutes) for the answer. */
+  'trackers.connect': invoke(z.object({ service: z.enum(TRACKER_SERVICES) }), trackerInfoSchema),
+  'trackers.cancelConnect': invoke(z.object({ service: z.enum(TRACKER_SERVICES) }), z.void()),
+  /** Connects with an access token made elsewhere (when the browser login cannot be used). */
+  'trackers.setToken': invoke(
+    z.object({ service: z.enum(TRACKER_SERVICES), token: z.string().trim().min(10).max(4096) }),
+    trackerInfoSchema,
+  ),
+  'trackers.disconnect': invoke(z.object({ service: z.enum(TRACKER_SERVICES) }), z.void()),
+  'trackers.search': invoke(
+    z.object({ service: z.enum(TRACKER_SERVICES), query: z.string().trim().min(1).max(200) }),
+    z.array(trackSearchResultSchema),
+  ),
+  'trackers.tracks': invoke(z.object({ mangaId: idSchema }), z.array(trackEntrySchema)),
+  'trackers.link': invoke(
+    z.object({
+      mangaId: idSchema,
+      service: z.enum(TRACKER_SERVICES),
+      remoteId: z.string().min(1).max(64),
+      remoteUrl: z.string().max(2048).nullable().optional(),
+      title: z.string().max(500).nullable().optional(),
+    }),
+    trackEntrySchema,
+  ),
+  'trackers.unlink': invoke(z.object({ mangaId: idSchema, service: z.enum(TRACKER_SERVICES) }), z.void()),
+  'trackers.update': invoke(
+    z.object({ mangaId: idSchema, service: z.enum(TRACKER_SERVICES), patch: trackPatchSchema }),
+    trackEntrySchema,
+  ),
+  /** Sends the queued updates now. */
+  'trackers.retry': invoke(z.void(), z.void()),
   'stats.overview': invoke(z.object({ range: z.enum(STATS_RANGES) }), statsOverviewSchema),
   /** Forgets every reading session (Settings → Data); progress and history stay. */
   'stats.clear': invoke(z.void(), z.void()),

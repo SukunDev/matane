@@ -71,6 +71,7 @@ export const backupMangaSchema = z.object({
         service: z.string(),
         remoteId: z.string(),
         remoteUrl: z.string().nullable().catch(null),
+        remoteTitle: z.string().nullable().catch(null),
         status: z.string().nullable().catch(null),
         score: z.number().nullable().catch(null),
         progress: z.number().nullable().catch(null),
