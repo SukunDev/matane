@@ -34,7 +34,7 @@ export const extensionEntrySchema = z.object({
 export type ExtensionEntry = z.infer<typeof extensionEntrySchema>;
 
 /**
- * How far a repository is trusted (BRAINSTORM.md §5.8): signed with a key the user chose to trust,
+ * How far a repository is trusted (docs/BRAINSTORM.md §5.8): signed with a key the user chose to trust,
  * or not.
  */
 export const repoTrustSchema = z.enum(['trusted', 'unverified']);
@@ -170,7 +170,7 @@ export const browseResultSchema = z.object({ items: z.array(browseItemSchema), h
 export type BrowseResult = z.infer<typeof browseResultSchema>;
 
 /**
- * Per-manga scanlator preferences (BRAINSTORM.md §6.2), by scanlator name ("" = no group). Hidden
+ * Per-manga scanlator preferences (docs/BRAINSTORM.md §6.2), by scanlator name ("" = no group). Hidden
  * groups disappear from the list, unread counts and navigation; `priority` picks the version of a
  * chapter number when several groups released it.
  */
@@ -341,7 +341,7 @@ export const libraryCountsSchema = z.object({
 });
 export type LibraryCounts = z.infer<typeof libraryCountsSchema>;
 
-/** One row of the History page: the chapter read last in a manga (BRAINSTORM.md §6.3). */
+/** One row of the History page: the chapter read last in a manga (docs/BRAINSTORM.md §6.3). */
 export const historyEntrySchema = z.object({
   mangaId: z.number(),
   title: z.string(),
@@ -412,7 +412,7 @@ export type DownloadStatus = (typeof DOWNLOAD_STATUSES)[number];
 export const DOWNLOAD_FORMATS = ['cbz', 'folder'] as const;
 export type DownloadFormat = (typeof DOWNLOAD_FORMATS)[number];
 
-/** One chapter in the download queue or on disk (BRAINSTORM.md §6.4). */
+/** One chapter in the download queue or on disk (docs/BRAINSTORM.md §6.4). */
 export const downloadItemSchema = z.object({
   id: z.number(),
   chapterId: z.number(),
@@ -475,7 +475,7 @@ export const downloadMoveProgressSchema = z.object({
 });
 export type DownloadMoveProgress = z.infer<typeof downloadMoveProgressSchema>;
 
-/** A new chapter on the Updates page (BRAINSTORM.md §6.4; mockup 07). */
+/** A new chapter on the Updates page (docs/BRAINSTORM.md §6.4; mockup 07). */
 export const updateEntrySchema = z.object({
   chapterId: z.number(),
   mangaId: z.number(),
@@ -536,7 +536,7 @@ export const updateStatusSchema = z.object({
 export type UpdateStatus = z.infer<typeof updateStatusSchema>;
 
 /**
- * The app updater (BRAINSTORM.md §10). `kind`: "auto" installs (NSIS, AppImage), "notify" only
+ * The app updater (docs/BRAINSTORM.md §10). `kind`: "auto" installs (NSIS, AppImage), "notify" only
  * tells and links the release (macOS without signing, portable, other Linux packages), "none" in
  * development.
  */
@@ -590,7 +590,7 @@ export const STATS_RANGES = ['week', 'month', 'year', 'all'] as const;
 export type StatsRange = (typeof STATS_RANGES)[number];
 
 /**
- * The statistics page (BRAINSTORM.md §6.3). "Chapters read" are chapters finished in the reader
+ * The statistics page (docs/BRAINSTORM.md §6.3). "Chapters read" are chapters finished in the reader
  * (marked read and opened in a reading session), so marking a whole list read does not count;
  * incognito never records anything to count.
  */

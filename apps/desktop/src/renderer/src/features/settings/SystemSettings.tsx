@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { appInfoQuery, ipc, settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { Row, Toggle } from './controls';
 
-/** Settings → General: tray and start at login (BRAINSTORM.md §6.4). */
+/** Settings → General: tray and start at login (docs/BRAINSTORM.md §6.4). */
 export function SystemSettings() {
   const { t } = useTranslation();
   const { data: settings } = useQuery(settingsQuery);

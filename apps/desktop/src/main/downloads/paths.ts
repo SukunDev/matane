@@ -32,7 +32,7 @@ export interface ChapterLocation {
 
 /**
  * `<folder>/<Source (LANG)>/<Manga title>/<Chapter name [group]>` without the extension
- * (BRAINSTORM.md §6.4). The group keeps two releases of one chapter apart; the language keeps two
+ * (docs/BRAINSTORM.md §6.4). The group keeps two releases of one chapter apart; the language keeps two
  * languages of one source apart.
  */
 export function chapterBasePath(folder: string, at: ChapterLocation): string {

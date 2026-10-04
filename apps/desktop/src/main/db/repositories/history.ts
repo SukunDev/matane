@@ -8,7 +8,7 @@ import { coverKeyOf } from './manga';
 /** Escapes LIKE wildcards so a search for "100%" matches literally. */
 export const escapeLike = (text: string) => text.replace(/[%_\\]/g, (c) => `\\${c}`);
 
-/** One row per manga: the chapter read last (BRAINSTORM.md §6.3). Statistics live elsewhere. */
+/** One row per manga: the chapter read last (docs/BRAINSTORM.md §6.3). Statistics live elsewhere. */
 export class HistoryRepository {
   constructor(
     private readonly db: AppDatabase,

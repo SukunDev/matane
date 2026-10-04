@@ -11,7 +11,7 @@ interface Entry {
 
 /**
  * Keeps parsed documents on the host side; the sandbox only ever sees numeric handles
- * (parsing big HTML inside QuickJS would be far too slow — BRAINSTORM.md §5.5).
+ * (parsing big HTML inside QuickJS would be far too slow — docs/BRAINSTORM.md §5.5).
  */
 export class HtmlStore {
   private entries = new Map<number, Entry>();

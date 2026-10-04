@@ -17,7 +17,7 @@ export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 /**
  * What the embedder provides. The app backs `http` with the main-process network layer; the CLI backs
- * it with Node's fetch. Requests reach `http` only after the domain allowlist check.
+ * it with Node's fetch. Requests reach `http` only after the http(s) scheme check.
  */
 export interface HostApi {
   http(request: HttpRequest): Promise<HttpResponse>;
@@ -40,7 +40,7 @@ export interface RuntimeLimits {
   methodTimeoutMs: Partial<Record<string, number>>;
 }
 
-// Starting values from BRAINSTORM.md §5.1; final numbers come from the Phase 1 benchmark.
+// Starting values from docs/BRAINSTORM.md §5.1; final numbers come from the Phase 1 benchmark.
 export const DEFAULT_LIMITS: RuntimeLimits = {
   memoryBytes: 64 * 1024 * 1024,
   syncMs: 2_000,
@@ -198,7 +198,7 @@ export class ExtensionRuntime {
   }
 
   /**
-   * `source.transformImage(page, bytes)` (BRAINSTORM.md §5.6). The bytes cross as an ArrayBuffer, not
+   * `source.transformImage(page, bytes)` (docs/BRAINSTORM.md §5.6). The bytes cross as an ArrayBuffer, not
    * JSON; the tiles come back unchecked (the embedder validates them before doing pixel work).
    */
   async transformImage(
@@ -226,7 +226,7 @@ export class ExtensionRuntime {
     }
   }
 
-  /** `source.migrateUrl` over a batch of stored urls (BRAINSTORM.md §5.10). */
+  /** `source.migrateUrl` over a batch of stored urls (docs/BRAINSTORM.md §5.10). */
   migrateUrls(
     sourceKey: string,
     items: { url: string; kind: UrlKind }[],

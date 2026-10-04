@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-27)
 
 ## Context
-Extensions reach users through repositories (BRAINSTORM.md §5.8). A repository is a static folder (GitHub Pages or any host), so the host itself cannot be trusted: whoever controls it could swap an archive. Users must still be able to add community repositories.
+Extensions reach users through repositories (docs/BRAINSTORM.md §5.8). A repository is a static folder (GitHub Pages or any host), so the host itself cannot be trusted: whoever controls it could swap an archive. Users must still be able to add community repositories.
 
 ## Decision
 - **Format** (`@matane/extension-sdk/repo`): `index.json` (`formatVersion: 1`, name, informative `publicKey`, and per extension: id, version, apiVersion, description, nsfw, langs, `file`, `size`, `sha256`, `icon`), `index.json.sig` (base64 ed25519 over the exact bytes of `index.json`), `extensions/<id>-<version>.zip` and `extensions/icons/<id>.png`. File paths in the index must be exactly these, so an index cannot point outside the repository.

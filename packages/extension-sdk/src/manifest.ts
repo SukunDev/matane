@@ -6,7 +6,7 @@ export { SDK_API_VERSION } from './version.js';
 export const extensionIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'lowercase letters, digits and dashes');
 
 export const manifestSchema = z.object({
-  /** Stable forever; never includes a language (BRAINSTORM.md §5.2). */
+  /** Stable forever; never includes a language (docs/BRAINSTORM.md §5.2). */
   id: extensionIdSchema,
   name: z.string().min(1),
   version: z.string().regex(/^\d+\.\d+\.\d+(-[\w.]+)?$/, 'semver'),

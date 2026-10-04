@@ -12,7 +12,7 @@ import { useUpdateSettings } from '../../lib/ipc';
 import { useNow } from '../../lib/now';
 import { Row, Segmented, Toggle } from './controls';
 
-/** Settings → Browse & extensions (BRAINSTORM.md §6.6): content, repositories, extension updates. */
+/** Settings → Browse & extensions (docs/BRAINSTORM.md §6.6): content, repositories, extension updates. */
 export function BrowseSettings() {
   const { t } = useTranslation();
   const { browse } = useContentFilter();

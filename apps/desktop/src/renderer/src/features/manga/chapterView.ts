@@ -6,7 +6,7 @@ export const activeScanlator = (view: ChapterView, prefs: ScanlatorPrefs) =>
   view.scanlator !== null && !prefs.hidden.includes(view.scanlator) ? view.scanlator : null;
 
 /**
- * The chapter list as shown (BRAINSTORM.md §6.2): hidden scanlators left out, filters applied, then
+ * The chapter list as shown (docs/BRAINSTORM.md §6.2): hidden scanlators left out, filters applied, then
  * sorted by source order, number or upload date. Chapters without a number or date go last either
  * way; ties keep the source's order (newest first).
  */

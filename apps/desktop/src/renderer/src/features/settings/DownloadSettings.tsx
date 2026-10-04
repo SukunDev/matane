@@ -18,7 +18,7 @@ const AHEAD = [0, 1, 2, 3, 5, 10] as const;
 const DELAYS = [0, 1, 2, 3] as const;
 const LIMITS_GB = [5, 10, 20, 50, 100, 200, 500] as const;
 
-/** Settings → Downloads (BRAINSTORM.md §6.4, §6.6). */
+/** Settings → Downloads (docs/BRAINSTORM.md §6.4, §6.6). */
 export function DownloadSettings() {
   const { t, i18n } = useTranslation();
   const { data: settings } = useQuery(settingsQuery);

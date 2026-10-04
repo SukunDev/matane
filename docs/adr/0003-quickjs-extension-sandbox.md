@@ -6,7 +6,7 @@ Status: Accepted (2026-09-23) — implemented in Phase 1
 Community extensions are untrusted code. A `utilityProcess` alone is a full Node process and gives crash isolation, not security.
 
 ## Decision
-Every extension runs in its own QuickJS (WASM) runtime hosted by one `utilityProcess`. Extensions only see host APIs (`http`, `html`, `storage`, `prefs`, …); network runs in main and HTML parsing in the extension host ([ADR 0012](0012-html-parsing-in-extension-host.md)). Memory/CPU/time limits per runtime. See BRAINSTORM.md §5.
+Every extension runs in its own QuickJS (WASM) runtime hosted by one `utilityProcess`. Extensions only see host APIs (`http`, `html`, `storage`, `prefs`, …); network runs in main and HTML parsing in the extension host ([ADR 0012](0012-html-parsing-in-extension-host.md)). Memory/CPU/time limits per runtime. See docs/BRAINSTORM.md §5.
 
 ## Consequences
 Extension authors write sandbox-safe JS only (no `require`, no Node APIs). HTML parsing must happen host-side because QuickJS is slow.

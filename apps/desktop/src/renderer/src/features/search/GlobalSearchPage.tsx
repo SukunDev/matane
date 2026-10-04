@@ -30,7 +30,7 @@ import { SourceIcon } from '../browse/SourceIcon';
 import { extensionIconUrl } from '../../lib/extensions';
 
 /**
- * One query across the chosen sources (BRAINSTORM.md §6.2; mockup 06). Each source is its own query,
+ * One query across the chosen sources (docs/BRAINSTORM.md §6.2; mockup 06). Each source is its own query,
  * so results appear as they arrive and a slow or failing source never holds up the others.
  */
 export function GlobalSearchPage({ query, onQuery }: { query: string; onQuery: (query: string) => void }) {

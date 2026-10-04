@@ -63,7 +63,7 @@ export interface MigrationServiceDeps {
 }
 
 /**
- * Source migration (BRAINSTORM.md §6.2): find the same manga in other sources, then move the
+ * Source migration (docs/BRAINSTORM.md §6.2): find the same manga in other sources, then move the
  * reading state over, matching chapters by number.
  */
 export class MigrationService {

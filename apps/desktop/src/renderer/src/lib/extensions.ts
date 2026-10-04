@@ -2,7 +2,7 @@ import { queryOptions, useMutation } from '@tanstack/react-query';
 import { ipc } from './ipc';
 import { localQueryDefaults } from './query';
 
-// Extension repositories and what they offer (BRAINSTORM.md §5.8). Both come from main's database
+// Extension repositories and what they offer (docs/BRAINSTORM.md §5.8). Both come from main's database
 // and repository indexes, so `db.changed` ("repos", "extensions") keeps them fresh.
 
 export const reposQuery = queryOptions({

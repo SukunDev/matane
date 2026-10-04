@@ -16,7 +16,7 @@ export interface CachedImage {
 
 /**
  * Disk cache for proxied images (`userData/cache/images`), indexed by the `image_cache` table.
- * Least-recently-used entries are evicted once the total passes `maxBytes` (BRAINSTORM.md §6.5).
+ * Least-recently-used entries are evicted once the total passes `maxBytes` (docs/BRAINSTORM.md §6.5).
  */
 export class ImageCache {
   private evicting: Promise<void> | null = null;

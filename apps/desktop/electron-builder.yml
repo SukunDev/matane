@@ -1,4 +1,4 @@
-# Packaging (BRAINSTORM.md §10; docs/adr/0021-packaging-and-auto-update.md). Built by `pnpm dist` /
+# Packaging (docs/BRAINSTORM.md §10; docs/adr/0021-packaging-and-auto-update.md). Built by `pnpm dist` /
 # `pnpm dist:linux` locally and by .github/workflows/release.yml on a `v*` tag.
 appId: dev.sukun.matane
 productName: Matane
@@ -65,7 +65,7 @@ mac:
     - target: dmg
       arch: [x64, arm64]
   category: public.app-category.books
-  # No code signing for now (BRAINSTORM.md §10): Gatekeeper steps are in the README.
+  # No code signing for now (docs/BRAINSTORM.md §10): Gatekeeper steps are in the README.
   identity: null
 publish:
   provider: github

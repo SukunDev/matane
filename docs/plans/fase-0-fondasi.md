@@ -2,7 +2,7 @@
 
 ## Context
 
-Semua keputusan desain sudah diambil: `BRAINSTORM.md` (arsitektur, extension, fitur, skema §7, tech stack §8, struktur §9, roadmap §11) dan mockup UI final di `docs/ui/` (16 layar Catppuccin Mocha, HTML + PNG, yang menjadi acuan utama). Folder project masih kosong: belum ada kode dan belum menjadi repo git.
+Semua keputusan desain sudah diambil: `docs/BRAINSTORM.md` (arsitektur, extension, fitur, skema §7, tech stack §8, struktur §9, roadmap §11) dan mockup UI final di `docs/ui/` (16 layar Catppuccin Mocha, HTML + PNG, yang menjadi acuan utama). Folder project masih kosong: belum ada kode dan belum menjadi repo git.
 
 Fase 0 membangun **fondasi yang dipakai semua fase berikutnya**, belum ada fitur baca manga. Hasil akhirnya:
 - App Electron yang bisa dijalankan, dengan shell UI sesuai mockup (title bar kustom, sidebar, tema Catppuccin, EN/ID).
@@ -107,7 +107,7 @@ Acuan: `docs/ui/html/01-library.html` dan `docs/ui/screens/01-library.png`.
 
 ### 10. CI & dokumentasi
 - `.github/workflows/ci.yml` (setiap PR/push, Linux): install pnpm dengan cache, lalu jalankan lint, typecheck, dan test. Build per OS belum masuk (Fase 3).
-- `docs/adr/0001–000N`: ADR singkat yang diturunkan dari `BRAINSTORM.md`: monorepo, lisensi, QuickJS sandbox, format extension, IPC contract, SQLite + Drizzle, tema Catppuccin, dan `docs/ui` sebagai acuan desain.
+- `docs/adr/0001–000N`: ADR singkat yang diturunkan dari `docs/BRAINSTORM.md`: monorepo, lisensi, QuickJS sandbox, format extension, IPC contract, SQLite + Drizzle, tema Catppuccin, dan `docs/ui` sebagai acuan desain.
 - `README.md` minimal: deskripsi, status "pre-alpha", cara menjalankan dev, disclaimer konten.
 
 ## File kunci

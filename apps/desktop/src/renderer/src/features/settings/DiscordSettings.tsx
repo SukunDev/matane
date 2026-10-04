@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { appInfoQuery, settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { Row, Toggle } from './controls';
 
-/** Discord Rich Presence (BRAINSTORM.md §6.6); hidden until the app has a Discord application id. */
+/** Discord Rich Presence (docs/BRAINSTORM.md §6.6); hidden until the app has a Discord application id. */
 export function DiscordSettings() {
   const { t } = useTranslation();
   const { data: info } = useQuery(appInfoQuery);

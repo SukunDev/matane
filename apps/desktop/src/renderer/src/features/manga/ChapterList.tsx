@@ -317,7 +317,7 @@ function ChapterRow({
 
 const SORT_ICONS = { source: ListOrdered, number: Hash, date: CalendarDays } as const;
 
-/** Source order / chapter number / upload date, and the direction (BRAINSTORM.md §6.2). */
+/** Source order / chapter number / upload date, and the direction (docs/BRAINSTORM.md §6.2). */
 function SortMenu({ view, onChange }: { view: ChapterView; onChange: (patch: Partial<ChapterView>) => void }) {
   const { t } = useTranslation();
   const Icon = SORT_ICONS[view.sort];
@@ -397,7 +397,7 @@ function BookmarkToggle({ chapter }: { chapter: ChapterInfo }) {
   );
 }
 
-/** Per-chapter actions (BRAINSTORM.md §6.3): mark read/unread, mark everything before as read. */
+/** Per-chapter actions (docs/BRAINSTORM.md §6.3): mark read/unread, mark everything before as read. */
 function ChapterMenu({ chapter, download }: { chapter: ChapterInfo; download: DownloadItem | undefined }) {
   const { t } = useTranslation();
   const markRead = useMutation({

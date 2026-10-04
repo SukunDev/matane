@@ -21,7 +21,7 @@ export interface UpdateTarget {
 const LIST_LIMIT = 2000;
 
 /**
- * Queries behind the update checker and the Updates page (BRAINSTORM.md §6.4, §7): new chapters are
+ * Queries behind the update checker and the Updates page (docs/BRAINSTORM.md §6.4, §7): new chapters are
  * chapters of library manga first seen after the manga joined the library (`fetched_at >
  * added_at`), so the chapters it already had never show up, with no schema change.
  */

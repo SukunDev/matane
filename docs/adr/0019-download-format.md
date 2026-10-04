@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-27)
 
 ## Context
-Phase 3 downloads chapters for offline reading (BRAINSTORM.md §6.4). Other readers (Komga, Kavita, Mihon, CDisplayEx) should be able to open them, a crash must never leave a chapter that looks finished but is not, and renaming a manga must not lose its files.
+Phase 3 downloads chapters for offline reading (docs/BRAINSTORM.md §6.4). Other readers (Komga, Kavita, Mihon, CDisplayEx) should be able to open them, a crash must never leave a chapter that looks finished but is not, and renaming a manga must not lose its files.
 
 ## Decision
 - **CBZ + `ComicInfo.xml`** by default (title, number, scanlator, writer/artist, genres, summary, `Manga=YesAndRightToLeft` for right-to-left, source URL, page count, language), or a plain **folder** of images, as a setting.

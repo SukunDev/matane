@@ -221,7 +221,7 @@ export function createIpcHandlers({
     'extensions.prepareInstall': ({ repoId, extensionId }) => installer.prepare(repoId, extensionId),
     'extensions.install': async ({ token }) => {
       const entry = await installer.install(token);
-      // Preferences a restored backup kept for it (BRAINSTORM.md §6.7).
+      // Preferences a restored backup kept for it (docs/BRAINSTORM.md §6.7).
       backups.applyPending(entry.id);
       return entry;
     },

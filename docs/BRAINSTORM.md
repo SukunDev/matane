@@ -39,7 +39,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 
 **Masalah legal & sistem extension**
 - Jangan sertakan extension untuk situs bajakan di repo utama. Proyek seperti Tachiyomi pernah kena DMCA. Pola yang aman:
-  - Repo **app** hanya berisi engine + extension resmi/legal (mis. **Example Source**, yang punya API publik).
+  - Repo **app** hanya berisi engine + SDK/runtime/CLI; tidak ada extension di dalamnya, dan app tidak membawa atau menautkan repo extension (ADR 0023).
   - Extension lain ada di **repo terpisah** (atau dibuat komunitas) dan dipasang lewat URL repo extension.
 - Tulis disclaimer di README: aplikasi tidak meng-host konten apa pun.
 
@@ -90,7 +90,7 @@ Target pengguna: pembaca manga di PC/laptop (Windows, Linux, macOS) yang ingin p
 | Format | **Format sendiri (JS/TS), model data meniru Mihon** | Bebas mendesain sendiri, dan porting extension Mihon (Kotlin) ke TS tetap mudah |
 | Runtime | **QuickJS (WASM) sejak awal**, dijalankan di dalam `utilityProcess` | Sandbox sungguhan: extension tidak punya akses Node/fs/jaringan kecuali lewat API host. `utilityProcess` memberi isolasi crash |
 | Gaya API | **Imperatif** (fungsi/class TS biasa) | Fleksibel untuk semua jenis situs. Template untuk CMS populer (Madara, MangaThemesia) bisa ditambah nanti |
-| Keamanan repo | **Hash sha256 + signing ed25519** | Repo resmi terverifikasi, repo lain ditandai "tidak terverifikasi" |
+| Keamanan repo | **Hash sha256 + signing ed25519** | Repo yang kuncinya dipercaya pengguna ditandai terpercaya, repo lain "tidak terverifikasi" (app tidak membawa repo atau kunci bawaan, ADR 0022) |
 
 > Catatan: `utilityProcess` saja **bukan** sandbox, karena itu proses Node penuh. Yang memberi keamanan adalah QuickJS. `utilityProcess` hanya menjaga agar extension yang hang atau crash tidak menjatuhkan UI dan main process.
 
@@ -139,7 +139,6 @@ example-1.2.0/
   "version": "1.2.0",             // semver extension
   "apiVersion": 1,                // versi API host; app menolak yang tidak kompatibel
   "nsfw": false,
-  "domains": ["api.example.org", "uploads.example.org", "*.example.network"],
   "rateLimit": { "requests": 5, "perMs": 1000 },
   "sources": [                    // satu extension bisa menyediakan beberapa source
     { "key": "en", "lang": "en" },
@@ -154,7 +153,7 @@ example-1.2.0/
 - **Source id**: `<extensionId>/<key>`, misalnya `example/en`. `key` bebas (default-nya kode bahasa), jadi dua source dengan bahasa yang sama tetap bisa dibedakan (mis. `situsx/en-mirror`). Key juga tidak boleh berubah.
 - **Manga** unik berdasarkan `(sourceId, url)`, dan **chapter** unik berdasarkan `(mangaId, url)`.
 
-- **`domains` adalah allowlist**: `http` menolak request ke domain di luar daftar ini. Pengguna melihat daftarnya saat install, mirip izin di aplikasi mobile.
+- **Tidak ada allowlist domain** (ADR 0031): `domains` sudah dihapus dari manifest; `http` hanya membatasi skema ke http(s) dan tetap lewat app (rate limit, session, Cloudflare). Pasang extension hanya dari repo yang dipercaya.
 - `index.js` mendaftarkan source lewat `export default defineExtension(...)`. Saat build, SDK mengubahnya menjadi assignment ke global yang dibaca host.
 
 ### 5.3 Model data (gaya Mihon)
@@ -333,7 +332,7 @@ repo/
 
 ```jsonc
 {
-  "name": "Official Extensions",
+  "name": "My Extensions",
   "publicKey": "ed25519:…",       // informatif; kepercayaan ditentukan oleh app, bukan dari sini
   "extensions": [
     {
@@ -348,13 +347,13 @@ repo/
 ```
 
 **Model kepercayaan:**
-- App membawa **public key repo resmi** di dalam kode. Kalau `index.json.sig` valid terhadap key tersebut, repo ditandai **Terverifikasi**.
-- Pengguna boleh menambah repo lain. Repo seperti ini ditandai **Tidak terverifikasi**, dan pengguna harus menyetujui peringatan sekali. Pengguna juga bisa menambahkan public key repo tersebut secara manual ("trust this key").
+- App **tidak membawa public key atau repo bawaan** (ADR 0022). Kalau `index.json.sig` valid terhadap key yang dipilih pengguna ("Trust this key"), repo ditandai **Terpercaya**.
+- Repo tanpa key yang dikenal ditandai **Tidak terverifikasi**, dan pengguna harus menyetujui peringatan sekali. Pengguna juga bisa menambahkan public key repo tersebut secara manual ("trust this key").
 - Setiap bundle yang diunduh **wajib cocok dengan sha256** di index. Karena index sudah ditandatangani, bundle ikut terjamin secara tidak langsung.
 - Kalau extension dengan `id` yang sama ada di dua repo, pengguna memilih salah satu, dan app mengingat asal repo-nya. Extension tidak boleh diam-diam diperbarui dari repo lain.
 - Private key disimpan sebagai **secret di CI** (GitHub Actions) dan hanya dipakai di langkah publish.
 
-**Lifecycle di app:** browse repo → install (tampilkan izin domain + NSFW) → cek update berkala → update → uninstall (hapus bundle, storage, dan prefs, tapi manga di library tetap ada dan ditandai "source tidak terpasang").
+**Lifecycle di app:** browse repo → install (tampilkan kepercayaan repo, versi, ukuran) → cek update berkala → update → uninstall (hapus bundle, storage, dan prefs, tapi manga di library tetap ada dan ditandai "source tidak terpasang").
 
 ### 5.9 Developer experience (SDK)
 
@@ -610,7 +609,7 @@ repo/
 - **Rate limit**: token bucket per extension (nilai dari manifest, default 10/detik). Gambar memakai bucket terpisah yang lebih longgar (20/detik).
 - Timeout per request 20 detik. Retry dengan backoff hanya untuk error jaringan dan 5xx/429 (hormati header `Retry-After`).
 - **User-Agent**: default UA Chrome milik Electron **tanpa token "Electron"**. Urutan prioritas: UA kustom dari extension → UA kustom global (setting) → default.
-- Validasi **allowlist domain** extension (§5.2) dilakukan di sini, termasuk untuk setiap redirect.
+- Pembatasan skema http(s) untuk request extension dilakukan di sini, termasuk untuk setiap redirect (tanpa allowlist domain, ADR 0031).
 
 **Cloudflare**
 1. Deteksi: header `cf-mitigated: challenge`, atau status 403/503 dengan halaman "Just a moment".
@@ -703,7 +702,7 @@ repo/
 1. Bahasa UI dan tema.
 2. Bahasa konten (menyaring source dan extension yang ditampilkan).
 3. Folder download.
-4. Source: pasang dari repo resmi (setelah Milestone 4f) dan daftar source yang sudah siap (bisa dilewati).
+4. Source: pilih source dari extension yang sudah terpasang (bisa dilewati).
 5. Ringkasan singkat kontrol reader.
 - Setiap langkah langsung tersimpan; "Lewati" menyimpan bawaan. Profil dari versi sebelum onboarding dianggap sudah selesai.
 - Bisa diulang dari Setting → Tentang.
@@ -914,7 +913,7 @@ manga-reader/
 │  └─ desktop/
 │     ├─ src/main/
 │     │  ├─ db/             # skema Drizzle, migrasi, query
-│     │  ├─ network/        # net.fetch, rate limit, allowlist, Cloudflare, DoH/proxy
+│     │  ├─ network/        # net.fetch, rate limit, Cloudflare, DoH/proxy
 │     │  ├─ extensions/     # extension host (utilityProcess), repo, signing, install
 │     │  ├─ protocol/       # manga:// handler, cache LRU, pemrosesan gambar (sharp)
 │     │  ├─ downloads/      # antrean, CBZ/folder, otomatisasi
@@ -931,12 +930,10 @@ manga-reader/
 │  ├─ extension-runtime/    # MIT: QuickJS host (dipakai bersama oleh app dan CLI)
 │  ├─ extension-cli/        # MIT: CLI mr-ext (create, build, test, bench) + fixture host
 │  └─ shared/               # tipe domain & kontrak IPC
-├─ extensions/
-│  └─ example/             # extension bawaan (legal)
-├─ docs/
-│  ├─ adr/                  # Architecture Decision Records (diturunkan dari dokumen ini)
-│  └─ ...                   # rencana fase, mockup UI, panduan repo extension
-└─ BRAINSTORM.md
+└─ docs/
+   ├─ BRAINSTORM.md         # dokumen ini
+   ├─ adr/                  # Architecture Decision Records (diturunkan dari dokumen ini)
+   └─ ...                   # rencana fase, mockup UI, panduan repo extension
 ```
 
 Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan smoke test harian di CI-nya sendiri.
@@ -957,7 +954,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 **Testing**
 - **Unit (Vitest)**: rate limiter, pemilihan versi chapter (scanlator), pencocokan migrasi, merge restore, LRU cache, logika "lanjut baca", parsing nomor chapter.
 - **DB**: SQLite in-memory dengan migrasi sungguhan.
-- **Extension runtime**: extension dijalankan di QuickJS dengan **fixture HTTP** yang direkam. **Test sandbox**: `require`, `process`, request ke domain di luar allowlist, batas memori/CPU, dan timeout harus gagal dengan benar.
+- **Extension runtime**: extension dijalankan di QuickJS dengan **fixture HTTP** yang direkam. **Test sandbox**: `require`, `process`, batas memori/CPU, dan timeout harus gagal dengan benar.
 - **E2E (Playwright `_electron`)**: browse → detail → baca → tambah ke library → download → baca offline, memakai **extension tiruan** + server fixture lokal. **CI tidak pernah menyentuh situs sungguhan.**
 - **Target performa** (dicek manual/benchmark sebelum rilis): startup < 2 detik, library 1.000+ manga lancar di-scroll, memori reader webtoon stabil pada chapter panjang. Diukur dengan `pnpm bench` (`apps/desktop/scripts/bench/`, profil seed lokal); hasil Fase 5f di plan Fase 5.
 
@@ -1033,14 +1030,14 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Penutup: E2E alur penuh (download → situs mati → baca offline → chapter baru → Updates → auto-download), ADR 0019–0021, `CHANGELOG.md`, `SECURITY.md`, dan `CONTRIBUTING.md`.
 
 **Fase 4: Ekosistem extension** ✅ selesai 29 Sep 2026; Milestone 4f (repo resmi `repo extension` di GitHub Pages, SDK di npm, extension bawaan keluar dari app) selesai 2 Okt 2026 → **0.2.0-beta.1**; repo resmi, kunci resmi, auto-add, dan handoff dicabut 3 Okt 2026 untuk menghindari masalah DMCA (app tanpa repo bawaan) (rincian dan penyesuaian: `docs/plans/fase-4-ekosistem-extension.md`)
-- Repo extension (`index.json`), **signing ed25519**, install/update/uninstall + dialog izin domain, filter NSFW.
+- Repo extension (`index.json`), **signing ed25519**, install/update/uninstall (dialog izin domain dibatalkan, ADR 0031), filter NSFW.
 - Mode dev: load dari folder, hot reload, panel log. `mr-ext repo`.
 - Repo extension terpisah + smoke test harian.
 - `transformImage` (dekripsi byte + tile shuffle), `migrateUrl`.
 - Publikasi `extension-sdk` ke npm + panduan membuat extension.
 - **Ditunda (keputusan 29 Sep 2026):** peluncuran repo resmi repo extension, kunci tanda tangan resmi, dan terbit ke npm dikerjakan setelah semua fase app selesai (Milestone 4f). Sampai saat itu Example Source tetap bawaan. Panduannya ada di panduan repo extension (dihapus).
 - Penyesuaian:
-  - paket SDK/runtime/CLI bernama `@matane/*` dan siap terbit (`publishConfig` → `dist/`); penambahan repo resmi otomatis dan handoff extension bawaan sudah ada, aktif begitu URL dan kunci resmi diisi;
+  - paket SDK/runtime/CLI bernama `@matane/*` dan siap terbit (`publishConfig` → `dist/`); repo resmi dan handoff dicabut 3 Okt 2026 (lihat atas);
   - bahasa konten juga menyaring Global search dan target migrasi, dan profil lama mendapat bahasa awal dari source yang sudah dipakai;
   - pixel kerja `transformImage` ada di `@matane/extension-runtime/image` (dipakai app dan `mr-ext test`); `migrateUrl` jalan per batch dalam satu transaksi, dengan versi tersimpan di setting.
 
@@ -1051,7 +1048,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Setting jaringan: DoH, proxy, User-Agent.
 - Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0**.
 - Keputusan rencana (1 Okt 2026):
-  - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), jadi v1.0 sudah memasang Example Source dari repo resmi;
+  - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), (sejak 3 Okt 2026 tanpa repo resmi: pengguna menambah repo sendiri);
   - Discord RPC tetap masuk (default mati; tersembunyi sampai Client ID diisi);
   - situs dokumentasi VitePress di GitHub Pages;
   - PKGBUILD AUR dan manifest Flatpak disiapkan dan diuji lokal di Fase 5, submit ke AUR/Flathub bersama 4f;
@@ -1093,7 +1090,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 | **Cloudflare/anti-bot** | BrowserWindow tersembunyi → tampil, UA konsisten, partition per extension |
 | **Pemblokiran ISP (mis. Internet Positif)** | DNS-over-HTTPS dan proxy di setting |
 | **Legal/DMCA** | Repo app hanya berisi extension legal (Example Source); extension lain di repo terpisah; disclaimer |
-| **Keamanan extension** | QuickJS sandbox, allowlist domain, signing repo, `SECURITY.md`, test sandbox di CI |
+| **Keamanan extension** | QuickJS sandbox, signing repo + kepercayaan per key, `SECURITY.md`, test sandbox di CI |
 | **Performa QuickJS** | Parsing HTML dan pengolahan gambar di host. Benchmark Fase 1: batas aman dengan ruang besar (ADR 0003) |
 | **Performa gambar besar/webtoon panjang** | Virtualisasi, split gambar tinggi, cache disk, `img.decode()` |
 | **Modul native (`better-sqlite3`, `sharp`)** | Build matrix per OS/arsitektur di CI; tidak ada cross-compile |

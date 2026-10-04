@@ -53,7 +53,7 @@ export const useLimitConfirm = create<LimitConfirmState>((set) => ({
 
 /**
  * Queues chapters the user asked for. Past the size limit, automatic downloads stop but manual
- * ones still go after a confirmation (BRAINSTORM.md §6.4; the dialog is `DownloadLimitDialog`).
+ * ones still go after a confirmation (docs/BRAINSTORM.md §6.4; the dialog is `DownloadLimitDialog`).
  */
 export function useEnqueueDownloads(): (chapterIds: number[], onQueued?: () => void) => void {
   const queryClient = useQueryClient();

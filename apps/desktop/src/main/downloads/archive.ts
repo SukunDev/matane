@@ -74,7 +74,7 @@ export const readEntry = (zip: yauzl.ZipFile, entry: yauzl.Entry) =>
   });
 
 /**
- * Reads pages of downloaded chapters without extracting them (BRAINSTORM.md §6.4): CBZ entries
+ * Reads pages of downloaded chapters without extracting them (docs/BRAINSTORM.md §6.4): CBZ entries
  * are read at random through a small pool of open archives, folders file by file.
  */
 export class DownloadReader {

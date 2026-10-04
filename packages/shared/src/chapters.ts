@@ -36,7 +36,7 @@ export const isHiddenScanlator = (chapter: ChapterInfo, prefs: ScanlatorPrefs) =
   prefs.hidden.includes(scanlatorKey(chapter));
 
 /**
- * One version among several releases of the same chapter number (BRAINSTORM.md §6.2): the highest
+ * One version among several releases of the same chapter number (docs/BRAINSTORM.md §6.2): the highest
  * priority scanlator, else the same scanlator as the chapter read before, else the newest upload
  * (the source's order breaks ties; it lists newest first).
  */
@@ -136,7 +136,7 @@ function preferredVersion(order: readonly ChapterInfo[], chapter: ChapterInfo, p
 }
 
 /**
- * Where "Continue reading" goes (BRAINSTORM.md §6.3):
+ * Where "Continue reading" goes (docs/BRAINSTORM.md §6.3):
  * 1. the chapter read last is unfinished → continue it;
  * 2. it is finished → the next unread chapter after it (by number);
  * 3. nothing read yet → the oldest unread chapter (the first one when none was marked read).

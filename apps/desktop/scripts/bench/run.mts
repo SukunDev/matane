@@ -1,4 +1,4 @@
-// Performance benchmarks against the built app (BRAINSTORM.md §10 targets: start under 2 s, a
+// Performance benchmarks against the built app (docs/BRAINSTORM.md §10 targets: start under 2 s, a
 // library of 1,000+ manga scrolls smoothly, webtoon memory stays flat on long chapters).
 //
 //   pnpm build && pnpm bench               # all three, results printed as a Markdown table

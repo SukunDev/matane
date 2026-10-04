@@ -15,7 +15,7 @@ import type { PageMetaStore, PageMeta } from './page-meta';
 import { type Box, type ImageInput, type Size, cropBox, cropImage, measure, splitImage } from './processing';
 
 export interface ImageFetcher {
-  /** Fetches an image through the extension's session and allowlist; returns the raw response. */
+  /** Fetches an image through the extension's session; returns the raw response. */
   fetchImage(extensionId: string, url: string, headers: Record<string, string>): Promise<Response>;
 }
 
@@ -36,7 +36,7 @@ export interface PageView {
 }
 
 /**
- * Serves images to the renderer without it ever touching the network (BRAINSTORM.md §6.5):
+ * Serves images to the renderer without it ever touching the network (docs/BRAINSTORM.md §6.5):
  * disk cache first, otherwise fetched with the source's headers and stored. Concurrent requests
  * for one image share a single fetch.
  */
@@ -73,7 +73,7 @@ export class ImageService {
   private async findCover(row: MangaRow): Promise<CachedImage> {
     const mangaId = row.id;
     const covers = this.deps.covers;
-    // Custom cover → permanent library copy → cache → source (BRAINSTORM.md §6.2, §6.5).
+    // Custom cover → permanent library copy → cache → source (docs/BRAINSTORM.md §6.2, §6.5).
     const custom = row.customCoverPath && covers ? await covers.file(row.customCoverPath) : undefined;
     if (custom) return custom;
     if (!row.thumbnailUrl) throw new AppError('not_found', `Manga ${mangaId} has no cover`);
@@ -255,7 +255,7 @@ export class ImageService {
 
   /**
    * A page image from the source, restored when the extension scrambles or encrypts its images
-   * (BRAINSTORM.md §5.6): the extension says how, the host does the pixel work. What is returned is
+   * (docs/BRAINSTORM.md §5.6): the extension says how, the host does the pixel work. What is returned is
    * what gets cached and downloaded, so reading offline never needs the extension again.
    */
   private async fetchPage(sourceId: string, page: Page, url: string): Promise<ImageBytes> {

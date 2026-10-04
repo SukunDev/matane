@@ -2,7 +2,7 @@
 const POLL_MS = 3_000;
 
 /**
- * Whether the app is online (BRAINSTORM.md §6.5): `net.isOnline()` read every few seconds, with
+ * Whether the app is online (docs/BRAINSTORM.md §6.5): `net.isOnline()` read every few seconds, with
  * listeners told about changes. Update checks and the download queue wait while offline and go
  * on by themselves once back online. Tests can force a state with `override`.
  */

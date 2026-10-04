@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Backup file format (BRAINSTORM.md §6.7, ADR 0029): `matane-backup-YYYY-MM-DD….zip` holding
+// Backup file format (docs/BRAINSTORM.md §6.7, ADR 0029): `matane-backup-YYYY-MM-DD….zip` holding
 // `backup.json` (this schema) and `covers/` (custom covers). Everything is referred to by natural
 // keys (source id + url), never by database ids, so a backup restores into any profile.
 

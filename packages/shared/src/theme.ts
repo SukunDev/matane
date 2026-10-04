@@ -1,4 +1,4 @@
-// Catppuccin names shared by main (settings validation) and renderer (theming). See BRAINSTORM.md §6.6.
+// Catppuccin names shared by main (settings validation) and renderer (theming). See docs/BRAINSTORM.md §6.6.
 export const THEME_MODES = ['system', 'mocha', 'macchiato', 'frappe', 'latte', 'amoled'] as const;
 export type ThemeMode = (typeof THEME_MODES)[number];
 

@@ -10,7 +10,7 @@ import { ipc } from '../../lib/ipc';
 import { cn } from '../../lib/utils';
 
 /**
- * Per-manga scanlators (BRAINSTORM.md §6.2): hide groups, and order them by priority, which picks
+ * Per-manga scanlators (docs/BRAINSTORM.md §6.2): hide groups, and order them by priority, which picks
  * the version when several groups released the same chapter.
  */
 export function ScanlatorDialog({

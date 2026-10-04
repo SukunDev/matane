@@ -25,7 +25,7 @@ import { Row, Segmented, Toggle } from './controls';
 
 const ZONE_FILL = { prev: 'bg-ctp-blue/40', next: 'bg-ctp-green/40', menu: 'bg-primary/30' } as const;
 
-/** Settings → Reader (BRAINSTORM.md §6.1, §6.6; mockup 11). Every change saves at once. */
+/** Settings → Reader (docs/BRAINSTORM.md §6.1, §6.6; mockup 11). Every change saves at once. */
 export function ReaderSettings() {
   const { t } = useTranslation();
   const { data: settings } = useQuery(settingsQuery);

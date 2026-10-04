@@ -62,7 +62,7 @@ const keymapSchema = z
 const hexColorSchema = z.string().regex(/^#[0-9a-f]{6}$/i);
 
 /**
- * Global reader defaults (BRAINSTORM.md §6.1). "auto" mode and direction come from the manga type
+ * Global reader defaults (docs/BRAINSTORM.md §6.1). "auto" mode and direction come from the manga type
  * (`typeDefaults`). A manga can override part of it (`mangaReaderSettingsSchema`). Each field falls
  * back on its own so a stored value from an older version never resets the rest.
  */
@@ -103,7 +103,7 @@ export type ReaderSettings = z.infer<typeof readerSettingsSchema>;
 export type ReaderMode = ReaderSettings['mode'];
 
 /**
- * Fields a manga can override (BRAINSTORM.md §6.1: global → per type ("auto") → per manga). Tap
+ * Fields a manga can override (docs/BRAINSTORM.md §6.1: global → per type ("auto") → per manga). Tap
  * zones, keys and the like stay global: they are habits of the reader, not properties of the manga.
  */
 export const MANGA_READER_KEYS = [
@@ -177,7 +177,7 @@ export const DEFAULT_READER_SETTINGS: ReaderSettings = {
 export const LIBRARY_DISPLAYS = ['compact', 'comfortable', 'cover', 'list'] as const;
 const LIBRARY_SORT_KEYS = ['title', 'lastRead', 'latestChapter', 'added', 'unread', 'total'] as const;
 
-/** How the library looks (BRAINSTORM.md §6.2); per-field fallbacks like the reader settings. */
+/** How the library looks (docs/BRAINSTORM.md §6.2); per-field fallbacks like the reader settings. */
 export const librarySettingsSchema = z.object({
   display: z.enum(LIBRARY_DISPLAYS).catch('comfortable'),
   /** Cover width in CSS px for the grid displays. */
@@ -206,7 +206,7 @@ export const DEFAULT_LIBRARY_SETTINGS: LibrarySettings = {
   sourceIds: [],
 };
 
-/** Global search (BRAINSTORM.md §6.2): which sources, and whether to hide sources without results. */
+/** Global search (docs/BRAINSTORM.md §6.2): which sources, and whether to hide sources without results. */
 export const globalSearchSettingsSchema = z.object({
   /** null = the default set: pinned sources and sources with manga in the library. */
   sourceIds: z.array(z.string()).nullable().catch(null),
@@ -214,7 +214,7 @@ export const globalSearchSettingsSchema = z.object({
 });
 export type GlobalSearchSettings = z.infer<typeof globalSearchSettingsSchema>;
 
-/** What a source migration carries over (BRAINSTORM.md §6.2), remembered between migrations. */
+/** What a source migration carries over (docs/BRAINSTORM.md §6.2), remembered between migrations. */
 export const migrationOptionsSchema = z.object({
   /** Read status and progress, matched by chapter number. */
   readStatus: z.boolean().catch(true),
@@ -244,7 +244,7 @@ export const migrationSettingsSchema = z.object({
 });
 export type MigrationSettings = z.infer<typeof migrationSettingsSchema>;
 
-/** "Delete after reading" (BRAINSTORM.md §6.4); off by default, it removes files. */
+/** "Delete after reading" (docs/BRAINSTORM.md §6.4); off by default, it removes files. */
 export const deleteAfterReadSchema = z.object({
   enabled: z.boolean().catch(false),
   /** Wait until this many later chapters are read too (0 = delete as soon as it is read). */
@@ -263,7 +263,7 @@ export const DEFAULT_DELETE_AFTER_READ: DeleteAfterRead = {
   excludeCategoryIds: [],
 };
 
-/** Downloads (BRAINSTORM.md §6.4); per-field fallbacks like the reader settings. */
+/** Downloads (docs/BRAINSTORM.md §6.4); per-field fallbacks like the reader settings. */
 export const downloadSettingsSchema = z.object({
   /** null = the default, `Documents/Matane`. */
   folder: z.string().min(1).nullable().catch(null),
@@ -280,10 +280,10 @@ export const downloadSettingsSchema = z.object({
 });
 export type DownloadSettings = z.infer<typeof downloadSettingsSchema>;
 
-/** Hours between automatic library update checks; 0 = off (BRAINSTORM.md §6.4). */
+/** Hours between automatic library update checks; 0 = off (docs/BRAINSTORM.md §6.4). */
 export const UPDATE_INTERVALS = [0, 6, 12, 24, 48, 168] as const;
 
-/** The library update checker (BRAINSTORM.md §6.4); per-field fallbacks. */
+/** The library update checker (docs/BRAINSTORM.md §6.4); per-field fallbacks. */
 export const updateSettingsSchema = z.object({
   intervalHours: z.literal(UPDATE_INTERVALS).catch(12),
   /** Skip rules for "check library" (not for a single manga). */
@@ -319,7 +319,7 @@ export const categorySettingsSchema = z.object({
 });
 export type CategorySettings = z.infer<typeof categorySettingsSchema>;
 
-/** The app in the system (BRAINSTORM.md §6.4, §6.6): tray and start at login. */
+/** The app in the system (docs/BRAINSTORM.md §6.4, §6.6): tray and start at login. */
 export const generalSettingsSchema = z.object({
   /** Closing the window hides it to the tray; downloads and update checks go on. */
   closeToTray: z.boolean().catch(false),
@@ -337,7 +337,7 @@ export const generalSettingsSchema = z.object({
 });
 export type GeneralSettings = z.infer<typeof generalSettingsSchema>;
 
-/** DNS-over-HTTPS providers (BRAINSTORM.md §6.5); "custom" uses `customUrl`. */
+/** DNS-over-HTTPS providers (docs/BRAINSTORM.md §6.5); "custom" uses `customUrl`. */
 export const DOH_PROVIDERS = ['cloudflare', 'google', 'quad9', 'adguard', 'custom'] as const;
 export const DOH_MODES = ['off', 'automatic', 'secure'] as const;
 export const PROXY_MODES = ['system', 'direct', 'http', 'socks5'] as const;
@@ -349,7 +349,7 @@ export const DEFAULT_NETWORK_SETTINGS = {
 } as const;
 
 /**
- * Network options (BRAINSTORM.md §6.5): DNS-over-HTTPS (sites blocked through DNS, e.g. by ISPs in
+ * Network options (docs/BRAINSTORM.md §6.5): DNS-over-HTTPS (sites blocked through DNS, e.g. by ISPs in
  * Indonesia), a proxy for every session, and a custom User-Agent. The proxy password is not here:
  * it is kept encrypted by main (`safeStorage`) and never sent to the renderer.
  */
@@ -381,7 +381,7 @@ export const networkSettingsSchema = z
   });
 export type NetworkSettings = z.infer<typeof networkSettingsSchema>;
 
-/** App updates (BRAINSTORM.md §10): download by itself, only tell, or off; stable or beta releases. */
+/** App updates (docs/BRAINSTORM.md §10): download by itself, only tell, or off; stable or beta releases. */
 export const updaterSettingsSchema = z.object({
   mode: z.enum(['auto', 'notify', 'off']).catch('auto'),
   /** Beta = GitHub pre-releases too. Every release is a beta for now. */
@@ -393,7 +393,7 @@ export type UpdaterSettings = z.infer<typeof updaterSettingsSchema>;
 export const REPO_SYNC_HOURS = [6, 12, 24, 48, 168] as const;
 
 /**
- * Browse & extensions (BRAINSTORM.md §6.6): adult content stays hidden until turned on, and only
+ * Browse & extensions (docs/BRAINSTORM.md §6.6): adult content stays hidden until turned on, and only
  * extensions and sources in the content languages are shown.
  */
 export const browseSettingsSchema = z.object({
@@ -432,7 +432,7 @@ export function isContentVisible(
   return item.langs.length === 0 || item.langs.some((l) => ANY_LANGUAGE.has(l) || wanted.has(primaryLanguage(l)));
 }
 
-/** Page cache size choices in MB (BRAINSTORM.md §6.5, ADR 0014; default 1 GB). */
+/** Page cache size choices in MB (docs/BRAINSTORM.md §6.5, ADR 0014; default 1 GB). */
 export const CACHE_SIZES_MB = [256, 512, 1024, 2048, 5120, 10240] as const;
 
 export const appSettingsSchema = z.object({
@@ -462,7 +462,7 @@ export const appSettingsSchema = z.object({
       folder: z.string().nullable().catch(null),
     })
     .catch({ auto: 'daily', folder: null }),
-  /** Settings → Advanced: how much goes into the log file (BRAINSTORM.md §10). */
+  /** Settings → Advanced: how much goes into the log file (docs/BRAINSTORM.md §10). */
   advanced: z
     .object({ logLevel: z.enum(['error', 'warn', 'info', 'debug']).catch('info') })
     .catch({ logLevel: 'info' }),

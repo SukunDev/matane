@@ -26,7 +26,7 @@ export function isDohUrl(text: string): boolean {
   }
 }
 
-/** Settings → Network (BRAINSTORM.md §6.5): DNS-over-HTTPS, proxy, User-Agent. Changes apply at once. */
+/** Settings → Network (docs/BRAINSTORM.md §6.5): DNS-over-HTTPS, proxy, User-Agent. Changes apply at once. */
 export function NetworkSettings() {
   const { data: settings } = useQuery(settingsQuery);
   const update = useUpdateSettings();

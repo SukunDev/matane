@@ -13,7 +13,7 @@ import { Row } from './controls';
 
 const storageQueryKey = ['storage', 'info'] as const;
 
-/** Settings → Data & storage (BRAINSTORM.md §6.5, §6.6; ADR 0014): cache size and usage, folders. */
+/** Settings → Data & storage (docs/BRAINSTORM.md §6.5, §6.6; ADR 0014): cache size and usage, folders. */
 export function DataSettings() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();

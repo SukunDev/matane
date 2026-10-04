@@ -54,7 +54,7 @@ interface PaletteAction {
 const NAV_LEAVES: NavLeaf[] = NAV_ITEMS.flatMap((item) => ('children' in item ? item.children : [item]));
 
 /**
- * Command palette (BRAINSTORM.md §6.6, mockup 12): library manga (full-text search in main),
+ * Command palette (docs/BRAINSTORM.md §6.6, mockup 12): library manga (full-text search in main),
  * continue reading, actions, every page and settings section, and "search sources" (Tab).
  */
 export function CommandPalette() {

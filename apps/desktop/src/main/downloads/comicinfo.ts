@@ -24,7 +24,7 @@ const escape = (text: string) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-/** `ComicInfo.xml` for a downloaded chapter (BRAINSTORM.md §6.4); empty fields are left out. */
+/** `ComicInfo.xml` for a downloaded chapter (docs/BRAINSTORM.md §6.4); empty fields are left out. */
 export function comicInfoXml(info: ComicInfo): string {
   const fields: [string, string | number | null][] = [
     ['Title', info.title],

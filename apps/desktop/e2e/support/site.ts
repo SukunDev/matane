@@ -326,7 +326,7 @@ const EXTENSIONS = {
   mirror: { id: 'e2e-mirror', name: 'E2E Mirror', sources: [{ key: 'id', lang: 'id', name: 'E2E Mirror' }] },
   // Adult content: hidden until Settings → Browse & extensions allows it. Its requests say lang=nsfw.
   adult: { id: 'e2e-adult', name: 'E2E Adult', nsfw: true, sources: [{ key: 'nsfw', lang: 'en', name: 'E2E Adult' }] },
-  // Protected images (BRAINSTORM.md §5.6): page i is SECURE_MODES[i]; transformImage restores them.
+  // Protected images (docs/BRAINSTORM.md §5.6): page i is SECURE_MODES[i]; transformImage restores them.
   secure: { id: 'e2e-secure', name: 'E2E Secure', sources: [{ key: 'en', lang: 'en', name: 'E2E Secure' }] },
 } as const;
 export type SiteExtension = keyof typeof EXTENSIONS;

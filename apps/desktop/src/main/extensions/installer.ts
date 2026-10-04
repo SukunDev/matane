@@ -45,7 +45,7 @@ export interface InstallerDeps {
 }
 
 /**
- * Installs, updates and uninstalls extensions from repositories (BRAINSTORM.md §5.8, ADR 0023).
+ * Installs, updates and uninstalls extensions from repositories (docs/BRAINSTORM.md §5.8, ADR 0023).
  * Two steps: `prepare` downloads the archive and checks it against the signed index (sha256,
  * contents, manifest) for the install dialog; `install` then writes it atomically.
  */

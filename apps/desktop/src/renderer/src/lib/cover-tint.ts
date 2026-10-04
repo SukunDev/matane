@@ -1,4 +1,4 @@
-// Detail header colours from the cover (BRAINSTORM.md §6.6): the cover's dominant colour, adjusted
+// Detail header colours from the cover (docs/BRAINSTORM.md §6.6): the cover's dominant colour, adjusted
 // so a button in it stays readable with the theme's text on accent (crust on dark, base on Latte).
 
 interface Hsl {

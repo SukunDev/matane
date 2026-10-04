@@ -27,7 +27,7 @@ export interface OpenBackup {
 }
 
 /**
- * Opens a backup archive and checks `backup.json` against the format (BRAINSTORM.md §6.7). A file
+ * Opens a backup archive and checks `backup.json` against the format (docs/BRAINSTORM.md §6.7). A file
  * that is not a backup, is damaged, or comes from a newer Matane is refused with a clear message.
  */
 export async function openBackup(path: string): Promise<OpenBackup> {
@@ -134,7 +134,7 @@ export interface RestoreDeps {
 const json = (value: unknown) => (value === null || value === undefined ? null : JSON.stringify(value));
 
 /**
- * Restores a backup (BRAINSTORM.md §6.7). "merge" combines: read = either, progress = the furthest,
+ * Restores a backup (docs/BRAINSTORM.md §6.7). "merge" combines: read = either, progress = the furthest,
  * categories = both, history = the newest, bookmarks = either; what is set here wins over the
  * backup for per-manga settings and metadata. "replace" removes the library first (the caller has
  * backed it up). Runs in batches of transactions with a turn for the event loop in between.

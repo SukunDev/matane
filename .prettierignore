@@ -8,7 +8,7 @@ pnpm-lock.yaml
 **/drizzle/meta
 docs/ui/html
 LICENSE
-BRAINSTORM.md
+docs/BRAINSTORM.md
 docs
 
 # Recorded HTTP responses, kept compact

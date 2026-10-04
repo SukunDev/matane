@@ -10,7 +10,7 @@ import { Row, Segmented, Toggle } from './controls';
 const UNREAD_LIMITS = [10, 25, 50, 100] as const;
 const AUTO_DOWNLOAD = [null, 'include', 'exclude'] as const;
 
-/** Settings → Library: the update checker and auto-download of new chapters (BRAINSTORM.md §6.4). */
+/** Settings → Library: the update checker and auto-download of new chapters (docs/BRAINSTORM.md §6.4). */
 export function UpdateSettings() {
   const { t } = useTranslation();
   const { data: settings } = useQuery(settingsQuery);

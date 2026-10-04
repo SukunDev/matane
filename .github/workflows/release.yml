@@ -69,7 +69,7 @@ jobs:
         working-directory: apps/desktop
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # No code signing yet (BRAINSTORM.md §10).
+          # No code signing yet (docs/BRAINSTORM.md §10).
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
         run: pnpm exec electron-builder ${{ matrix.target }} --publish always
       - uses: actions/upload-artifact@v4

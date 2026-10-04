@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Short records of decisions that shape the codebase. The full design discussion (Indonesian) lives in [`BRAINSTORM.md`](../../BRAINSTORM.md).
+Short records of decisions that shape the codebase. The full design discussion (Indonesian) lives in [`docs/BRAINSTORM.md`](../BRAINSTORM.md).
 
 | # | Decision |
 |---|---|

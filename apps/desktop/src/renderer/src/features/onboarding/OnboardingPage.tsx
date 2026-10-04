@@ -21,7 +21,7 @@ import { Segmented } from '../settings/controls';
 const STEPS = ['appearance', 'languages', 'downloads', 'sources', 'reader'] as const;
 
 /**
- * First-run setup (BRAINSTORM.md §6.6, mockup 13): appearance, content languages, download folder,
+ * First-run setup (docs/BRAINSTORM.md §6.6, mockup 13): appearance, content languages, download folder,
  * sources, and the reader controls. Every step saves as it goes; "Skip setup" keeps the defaults.
  * Run again from Settings → About.
  */

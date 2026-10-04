@@ -45,7 +45,7 @@ export class NetworkManager implements ExtensionNetwork {
     return entry.fetcher.request(request);
   }
 
-  /** Image fetch through the extension's session and allowlist, with its own rate bucket. */
+  /** Image fetch through the extension's session, with its own rate bucket. */
   async fetchImage(manifest: ExtensionManifest, url: string, headers: Record<string, string>): Promise<Response> {
     const entry = this.entry(manifest);
     await this.proxyReady(manifest.id);

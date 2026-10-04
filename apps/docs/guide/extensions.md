@@ -23,7 +23,7 @@ Matane comes without any repository. Add one by its URL (Extensions → Reposito
 Every downloaded extension must match the signed checksum before anything is written to disk.
 
 ::: tip Only add repositories you trust
-An extension cannot read your files or reach sites it did not list, but it does see what you browse in its sources.
+An extension cannot read your files, but it can make requests to any website and it sees what you browse in its sources.
 :::
 
 ## Languages and adult content

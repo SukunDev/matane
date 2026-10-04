@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-27)
 
 ## Context
-Users follow ongoing manga and want to know about new chapters without opening each one (BRAINSTORM.md §6.4), also while the window is closed to the tray. Sources are rate-limited and sometimes down.
+Users follow ongoing manga and want to know about new chapters without opening each one (docs/BRAINSTORM.md §6.4), also while the window is closed to the tray. Sources are rate-limited and sometimes down.
 
 ## Decision
 - **`UpdateService` in main**, on a schedule (off / 6 / 12 (default) / 24 / 48 h / weekly), at start when the interval passed, and on demand (library, category, selected manga). Offline, the scheduled check waits.

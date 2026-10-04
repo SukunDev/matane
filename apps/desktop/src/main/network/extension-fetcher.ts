@@ -54,7 +54,7 @@ export async function isCloudflareChallenge(response: Response): Promise<boolean
 }
 
 /**
- * Network access for one extension: domain allowlist on every hop, rate limit, timeout,
+ * Network access for one extension: http(s) only on every hop, rate limit, timeout,
  * retries for 429/5xx honouring Retry-After, and Cloudflare challenge solving.
  */
 export class ExtensionFetcher {
@@ -104,7 +104,7 @@ export class ExtensionFetcher {
     }
   }
 
-  /** One logical request: follows redirects itself so each hop passes the allowlist. */
+  /** One logical request: follows redirects itself so each hop is checked. */
   private async exchange(request: HttpRequest, signal?: AbortSignal): Promise<{ response: Response; url: string }> {
     const parts = toFetchParts(request);
     if (!parts.headers.has('user-agent')) parts.headers.set('user-agent', this.options.userAgent);

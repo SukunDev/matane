@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-01)
 
 ## Context
-Phase 5 adds a first-run setup, release notes after an update, and a detail header tinted by the cover (BRAINSTORM.md §6.6). Each needs to tell a new profile from an upgraded one, or to remember something about a cover that can change.
+Phase 5 adds a first-run setup, release notes after an update, and a detail header tinted by the cover (docs/BRAINSTORM.md §6.6). Each needs to tell a new profile from an upgraded one, or to remember something about a cover that can change.
 
 ## Decision
 - **New or upgraded profile**: `runMigrations` reports `fresh` when the database had no migration applied before this start. That is the only signal; nothing is guessed from the library.

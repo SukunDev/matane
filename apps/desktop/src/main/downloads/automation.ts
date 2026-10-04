@@ -6,7 +6,7 @@ import type { MangaRepository } from '../db/repositories/manga';
 import type { DownloadManager } from './manager';
 
 /**
- * Download ahead (BRAINSTORM.md §6.4): the next `count` unread chapters after `current`, in
+ * Download ahead (docs/BRAINSTORM.md §6.4): the next `count` unread chapters after `current`, in
  * reading order, one version per number (`adjacentChapter` picks it with the scanlator prefs).
  */
 export function chaptersAhead(
@@ -44,7 +44,7 @@ function positions(chapters: readonly ChapterInfo[], prefs: ScanlatorPrefs): Cha
 }
 
 /**
- * Delete after reading (BRAINSTORM.md §6.4): once `finished` is read, the chapters to delete are
+ * Delete after reading (docs/BRAINSTORM.md §6.4): once `finished` is read, the chapters to delete are
  * those `delay` positions before it, provided every position from there up to `finished` is read
  * ("wait until N later chapters are read"). All read versions of that number go, except bookmarked
  * ones when `keepBookmarked`. Only chapters with a download matter; the caller filters those.
@@ -77,7 +77,7 @@ export interface DownloadAutomationDeps {
 }
 
 /**
- * Downloads that follow reading (BRAINSTORM.md §6.4), driven by the reader's saved progress (so
+ * Downloads that follow reading (docs/BRAINSTORM.md §6.4), driven by the reader's saved progress (so
  * nothing happens in incognito, where progress is not saved): download ahead for library manga,
  * and delete after reading.
  */

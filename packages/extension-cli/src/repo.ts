@@ -101,7 +101,7 @@ export interface BuildRepoResult {
 }
 
 /**
- * Builds a repository folder ready for static hosting (BRAINSTORM.md §5.8): one reproducible zip
+ * Builds a repository folder ready for static hosting (docs/BRAINSTORM.md §5.8): one reproducible zip
  * per extension, icons, `index.json` sorted by id, and `index.json.sig` when a key is given.
  */
 export async function buildRepo(options: BuildRepoOptions): Promise<BuildRepoResult> {

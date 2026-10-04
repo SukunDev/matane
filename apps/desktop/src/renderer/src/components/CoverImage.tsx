@@ -23,7 +23,7 @@ export function coverSrc(mangaId: number, coverKey: string): string {
 
 /**
  * Manga cover served by main over `manga://cover/<id>` (cached, fetched with the source's headers);
- * the renderer never loads remote images itself (BRAINSTORM.md §6.5).
+ * the renderer never loads remote images itself (docs/BRAINSTORM.md §6.5).
  */
 export function CoverImage(props: CoverImageProps) {
   // Remount on a new cover URL so the load state starts over (e.g. details just filled it in).

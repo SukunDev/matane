@@ -1,4 +1,4 @@
-// Pixel work for the reader (BRAINSTORM.md §6.1, ADR 0025): page sizes, border crop and tall-page
+// Pixel work for the reader (docs/BRAINSTORM.md §6.1, ADR 0025): page sizes, border crop and tall-page
 // segments. Runs on sharp's own thread pool, so the main thread only awaits.
 import sharp, { type FormatEnum, type Sharp } from 'sharp';
 

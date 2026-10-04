@@ -58,7 +58,7 @@ export interface AppTrayDeps {
 }
 
 /**
- * The optional tray icon (BRAINSTORM.md §6.4): open, check now, pause/resume downloads, a short
+ * The optional tray icon (docs/BRAINSTORM.md §6.4): open, check now, pause/resume downloads, a short
  * status and quit. It exists only while "close to tray" is on.
  */
 export class AppTray {

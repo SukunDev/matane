@@ -17,4 +17,4 @@ TanStack Query is built for data owned by someone else: slow, may fail, may chan
 ## Consequences
 - New queries must pick a category: local ones spread `localQueryDefaults`, remote ones rely on the defaults.
 - Any main-side write that can affect a local query must emit an event; forgetting it shows up as stale UI, so write paths should go through repositories that emit `db.changed`.
-- Page images never go through TanStack Query; they are served by the `manga://` protocol (BRAINSTORM.md §6.5).
+- Page images never go through TanStack Query; they are served by the `manga://` protocol (docs/BRAINSTORM.md §6.5).

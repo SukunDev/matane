@@ -15,7 +15,7 @@ import { exists, freeTarget, isInside, movePath, rebase } from './move';
 import { chapterBasePath, pageFileName } from './paths';
 import type { DownloadStore } from './store';
 
-/** Chapters downloaded at once by default, and pages at once per chapter (BRAINSTORM.md §6.4). */
+/** Chapters downloaded at once by default, and pages at once per chapter (docs/BRAINSTORM.md §6.4). */
 export const MAX_CHAPTERS = 2;
 export const MAX_PAGES = 4;
 /** Retries per page after the first attempt, with exponential backoff (1 s, 2 s, 4 s). */
@@ -79,7 +79,7 @@ function retryable(error: unknown): boolean {
 }
 
 /**
- * The download queue (BRAINSTORM.md §6.4): persistent, two chapters at once with four pages each,
+ * The download queue (docs/BRAINSTORM.md §6.4): persistent, two chapters at once with four pages each,
  * retries with backoff, pause/resume/cancel. A chapter is written to `<name>.tmp/` first (pages
  * already there are kept, so a resumed download skips them), then zipped to CBZ (or the folder is
  * renamed) and moved into place in one rename, so a half-written chapter never looks finished.
@@ -89,7 +89,7 @@ export class DownloadManager {
   private started = false;
   /** While above 0 (moving the folder), nothing starts. */
   private holds = 0;
-  /** Offline: the queue waits (BRAINSTORM.md §6.5) and goes on once back online. */
+  /** Offline: the queue waits (docs/BRAINSTORM.md §6.5) and goes on once back online. */
   private offline = false;
   /** Set on app quit: the database is about to close, nothing may touch it any more. */
   private closing = false;
@@ -133,7 +133,7 @@ export class DownloadManager {
     this.pump();
   }
 
-  /** Whether the finished downloads reached the size limit (BRAINSTORM.md §6.4). */
+  /** Whether the finished downloads reached the size limit (docs/BRAINSTORM.md §6.4). */
   overLimit(): boolean {
     const limit = this.deps.settings().limitBytes;
     return limit != null && this.deps.repo.stats().totalBytes >= limit;

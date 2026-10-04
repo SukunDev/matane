@@ -67,7 +67,7 @@ export interface CollectedBackup {
 }
 
 /**
- * Everything a backup holds (BRAINSTORM.md §6.7): library manga with their chapters, categories,
+ * Everything a backup holds (docs/BRAINSTORM.md §6.7): library manga with their chapters, categories,
  * history, reading sessions, tracker links, plus manga outside the library that history or
  * sessions refer to; sources, repositories, installed extensions with their preferences and
  * storage, and the app settings. Not downloads themselves, caches or secrets.

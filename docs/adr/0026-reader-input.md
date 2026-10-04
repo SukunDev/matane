@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-01)
 
 ## Context
-Phase 5 makes reader keys remappable and adds zoom, pan and touch gestures (BRAINSTORM.md §6.1). Keys used to be hard-coded in three separate `keydown` listeners (reader, page view, strip), and there was no zoom at all.
+Phase 5 makes reader keys remappable and adds zoom, pan and touch gestures (docs/BRAINSTORM.md §6.1). Keys used to be hard-coded in three separate `keydown` listeners (reader, page view, strip), and there was no zoom at all.
 
 ## Decision
 - **Keys are actions.** `READER_ACTIONS` and `DEFAULT_KEYMAP` live in `@manga-reader/shared/reader`; a key is named by `keyId` (modifiers first, letters upper case, Shift only for named keys: `Ctrl+=`, `Shift+Space`). Settings store only the actions changed from the defaults (`reader.keymap`), so new defaults reach everyone who did not change that action.

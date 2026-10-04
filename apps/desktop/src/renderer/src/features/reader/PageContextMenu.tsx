@@ -23,7 +23,7 @@ function pageAt(target: EventTarget | null): PageRef | undefined {
 const itemClass =
   'flex h-8 cursor-default items-center gap-2 rounded-md px-2 text-sm outline-none data-[highlighted]:bg-ctp-surface0';
 
-/** Right-click a page → save it, copy it, or make it the cover (BRAINSTORM.md §6.1). Elsewhere no menu opens. */
+/** Right-click a page → save it, copy it, or make it the cover (docs/BRAINSTORM.md §6.1). Elsewhere no menu opens. */
 export function PageContextMenu({ mangaId, children }: { mangaId: number; children: ReactNode }) {
   const { t } = useTranslation();
   const notify = useReaderNotice((state) => state.show);

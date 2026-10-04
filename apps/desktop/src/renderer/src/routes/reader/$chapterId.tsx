@@ -9,7 +9,7 @@ export interface ReaderSearch {
   page?: number | 'last';
 }
 
-// Full-screen layout without the app shell (BRAINSTORM.md §6.1).
+// Full-screen layout without the app shell (docs/BRAINSTORM.md §6.1).
 export const Route = createFileRoute('/reader/$chapterId')({
   params: {
     parse: ({ chapterId }) => {

@@ -69,7 +69,7 @@ export function normalizeTitle(title: string): string {
     .replace(/[^\p{L}\p{N}]+/gu, '');
 }
 
-/** Library membership, categories and the library view (BRAINSTORM.md §6.2). */
+/** Library membership, categories and the library view (docs/BRAINSTORM.md §6.2). */
 export class LibraryRepository {
   constructor(
     private readonly db: AppDatabase,

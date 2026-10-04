@@ -36,7 +36,7 @@ import { type QueueGroup, applyOrder, groupQueue, inQueue, moveGroup, moveItem }
 type Tab = 'queue' | 'completed' | 'errors';
 const TABS: Tab[] = ['queue', 'completed', 'errors'];
 
-/** The download queue and finished downloads (BRAINSTORM.md §6.4; mockup 08). */
+/** The download queue and finished downloads (docs/BRAINSTORM.md §6.4; mockup 08). */
 export function DownloadsPage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>('queue');
@@ -252,7 +252,7 @@ function RetryAll({ ids, className }: { ids: number[]; className?: string }) {
   );
 }
 
-/** Past the size limit, automatic downloads stop (BRAINSTORM.md §6.4). */
+/** Past the size limit, automatic downloads stop (docs/BRAINSTORM.md §6.4). */
 function LimitBanner() {
   const { t, i18n } = useTranslation();
   const { data: stats } = useQuery(downloadStatsQuery);

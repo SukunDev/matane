@@ -162,5 +162,5 @@ Two Linux packages live outside GitHub releases and are submitted by hand after 
 
 - [Architecture decision records](docs/adr/README.md): why things are the way they are. Bigger decisions get an ADR; copy the format of an existing one.
 - [`docs/plans/`](docs/plans): the phase plans.
-- [`BRAINSTORM.md`](BRAINSTORM.md): the original product notes and roadmap (§11).
+- [`docs/BRAINSTORM.md`](docs/BRAINSTORM.md): the original product notes and roadmap (§11).
 - [`CHANGELOG.md`](CHANGELOG.md): what changed in each version.

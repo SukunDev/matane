@@ -4,7 +4,7 @@ export const LOG_LINES_KEPT = 500;
 const MAX_MESSAGE = 2000;
 
 /**
- * The last lines each extension logged (BRAINSTORM.md §5.9 developer panel): its own `log.*`,
+ * The last lines each extension logged (docs/BRAINSTORM.md §5.9 developer panel): its own `log.*`,
  * failed calls and HTTP traffic. Kept in memory only; new lines are pushed to the renderer live.
  */
 export class ExtensionLogs {

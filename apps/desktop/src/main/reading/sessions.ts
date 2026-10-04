@@ -13,7 +13,7 @@ interface Current {
 }
 
 /**
- * Records reading sessions (`reading_sessions`) for the statistics page (BRAINSTORM.md §6.3). The
+ * Records reading sessions (`reading_sessions`) for the statistics page (docs/BRAINSTORM.md §6.3). The
  * reader sends a heartbeat on interaction while the window is focused; time between heartbeats
  * counts as active unless it exceeds IDLE_MS.
  */

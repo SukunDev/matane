@@ -6,7 +6,7 @@ import { downloadStatsQuery } from '../../lib/downloads';
 import { updateStatusQuery } from '../../lib/updates';
 
 /**
- * Title bar: an update check or downloads running (BRAINSTORM.md §6.6); click opens the page. The
+ * Title bar: an update check or downloads running (docs/BRAINSTORM.md §6.6); click opens the page. The
  * check wins when both run (it is shorter and says more).
  */
 export function ActivityIndicator() {

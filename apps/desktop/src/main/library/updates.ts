@@ -12,7 +12,7 @@ import { createLimiter } from '@manga-reader/shared/limit';
 import type { ChapterRow } from '../db/repositories/chapters';
 import type { UpdateTarget, UpdatesRepository } from '../db/repositories/updates';
 
-/** Manga checked at once (BRAINSTORM.md §6.4); each source's rate limit still applies. */
+/** Manga checked at once (docs/BRAINSTORM.md §6.4); each source's rate limit still applies. */
 export const MAX_PARALLEL = 3;
 const HOUR = 3_600_000;
 /** How often the scheduler looks whether a check is due. */
@@ -26,7 +26,7 @@ export function nextCheckAt(lastCheckAt: number | null, intervalHours: number, n
   return lastCheckAt === null ? now : lastCheckAt + intervalHours * HOUR;
 }
 
-/** The skip rules (BRAINSTORM.md §6.4): completed, never started, too many unread. */
+/** The skip rules (docs/BRAINSTORM.md §6.4): completed, never started, too many unread. */
 export function skipReason(
   target: Pick<UpdateTarget, 'status' | 'started' | 'unread'>,
   settings: Pick<UpdateSettings, 'skipCompleted' | 'skipNotStarted' | 'skipUnreadOver'>,
@@ -98,7 +98,7 @@ const SEEN_KEY = 'updates.seenAt';
 const RESULT_KEY = 'updates.lastResult';
 
 /**
- * The library update checker (BRAINSTORM.md §6.4), in main: on a schedule (and at start when the
+ * The library update checker (docs/BRAINSTORM.md §6.4), in main: on a schedule (and at start when the
  * interval passed), or on demand for the library, a category or some manga. Three manga at a time;
  * cancellable; skip rules apply to library and category checks. Afterwards new chapters may be
  * downloaded, and a grouped desktop notification says what arrived.

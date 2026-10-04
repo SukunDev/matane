@@ -34,7 +34,7 @@ Sudah ada dan dipakai ulang:
 - **Mockup** `docs/ui/html/11-settings-reader`, `12-command-palette`, `13-onboarding`, dan `14-statistics` (ADR 0008).
 
 Acuan:
-- `BRAINSTORM.md` §6.1 (reader), §6.3 (statistik), §6.5 (jaringan), §6.6 (tema, palette, onboarding, What's new, Discord, struktur setting), §6.7 (backup), §10 (paket, logging, dokumentasi), dan §11;
+- `docs/BRAINSTORM.md` §6.1 (reader), §6.3 (statistik), §6.5 (jaringan), §6.6 (tema, palette, onboarding, What's new, Discord, struktur setting), §6.7 (backup), §10 (paket, logging, dokumentasi), dan §11;
 - ADR 0008, 0014, 0021, dan 0024.
 
 Keputusan dari diskusi (1 Okt 2026):
@@ -58,7 +58,7 @@ Di luar cakupan (setelah v1, sesuai §11):
 
 Langkah pertama implementasi:
 - simpan rencana ini ke `docs/plans/fase-5-polish-rilis.md` (sudah, 1 Okt 2026);
-- perbarui `BRAINSTORM.md` §11 Fase 5 (keputusan di atas) dan §12.
+- perbarui `docs/BRAINSTORM.md` §11 Fase 5 (keputusan di atas) dan §12.
 
 ---
 
@@ -308,7 +308,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - `CHANGELOG.md` untuk 1.0.0 (juga isi What's new);
   - `SECURITY.md` (versi yang didukung: 1.x);
   - README berisi status v1, screenshot terbaru, tabel unduhan per format, dan link situs dokumentasi;
-  - `BRAINSTORM.md` §11 (Fase 5 selesai) dan §12 (semua checklist terjawab).
+  - `docs/BRAINSTORM.md` §11 (Fase 5 selesai) dan §12 (semua checklist terjawab).
 - **Pengecekan akhir:**
   - E2E penuh;
   - live check AppImage di profil baru (onboarding → pasang Example Source dari repo resmi → baca → download → backup);
@@ -388,7 +388,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **DB:** migrasi `0004_page_meta`: tabel `page_meta` (ukuran, kotak crop, ukuran byte gambar asal) dan kolom `image_cache` yang tidak terpakai dihapus.
   - **Main:** `images/processing.ts` (measure, cropBox, cropImage, splitImage), `images/page-meta.ts`, `ImageService.pageView/preparePage/pageSizes/clearCache`, varian di cache (`#c0`, `#s<n>`, `#cs<n>`), route `manga://page/<c>/<i>/seg/<n>?crop=1`, pemangkasan `page_meta` saat start (200 000 baris).
   - **Renderer:** `pages.ts` (ukuran per mode crop, `preparePage`, `seedPageSizes`, preload per segmen), `PageImage` (segmen bertumpuk dengan aspect ratio, dimuat lazy), toggle "Crop borders" dan "Split tall pages" di panel reader.
-  - **Dokumentasi:** ADR 0025, `BRAINSTORM.md` §6.1, §6.5, dan §7.
+  - **Dokumentasi:** ADR 0025, `docs/BRAINSTORM.md` §6.1, §6.5, dan §7.
 - Beda dari rencana:
   - Dimensi dan crop disimpan di tabel baru `page_meta`, bukan di kolom `image_cache`, supaya halaman download (yang tidak masuk cache) juga punya ukuran; kolom lama dihapus.
   - Aturan split menjadi "lebih tinggi dari 5000 px → segmen sama tinggi maks. 4000 px", tanpa aturan "3× lebar".
@@ -415,7 +415,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **Shared:** `READER_ACTIONS`, `DEFAULT_KEYMAP`, `keyId`, `effectiveKeymap`, `actionForKey`; setting reader baru `typeDefaults`, `invertTapZones`, `wheelTurnsPages`, `preloadPages`, `backgroundColor` (+ latar `custom`), `filters`, `autoScrollSpeed`, `pageIndicator`, `keymap`; `filters`/`backgroundColor` ikut override per manga; `resolveMode`/`resolveDirection` memakai default per jenis (tipe kosong = "other").
   - **Main:** IPC `reader.savePage` (dialog simpan, file asli) dan `reader.copyPage` (PNG lewat clipboard API async Electron 44), `images/page-file.ts`.
   - **Renderer:** `keymap.ts` (konteks + `useReaderKeys`), satu listener tombol di `ReaderPage`, `gestures.ts` + `useGestures.ts`, `filters.ts` (variabel `--reader-filter` hanya untuk `[data-page]`), zoom di `PagedView` (1–4×) dan `WebtoonView` (lebar kolom 0,5–3×), auto-scroll, tombol Auto-scroll di bar bawah, menu klik kanan Save/Copy, panel reader mendapat filter + warna latar + tautan ke Settings → Reader, halaman `ReaderSettings.tsx` + `KeymapEditor.tsx`.
-  - **Dokumentasi:** ADR 0026 (input reader), `BRAINSTORM.md` §6.1 dan §6.6, ADR 0006 (test di Node).
+  - **Dokumentasi:** ADR 0026 (input reader), `docs/BRAINSTORM.md` §6.1 dan §6.6, ADR 0006 (test di Node).
 - Beda dari rencana:
   - Ditambah tiga opsi dari mockup 11 yang belum ada di rencana: "Invert tap zones", "Scroll wheel turns pages", dan "Preload pages".
   - Klik dua kali hanya men-zoom di zona tengah (zona menu), supaya tidak bentrok dengan tap zone yang membalik halaman.
@@ -445,7 +445,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **Shared:** setting `onboarding.done` dan `general.discord {enabled, hideTitle}`, `MangaInfo.coverColor`, `AppInfo.discord`, IPC `app.whatsNew`/`app.whatsNewSeen`.
   - **Main:** `runMigrations` melaporkan `fresh`; inisialisasi onboarding/What's new di `index.ts` (env test `MATANE_E2E_NO_ONBOARDING`); `images/cover-color.ts` (`dominantColor`, `CoverColors`) + backfill library 5 detik setelah start; `coverColorOf`/`setCoverColor` di `MangaRepository`; `app/discord.ts` (`DISCORD_CLIENT_ID = null`, override `MATANE_DISCORD_CLIENT_ID`) diberi umpan dari heartbeat reader.
   - **Renderer:** `features/palette/` (cmdk + Radix Dialog, Ctrl/⌘+K di shell, tombol title bar), `features/onboarding/OnboardingPage.tsx` + route `/onboarding` + guard di `_app`, `features/whats-new/` (parser changelog + dialog), `lib/cover-tint.ts` + `theme/useColorScheme.ts` untuk header detail, `settings/appearance.tsx` (pemilih tema/aksen/bahasa dipakai bersama), `DiscordSettings.tsx`, tombol "What's new" dan "Run setup again" di About.
-  - **Dokumentasi:** ADR 0027, `BRAINSTORM.md` §6.6.
+  - **Dokumentasi:** ADR 0027, `docs/BRAINSTORM.md` §6.6.
 - Beda dari rencana:
   - Versi terakhir yang catatannya sudah dilihat disimpan sebagai key setting biasa `app.whatsNewSeen` (bukan `whatsNew.lastSeen` di AppSettings), dan profil baru/lama dibedakan dari database baru (`fresh`), bukan dari isi library.
   - Warna cover memakai hue paling menonjol (bukan `stats().dominant`), dan disimpan bersama kunci cover-nya sehingga cover baru otomatis diukur ulang.
@@ -474,7 +474,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **Shared:** `networkSettingsSchema` (DoH, proxy, User-Agent) di AppSettings; `StatsOverview`, `STATS_RANGES`; IPC `stats.overview`/`stats.clear` dan `network.info`/`network.setProxyPassword`/`network.test`.
   - **Main:** `stats/service.ts`; `network/settings.ts` (DoH, aturan proxy), `network/control.ts` (`NetworkControl`: resolver, `app.setProxy`, default session, semua session extension, User-Agent, password, tes koneksi, event `login`); `NetworkManager.setProxy/setUserAgent` (session baru menunggu proxy-nya); `sessionFetch` menjawab `login` proxy; hook test `__matane.setNetworkTestUrl`, env test `MATANE_E2E_PROXY_LOOPBACK`.
   - **Renderer:** `features/statistics/StatisticsPage.tsx` (kartu, grafik kolom SVG sendiri, tabel, genre, paling banyak dibaca, source), `features/settings/NetworkSettings.tsx`, bagian Statistik di Settings → Data.
-  - **Dokumentasi:** ADR 0028, `BRAINSTORM.md` §6.3 dan §6.5.
+  - **Dokumentasi:** ADR 0028, `docs/BRAINSTORM.md` §6.3 dan §6.5.
 - Beda dari rencana:
   - Grafik tidak menumpuk batang (chapter) dan garis (jam) dengan dua skala seperti mockup 14: satu ukuran per grafik dengan tombol "Chapter | Jam" (grafik dua sumbu menyesatkan). Ditambah tampilan tabel.
   - Periode mengikuti mockup (Minggu, Bulan, Tahun, Semua), bukan "30 hari / 12 bulan / semua".
@@ -506,7 +506,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **Shared:** `backup.ts` (`backupSchema` format 1, preview, hasil, daftar file, progres), setting `backup {auto, folder}`, IPC `backup.create/list/pick/preview/restore/chooseFolder/openFolder`, event `backup.progress`.
   - **Main:** `backup/export.ts` (kumpulkan + tulis zip atomik), `backup/restore.ts` (buka dan validasi, preview, restore bertahap dengan aturan merge/replace), `backup/service.ts` (`BackupService`: manual, otomatis + rotasi, backup pengaman, data extension tertunda); `extensions.install` menerapkan data tertunda; callback perubahan setting di `index.ts` dipakai bersama oleh restore.
   - **Renderer:** `features/settings/BackupSettings.tsx` (Backup sekarang, Pulihkan, auto-backup, folder, daftar backup, dialog pemulihan dengan preview, mode, progres, ringkasan, dan pasang extension yang hilang), aksi palette "Back up now".
-  - **Dokumentasi:** ADR 0029, `BRAINSTORM.md` §6.7.
+  - **Dokumentasi:** ADR 0029, `docs/BRAINSTORM.md` §6.7.
 - Beda dari rencana:
   - Restore berjalan di main secara bertahap (transaksi per 50 manga), bukan di worker thread: dengan better-sqlite3 sinkron di main, penulis kedua akan mengunci database dan justru membekukan main.
   - Nama file memakai jam (`matane-backup-YYYY-MM-DD-HHmm.zip`) supaya backup manual dan otomatis di hari yang sama tidak bertabrakan; rotasi mengurutkan nama, bukan waktu file.
@@ -564,7 +564,7 @@ Onboarding langkah 4 diuji ulang dengan repo resmi asli. Submit AUR/Flathub juga
   - **Dokumentasi:**
     - panduan extension pindah ke `apps/docs/extensions/` (dipecah: menulis extension dan menerbitkan repo); `docs/extensions.md` sekarang berisi tautan;
     - link di README, CONTRIBUTING, README/`homepage` paket SDK/runtime/CLI, dan template repo extension diarahkan ke situs;
-    - ADR 0021 diperbarui, `BRAINSTORM.md` §10 dan §12, dan `packaging/README.md` (langkah submit AUR/Flathub).
+    - ADR 0021 diperbarui, `docs/BRAINSTORM.md` §10 dan §12, dan `packaging/README.md` (langkah submit AUR/Flathub).
   - **Benchmark:** `apps/desktop/scripts/bench/run.mts` (`pnpm bench`, opsi `--only`, `--runs`, `--pages`, `--json`), dengan server dan extension sendiri sehingga E2E tidak terpengaruh.
 - Beda dari rencana:
   - AUR me-repack **tar.gz**, bukan `.deb` (lebih sederhana dan tanpa `/opt/Matane` bawaan deb). deb/rpm/tar.gz dianggap "system"/"archive", bukan AUR, kecuali launcher memberi `MATANE_PACKAGE`.

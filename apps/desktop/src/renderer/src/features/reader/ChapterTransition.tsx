@@ -7,7 +7,7 @@ import { missingBetween } from './navigation';
 
 /**
  * Between chapters: what was finished, what comes next, and a warning when chapter numbers jump
- * (BRAINSTORM.md §6.1). `continuous` is the inline divider of webtoon mode.
+ * (docs/BRAINSTORM.md §6.1). `continuous` is the inline divider of webtoon mode.
  */
 export function ChapterTransition({
   from,

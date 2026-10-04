@@ -61,7 +61,7 @@ export function TitleBar() {
         ))}
       </nav>
 
-      {/* Opens the command palette (BRAINSTORM.md §6.6, mockup 12). */}
+      {/* Opens the command palette (docs/BRAINSTORM.md §6.6, mockup 12). */}
       <button
         type="button"
         title={t('titlebar.searchHint')}

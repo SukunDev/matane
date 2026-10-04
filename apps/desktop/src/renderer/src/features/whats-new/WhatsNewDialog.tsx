@@ -20,7 +20,7 @@ export const useWhatsNew = create<WhatsNewState>((set) => ({ open: false, setOpe
 const whatsNewQuery = { queryKey: ['app', 'whatsNew'], queryFn: () => ipc.invoke('app.whatsNew') } as const;
 
 /**
- * What's new (BRAINSTORM.md §6.6): after an update, the release notes of the running version
+ * What's new (docs/BRAINSTORM.md §6.6): after an update, the release notes of the running version
  * show once (from the bundled changelog, so offline too). Not on a new profile, which goes through
  * the first-run setup instead.
  */

@@ -91,7 +91,7 @@ export interface AppUpdaterDeps {
 }
 
 /**
- * App updates (BRAINSTORM.md §10; ADR 0021). NSIS and AppImage update through electron-updater
+ * App updates (docs/BRAINSTORM.md §10; ADR 0021). NSIS and AppImage update through electron-updater
  * (downloading by itself, or on request in "notify only" mode) and install on restart. Other installs
  * only learn about a newer GitHub release and link to it. Nothing is sent anywhere but the release
  * feed.

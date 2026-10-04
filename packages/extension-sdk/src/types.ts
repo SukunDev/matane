@@ -1,4 +1,4 @@
-// Data model shared by extensions and the host (BRAINSTORM.md §5.3–5.5). Mirrors Mihon so ports are easy.
+// Data model shared by extensions and the host (docs/BRAINSTORM.md §5.3–5.5). Mirrors Mihon so ports are easy.
 
 /**
  * Stable identity chosen by the extension. Usually a path relative to `baseUrl` (so a domain change
@@ -104,7 +104,7 @@ export interface TileOp {
 }
 
 /**
- * What `transformImage` asks the host to do (BRAINSTORM.md §5.6): replace the bytes (decrypted or
+ * What `transformImage` asks the host to do (docs/BRAINSTORM.md §5.6): replace the bytes (decrypted or
  * de-XORed), and/or rebuild the picture from tiles. Pixel work runs in the host, not the sandbox.
  */
 export interface ImageTransform {
@@ -164,7 +164,7 @@ export interface Source {
   /** Called by the host after every image fetch; fire-and-forget. */
   reportImage?(result: ImageFetchResult): Promise<void> | void;
   /**
-   * Scrambled or encrypted images (BRAINSTORM.md §5.6): gets the fetched bytes of a page and says how
+   * Scrambled or encrypted images (docs/BRAINSTORM.md §5.6): gets the fetched bytes of a page and says how
    * to restore them. Only called when defined; the result is cached and downloaded restored.
    */
   transformImage?(page: Page, bytes: Uint8Array): ImageTransform | Promise<ImageTransform>;

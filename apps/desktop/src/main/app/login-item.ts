@@ -43,7 +43,7 @@ export interface LoginItemDeps {
 }
 
 /**
- * Starts Matane at login or stops doing so (BRAINSTORM.md §6.4): Windows and macOS through
+ * Starts Matane at login or stops doing so (docs/BRAINSTORM.md §6.4): Windows and macOS through
  * `app.setLoginItemSettings`, Linux with `~/.config/autostart/matane.desktop`, written again each
  * time so a moved AppImage is picked up.
  */

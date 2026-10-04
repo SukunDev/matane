@@ -7,7 +7,7 @@ ADR 0003 put both networking and HTML parsing in main. While implementing Phase 
 
 ## Decision
 - **HTML parsing** (cheerio) runs inside the extension host utilityProcess, next to QuickJS. `html.load` returns a handle; DOM objects stay host-side and are dropped when the extension call ends.
-- **Networking** stays in main (`ExtensionFetcher` on `net.request` with a per-extension session): allowlist checked on every redirect hop, token-bucket rate limit, retries honouring `Retry-After`, Cloudflare challenges solved in a window that shares the session and User-Agent.
+- **Networking** stays in main (`ExtensionFetcher` on `net.request` with a per-extension session): http(s) only, checked on every redirect hop (the domain allowlist this ADR first described was dropped, see [0031](0031-no-domain-allowlist.md)), token-bucket rate limit, retries honouring `Retry-After`, Cloudflare challenges solved in a window that shares the session and User-Agent.
 - Storage, preferences and logging are also served by main over the host ↔ main RPC.
 
 ## Consequences

@@ -21,7 +21,7 @@ export const SWIPE_MS = 600;
 export const TAP_SLOP = 8;
 
 /**
- * Turns pointer events into reader gestures (BRAINSTORM.md §6.1: swipe to turn, pinch to zoom, tap
+ * Turns pointer events into reader gestures (docs/BRAINSTORM.md §6.1: swipe to turn, pinch to zoom, tap
  * zones). Mouse, touch and pen go through the same rules; callers decide which gestures they use.
  */
 export class GestureTracker {

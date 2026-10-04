@@ -32,7 +32,7 @@ export interface DebugFacts {
   log: string;
 }
 
-/** The text "Copy debug info" puts on the clipboard, for a bug report (BRAINSTORM.md §10). */
+/** The text "Copy debug info" puts on the clipboard, for a bug report (docs/BRAINSTORM.md §10). */
 export function debugInfo(facts: DebugFacts, scrubText: (text: string) => string): string {
   const lines = [
     '### Matane debug info',

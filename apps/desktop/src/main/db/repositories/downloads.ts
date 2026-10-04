@@ -11,7 +11,7 @@ export type DownloadRow = typeof downloads.$inferSelect;
 const PENDING: DownloadStatus[] = ['queued', 'downloading', 'paused'];
 
 /**
- * The download queue and finished downloads (BRAINSTORM.md §6.4, §7). A chapter has at most one
+ * The download queue and finished downloads (docs/BRAINSTORM.md §6.4, §7). A chapter has at most one
  * row; it is downloaded when that row is `done`.
  */
 export class DownloadsRepository {

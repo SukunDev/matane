@@ -1,4 +1,4 @@
-// Host side of the extension repository format (BRAINSTORM.md §5.8): ed25519 signatures over
+// Host side of the extension repository format (docs/BRAINSTORM.md §5.8): ed25519 signatures over
 // `index.json`, sha256 of archives and reading an archive safely. Used by `mr-ext repo` and the app.
 import { createHash, createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify } from 'node:crypto';
 import { type ExtensionManifest, SDK_API_VERSION, manifestSchema } from '@matane/extension-sdk/manifest';

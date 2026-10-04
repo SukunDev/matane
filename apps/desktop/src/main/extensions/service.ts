@@ -171,7 +171,7 @@ export class ExtensionService {
     return this.settle(extensionId, sourceKey, method, pending, signal, parse);
   }
 
-  /** `transformImage` of a page (BRAINSTORM.md §5.6); the tiles still need checking. */
+  /** `transformImage` of a page (docs/BRAINSTORM.md §5.6); the tiles still need checking. */
   transformImage(
     extensionId: string,
     sourceKey: string,
@@ -188,7 +188,7 @@ export class ExtensionService {
     return this.settle(extensionId, sourceKey, 'transformImage', pending, signal);
   }
 
-  /** `migrateUrl` over a batch of stored urls (BRAINSTORM.md §5.10). */
+  /** `migrateUrl` over a batch of stored urls (docs/BRAINSTORM.md §5.10). */
   migrateUrls(
     extensionId: string,
     sourceKey: string,

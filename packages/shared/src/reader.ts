@@ -9,7 +9,7 @@ export const RESOLVED_MODES = ['single', 'double', 'webtoon', 'vertical'] as con
 /** Manga types with their own reader defaults; "other" is a manga without a known type. */
 export const READER_TYPES = ['manga', 'manhwa', 'manhua', 'comic', 'other'] as const;
 
-/** Pages taller than this are cut into segments in webtoon and vertical modes (BRAINSTORM.md §6.1). */
+/** Pages taller than this are cut into segments in webtoon and vertical modes (docs/BRAINSTORM.md §6.1). */
 export const SPLIT_ABOVE_PX = 5000;
 /** Target height of one segment. */
 export const SEGMENT_HEIGHT_PX = 4000;
@@ -27,7 +27,7 @@ export function pageSegments(width: number, height: number): number[] {
 }
 
 /**
- * Reader keyboard actions (BRAINSTORM.md §6.1). "Page left/right" follow the screen: in a
+ * Reader keyboard actions (docs/BRAINSTORM.md §6.1). "Page left/right" follow the screen: in a
  * right-to-left manga left turns forward; in a strip they scroll a screen up/down.
  */
 export const READER_ACTIONS = [

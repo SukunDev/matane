@@ -86,7 +86,7 @@ interface MangaRow {
 }
 
 /**
- * Reading statistics (BRAINSTORM.md §6.3, mockup 14), from `reading_sessions` (time) and chapters
+ * Reading statistics (docs/BRAINSTORM.md §6.3, mockup 14), from `reading_sessions` (time) and chapters
  * finished in the reader (read, with a session). Queries are bounded by the indexed `started_at`;
  * the rest is counted here.
  */

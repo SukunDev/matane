@@ -15,7 +15,7 @@ const TEST_URL = 'https://www.cloudflare.com/cdn-cgi/trace';
 const TEST_TIMEOUT_MS = 15_000;
 
 /**
- * Applies Settings → Network (BRAINSTORM.md §6.5) to the whole app: DNS-over-HTTPS for every
+ * Applies Settings → Network (docs/BRAINSTORM.md §6.5) to the whole app: DNS-over-HTTPS for every
  * request, the proxy for requests without a session, the app's session and every extension
  * session, and the global User-Agent. Changes apply at once, open connections are closed.
  */

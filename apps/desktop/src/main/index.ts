@@ -234,7 +234,7 @@ async function bootstrap(): Promise<void> {
     downloads: { pages: (chapterId) => downloadStore.pages(chapterId) },
     showNsfw: () => settings.getAppSettings().browse.showNsfw,
   });
-  // Extension repositories and installs (BRAINSTORM.md §5.8). `online` is declared further down.
+  // Extension repositories and installs (docs/BRAINSTORM.md §5.8). `online` is declared further down.
   const fetchBytes = createFetchBytes((url, init) => net.fetch(url, init));
   const reposRepo = new ReposRepository(connection.db, changes);
   const repos = new RepoService({
@@ -475,7 +475,7 @@ async function bootstrap(): Promise<void> {
     onProgress: (event) => downloadAutomation.onProgress(event),
   });
 
-  // System integration (BRAINSTORM.md §6.4): tray, start at login, offline.
+  // System integration (docs/BRAINSTORM.md §6.4): tray, start at login, offline.
   const language = () => settings.getAppSettings().language ?? app.getLocale();
   const traySupport = await detectTraySupport();
   let quitting = false;

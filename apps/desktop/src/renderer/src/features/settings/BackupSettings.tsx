@@ -26,7 +26,7 @@ import { Row, Segmented } from './controls';
 
 export const backupListQuery = { queryKey: ['backup', 'list'] as const, queryFn: () => ipc.invoke('backup.list') };
 
-/** Settings → Data → Backup (BRAINSTORM.md §6.7): back up now, restore, automatic backups. */
+/** Settings → Data → Backup (docs/BRAINSTORM.md §6.7): back up now, restore, automatic backups. */
 export function BackupSettings() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();

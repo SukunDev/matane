@@ -40,7 +40,7 @@ export function sniffBytes(bytes: Uint8Array): { type: string; ext: string } | u
 const shortHash = (text: string) => createHash('sha1').update(text).digest('hex').slice(0, 10);
 
 /**
- * Covers that must survive cache eviction (BRAINSTORM.md §6.5): a permanent copy for every library
+ * Covers that must survive cache eviction (docs/BRAINSTORM.md §6.5): a permanent copy for every library
  * manga (`userData/covers`, named after the source cover URL so a new cover replaces it), and the
  * user's custom covers (`userData/covers/custom`).
  */

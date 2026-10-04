@@ -41,7 +41,7 @@ afterEach(() => {
 });
 
 describe('database migrations', () => {
-  it('creates every table from BRAINSTORM.md §7', async () => {
+  it('creates every table from docs/BRAINSTORM.md §7', async () => {
     const dir = tempDir();
     const connection = openDatabase(join(dir, 'data.db'));
     const result = await runMigrations(connection, { migrationsFolder, backupDir: join(dir, 'backups') });

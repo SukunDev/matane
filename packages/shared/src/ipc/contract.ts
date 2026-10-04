@@ -139,7 +139,7 @@ export const invokeContract = {
     z.void(),
   ),
 
-  /** Extension repositories (BRAINSTORM.md §5.8). */
+  /** Extension repositories (docs/BRAINSTORM.md §5.8). */
   'repos.list': invoke(z.void(), z.array(repoInfoSchema)),
   /** Unverified repositories are only added with `confirmUnverified`. */
   'repos.add': invoke(
@@ -346,15 +346,15 @@ export const invokeContract = {
   'manga.resetCover': invoke(z.object({ mangaId: idSchema }), z.void()),
   /** Library manga from other sources with the same (normalized) title. */
   'manga.findDuplicates': invoke(z.object({ mangaId: idSchema }), z.array(mangaInfoSchema)),
-  /** Reader override for this manga (BRAINSTORM.md §6.1); null resets it to the global settings. */
+  /** Reader override for this manga (docs/BRAINSTORM.md §6.1); null resets it to the global settings. */
   'manga.setReaderSettings': invoke(
     z.object({ mangaId: idSchema, settings: mangaReaderSettingsSchema.nullable() }),
     z.void(),
   ),
-  /** Hidden scanlators and their priority order (BRAINSTORM.md §6.2). */
+  /** Hidden scanlators and their priority order (docs/BRAINSTORM.md §6.2). */
   'manga.setScanlatorPrefs': invoke(z.object({ mangaId: idSchema, prefs: scanlatorPrefsSchema }), z.void()),
   /**
-   * Searches the target sources, in order, for a manga to migrate (BRAINSTORM.md §6.2). Exact title
+   * Searches the target sources, in order, for a manga to migrate (docs/BRAINSTORM.md §6.2). Exact title
    * matches stop the search; otherwise every target is searched and the most similar result wins.
    */
   'migration.findCandidates': invoke(

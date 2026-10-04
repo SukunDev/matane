@@ -21,7 +21,7 @@ export interface ReadingServiceDeps {
 
 /**
  * Everything the reader records. Incognito is enforced here, once: while it is on, progress,
- * history and sessions are not written (BRAINSTORM.md §6.3). Explicit actions such as "mark as
+ * history and sessions are not written (docs/BRAINSTORM.md §6.3). Explicit actions such as "mark as
  * read" still apply; they are the user's edits, not reading activity.
  */
 export class ReadingService {

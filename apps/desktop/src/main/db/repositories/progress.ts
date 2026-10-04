@@ -15,7 +15,7 @@ export interface SavedProgress {
 }
 
 /**
- * Reading progress per chapter (BRAINSTORM.md §6.3). Read state is kept **per chapter number**:
+ * Reading progress per chapter (docs/BRAINSTORM.md §6.3). Read state is kept **per chapter number**:
  * marking one scanlator's version also marks the others with the same number (§6.2), so unread
  * counts do not double up.
  */

@@ -8,7 +8,7 @@ import type { ExtensionService } from './service';
 import { validate } from './validate';
 import type { DownloadStore } from '../downloads/store';
 
-/** BRAINSTORM.md §6.5; some sites' image URLs live only minutes, so the reader re-fetches on 403 (1d). */
+/** docs/BRAINSTORM.md §6.5; some sites' image URLs live only minutes, so the reader re-fetches on 403 (1d). */
 export const PAGE_LIST_TTL_MS = 60 * 60_000;
 
 export type BrowseKind = 'popular' | 'latest' | 'search';
@@ -58,7 +58,7 @@ export class SourceService {
     return this.deps.extensions.get(extensionId)?.manifest?.nsfw ?? stored ?? false;
   }
 
-  /** Adult sources are not browsed or searched while they are hidden (BRAINSTORM.md §6.6). */
+  /** Adult sources are not browsed or searched while they are hidden (docs/BRAINSTORM.md §6.6). */
   private assertVisible(extensionId: string): void {
     if (this.deps.showNsfw && !this.deps.showNsfw() && this.isNsfw(extensionId)) {
       throw new AppError('nsfw_hidden', 'Adult sources are hidden; turn them on in Settings → Browse & extensions');
@@ -142,7 +142,7 @@ export class SourceService {
     return null;
   }
 
-  /** Whether this source restores its images with `transformImage` (BRAINSTORM.md §5.6). */
+  /** Whether this source restores its images with `transformImage` (docs/BRAINSTORM.md §5.6). */
   async hasImageTransform(sourceId: string): Promise<boolean> {
     return (await this.info(sourceId)).capabilities.includes('transformImage');
   }

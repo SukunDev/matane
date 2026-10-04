@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-02)
 
 ## Context
-Phase 5 adds backup and restore (BRAINSTORM.md §6.7): a file that brings a library to another profile or computer, merges into an existing one, or replaces it, plus automatic backups.
+Phase 5 adds backup and restore (docs/BRAINSTORM.md §6.7): a file that brings a library to another profile or computer, merges into an existing one, or replaces it, plus automatic backups.
 
 ## Decision
 - **Format**: a zip with `backup.json` (zod schema `backupSchema`, `formatVersion: 1`, in `@manga-reader/shared/backup`) and `covers/` (custom covers). Rows are referred to by natural keys: source id + manga url, chapter url within its manga, category names, repository urls, extension ids. A newer `formatVersion` is refused with "update the app first"; readers keep accepting every older version (migrated on read when the format changes).

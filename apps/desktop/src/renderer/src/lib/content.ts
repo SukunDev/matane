@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { settingsQuery } from './ipc';
 
 /**
- * Content settings in effect (BRAINSTORM.md §6.6): which languages are shown and whether adult
+ * Content settings in effect (docs/BRAINSTORM.md §6.6): which languages are shown and whether adult
  * extensions and sources are. `visible` filters anything with languages and an NSFW flag.
  */
 export function useContentFilter() {

@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-24)
 
 ## Context
-Incognito mode (BRAINSTORM.md §6.3) must reliably leave no reading trace, without every renderer call site having to remember it, and without surprising users who explicitly change their data while it is on.
+Incognito mode (docs/BRAINSTORM.md §6.3) must reliably leave no reading trace, without every renderer call site having to remember it, and without surprising users who explicitly change their data while it is on.
 
 ## Decision
 - The boundary is enforced **once, in main**, in `ReadingService`: while the `incognito` setting is on, `progress.save`, history updates and reading sessions (heartbeats) are dropped. The renderer keeps sending them unchanged.

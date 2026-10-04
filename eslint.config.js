@@ -31,7 +31,7 @@ export default tseslint.config(
     ...reactHooks.configs.flat['recommended-latest'],
   },
   {
-    // UI copy must go through i18next (BRAINSTORM.md §6.6).
+    // UI copy must go through i18next (docs/BRAINSTORM.md §6.6).
     files: ['apps/desktop/src/renderer/**/*.tsx'],
     ignores: ['**/*.test.*'],
     plugins: { i18next },

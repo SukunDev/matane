@@ -12,7 +12,7 @@ export function setProxyCredentials(provider: typeof proxyCredentials): void {
 /**
  * `fetch` on top of `net.request` for one session. Electron's own `net.fetch` rejects on
  * `redirect: 'manual'` ("Redirect was cancelled"), but ExtensionFetcher needs the 3xx response to
- * check every hop against the allowlist. Redirects are never followed here.
+ * check every hop. Redirects are never followed here.
  */
 export function sessionFetch(session: Session): FetchFn {
   return (url, init) =>

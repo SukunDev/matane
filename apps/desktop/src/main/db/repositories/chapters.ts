@@ -59,7 +59,7 @@ export class ChaptersRepository {
 
   /**
    * Makes the stored chapter list match the source (which lists newest first). Reading state is
-   * never touched. A chapter the source dropped (BRAINSTORM.md §6.4) stays, flagged, when it is
+   * never touched. A chapter the source dropped (docs/BRAINSTORM.md §6.4) stays, flagged, when it is
    * read, bookmarked, has progress, a download, or is in the history or statistics; otherwise it
    * is deleted. An empty list from the source deletes nothing (more likely a broken source).
    */

@@ -9,7 +9,7 @@ Fase 2 selesai (commit `3cfdc6a`). Library, progres, history, incognito, bookmar
 - **paket beta pertama** dengan auto-update.
 
 Acuan:
-- `BRAINSTORM.md` §6.4 (download & update, tray), §6.5 (`manga://` membaca download, offline), §6.6 (setting Umum/Library/Download/Data), §7 (tabel `downloads`, Updates = `chapters` diurutkan `fetched_at`), §10 (paket, CI, auto-update, tanpa signing), §11 Fase 3;
+- `docs/BRAINSTORM.md` §6.4 (download & update, tray), §6.5 (`manga://` membaca download, offline), §6.6 (setting Umum/Library/Download/Data), §7 (tabel `downloads`, Updates = `chapters` diurutkan `fetched_at`), §10 (paket, CI, auto-update, tanpa signing), §11 Fase 3;
 - mockup `docs/ui/screens/07-updates` dan `08-downloads`.
 
 Keputusan dari diskusi:
@@ -183,7 +183,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-3-download-
   - ADR baru: format download (CBZ + ComicInfo, penulisan atomik, path di DB), update checker, dan paket + auto-update tanpa signing.
 - **Penutup Fase 3:**
   - E2E alur penuh diperluas: tambah ke library → download → situs mati → baca offline → situs menambah chapter → Cek library → Updates → auto-download;
-  - `BRAINSTORM.md` §11 ditandai Fase 3 selesai (beta).
+  - `docs/BRAINSTORM.md` §11 ditandai Fase 3 selesai (beta).
 
 **Checkpoint 3e:**
 - `pnpm dist:linux` menghasilkan AppImage yang jalan di mesinmu: DB, extension Example Source, dan migrasi folder data berfungsi.
@@ -485,7 +485,7 @@ Implementasi:
   - README: status beta, cara install per OS, SmartScreen/Gatekeeper, dan lokasi data;
   - `CHANGELOG.md`, `SECURITY.md` (laporan privat lewat GitHub), dan `CONTRIBUTING.md`;
   - ADR 0019 (format download), 0020 (update checker), dan 0021 (paket + auto-update tanpa signing);
-  - `BRAINSTORM.md` §11: Fase 3 ditandai selesai (beta).
+  - `docs/BRAINSTORM.md` §11: Fase 3 ditandai selesai (beta).
 
 Keputusan:
 - **Channel beta = flag pre-release GitHub.** Untuk provider GitHub, electron-builder hanya membuat `latest*.yml` per rilis, sedangkan electron-updater memilih rilis pre-release kalau `allowPrerelease` aktif. Jadi tidak ada file `beta*.yml` (plan awal menyebutnya).

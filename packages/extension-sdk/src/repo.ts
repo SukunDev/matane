@@ -1,4 +1,4 @@
-// Host/tooling only: the extension repository format (BRAINSTORM.md §5.8), shared by `mr-ext repo`
+// Host/tooling only: the extension repository format (docs/BRAINSTORM.md §5.8), shared by `mr-ext repo`
 // and the app. Imported via `@matane/extension-sdk/repo`.
 import { z } from 'zod';
 import { extensionIdSchema, manifestSchema } from './manifest.js';

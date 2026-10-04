@@ -31,7 +31,7 @@ const menuItem =
 
 /**
  * "Add to library" (duplicate check → categories → add) or, once added, "In library ▾" to edit the
- * categories or remove it (BRAINSTORM.md §6.2).
+ * categories or remove it (docs/BRAINSTORM.md §6.2).
  */
 export function LibraryButton({ manga }: { manga: MangaInfo }) {
   const { t } = useTranslation();

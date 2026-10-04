@@ -1,6 +1,6 @@
 # Rencana Mockup UI (Stitch)
 
-Sumber keputusan: `BRAINSTORM.md` §6.1–§6.7. Mockup dibuat di Google Stitch, lalu hasilnya (link/screenshot) dicatat di bagian bawah file ini.
+Sumber keputusan: `docs/BRAINSTORM.md` §6.1–§6.7. Mockup dibuat di Google Stitch, lalu hasilnya (link/screenshot) dicatat di bagian bawah file ini.
 
 ## Design brief (dipakai untuk semua layar)
 
@@ -25,7 +25,7 @@ Sumber keputusan: `BRAINSTORM.md` §6.1–§6.7. Mockup dibuat di Google Stitch,
 | 6 | **Global search** | Kolom query besar, hasil per source dalam baris horizontal, satu source masih loading, satu source error | Tinggi |
 | 7 | **Updates** | Chapter baru dikelompokkan per tanggal, aksi baca/download/tandai dibaca, tombol refresh + progress update check | Tinggi |
 | 8 | **Downloads** | Antrean dengan progress per chapter, status (downloading, queued, paused, error + retry), pause/resume all, total ukuran | Tinggi |
-| 9 | **Extensions** | Daftar repo (Verified / Unverified), extension terpasang + tersedia, tombol install/update, dialog izin domain saat install | Tinggi |
+| 9 | **Extensions** | Daftar repo (Verified / Unverified), extension terpasang + tersedia, tombol install/update, dialog install (kepercayaan repo, versi, ukuran) | Tinggi |
 | 10 | **History** | Dikelompokkan Today/Yesterday/…, tombol resume per entri | Sedang |
 | 11 | **Settings – Reader** | Navigasi setting di kiri, form di kanan: default mode, lebar maksimum webtoon, preset tap zone (preview visual), keybinding | Sedang |
 | 12 | **Command palette** | Overlay Ctrl+K di atas Library: hasil manga, navigasi, aksi | Sedang |
@@ -73,7 +73,7 @@ Semua file lokal (`screens/*.png`, `html/*.html`) berasal dari versi final di at
 - Settings: "saved to config.json" → "Changes are saved automatically" (setting disimpan di SQLite).
 - Statistik: badge "SYNCED" dihapus (v1 belum punya sync).
 - Library, Browse, Global search: cover yang berisi potongan UI diganti cover bersih hasil generate Stitch (aset gambar di project). Judul kartu yang berbeda disamakan dengan lettering cover: "Phantom Thread", "Starry Potion Shop", "Warden of the Frozen Peaks", "Wings of the Ashfall", "The Ash Herbalist".
-- Warna violet lama yang hardcoded diganti Mauve, dan teks di atas Mauve memakai crust. Daftar layar yang disimpan/dihapus di Stitch ada di [`STITCH_CLEANUP.md`](STITCH_CLEANUP.md).
+- Warna violet lama yang hardcoded diganti Mauve, dan teks di atas Mauve memakai crust. Daftar layar yang disimpan di Stitch ada di tabel di atas; layar duplikat/lama di project Stitch diabaikan.
 
 **Catatan proses**
 - Stitch sering timeout saat generate/edit, tapi hasilnya tetap jadi dan baru muncul di `list_screens` beberapa menit kemudian. Jangan langsung kirim ulang, supaya tidak ada duplikat.

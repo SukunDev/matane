@@ -34,7 +34,7 @@ export interface UrlMigrationResult {
 }
 
 /**
- * Runs `migrateUrl` after an extension update changed its version (BRAINSTORM.md §5.10): every
+ * Runs `migrateUrl` after an extension update changed its version (docs/BRAINSTORM.md §5.10): every
  * manga and chapter of its sources, library or not. All answers are collected first and written in
  * one transaction together with the new version, so an interrupted run (the app closed) changes
  * nothing and simply runs again at the next start. A url that would collide with an existing row

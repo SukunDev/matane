@@ -138,7 +138,7 @@ function MangaHeader({
     manga.artist && manga.artist !== manga.author && t('manga.artist', { name: manga.artist }),
   ].filter(Boolean);
 
-  // The cover's colour tints the header and its main buttons (BRAINSTORM.md §6.6).
+  // The cover's colour tints the header and its main buttons (docs/BRAINSTORM.md §6.6).
   const tint = coverTint(manga.coverColor, scheme);
   return (
     <section

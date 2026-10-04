@@ -121,7 +121,7 @@ export const chapterQuery = (chapterId: number) =>
     ...localQueryDefaults,
   });
 
-/** Which chapter "Continue reading" opens (main applies BRAINSTORM.md §6.3). */
+/** Which chapter "Continue reading" opens (main applies docs/BRAINSTORM.md §6.3). */
 export const continueQuery = (mangaId: number) =>
   queryOptions({
     queryKey: queryKeys.continue(mangaId),

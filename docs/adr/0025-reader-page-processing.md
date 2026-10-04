@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-01)
 
 ## Context
-The reader measured pages only after the image decoded in the renderer, so a webtoon strip jumped as pages arrived and a saved position inside a long page could only be restored once that page had loaded. Phase 5 adds automatic border crop and splitting very tall pages (BRAINSTORM.md §6.1), both of which need the pixels, and must also work for downloaded chapters read offline.
+The reader measured pages only after the image decoded in the renderer, so a webtoon strip jumped as pages arrived and a saved position inside a long page could only be restored once that page had loaded. Phase 5 adds automatic border crop and splitting very tall pages (docs/BRAINSTORM.md §6.1), both of which need the pixels, and must also work for downloaded chapters read offline.
 
 ## Decision
 - **Sizes and crop boxes live in `page_meta`**, keyed like the page's cache entry (`page:<sourceId>:<chapter url hash>:<index>`), apart from `image_cache` so pages of downloaded chapters (never cached) have them too. Each row records the byte size of the image it was measured on: a different image under the same key is measured again and its old crops and segments are dropped. The unused `width`/`height`/`segments`/`variants_json` columns of `image_cache` are removed (migration 0004). At most 200 000 rows are kept, least recently read first out; clearing the page cache clears them too.

@@ -2,7 +2,7 @@
 @import '@catppuccin/tailwindcss/mocha.css';
 
 /*
- * Theme model (BRAINSTORM.md §6.6):
+ * Theme model (docs/BRAINSTORM.md §6.6):
  * - flavor: one of .latte/.frappe/.macchiato/.mocha on <html> (from @catppuccin/tailwindcss)
  * - .amoled: Mocha with pure black surfaces
  * - data-accent: one of the 14 Catppuccin accents; text on the accent uses crust (base on Latte)

@@ -5,7 +5,7 @@
 Status: Accepted (2026-09-23)
 
 ## Context
-Extension repositories, signing and updates arrive in Phase 4 (BRAINSTORM.md §5.7), but Phase 1 needs a working source and extension authors need a tight edit → try loop.
+Extension repositories, signing and updates arrive in Phase 4 (docs/BRAINSTORM.md §5.7), but Phase 1 needs a working source and extension authors need a tight edit → try loop.
 
 ## Decision
 - **Built-in**: every folder in `extensions/*` is a first-party extension built with `mr-ext build`. In development the app reads `extensions/<id>/dist`; packaged builds ship them as `resources/extensions/<id>` (electron-builder `extraResources`, to be wired with packaging). Example Source is the first one.
@@ -14,4 +14,4 @@ Extension repositories, signing and updates arrive in Phase 4 (BRAINSTORM.md §5
 
 ## Consequences
 - The registry has one code path for both kinds; Phase 4 adds a third origin ("repo") with signature checks.
-- Dev folders are trusted only in the sense that the user picked them; they still run in the same sandbox with the same allowlist.
+- Dev folders are trusted only in the sense that the user picked them; they still run in the same sandbox with the same network limits.

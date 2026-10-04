@@ -45,7 +45,7 @@ export interface TrustResult {
 }
 
 /**
- * Trust of an index (BRAINSTORM.md §5.8): trusted when the key the user trusted for this repository
+ * Trust of an index (docs/BRAINSTORM.md §5.8): trusted when the key the user trusted for this repository
  * signed it, otherwise unverified — with the reason, and the signer when the index's own key made a
  * valid signature (so the user can choose to trust it).
  */
@@ -86,7 +86,7 @@ export interface RepoServiceDeps {
   log?: (message: string) => void;
 }
 
-/** Extension repositories: adding, syncing their signed index, trust (BRAINSTORM.md §5.8, ADR 0022). */
+/** Extension repositories: adding, syncing their signed index, trust (docs/BRAINSTORM.md §5.8, ADR 0022). */
 export class RepoService {
   private readonly parsed = new Map<number, { text: string; index: RepoIndex }>();
   private readonly syncing = new Map<number, Promise<void>>();

@@ -13,7 +13,7 @@ interface Entry {
   active: number;
 }
 
-// What the extension sees when a host call fails: SDK error names (BRAINSTORM.md §5.5).
+// What the extension sees when a host call fails: SDK error names (docs/BRAINSTORM.md §5.5).
 const SDK_ERROR_NAMES: Partial<Record<AppErrorCode, string>> = {
   cloudflare: 'CloudflareError',
   rate_limited: 'RateLimitedError',

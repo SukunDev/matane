@@ -1,4 +1,4 @@
--- Full-text search over manga for fast library search (BRAINSTORM.md §7).
+-- Full-text search over manga for fast library search (docs/BRAINSTORM.md §7).
 -- Kept in sync with `manga` by triggers; rowid = manga.id.
 CREATE VIRTUAL TABLE `manga_fts` USING fts5(title, author, genres, tokenize = 'unicode61 remove_diacritics 2');
 --> statement-breakpoint

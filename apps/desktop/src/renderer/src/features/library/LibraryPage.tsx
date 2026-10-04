@@ -40,7 +40,7 @@ import { filterCount, filtersOf, useLibrarySettings } from './settings';
 const PADDING = 24;
 const LIST_ROW = 64;
 
-/** The library (BRAINSTORM.md §6.2, docs/ui/screens/01-library.png). */
+/** The library (docs/BRAINSTORM.md §6.2, docs/ui/screens/01-library.png). */
 export function LibraryPage({ tab: requestedTab, onTab }: { tab: LibraryTab; onTab: (tab: LibraryTab) => void }) {
   const { t } = useTranslation();
   const [settings, update] = useLibrarySettings();

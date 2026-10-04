@@ -1,4 +1,4 @@
-// Host-side pixel work for `transformImage` (BRAINSTORM.md §5.6, ADR 0024), shared by the app and
+// Host-side pixel work for `transformImage` (docs/BRAINSTORM.md §5.6, ADR 0024), shared by the app and
 // `mr-ext test`. Imported via `@matane/extension-runtime/image` (it needs sharp).
 import type { ImageTransform } from '@matane/extension-sdk';
 import sharp, { type FormatEnum, type OutputInfo } from 'sharp';
@@ -28,7 +28,7 @@ export function sniffImageType(bytes: Uint8Array): string | null {
 }
 
 /**
- * Rebuilds a scrambled picture (BRAINSTORM.md §5.6): decodes once to raw pixels, copies each
+ * Rebuilds a scrambled picture (docs/BRAINSTORM.md §5.6): decodes once to raw pixels, copies each
  * rectangle row by row, and encodes again in the original format (GIF and unknown formats as PNG).
  * Rectangles outside the source or the result are refused, so a bad extension cannot read or write
  * out of bounds.

@@ -82,7 +82,7 @@ export function AboutSettings() {
   );
 }
 
-/** App updates (BRAINSTORM.md §10): status, check now, restart to update, and the settings. */
+/** App updates (docs/BRAINSTORM.md §10): status, check now, restart to update, and the settings. */
 function UpdaterCard() {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();

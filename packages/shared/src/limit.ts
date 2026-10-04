@@ -1,7 +1,7 @@
 /**
  * At most `max` tasks at a time; the rest wait in order. A finished task hands its slot straight to
  * the next waiting one. A task whose signal aborts while it waits never starts (global search:
- * 5 sources at once, BRAINSTORM.md §6.2).
+ * 5 sources at once, docs/BRAINSTORM.md §6.2).
  */
 export function createLimiter(max: number) {
   let running = 0;

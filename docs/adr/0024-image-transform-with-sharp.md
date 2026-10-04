@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-29)
 
 ## Context
-Some sites encrypt their image files (XOR, AES) or cut pages into shuffled tiles (BRAINSTORM.md §5.6). Decoding and re-encoding pixels inside the QuickJS sandbox would be far too slow, and bytes crossing the sandbox as JSON would cost several times their size.
+Some sites encrypt their image files (XOR, AES) or cut pages into shuffled tiles (docs/BRAINSTORM.md §5.6). Decoding and re-encoding pixels inside the QuickJS sandbox would be far too slow, and bytes crossing the sandbox as JSON would cost several times their size.
 
 ## Decision
 - `transformImage(page, bytes)` returns **instructions**: replacement `bytes` (decrypted in the sandbox, with `crypto.aesDecrypt` run by the host for AES) and/or `tiles` (a canvas size and rectangles to copy).

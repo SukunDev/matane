@@ -16,7 +16,7 @@ import { historyQuery } from '../../lib/reading';
 import { cn } from '../../lib/utils';
 import { type HistoryGroup, groupByDay } from './groups';
 
-/** One entry per manga, last read first, grouped by day (BRAINSTORM.md §6.3; mockup 10). */
+/** One entry per manga, last read first, grouped by day (docs/BRAINSTORM.md §6.3; mockup 10). */
 export function HistoryPage() {
   const { t, i18n } = useTranslation();
   const [query, setQuery] = useState('');

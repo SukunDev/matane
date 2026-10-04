@@ -55,7 +55,7 @@ export interface BackupServiceDeps {
 }
 
 /**
- * Backup and restore (BRAINSTORM.md §6.7, ADR 0029): "Back up now", automatic daily or weekly
+ * Backup and restore (docs/BRAINSTORM.md §6.7, ADR 0029): "Back up now", automatic daily or weekly
  * backups (the last 7 kept), previews, merge or replace restores, and the preferences of
  * extensions installed after a restore.
  */

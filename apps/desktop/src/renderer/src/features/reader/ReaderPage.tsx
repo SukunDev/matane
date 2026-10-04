@@ -50,7 +50,7 @@ const HIDE_AFTER_MS = 3000;
 const EDGE_PX = 90;
 
 /**
- * Full-screen reader (BRAINSTORM.md §6.1; mockups 03 and 04). `onVisibleChapter` lets webtoon mode
+ * Full-screen reader (docs/BRAINSTORM.md §6.1; mockups 03 and 04). `onVisibleChapter` lets webtoon mode
  * move the URL to the chapter being read without restarting the session.
  */
 export function ReaderPage({
@@ -77,7 +77,7 @@ export function ReaderPage({
   const { data: info } = useQuery(appInfoQuery);
   const updateSettings = useUpdateSettings();
   const queryClient = useQueryClient();
-  // Global settings with this manga's override on top (BRAINSTORM.md §6.1).
+  // Global settings with this manga's override on top (docs/BRAINSTORM.md §6.1).
   const override = manga.data?.readerSettings ?? null;
   const reader = settings && effectiveReaderSettings(settings.reader, override);
   const setMangaReader = useMutation({
@@ -168,7 +168,7 @@ export function ReaderPage({
     }
   }, [navigate, router, mangaId]);
 
-  // One key listener for the whole reader (BRAINSTORM.md §6.1: keys can be remapped). The view on
+  // One key listener for the whole reader (docs/BRAINSTORM.md §6.1: keys can be remapped). The view on
   // screen lends the page actions (`useReaderKeys`); the reader itself handles the rest.
   const viewKeys = useRef<ReaderHandlers>({});
   const [autoScroll, setAutoScroll] = useState(false);

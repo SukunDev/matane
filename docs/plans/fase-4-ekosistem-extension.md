@@ -12,7 +12,7 @@ Fase 4 menambahkan:
 - **repo extension resmi terpisah** dengan smoke test harian, dan **SDK di npm**.
 
 Acuan:
-- `BRAINSTORM.md` §5.1–5.10, §6.2 (Browse), §6.6 (NSFW, onboarding, Settings → Browse & Extension), dan §11 Fase 4;
+- `docs/BRAINSTORM.md` §5.1–5.10, §6.2 (Browse), §6.6 (NSFW, onboarding, Settings → Browse & Extension), dan §11 Fase 4;
 - mockup `docs/ui/screens/09-extensions` dan `09b-extensions-install-dialog`;
 - ADR 0003, 0004, 0012, 0013.
 
@@ -153,7 +153,7 @@ Langkah pertama implementasi: simpan rencana ini ke `docs/plans/fase-4-ekosistem
 - **UI:** empty state Sources/Library mengarah ke Extensions → Tersedia.
 - **Dokumentasi:**
   - `docs/extensions.md` menjadi panduan lengkap: SDK dari npm (dengan catatan belum terbit), create/test, repo sendiri + signing, transformImage/migrateUrl;
-  - README, CHANGELOG `0.2.0-beta.1`, dan `BRAINSTORM.md` §11 (Fase 4 selesai kecuali peluncuran repo resmi).
+  - README, CHANGELOG `0.2.0-beta.1`, dan `docs/BRAINSTORM.md` §11 (Fase 4 selesai kecuali peluncuran repo resmi).
 
 **Checkpoint 4e:**
 - `npm pack` ketiga paket berhasil, dan paket hasil pack jalan di proyek kosong.
@@ -453,7 +453,7 @@ Catatan:
 ### Perubahan rencana: peluncuran repo resmi ditunda (29 Sep 2026)
 
 - **Keputusanmu:** repo repo extension, kunci tanda tangan, dan organisasi npm disiapkan setelah semua fase app selesai. Sebelum 4e dilanjutkan, siapkan dulu dokumen yang membantu membangun repo itu.
-- Rencana diubah: 4e hanya berisi pekerjaan tanpa akun atau rahasia, dan milestone baru **4f** (peluncuran repo resmi) dikerjakan setelah Fase 5. `BRAINSTORM.md` §11 ikut diperbarui.
+- Rencana diubah: 4e hanya berisi pekerjaan tanpa akun atau rahasia, dan milestone baru **4f** (peluncuran repo resmi) dikerjakan setelah Fase 5. `docs/BRAINSTORM.md` §11 ikut diperbarui.
 - **Dokumen yang disiapkan** di `panduan repo extension (dihapus)`:
   - `README.md`: gambaran (repo matane → npm → repo extension → GitHub Pages → app), urutan kerja sebagai checklist (🧑 kamu / 🤖 aku), dan keputusan yang tersisa (scope npm, pemilik repo, custom domain);
   - `setup-akun-dan-kunci.md`: organisasi dan token npm (granular, 2FA, provenance), repo + Pages (sumber GitHub Actions, proteksi branch, custom domain), pembuatan kunci di komputer sendiri, tempat setiap nilai (secret `MR_REPO_KEY` / `NPM_TOKEN`, variable `MR_REPO_PUBLIC_KEY` / `REPO_URL`), serta cara mengganti kunci yang hilang atau bocor tanpa memutus pengguna;
@@ -516,7 +516,7 @@ Implementasi:
 - **Dokumentasi:**
   - `docs/extensions.md`: quick start dari npm dengan catatan belum terbit, layout `create`, View logs, dan `--out`;
   - `panduan repo extension (dihapus)`: checklist dan bagian yang sudah dikerjakan ditandai, dan template CONTRIBUTING memakai `--layout catalog`;
-  - README (status Fase 4 dan struktur), CHANGELOG `0.2.0-beta.1 — unreleased`, dan `BRAINSTORM.md` §11 (Fase 4 selesai kecuali 4f, plus penyesuaiannya).
+  - README (status Fase 4 dan struktur), CHANGELOG `0.2.0-beta.1 — unreleased`, dan `docs/BRAINSTORM.md` §11 (Fase 4 selesai kecuali 4f, plus penyesuaiannya).
 
 Beda dari rencana:
 - Handoff hanya berlaku untuk extension yang **catatannya masih ada** di DB, yaitu pernah terpasang dan tidak pernah di-uninstall. Uninstall menghapus catatan itu, jadi pilihan pengguna untuk membuang extension dihormati tanpa daftar tambahan.
@@ -545,7 +545,7 @@ Dikerjakan mengikuti panduan repo extension (dihapus). Strategi rilis: app hanya
 - **Live check** (app hasil build, profil scratch):
   - Profil baru: repo resmi ditambahkan sendiri dan tersinkron (official, 4 extension). Example Source dan Example Source B dipasang dari repo dengan status "Official · Verified". Example Source B menampilkan 20 manga; Example Source menampilkan 24 manga dengan DoH Cloudflare (DNS ISP di jaringan ini memblokir Example Source).
   - Handoff: profil dengan Example Source "bawaan" (disimulasikan dengan folder yang lalu dihapus) dan satu manga di library dengan chapter terbaca. Setelah "update", Example Source terpasang dari repo resmi, library dan status baca utuh, dan tidak ada handoff tertunda.
-- **Dokumentasi:** README, CHANGELOG (0.2.0-beta.1), CONTRIBUTING, situs dokumentasi (panduan extension: SDK dari npm, kontribusi ke repo extension), ADR 0013 dan 0023, `BRAINSTORM.md` §11.
+- **Dokumentasi:** README, CHANGELOG (0.2.0-beta.1), CONTRIBUTING, situs dokumentasi (panduan extension: SDK dari npm, kontribusi ke repo extension), ADR 0013 dan 0023, `docs/BRAINSTORM.md` §11.
 - Catatan:
   - Handoff diuji dengan simulasi. Uji dengan salinan profil `0.1.0-beta.1` asli dilakukan di 5g.
   - Submit AUR/Flathub ditunda sampai rilis global.

@@ -10,7 +10,7 @@ import { categoriesQuery } from '../../lib/library';
 import { cn } from '../../lib/utils';
 
 /**
- * Picks the categories of one or more manga (BRAINSTORM.md §6.2). None checked = "Default".
+ * Picks the categories of one or more manga (docs/BRAINSTORM.md §6.2). None checked = "Default".
  * New categories can be created inline and start checked.
  */
 export function CategoryDialog({

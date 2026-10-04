@@ -34,7 +34,7 @@ import { EMPTY_SELECTION, type Selection, select, visibleSelection } from '../li
 import { DownloadButton } from '../manga/DownloadButton';
 import { type UpdateRowEntry, flattenGroups } from './entries';
 
-/** New chapters of library manga, grouped by day (BRAINSTORM.md §6.4; mockup 07). */
+/** New chapters of library manga, grouped by day (docs/BRAINSTORM.md §6.4; mockup 07). */
 export function UpdatesPage() {
   const { t } = useTranslation();
   const [categoryId, setCategoryId] = useState<number | undefined>(undefined);

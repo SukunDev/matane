@@ -34,7 +34,7 @@ const SOURCE_COLORS = {
 } as const;
 const MAX_SOURCES = 4;
 
-/** Statistics (BRAINSTORM.md §6.3, mockup 14). */
+/** Statistics (docs/BRAINSTORM.md §6.3, mockup 14). */
 export function StatisticsPage() {
   const { t } = useTranslation();
   const [range, setRange] = useState<StatsRange>('month');

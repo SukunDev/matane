@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-02)
 
 ## Context
-Phase 5 adds the statistics page (BRAINSTORM.md §6.3, mockup 14) and Settings → Network (§6.5): DNS-over-HTTPS, a proxy and a custom User-Agent, which matter most where ISPs block sites through DNS.
+Phase 5 adds the statistics page (docs/BRAINSTORM.md §6.3, mockup 14) and Settings → Network (§6.5): DNS-over-HTTPS, a proxy and a custom User-Agent, which matter most where ISPs block sites through DNS.
 
 ## Decision
 - **What counts as read**: a chapter marked read *and* opened in a reading session. Marking a list read, migration and the per-number read status of other scanlator versions add nothing; incognito records no session, so it counts nothing either. Reading time is the sessions' active time (idle gaps excluded, ADR 0017).

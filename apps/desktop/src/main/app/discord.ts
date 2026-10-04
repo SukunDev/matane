@@ -53,7 +53,7 @@ const RETRY_MS = 60_000;
 const IDLE_MS = 10 * 60_000;
 
 /**
- * Discord Rich Presence (BRAINSTORM.md §6.6): "Reading <title> · <chapter>" while the reader is in
+ * Discord Rich Presence (docs/BRAINSTORM.md §6.6): "Reading <title> · <chapter>" while the reader is in
  * use. Off by default; nothing for adult sources or while incognito; "Reading manga" only with
  * `hideTitle`. Talks to the local Discord app over IPC; when Discord is not running it stays quiet
  * and tries again now and then.

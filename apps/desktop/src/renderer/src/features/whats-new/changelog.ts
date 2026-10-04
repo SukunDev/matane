@@ -1,4 +1,4 @@
-// What's new (BRAINSTORM.md §6.6): the release notes come from CHANGELOG.md, bundled with the app so
+// What's new (docs/BRAINSTORM.md §6.6): the release notes come from CHANGELOG.md, bundled with the app so
 // they show offline. Sections are `## <version> — <date>` (the same format release.yml reads).
 
 export type Block = { kind: 'paragraph' | 'heading' | 'item'; text: string };

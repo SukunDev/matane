@@ -38,7 +38,7 @@ export function createMainWindow(settings: SettingsRepository, options: MainWind
     minWidth: 960,
     minHeight: 600,
     show: false,
-    // Custom title bar (BRAINSTORM.md §6.6); macOS keeps its native traffic lights.
+    // Custom title bar (docs/BRAINSTORM.md §6.6); macOS keeps its native traffic lights.
     frame: isMac,
     titleBarStyle: isMac ? 'hiddenInset' : 'hidden',
     backgroundColor: '#1e1e2e',

@@ -1,4 +1,4 @@
-// Typed errors that cross the sandbox boundary by `name` (BRAINSTORM.md §5.5).
+// Typed errors that cross the sandbox boundary by `name` (docs/BRAINSTORM.md §5.5).
 
 export class ExtensionError extends Error {
   override name = 'ExtensionError';

@@ -6,7 +6,7 @@ import { EmptyState } from './EmptyState';
 
 /**
  * Pages that need the network (Browse, Global search) show this while offline instead of an error
- * (BRAINSTORM.md §6.5); what is on disk (library, history, downloads) keeps working.
+ * (docs/BRAINSTORM.md §6.5); what is on disk (library, history, downloads) keeps working.
  */
 export function OnlineOnly({ children }: { children: ReactNode }) {
   const { t } = useTranslation();

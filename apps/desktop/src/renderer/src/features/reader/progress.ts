@@ -18,7 +18,7 @@ function save(progress: Pending): void {
 }
 
 /**
- * Persists the reader position (BRAINSTORM.md §6.1): debounced while reading, flushed right away
+ * Persists the reader position (docs/BRAINSTORM.md §6.1): debounced while reading, flushed right away
  * when the chapter changes or the reader closes. Main ignores it while incognito.
  */
 export function useProgressSaver(): void {

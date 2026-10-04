@@ -12,7 +12,7 @@ const run = (command: string, args: string[]) =>
   );
 
 /**
- * Whether a system tray will show (BRAINSTORM.md §6.4). Windows and macOS always have one. On Linux,
+ * Whether a system tray will show (docs/BRAINSTORM.md §6.4). Windows and macOS always have one. On Linux,
  * Electron's tray needs a StatusNotifier host (KDE, Cinnamon, XFCE… or GNOME with the AppIndicator
  * extension): it is there when someone owns `org.kde.StatusNotifierWatcher` on the session bus.
  * Without a way to ask (no `gdbus`/`dbus-send`), the tray is assumed to work.

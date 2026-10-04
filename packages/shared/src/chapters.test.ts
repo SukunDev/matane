@@ -52,7 +52,7 @@ describe('continueChapter', () => {
   });
 });
 
-describe('scanlator versions (BRAINSTORM.md §6.2)', () => {
+describe('scanlator versions (docs/BRAINSTORM.md §6.2)', () => {
   // Source order, newest first: chapter 3 by A and B, chapter 2 by A, B and C, chapter 1 by A.
   const make = () => {
     const c3b = ch(3, { scanlator: 'B', uploadedAt: 31 });

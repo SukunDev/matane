@@ -49,7 +49,7 @@ export interface Choice {
 }
 
 /**
- * Source migration (BRAINSTORM.md §6.2; mockup 15): choose target sources and what to carry over,
+ * Source migration (docs/BRAINSTORM.md §6.2; mockup 15): choose target sources and what to carry over,
  * check the match found for each manga, then migrate and read the summary.
  */
 export function MigrationPage({ ids }: { ids: number[] }) {

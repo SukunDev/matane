@@ -1,6 +1,6 @@
 // Runs inside the QuickJS sandbox before the extension bundle. It turns the raw host primitives
 // (`__hostSync`, `__hostAsync`: string op + JSON args → JSON result; `__hostBytes`: the same plus
-// ArrayBuffers, for binary data) into the documented globals (BRAINSTORM.md §5.5), then hides the
+// ArrayBuffers, for binary data) into the documented globals (docs/BRAINSTORM.md §5.5), then hides the
 // primitives. Plain ES2020, no imports.
 export const PRELUDE = String.raw`
 (() => {

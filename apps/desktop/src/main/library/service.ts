@@ -17,7 +17,7 @@ export interface LibraryServiceDeps {
   log?: (message: string) => void;
 }
 
-/** Library actions that span repositories, the source and the cover store (BRAINSTORM.md §6.2). */
+/** Library actions that span repositories, the source and the cover store (docs/BRAINSTORM.md §6.2). */
 export class LibraryService {
   constructor(private readonly deps: LibraryServiceDeps) {}
 

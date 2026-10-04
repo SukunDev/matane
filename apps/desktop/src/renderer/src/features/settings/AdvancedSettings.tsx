@@ -19,7 +19,7 @@ export function AdvancedSettings() {
   );
 }
 
-/** Logs, crash dumps and the debug info for a bug report (BRAINSTORM.md §10). */
+/** Logs, crash dumps and the debug info for a bug report (docs/BRAINSTORM.md §10). */
 function DiagnosticsCard() {
   const { t } = useTranslation();
   const { data: settings } = useQuery(settingsQuery);

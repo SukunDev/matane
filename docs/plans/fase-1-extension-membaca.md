@@ -4,7 +4,7 @@
 
 Fase 0 sudah selesai: monorepo, shell UI Catppuccin, kontrak IPC typed (`packages/shared/src/ipc/contract.ts`), seluruh skema SQLite §7, i18n, CI, dan ADR 0001–0010. Fase 1 membuat app **benar-benar bisa dipakai membaca**: extension berjalan di sandbox QuickJS, Example Source sebagai source bawaan, browse → detail → baca chapter, dengan gambar disajikan lewat protokol `manga://` dan cache disk.
 
-Acuan: `BRAINSTORM.md` §5 (extension), §6.1 (reader), §6.2 (browse/detail), §6.5 (network/cache/protokol), ADR 0003/0004/0005/0010, dan mockup `docs/ui/screens/02-detail`, `03-reader-single`, `04-reader-webtoon`, `05-browse`.
+Acuan: `docs/BRAINSTORM.md` §5 (extension), §6.1 (reader), §6.2 (browse/detail), §6.5 (network/cache/protokol), ADR 0003/0004/0005/0010, dan mockup `docs/ui/screens/02-detail`, `03-reader-single`, `04-reader-webtoon`, `05-browse`.
 
 Keputusan dari diskusi:
 - Dikerjakan dalam **4 milestone**. Aku berhenti di setiap checkpoint untuk review dan commit olehmu.
@@ -167,7 +167,7 @@ Acuan mockup: `05-browse`, `02-detail`, `06-global-search` (hanya kerangkanya; g
 - **Dokumentasi:**
   - `docs/extensions.md` sebagai draf panduan membuat extension;
   - ADR baru: runtime dan CLI MIT, parsing HTML di utilityProcess (menggantikan "di main"), dan extension bawaan;
-  - `BRAINSTORM.md` diperbarui sesuai perubahan keputusan tersebut.
+  - `docs/BRAINSTORM.md` diperbarui sesuai perubahan keputusan tersebut.
 
 ## File kunci
 
@@ -325,7 +325,7 @@ Catatan:
   - `docs/extensions.md` (panduan membuat extension);
   - ADR 0011 (runtime + CLI MIT), 0012 (parsing HTML di extension host, `net.request`), 0013 (extension bawaan + folder dev), dan 0014 (`manga://` + cache gambar);
   - ADR 0002, 0003, dan 0010 diperbarui;
-  - `BRAINSTORM.md` (§2, §5.1, §5.4, §5.5, §5.9, §5.10, §6.5, §9, §11, §13) dan `README.md` diperbarui.
+  - `docs/BRAINSTORM.md` (§2, §5.1, §5.4, §5.5, §5.9, §5.10, §6.5, §9, §11, §13) dan `README.md` diperbarui.
 
 Belum dijalankan / catatan:
 - Job E2E di GitHub Actions belum pernah jalan, karena repo belum punya remote. Langkahnya sudah diuji secara lokal (tanpa xvfb, jendela tampil di layar).

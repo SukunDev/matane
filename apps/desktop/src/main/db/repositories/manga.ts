@@ -40,7 +40,7 @@ function parseJson<T extends z.ZodType>(schema: T, json: string | null): z.outpu
 export const scanlatorPrefsOf = (row: Pick<MangaRow, 'scanlatorPrefsJson'>): ScanlatorPrefs =>
   parseJson(scanlatorPrefsSchema, row.scanlatorPrefsJson) ?? { hidden: [], priority: [] };
 
-/** Identifies the cover on screen: a custom cover wins over the source's (BRAINSTORM.md §6.2). */
+/** Identifies the cover on screen: a custom cover wins over the source's (docs/BRAINSTORM.md §6.2). */
 export const coverKeyOf = (row: Pick<MangaRow, 'customCoverPath' | 'thumbnailUrl'>) =>
   row.customCoverPath ?? row.thumbnailUrl;
 
@@ -190,7 +190,7 @@ export class MangaRepository {
     this.changes.mark(`manga:${id}`, 'library');
   }
 
-  /** Reader override for this manga (BRAINSTORM.md §6.1); null goes back to the global settings. */
+  /** Reader override for this manga (docs/BRAINSTORM.md §6.1); null goes back to the global settings. */
   setReaderSettings(id: number, settings: MangaReaderSettings | null): void {
     const empty = !settings || Object.values(settings).every((value) => value === undefined);
     this.db

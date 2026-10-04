@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-23)
 
 ## Context
-The renderer must never hotlink images (BRAINSTORM.md §6.5; Example Source also forbids it): requests need the source's headers, session cookies, allowlist and rate limit, and reading should work offline once pages were seen.
+The renderer must never hotlink images (docs/BRAINSTORM.md §6.5; Example Source also forbids it): requests need the source's headers, session cookies, allowlist and rate limit, and reading should work offline once pages were seen.
 
 ## Decision
 - A privileged `manga://` scheme is handled in main: `manga://cover/<mangaId>` and `manga://page/<chapterId>/<index>`.

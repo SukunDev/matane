@@ -1,6 +1,6 @@
 import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
-/** Extension repositories (BRAINSTORM.md §5.8, ADR 0022). */
+/** Extension repositories (docs/BRAINSTORM.md §5.8, ADR 0022). */
 export const extensionRepos = sqliteTable('extension_repos', {
   id: integer().primaryKey({ autoIncrement: true }),
   /** Base URL, ending in "/". */
@@ -54,7 +54,7 @@ export const extensionPrefs = sqliteTable(
 
 /**
  * Sources outlive their extension on purpose (no FK), so library entries keep a reference
- * and can be shown as "source not installed". See BRAINSTORM.md §7.
+ * and can be shown as "source not installed". See docs/BRAINSTORM.md §7.
  */
 export const sources = sqliteTable(
   'sources',

@@ -1,6 +1,6 @@
 import type { NetworkSettings } from '@manga-reader/shared';
 
-/** DNS-over-HTTPS templates of the presets (BRAINSTORM.md §6.5). */
+/** DNS-over-HTTPS templates of the presets (docs/BRAINSTORM.md §6.5). */
 export const DOH_URLS = {
   cloudflare: 'https://cloudflare-dns.com/dns-query',
   google: 'https://dns.google/dns-query',

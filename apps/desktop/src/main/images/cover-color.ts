@@ -43,7 +43,7 @@ export async function dominantColor(input: Uint8Array | string): Promise<string>
 }
 
 /**
- * Measures cover colours for the detail header (BRAINSTORM.md §6.6), one at a time in the
+ * Measures cover colours for the detail header (docs/BRAINSTORM.md §6.6), one at a time in the
  * background: when a cover is served without a colour for it, and for library manga at start.
  */
 export class CoverColors {

@@ -3,7 +3,7 @@
 Status: Accepted (2026-09-27; package formats and package-manager installs added 2026-10-02, Phase 5f)
 
 ## Context
-The first beta (end of Phase 3) needs installers for Windows, macOS and Linux and a way to update (BRAINSTORM.md §10). There is no budget for code-signing certificates yet, and no telemetry is wanted.
+The first beta (end of Phase 3) needs installers for Windows, macOS and Linux and a way to update (docs/BRAINSTORM.md §10). There is no budget for code-signing certificates yet, and no telemetry is wanted.
 
 ## Decision
 - **electron-builder 26** (`apps/desktop/electron-builder.yml`): AppImage (Linux), NSIS (Windows x64, per-user, installation folder can be changed), dmg x64 + arm64 (macOS). `better-sqlite3` is unpacked from the asar; built-in extensions ship in `resources/extensions` (their built `dist/`); migrations ship inside the asar. `pnpm dist` / `pnpm dist:linux` build locally.

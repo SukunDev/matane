@@ -5,7 +5,7 @@
 Fase 1 sudah selesai: extension di sandbox QuickJS, Example Source bawaan, browse → detail → reader (single/double/webtoon, RTL), cache gambar `manga://`, E2E, dan ADR 0011–0014. Tapi app belum **mengingat** apa pun: tidak ada library, progres baca, history, atau bookmark, dan setting reader berlaku global. Fase 2 membuat app bisa dipakai sehari-hari: simpan manga ke library, lanjut baca dari posisi terakhir, cari di semua source sekaligus, dan pindah source tanpa kehilangan progres.
 
 Acuan:
-- `BRAINSTORM.md` §6.1 (progress reader, pengaturan berlapis), §6.2 (library, detail, scanlator duplikat, global search, migrasi), §6.3 (progress, lanjut baca, history, sesi, incognito, bookmark), §6.5 (cover library permanen), §7 (skema);
+- `docs/BRAINSTORM.md` §6.1 (progress reader, pengaturan berlapis), §6.2 (library, detail, scanlator duplikat, global search, migrasi), §6.3 (progress, lanjut baca, history, sesi, incognito, bookmark), §6.5 (cover library permanen), §7 (skema);
 - mockup `docs/ui/screens/01-library`, `02-detail`, `03-reader-single` (bookmark, "save as default for this manga"), `06-global-search`, `10-history`, `15-migration`.
 
 Keputusan dari diskusi:
@@ -151,7 +151,7 @@ Skema §7 sudah punya semua tabel dan kolom yang dibutuhkan (`categories`, `mang
 - **Performa:** seed 1.000 manga + 50 ribu chapter. Waktu query library/unread dan kelancaran scroll dicatat. Index ditambahkan kalau perlu.
 - **Dokumentasi:**
   - ADR baru: status baca per nomor chapter + pemilihan versi scanlator, cover library permanen + cover kustom, dan batas data incognito;
-  - `BRAINSTORM.md` §11 ditandai Fase 2 selesai beserta penyesuaiannya;
+  - `docs/BRAINSTORM.md` §11 ditandai Fase 2 selesai beserta penyesuaiannya;
   - `README.md` diperbarui.
 
 ## File kunci
@@ -405,7 +405,7 @@ Keputusan:
   - index tambahan tidak diperlukan (target: library < 200 ms, scroll lancar).
 - **Dokumentasi:**
   - ADR 0015 (status baca per nomor + satu versi per nomor), 0016 (cover library permanen + cover kustom), 0017 (batas data incognito), dan 0018 (bookmark chapter saja, seperti Mihon), plus indeks `docs/adr/README.md`;
-  - `BRAINSTORM.md` §11: Fase 2 ditandai selesai beserta penyesuaiannya;
+  - `docs/BRAINSTORM.md` §11: Fase 2 ditandai selesai beserta penyesuaiannya;
   - `README.md`: status Fase 0–2 dan tautan ke ADR.
 
 ---
