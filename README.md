@@ -1,83 +1,137 @@
-<p align="center"><img src="docs/assets/logo.png" width="128" alt=""></p>
+<p align="center"><img src="docs/assets/logo.png" width="128" alt="Matane logo"></p>
 
-# Matane (またね)
+<h1 align="center">Matane (またね)</h1>
 
-> **Beta** (0.2): add extension repositories, install sources, read, keep a library with reading progress, download chapters for offline reading, get told about new chapters, back up your library. Expect rough edges; please [report them](https://github.com/SukunDev/matane/issues/new/choose).
+<p align="center">
+  A free, open-source manga reader for your desktop.<br>
+  Close the app now, pick up on the same page next time.
+</p>
 
-_Matane_ is Japanese for "see you later": close the app now and pick up on the same page next time.
+<p align="center">
+  <a href="https://github.com/SukunDev/matane/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/SukunDev/matane/total?style=for-the-badge&label=Downloads"></a>
+  <a href="https://github.com/SukunDev/matane/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/SukunDev/matane?style=for-the-badge"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/SukunDev/matane?style=for-the-badge"></a>
+  <a href="https://saweria.co/PakdeKun"><img alt="Support on Saweria" src="https://img.shields.io/badge/Support-Saweria-F7931E?style=for-the-badge"></a>
+</p>
 
-An open-source desktop manga reader (Windows, macOS, Linux) with a sandboxed extension system, library, reading progress, downloads and update checks — think Mihon, for the desktop.
+<p align="center">
+  <a href="https://github.com/SukunDev/matane/releases">Download</a> ·
+  <a href="https://sukundev.github.io/matane/">Documentation</a> ·
+  <a href="https://github.com/SukunDev/matane/issues/new/choose">Report a problem</a> ·
+  <a href="#support-the-project">Support</a>
+</p>
 
-**Disclaimer:** this application does not host or distribute any content. Sources are provided by extensions; the main repository only ships extensions for services that allow it.
+---
 
-## Install
+_Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux** and is like [Mihon](https://mihon.app), but for your computer.
 
-Download the latest release from [GitHub Releases](https://github.com/SukunDev/matane/releases) (betas are marked "Pre-release").
+> [!NOTE]
+> Matane is in **beta** (0.2). It already does a lot, but expect a few rough edges. If something breaks, please [tell us](https://github.com/SukunDev/matane/issues/new/choose).
 
-| OS                            | File                                              | Updates                      |
+> [!IMPORTANT]
+> Matane does **not** host or distribute any content, and it comes with **no sources built in**. You choose where your manga comes from by adding an extension repository (a link from someone you trust). See [How do I get manga?](#how-do-i-get-manga)
+
+## Features
+
+**Read comfortably**
+
+- Single page, double page, vertical and webtoon modes, left-to-right or right-to-left
+- Zoom, touch gestures, auto-scroll and automatic border cropping
+- Colour filters (brightness, contrast, warm tint, grayscale, invert)
+- Keyboard shortcuts you can change to anything you like
+
+**Keep your library**
+
+- Organise manga into categories; sort, filter and search your whole library
+- Remembers where you stopped, with a "continue reading" shortcut
+- Reading history, chapter bookmarks and an incognito mode
+- Reading statistics: streaks, favourite genres, time spent
+- Press <kbd>Ctrl</kbd>+<kbd>K</kbd> to jump to anything
+
+**Read offline, stay up to date**
+
+- Download chapters as CBZ files or folders, with a queue, "download ahead" and automatic cleanup
+- Matane checks your library for new chapters and notifies you
+- Works offline, can start with your computer and live in the system tray
+
+**Bring your stuff with you**
+
+- Back up your library, progress and settings to one file, restore it any time
+- Import a Mihon/Tachiyomi backup (`.tachibk`)
+- Search across all your sources at once, and move a manga to another source
+
+**Yours to customise**
+
+- Four [Catppuccin](https://catppuccin.com) themes (one light, three dark); available in English and Indonesian
+- Optional proxy, DNS-over-HTTPS and custom User-Agent for sites your provider blocks
+- Optional Discord Rich Presence (off by default, never shown for adult sources or in incognito)
+
+## Download
+
+Get the latest version from **[GitHub Releases](https://github.com/SukunDev/matane/releases)**. Beta versions are marked "Pre-release".
+
+| Your system                   | Download                                          | Updates                      |
 | ----------------------------- | ------------------------------------------------- | ---------------------------- |
+| Windows 10/11                 | `Matane-<version>-win-x64.exe` (installer)        | installs them itself         |
+| Windows, no install           | `Matane-<version>-win-x64-portable.exe`           | tells you                    |
+| macOS (Apple silicon / Intel) | `Matane-<version>-mac-arm64.dmg` / `-mac-x64.dmg` | tells you, links the release |
 | Linux                         | `Matane-<version>-linux-x86_64.AppImage`          | installs them itself         |
 | Debian, Ubuntu                | `Matane-<version>-linux-amd64.deb`                | tells you                    |
 | Fedora, openSUSE              | `Matane-<version>-linux-x86_64.rpm`               | tells you                    |
 | Linux (any, by hand)          | `Matane-<version>-linux-x64.tar.gz`               | tells you                    |
-| Windows 10/11                 | `Matane-<version>-win-x64.exe` (installer)        | installs them itself         |
-| Windows, no install           | `Matane-<version>-win-x64-portable.exe`           | tells you                    |
-| macOS (Apple silicon / Intel) | `Matane-<version>-mac-arm64.dmg` / `-mac-x64.dmg` | tells you, links the release |
 
-More on installing, every feature and the FAQ: **[sukundev.github.io/matane](https://sukundev.github.io/matane/)**.
+### The first time you open it
 
-The builds are **not code-signed yet**, so your OS will warn the first time:
+Matane is not code-signed yet, so your system will show a warning. This is expected:
 
-- **Linux:** make the AppImage executable (`chmod +x Matane-*.AppImage`, or Properties → "Allow executing") and run it. Some distributions need `libfuse2`.
-- **Windows:** SmartScreen shows "Windows protected your PC" → **More info** → **Run anyway**.
+- **Windows:** "Windows protected your PC" → click **More info** → **Run anyway**.
 - **macOS:** open the dmg and drag Matane to Applications. The first launch is blocked ("cannot verify the developer" / "is damaged"): open **System Settings → Privacy & Security** and click **Open Anyway**, or run `xattr -dr com.apple.quarantine /Applications/Matane.app` in Terminal.
+- **Linux:** make the AppImage executable (`chmod +x Matane-*.AppImage`, or right-click → Properties → "Allow executing") and run it. Some distributions need `libfuse2`.
 
-Your data lives in the app data folder (`~/.config/Matane`, `%APPDATA%\Matane`, `~/Library/Application Support/Matane`); downloads go to `Documents/Matane` unless you pick another folder. Nothing is sent anywhere except requests to the sources you use and the update check against GitHub releases.
+### Where is my data?
 
-## Status
+- **App data** (library, progress, settings): `~/.config/Matane` on Linux, `%APPDATA%\Matane` on Windows, `~/Library/Application Support/Matane` on macOS.
+- **Downloads:** `Documents/Matane`, unless you pick another folder.
+- **Privacy:** nothing is sent anywhere except requests to the sources you use and the update check against GitHub releases.
 
-Phases 0–4 are done, and Phase 5 (polish) up to the v1.0 release:
+## How do I get manga?
 
-- **Foundation:** Electron shell with the Catppuccin UI, typed IPC and SQLite.
-- **Extensions & reading:** the QuickJS extension sandbox; browse, filters and manga details; the reader (single, double, webtoon, RTL) with an offline image cache.
-- **Library & progress:** library with categories, sort/filter, full-text search, multi-select and permanent/custom covers; reading progress and "continue reading"; history with an incognito mode; chapter bookmarks; per-manga reader settings and scanlator preferences; global search and source migration.
-- **Downloads & updates:** CBZ/folder downloads with a managed queue, download ahead, delete after reading and a size limit; the library update checker with the Updates page, notifications and auto-download; tray, start at login, offline mode; installers with auto-update.
-- **Extension ecosystem:** signed extension repositories (ed25519) with install, update and uninstall, the domain permission dialog, content languages and hidden adult content, a live log per extension, scrambled/encrypted images (`transformImage`, rebuilt with sharp) and `migrateUrl`; `mr-ext repo` to build and sign repositories. Matane ships without any extension; add a repository by its URL. The SDK is on npm (`@matane/extension-sdk`, `-cli`, `-runtime`).
-- **Polish:** reader image processing (border cropping, tall pages in parts), zoom and touch gestures, remappable keys, colour filters, auto-scroll; command palette, first-run setup, What's new, cover colours, Discord Rich Presence; statistics; DNS-over-HTTPS, proxy and User-Agent settings; backup and restore; diagnostics, more package formats and the documentation site.
+Matane gets its manga from **extensions**, small add-ons that each connect to one source. Extensions are published in **repositories**, and a repository is just a URL.
 
-See the [roadmap in `BRAINSTORM.md` §11](BRAINSTORM.md), the phase plans in [`docs/plans/`](docs/plans), the [changelog](CHANGELOG.md) and the [architecture decisions](docs/adr/README.md). Next: the v1.0 release.
+1. Get the URL of an extension repository from a source you trust.
+2. In Matane, open **Extensions** and add the repository.
+3. Install the sources you want, then browse and read.
 
-## Development
+Extensions run in a sandbox and ask your permission before reaching a website. Repositories are signed, so Matane can tell if one was tampered with. The full walkthrough is in the [user guide](https://sukundev.github.io/matane/).
 
-Requirements: [pnpm](https://pnpm.io) 12 and Node 24 LTS (`pnpm env use --global lts`), plus a C/C++ toolchain and Python for native modules.
+## Support the project
 
-```sh
-pnpm install      # also downloads Electron and rebuilds better-sqlite3 for it
-pnpm dev          # start the app with hot reload
-pnpm lint         # ESLint
-pnpm typecheck    # TypeScript (all packages)
-pnpm test         # Vitest
-pnpm e2e          # Playwright end-to-end tests of the built app (fake local site, no network)
-pnpm dist:linux   # build an AppImage into apps/desktop/release/ (pnpm dist: this OS's installers)
-```
+Matane is free and made in spare time. If it makes your reading nicer and you would like to help keep it going, a donation is very welcome (and never expected).
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request, and [`SECURITY.md`](SECURITY.md) to report a vulnerability.
+<p align="center">
+  <a href="https://saweria.co/PakdeKun"><img alt="Support on Saweria" src="https://img.shields.io/badge/Donate%20via-Saweria-F7931E?style=for-the-badge"></a>
+</p>
 
-User guide and extension guide: **[sukundev.github.io/matane](https://sukundev.github.io/matane/)** (source in `apps/docs`).
+Other ways to help, all free:
 
-Project layout:
+- Star the repository
+- [Report bugs](https://github.com/SukunDev/matane/issues/new/choose) or [suggest features](https://github.com/SukunDev/matane/issues/new/choose)
+- Tell a friend who reads manga
 
-```
-apps/desktop/          Electron app (main, preload, React renderer)
-packages/shared/       Domain types and the typed IPC contract
-packages/extension-sdk/      Extension author SDK (MIT)
-packages/extension-runtime/  QuickJS sandbox host (MIT)
-packages/extension-cli/      mr-ext: create, build, test, bench and publish extensions (MIT)
-apps/docs/             Documentation site (VitePress): user guide and extension guide
-docs/adr/              Architecture decision records
-docs/ui/               UI mockups (design source of truth)
-```
+## Help and documentation
+
+- **[User guide and FAQ](https://sukundev.github.io/matane/)**: installing, library, reader, downloads, backup, network settings
+- **[Changelog](CHANGELOG.md)**: what changed in each version
+- **[Report a problem](https://github.com/SukunDev/matane/issues/new/choose)**: in Settings → Advanced, "Copy debug info" gives you details to paste into the report (without your home folder or tokens)
+
+## For developers
+
+Want to build Matane from source, fix a bug or write an extension? Everything is in **[DEVELOPMENT.md](DEVELOPMENT.md)**: setup, commands, project layout, how the app works, testing and releases. Also see [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [extension guide](https://sukundev.github.io/matane/extensions/).
 
 ## License
 
-[GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) are [MIT](packages/extension-sdk/LICENSE).
+Matane is released under the [GPL-3.0](LICENSE). The extension SDK, runtime and CLI (`packages/extension-*`) are [MIT](packages/extension-sdk/LICENSE).
+
+## Disclaimer
+
+Matane does not host, store or distribute any manga or other content, and the developers have no affiliation with any content available through third-party extensions. The main repository only ships extensions for services that allow it. Please respect the creators and the laws of your country.
