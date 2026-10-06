@@ -70,6 +70,46 @@ export class ProgressRepository {
     return row.highest === null ? row.count : Math.floor(row.highest);
   }
 
+  /**
+   * A tracker says `count` chapters are read (ADR 0038): marks chapters up to that number read, or the
+   * oldest `count` when the manga has no numbers. Unlike {@link markRead} it does not tell `onRead`,
+   * so what a tracker said is not sent back to it. Returns how many chapters became read.
+   */
+  markReadUpTo(mangaId: number, count: number, now = Date.now()): number {
+    const unread = this.db
+      .select()
+      .from(chapters)
+      .where(and(eq(chapters.mangaId, mangaId), eq(chapters.read, false)))
+      .all();
+    const hasNumbers =
+      this.db
+        .select({ n: sql<number>`count(*)` })
+        .from(chapters)
+        .where(and(eq(chapters.mangaId, mangaId), isNotNull(chapters.number)))
+        .get()!.n > 0;
+    const ids = hasNumbers
+      ? unread.filter((c) => c.number !== null && c.number <= count).map((c) => c.id)
+      : // Unnumbered: the source lists newest first, so the oldest are at the end.
+        unread
+          .sort((a, b) => b.sourceOrder - a.sourceOrder)
+          .slice(0, Math.max(0, count - this.readCount(mangaId)))
+          .map((c) => c.id);
+    if (ids.length === 0) return 0;
+    this.db.transaction((tx) => this.setRead(tx, ids, true, now));
+    this.changes.mark(`chapters:${mangaId}`);
+    return ids.length;
+  }
+
+  private readCount(mangaId: number): number {
+    return (
+      this.db
+        .select({ n: sql<number>`count(*)` })
+        .from(chapters)
+        .where(and(eq(chapters.mangaId, mangaId), eq(chapters.read, true)))
+        .get()?.n ?? 0
+    );
+  }
+
   /** Everything before `chapterId`: lower numbers, or older in source order when unnumbered. */
   markPreviousRead(chapterId: number, now = Date.now()): void {
     const row = this.db.select().from(chapters).where(eq(chapters.id, chapterId)).get();

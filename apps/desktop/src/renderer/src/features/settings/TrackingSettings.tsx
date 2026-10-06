@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useErrorText } from '../../lib/errors';
-import { ipc } from '../../lib/ipc';
+import { ipc, settingsQuery, useUpdateSettings } from '../../lib/ipc';
 import { trackersQuery } from '../../lib/trackers';
+import { Row, Toggle } from './controls';
 
 /** Settings → Tracking (ADR 0035): connect the services whose lists Matane keeps up to date. */
 export function TrackingSettings() {
@@ -63,7 +64,7 @@ function TrackerCard({ tracker }: { tracker: TrackerInfo }) {
           <Button variant="secondary" size="sm" onClick={() => disconnect.mutate()}>
             {t('settings.tracking.disconnect')}
           </Button>
-        ) : connecting ? (
+        ) : tracker.login === 'password' ? null : connecting ? (
           <Button variant="secondary" size="sm" onClick={() => cancel.mutate()}>
             <Loader2 className="animate-spin" />
             {t('settings.tracking.waiting')}
@@ -99,11 +100,111 @@ function TrackerCard({ tracker }: { tracker: TrackerInfo }) {
         </div>
       )}
 
-      <TokenLogin tracker={tracker} />
-      <p className="mt-4 text-[11px] text-muted-foreground">
-        {t('settings.tracking.redirectHint', { url: tracker.redirectUrl })}
-      </p>
+      {tracker.connected && !tracker.expired && <SyncControls tracker={tracker} />}
+
+      {tracker.login === 'password' ? (
+        !(tracker.connected && !tracker.expired) && <PasswordLogin tracker={tracker} />
+      ) : (
+        <>
+          <TokenLogin tracker={tracker} />
+          {tracker.redirectUrl && (
+            <p className="mt-4 text-[11px] text-muted-foreground">
+              {t('settings.tracking.redirectHint', { url: tracker.redirectUrl })}
+            </p>
+          )}
+        </>
+      )}
     </section>
+  );
+}
+
+/** Two-way sync (ADR 0038): follow the tracker's progress, and compare now. */
+function SyncControls({ tracker }: { tracker: TrackerInfo }) {
+  const { t } = useTranslation();
+  const { data: settings } = useQuery(settingsQuery);
+  const update = useUpdateSettings();
+  const pull = settings?.tracking.pull[tracker.service] !== false;
+  const sync = useMutation({ mutationFn: () => ipc.invoke('trackers.sync', { service: tracker.service }) });
+  const error = useErrorText(sync.error);
+  return (
+    <div className="mt-4 border-t pt-4" data-testid="tracker-sync">
+      <Row label={t('settings.tracking.pull', { name: tracker.name })} description={t('settings.tracking.pullHint')}>
+        <Toggle
+          checked={pull}
+          label={t('settings.tracking.pull', { name: tracker.name })}
+          onChange={(value) =>
+            update.mutate({ tracking: { pull: { ...settings?.tracking.pull, [tracker.service]: value } } })
+          }
+        />
+      </Row>
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <Button variant="secondary" size="sm" disabled={sync.isPending} onClick={() => sync.mutate()}>
+          {sync.isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+          {sync.isPending ? t('settings.tracking.syncing') : t('settings.tracking.syncNow')}
+        </Button>
+        {sync.data && <span data-testid="tracker-synced">{t('settings.tracking.synced', sync.data)}</span>}
+        {sync.isError && (
+          <span role="alert" className="text-destructive">
+            {error.title}: {error.detail}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Trackers without a browser login: the tracker's own username and password, sent only to it and not kept. */
+function PasswordLogin({ tracker }: { tracker: TrackerInfo }) {
+  const { t } = useTranslation();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const login = useMutation({
+    mutationFn: () => ipc.invoke('trackers.connectWithPassword', { service: tracker.service, username, password }),
+    // The password is gone from the screen as soon as it was used, whatever the answer.
+    onSettled: () => setPassword(''),
+  });
+  const error = useErrorText(login.error);
+  const ready = username.trim() !== '' && password !== '';
+  return (
+    <form
+      className="mt-4 flex flex-col gap-2"
+      data-testid="password-login"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (ready && !login.isPending) login.mutate();
+      }}
+    >
+      <div className="flex flex-wrap gap-2">
+        <Input
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          placeholder={t(`settings.tracking.username.${tracker.service === 'kitsu' ? 'kitsu' : 'plain'}`)}
+          aria-label={t(`settings.tracking.username.${tracker.service === 'kitsu' ? 'kitsu' : 'plain'}`)}
+          autoComplete="username"
+          spellCheck={false}
+          className="min-w-48 flex-1"
+        />
+        <Input
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder={t('settings.tracking.password')}
+          aria-label={t('settings.tracking.password')}
+          autoComplete="current-password"
+          className="min-w-48 flex-1"
+        />
+        <Button type="submit" size="sm" disabled={!ready || login.isPending}>
+          {login.isPending && <Loader2 className="animate-spin" />}
+          {t('settings.tracking.logIn')}
+        </Button>
+      </div>
+      <p className="text-[11px] text-muted-foreground">{t('settings.tracking.passwordNote', { name: tracker.name })}</p>
+      {login.isError && (
+        <p role="alert" className="text-xs text-destructive">
+          {error.title}: {error.detail}
+        </p>
+      )}
+    </form>
   );
 }
 

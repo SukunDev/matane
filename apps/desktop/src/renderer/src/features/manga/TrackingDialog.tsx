@@ -16,6 +16,7 @@ import { Input } from '../../components/ui/input';
 import { useErrorText } from '../../lib/errors';
 import { ipc } from '../../lib/ipc';
 import { fromDateInput, toDateInput, trackersQuery, tracksQuery } from '../../lib/trackers';
+import { Toggle } from '../settings/controls';
 
 /**
  * Tracking of one manga (ADR 0035): link it to its entry on each connected tracker, then edit the
@@ -168,7 +169,10 @@ function LinkedEditor({ track, tracker }: { track: TrackEntry; tracker: TrackerI
   const unlink = useMutation({
     mutationFn: () => ipc.invoke('trackers.unlink', { mangaId: track.mangaId, service: track.service }),
   });
-  const error = useErrorText(update.error);
+  const sync = useMutation({
+    mutationFn: () => ipc.invoke('trackers.sync', { service: track.service, mangaId: track.mangaId }),
+  });
+  const error = useErrorText(update.error ?? sync.error);
   const save = (patch: TrackPatch) => update.mutate(patch);
   return (
     <div className="flex flex-col gap-3">
@@ -207,6 +211,7 @@ function LinkedEditor({ track, tracker }: { track: TrackEntry; tracker: TrackerI
         </label>
         <NumberField
           label={t('tracking.progress')}
+          key={`p${track.progress}`}
           value={track.progress}
           step={1}
           max={100000}
@@ -214,6 +219,7 @@ function LinkedEditor({ track, tracker }: { track: TrackEntry; tracker: TrackerI
         />
         <NumberField
           label={t('tracking.score')}
+          key={`c${track.score}`}
           value={track.score}
           step={0.5}
           max={10}
@@ -246,6 +252,24 @@ function LinkedEditor({ track, tracker }: { track: TrackEntry; tracker: TrackerI
         </label>
       </div>
 
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <Toggle
+          checked={track.syncBack}
+          label={t('tracking.syncBack', { name: tracker.name })}
+          onChange={(value) => save({ syncBack: value })}
+        />
+        <span className="min-w-0 flex-1">{t('tracking.syncBack', { name: tracker.name })}</span>
+        <Button variant="secondary" size="sm" disabled={sync.isPending} onClick={() => sync.mutate()}>
+          {sync.isPending && <Loader2 className="animate-spin" />}
+          {t('tracking.syncNow')}
+        </Button>
+      </div>
+      {sync.data && (
+        <p className="text-xs text-muted-foreground" data-testid="tracking-synced">
+          {t('tracking.synced', sync.data)}
+        </p>
+      )}
+
       <div className="flex items-center gap-3">
         {track.pending && (
           <span className="text-xs text-ctp-yellow" data-testid="tracking-pending">
@@ -256,7 +280,7 @@ function LinkedEditor({ track, tracker }: { track: TrackEntry; tracker: TrackerI
           {t('tracking.unlink')}
         </Button>
       </div>
-      {update.isError && (
+      {(update.isError || sync.isError) && (
         <p role="alert" className="text-xs text-destructive">
           {error.title}: {error.detail}
         </p>

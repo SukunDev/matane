@@ -507,7 +507,7 @@
       }
     },
     "tracking": {
-      "intro": "Keep your reading lists on trackers up to date. Matane sends the chapters you read, once you link a manga to its entry; nothing is sent while incognito.",
+      "intro": "Keep your reading lists on trackers up to date. Matane sends the chapters you read, once you link a manga to its entry, and marks chapters read here that you read on the tracker. Nothing is sent while incognito.",
       "connect": "Connect",
       "disconnect": "Disconnect",
       "waiting": "Waiting for the browser… (cancel)",
@@ -524,7 +524,19 @@
       "tokenHint": "If the login in the browser does not come back to Matane, paste an access token you made yourself.",
       "tokenPlaceholder": "Access token",
       "tokenSave": "Connect with token",
-      "redirectHint": "The app's redirect URL is {{url}} (only needed by whoever registers the app)."
+      "redirectHint": "The app's redirect URL is {{url}} (only needed by whoever registers the app).",
+      "username": {
+        "kitsu": "Email or username",
+        "plain": "Username"
+      },
+      "password": "Password",
+      "logIn": "Log in",
+      "passwordNote": "Your password goes only to {{name}}, and Matane does not keep it: only the login {{name}} gives back is stored.",
+      "pull": "Mark chapters read here when read on {{name}}",
+      "pullHint": "Checked when the library is updated, when the app opens and with “Sync now”. It can also be switched off for one manga.",
+      "syncNow": "Sync now",
+      "syncing": "Syncing…",
+      "synced": "Checked {{checked}}: {{readHere}} marked read here, {{pushed}} sent to the tracker, {{failed}} failed."
     }
   },
   "common": {
@@ -1532,6 +1544,9 @@
       "on_hold": "On hold",
       "dropped": "Dropped",
       "planning": "Planning to read"
-    }
+    },
+    "syncBack": "Mark chapters read here when read on {{name}}",
+    "syncNow": "Sync now",
+    "synced": "{{readHere}} marked read here, {{pushed}} sent."
   }
 }

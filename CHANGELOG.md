@@ -10,6 +10,8 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 
 ### Library and trackers
 
+- **Two-way tracker sync:** chapters you read on a tracker (on your phone, or on its website) are marked read here, a tracker that is behind gets an update, and the status, score and dates you change on its website are taken over. It runs after the app opens and after the library is checked, and with **Sync now** in Settings → Tracking or in a manga's Tracking dialog. Following a tracker can be switched off per tracker and per manga. Nothing read here is sent while incognito, and what a tracker said is never sent back to it.
+- **Kitsu and MangaUpdates tracking:** log in with your username and password in Settings → Tracking (the password goes only to that service and is never kept), link manga from their page, and reading is sent the same way. Kitsu rates in halves; MangaUpdates has no dates.
 - **MyAnimeList tracking** (in builds that have a MyAnimeList app registration): the same as AniList, with a login that renews itself, whole-number scores, and a title search of at least 3 letters.
 - **AniList tracking:** connect AniList in Settings → Tracking (the login happens in your browser), link a manga to its AniList entry from its page (**Tracking**), and the chapters you read are sent for you. Edit status, score, chapters read and dates there too. Nothing waits on the network: updates are queued, sent when AniList can be reached and retried if it is down, and never sent while incognito. Links are in your backups; the login is not.
 

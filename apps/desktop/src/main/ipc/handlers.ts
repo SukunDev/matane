@@ -369,6 +369,8 @@ export function createIpcHandlers({
     'trackers.list': () => trackers.list(),
     'trackers.connect': ({ service }) => trackers.connect(service),
     'trackers.cancelConnect': ({ service }) => trackers.cancelConnect(service),
+    'trackers.connectWithPassword': ({ service, username, password }) =>
+      trackers.connectWithPassword(service, username, password),
     'trackers.setToken': ({ service, token }) => trackers.setToken(service, token),
     'trackers.disconnect': ({ service }) => trackers.disconnect(service),
     'trackers.search': ({ service, query }) => trackers.search(service, query),
@@ -377,6 +379,8 @@ export function createIpcHandlers({
     'trackers.unlink': ({ mangaId, service }) => trackers.unlink(existing(mangaId), service),
     'trackers.update': ({ mangaId, service, patch }) => trackers.update(existing(mangaId), service, patch),
     'trackers.retry': () => trackers.retry(),
+    'trackers.sync': ({ service, mangaId }) =>
+      trackers.sync({ service, mangaId: mangaId === undefined ? undefined : existing(mangaId) }),
     'stats.overview': ({ range }) => stats.overview(range),
     'stats.clear': () => stats.clear(),
     'network.info': () => networkControl.info(),

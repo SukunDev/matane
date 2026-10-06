@@ -72,6 +72,8 @@ test('a manga is searched on AniList and linked, which creates its entry', async
   await page.getByText('Paged Hero').click();
   await expect(page.getByRole('heading', { name: 'Paged Hero' })).toBeVisible();
   mangaId = Number(/manga\/(\d+)/.exec(page.url())![1]);
+  // The chapters arrive from the source a moment after the page opens.
+  await expect(page.getByTestId('chapter-row')).toHaveCount(4);
   chapterIds = (await page.evaluate((id) => window.api.invoke('chapters.list', { mangaId: id }), mangaId))
     .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
     .map((c) => c.id);
@@ -142,6 +144,79 @@ test('nothing is sent while incognito', async () => {
   await page.evaluate(() => window.api.invoke('settings.set', { incognito: false }));
 });
 
+// Milestone 6f: two-way sync. The chapters are numbered 1, 2, 3 and 5; here the first, third and
+// last are read, and AniList says 3.
+const readFlags = async () =>
+  (await page.evaluate((id) => window.api.invoke('chapters.list', { mangaId: id }), mangaId))
+    .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
+    .map((c) => c.read);
+const syncNow = async () => {
+  await goto('#/settings/tracking');
+  await card().getByRole('button', { name: 'Sync now' }).click();
+};
+const followSwitch = () => card().getByRole('switch', { name: 'Mark chapters read here when read on AniList' });
+
+test('"Sync now" brings an entry that is behind forward', async () => {
+  expect(progress()).toBe(3);
+  await syncNow();
+  await expect(card().getByTestId('tracker-synced')).toHaveText(
+    'Checked 1: 0 marked read here, 1 sent to the tracker, 0 failed.',
+  );
+  await expect.poll(progress).toBe(5);
+});
+
+test('chapters read on the tracker website are marked read here, and not sent back', async () => {
+  await page.evaluate((ids) => window.api.invoke('chapters.markRead', { chapterIds: ids, read: false }), chapterIds);
+  expect(await readFlags()).toEqual([false, false, false, false]);
+  // Read on the website: two chapters, which the tracker holds as "2".
+  tracker.entries.get(30013)!.progress = 2;
+  const sent = tracker.saves.length;
+  await syncNow();
+  await expect(card().getByTestId('tracker-synced')).toHaveText(
+    'Checked 1: 2 marked read here, 0 sent to the tracker, 0 failed.',
+  );
+  expect(await readFlags()).toEqual([true, true, false, false]);
+  await new Promise((r) => setTimeout(r, 2500));
+  expect(tracker.saves).toHaveLength(sent);
+  expect(progress()).toBe(2);
+});
+
+test('following the tracker can be switched off, for the tracker', async () => {
+  await goto('#/settings/tracking');
+  await expect(followSwitch()).toBeChecked();
+  await followSwitch().click();
+  await expect(followSwitch()).not.toBeChecked();
+  tracker.entries.get(30013)!.progress = 3;
+  await card().getByRole('button', { name: 'Sync now' }).click();
+  await expect(card().getByTestId('tracker-synced')).toContainText('0 marked read here');
+  expect(await readFlags()).toEqual([true, true, false, false]);
+
+  await followSwitch().click();
+  await expect(followSwitch()).toBeChecked();
+  await card().getByRole('button', { name: 'Sync now' }).click();
+  await expect(card().getByTestId('tracker-synced')).toContainText('1 marked read here');
+  expect(await readFlags()).toEqual([true, true, true, false]);
+});
+
+test('following the tracker can be switched off, for one manga', async () => {
+  await goto(`#/manga/${mangaId}`);
+  await page.getByRole('button', { name: 'Tracking' }).click();
+  const dialog = page.getByTestId('tracking-anilist');
+  const follow = dialog.getByRole('switch', { name: 'Mark chapters read here when read on AniList' });
+  await expect(follow).toBeChecked();
+  await follow.click();
+  await expect(follow).not.toBeChecked();
+  tracker.entries.get(30013)!.progress = 5;
+  await dialog.getByRole('button', { name: 'Sync now' }).click();
+  await expect(dialog.getByTestId('tracking-synced')).toHaveText('0 marked read here, 0 sent.');
+  expect(await readFlags()).toEqual([true, true, true, false]);
+  await follow.click();
+  await dialog.getByRole('button', { name: 'Sync now' }).click();
+  await expect(dialog.getByTestId('tracking-synced')).toHaveText('1 marked read here, 0 sent.');
+  expect(await readFlags()).toEqual([true, true, true, true]);
+  await page.keyboard.press('Escape');
+});
+
 test('the login and the link survive a restart; disconnecting keeps the link', async () => {
   await t.restart();
   page = t.page;
@@ -151,7 +226,7 @@ test('the login and the link survive a restart; disconnecting keeps the link', a
   await expect(card().getByTestId('tracker-state')).toHaveText('Not connected');
   const tracks = await page.evaluate((id) => window.api.invoke('trackers.tracks', { mangaId: id }), mangaId);
   expect(tracks).toEqual([
-    expect.objectContaining({ service: 'anilist', remoteId: '30013', remoteTitle: 'Paged Hero', progress: 3 }),
+    expect.objectContaining({ service: 'anilist', remoteId: '30013', remoteTitle: 'Paged Hero', progress: 5 }),
   ]);
   // Without a login the dialog points to Settings.
   await goto(`#/manga/${mangaId}`);

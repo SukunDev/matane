@@ -31,6 +31,11 @@ export interface TrackerClient {
   readonly service: TrackerService;
   readonly name: string;
   viewer(token: string): Promise<TrackerViewer>;
+  /**
+   * Logs in with the tracker's own username and password, for trackers that have no browser login. The
+   * password is only sent to the tracker; what is kept is the login that comes back.
+   */
+  loginWithPassword?(username: string, password: string): Promise<TrackerLogin>;
   /** A new login from a refresh token; only for trackers whose tokens expire. */
   refresh?(refreshToken: string): Promise<TrackerLogin>;
   search(token: string, query: string): Promise<TrackSearchResult[]>;

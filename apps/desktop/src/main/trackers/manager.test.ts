@@ -47,6 +47,8 @@ let tokensSeen: string[];
 let rejectToken: string | null;
 let refreshCalls: string[];
 let refreshError: Error | null;
+/** Trackers whose progress may not be pulled into the library (Settings → Tracking). */
+let pullOff: Set<string>;
 const use = (token: string) => {
   tokensSeen.push(token);
   if (rejectToken === '*' || token === rejectToken) throw new TrackerAuthError('refused');
@@ -113,6 +115,32 @@ const malClient: TrackerClient = {
   },
 };
 
+/** Trackers that log in with a username and password (Kitsu also renews its tokens). */
+let passwordLogins: [string, string][];
+let passwordError: Error | null;
+const passwordClient = (service: 'kitsu' | 'mangaupdates', name: string): TrackerClient => ({
+  ...client,
+  service,
+  name,
+  async loginWithPassword(username, password) {
+    passwordLogins.push([username, password]);
+    if (passwordError) throw passwordError;
+    return {
+      accessToken: `pw-${service}`,
+      refreshToken: service === 'kitsu' ? 'pw-refresh' : null,
+      expiresInSec: 3600,
+    };
+  },
+  ...(service === 'kitsu'
+    ? {
+        async refresh(refreshToken: string) {
+          refreshCalls.push(refreshToken);
+          return { accessToken: 'pw-kitsu-2', refreshToken: 'pw-refresh-2', expiresInSec: 3600 };
+        },
+      }
+    : {}),
+});
+
 beforeEach(async () => {
   dir = mkdtempSync(join(tmpdir(), 'matane-trackers-'));
   connection = openDatabase(join(dir, 'data.db'));
@@ -146,9 +174,17 @@ beforeEach(async () => {
   rejectToken = null;
   refreshCalls = [];
   refreshError = null;
+  pullOff = new Set();
+  passwordLogins = [];
+  passwordError = null;
   manager = new TrackerManager({
     repo,
-    clients: { anilist: client, mal: malClient },
+    clients: {
+      anilist: client,
+      mal: malClient,
+      kitsu: passwordClient('kitsu', 'Kitsu'),
+      mangaupdates: passwordClient('mangaupdates', 'MangaUpdates'),
+    },
     secrets: new SecretBox({
       isEncryptionAvailable: () => keyring,
       encryptString: (text) => Buffer.from(`sealed:${text}`),
@@ -164,6 +200,7 @@ beforeEach(async () => {
     },
     manga,
     progress,
+    pullEnabled: (service) => !pullOff.has(service),
     incognito: () => incognito,
     isOnline: () => online,
     now: () => now,
@@ -631,6 +668,210 @@ describe('logins that are renewed', () => {
     expect(manager.list().find((i) => i.service === 'mal')).toMatchObject({ connected: true, expired: false });
     await search();
     expect(tokensSeen).toEqual(['legacy-token']);
+  });
+});
+
+describe('trackers with a password login', () => {
+  const info = (service: string) => manager.list().find((i) => i.service === service)!;
+
+  it('says how each tracker logs in, and has no redirect url for a password login', () => {
+    expect(info('anilist')).toMatchObject({ login: 'browser', redirectUrl: 'http://127.0.0.1:47653/callback' });
+    expect(info('mal')).toMatchObject({ login: 'browser' });
+    expect(info('kitsu')).toMatchObject({ login: 'password', redirectUrl: null, name: 'Kitsu' });
+    expect(info('mangaupdates')).toMatchObject({ login: 'password', redirectUrl: null });
+  });
+
+  it('logs in with the password, keeps only the login that comes back, and proves it', async () => {
+    expect(await manager.connectWithPassword('kitsu', 'mika@example.org', 'hunter2')).toMatchObject({
+      connected: true,
+      username: 'mika',
+      login: 'password',
+      expired: false,
+    });
+    expect(passwordLogins).toEqual([['mika@example.org', 'hunter2']]);
+    const stored = repo.account('kitsu')!;
+    expect(JSON.stringify(stored)).not.toContain('hunter2');
+    expect(Buffer.from(stored.tokenEncrypted!.slice(4), 'base64').toString()).toBe(
+      'sealed:{"a":"pw-kitsu","r":"pw-refresh"}',
+    );
+    // The password is not looked at again: renewal works with the refresh token.
+    now = T0 + 3_600_000;
+    await manager.search('kitsu', 'moon');
+    expect(refreshCalls).toEqual(['pw-refresh']);
+    expect(tokensSeen.at(-1)).toBe('pw-kitsu-2');
+    expect(passwordLogins).toHaveLength(1);
+  });
+
+  it('keeps a session token without refresh for MangaUpdates', async () => {
+    await manager.connectWithPassword('mangaupdates', 'mika', 'pw');
+    expect(Buffer.from(repo.account('mangaupdates')!.tokenEncrypted!.slice(4), 'base64').toString()).toBe(
+      'sealed:{"a":"pw-mangaupdates","r":null}',
+    );
+  });
+
+  it('says what went wrong with a wrong password, and saves nothing', async () => {
+    passwordError = new TrackerRequestError('Kitsu did not accept that email and password');
+    await expect(manager.connectWithPassword('kitsu', 'mika', 'wrong')).rejects.toMatchObject({
+      code: 'tracker',
+      message: expect.stringContaining('did not accept'),
+    });
+    expect(repo.account('kitsu')).toBeUndefined();
+    passwordError = new Error('socket hang up');
+    await expect(manager.connectWithPassword('kitsu', 'mika', 'pw')).rejects.toMatchObject({ code: 'network' });
+  });
+
+  it('keeps the two kinds of login apart', async () => {
+    await expect(manager.connect('kitsu')).rejects.toMatchObject({
+      code: 'tracker',
+      message: expect.stringContaining('username and password'),
+    });
+    await expect(manager.connectWithPassword('anilist', 'a', 'b')).rejects.toMatchObject({
+      code: 'tracker',
+      message: expect.stringContaining('browser'),
+    });
+    expect(logins).toBe(0);
+    expect(passwordLogins).toEqual([]);
+  });
+
+  it('sends reading to a tracker it logged in to', async () => {
+    await manager.connectWithPassword('mangaupdates', 'mika', 'pw');
+    await manager.link({ mangaId, service: 'mangaupdates', remoteId: '123', title: 'Moon Garden' });
+    read(1, 2);
+    await manager.flush();
+    expect(saved.at(-1)).toMatchObject({ remoteId: '123', patch: { progress: 2 } });
+  });
+});
+
+describe('two-way sync', () => {
+  const readFlags = () =>
+    chapterIds.map(
+      (id) => (connection.sqlite.prepare('SELECT read FROM chapters WHERE id = ?').get(id) as { read: number }).read,
+    );
+  /** The user changed the entry on the tracker's website. */
+  const changeRemote = (patch: Partial<RemoteEntry>) => remote.set('30013', { ...remote.get('30013')!, ...patch });
+  const linked = async (patch: Partial<RemoteEntry> = {}) => {
+    await connect();
+    remote.set('30013', { ...entryOf('30013'), status: 'reading', progress: 1, startedAt: T0, ...patch });
+    await link();
+  };
+
+  it('marks chapters read when the tracker is ahead, and does not send them back', async () => {
+    read(1);
+    await linked();
+    changeRemote({ progress: 4, status: 'completed', score: 9, finishedAt: T0 + 1000 });
+    expect(await manager.sync()).toEqual({ checked: 1, readHere: 3, pushed: 0, failed: 0 });
+    expect(readFlags()).toEqual([1, 1, 1, 1, 0]);
+    expect(manager.tracks(mangaId)[0]).toMatchObject({
+      progress: 4,
+      status: 'completed',
+      score: 9,
+      finishedAt: T0 + 1000,
+      pending: false,
+    });
+    await manager.flush();
+    expect(saved).toEqual([]);
+    expect(rows()).toEqual([]);
+    // Nothing bounces on the next one either.
+    expect(await manager.sync()).toEqual({ checked: 1, readHere: 0, pushed: 0, failed: 0 });
+    expect(rows()).toEqual([]);
+  });
+
+  it('brings a tracker that is behind forward', async () => {
+    await linked();
+    // Read without the hook, as if before the tracker was connected.
+    progress.onRead = undefined;
+    read(1, 2, 3);
+    expect(await manager.sync()).toMatchObject({ pushed: 1, readHere: 0 });
+    await manager.flush();
+    expect(saved.at(-1)!.patch).toEqual({ progress: 3 });
+    expect(remote.get('30013')!.progress).toBe(3);
+  });
+
+  it('takes status, score and dates the user changed on the tracker website', async () => {
+    await linked();
+    changeRemote({ status: 'on_hold', score: 7.5, startedAt: T0 - 5000 });
+    await manager.sync();
+    expect(manager.tracks(mangaId)[0]).toMatchObject({ status: 'on_hold', score: 7.5, startedAt: T0 - 5000 });
+    // The entry was at chapter 1, so that one is read here.
+    expect(readFlags()).toEqual([1, 0, 0, 0, 0]);
+  });
+
+  it('leaves an edit made here that is not sent yet alone', async () => {
+    await linked();
+    saveError = new Error('offline-ish');
+    manager.update(mangaId, 'anilist', { score: 6 });
+    await manager.flush();
+    changeRemote({ progress: 5, score: 2 });
+    expect(await manager.sync()).toEqual({ checked: 1, readHere: 0, pushed: 0, failed: 0 });
+    expect(readFlags()).toEqual([0, 0, 0, 0, 0]);
+    expect(manager.tracks(mangaId)[0]).toMatchObject({ score: 6, progress: 1, pending: true });
+  });
+
+  it('follows the tracker only where that is on, for the manga and for the tracker', async () => {
+    await linked();
+    changeRemote({ progress: 3 });
+    manager.update(mangaId, 'anilist', { syncBack: false });
+    expect(manager.tracks(mangaId)[0]).toMatchObject({ syncBack: false, pending: false });
+    expect(rows()).toEqual([]);
+    expect(await manager.sync()).toMatchObject({ readHere: 0 });
+    expect(readFlags()).toEqual([0, 0, 0, 0, 0]);
+
+    manager.update(mangaId, 'anilist', { syncBack: true });
+    pullOff.add('anilist');
+    expect(await manager.sync()).toMatchObject({ readHere: 0 });
+    pullOff.clear();
+    expect(await manager.sync()).toMatchObject({ readHere: 3 });
+    expect(readFlags()).toEqual([1, 1, 1, 0, 0]);
+  });
+
+  it('does not send while incognito, but still brings the tracker in', async () => {
+    await linked();
+    progress.onRead = undefined;
+    read(1, 2, 3);
+    incognito = true;
+    expect(await manager.sync()).toMatchObject({ pushed: 0 });
+    expect(rows()).toEqual([]);
+    changeRemote({ progress: 4 });
+    expect(await manager.sync()).toMatchObject({ readHere: 1 });
+    expect(readFlags()).toEqual([1, 1, 1, 1, 0]);
+  });
+
+  it('can be limited to one tracker or one manga, skips what has no login', async () => {
+    await linked();
+    changeRemote({ progress: 2 });
+    expect(await manager.sync({ service: 'mal' })).toMatchObject({ checked: 0 });
+    expect(await manager.sync({ mangaId: mangaId + 99 })).toMatchObject({ checked: 0 });
+    expect(await manager.sync({ service: 'anilist', mangaId })).toMatchObject({ checked: 1, readHere: 2 });
+    manager.disconnect('anilist');
+    expect(await manager.sync()).toMatchObject({ checked: 0 });
+  });
+
+  it('ignores an entry that was deleted on the tracker', async () => {
+    await linked();
+    remote.delete('30013');
+    expect(await manager.sync()).toEqual({ checked: 1, readHere: 0, pushed: 0, failed: 0 });
+    expect(manager.tracks(mangaId)).toHaveLength(1);
+  });
+
+  it('refuses while offline (and says nothing when it was not asked for)', async () => {
+    await linked();
+    online = false;
+    await expect(manager.sync()).rejects.toMatchObject({ code: 'network' });
+    await expect(manager.syncQuietly()).resolves.toBeUndefined();
+  });
+
+  it('counts a tracker that does not answer, and goes on with the others', async () => {
+    await linked();
+    rejectToken = '*';
+    expect(await manager.sync()).toMatchObject({ checked: 1, failed: 1 });
+    await expect(manager.syncQuietly()).resolves.toBeUndefined();
+  });
+
+  it('runs one sync at a time', async () => {
+    await linked();
+    const first = manager.sync();
+    expect(manager.sync()).toBe(first);
+    await first;
   });
 });
 

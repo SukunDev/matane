@@ -48,6 +48,7 @@ import {
   trackPatchSchema,
   trackSearchResultSchema,
   trackerInfoSchema,
+  syncResultSchema,
 } from '../models';
 import type { DbChangeTag } from '../models';
 import { appSettingsSchema, mangaReaderSettingsSchema, migrationOptionsSchema } from '../settings';
@@ -295,6 +296,15 @@ export const invokeContract = {
   /** Opens the tracker's login in the system browser and waits (up to 3 minutes) for the answer. */
   'trackers.connect': invoke(z.object({ service: z.enum(TRACKER_SERVICES) }), trackerInfoSchema),
   'trackers.cancelConnect': invoke(z.object({ service: z.enum(TRACKER_SERVICES) }), z.void()),
+  /** Logs in with a username and password (trackers without a browser login); the password is not kept. */
+  'trackers.connectWithPassword': invoke(
+    z.object({
+      service: z.enum(TRACKER_SERVICES),
+      username: z.string().trim().min(1).max(200),
+      password: z.string().min(1).max(500),
+    }),
+    trackerInfoSchema,
+  ),
   /** Connects with an access token made elsewhere (when the browser login cannot be used). */
   'trackers.setToken': invoke(
     z.object({ service: z.enum(TRACKER_SERVICES), token: z.string().trim().min(10).max(4096) }),
@@ -323,6 +333,15 @@ export const invokeContract = {
   ),
   /** Sends the queued updates now. */
   'trackers.retry': invoke(z.void(), z.void()),
+  /**
+   * Sends what is queued, then compares linked manga with their entries: chapters read on the
+   * tracker are marked read here, and a tracker that is behind gets an update. Everything, one
+   * tracker, or one manga.
+   */
+  'trackers.sync': invoke(
+    z.object({ service: z.enum(TRACKER_SERVICES).optional(), mangaId: idSchema.optional() }),
+    syncResultSchema,
+  ),
   'stats.overview': invoke(z.object({ range: z.enum(STATS_RANGES) }), statsOverviewSchema),
   /** Forgets every reading session (Settings → Data); progress and history stay. */
   'stats.clear': invoke(z.void(), z.void()),

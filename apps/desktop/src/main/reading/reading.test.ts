@@ -100,6 +100,31 @@ describe('ProgressRepository / ReadingService', () => {
     expect([ids['1'], ids['2a'], ids['2b'], ids['3']].map((id) => row(id!).read)).toEqual([1, 1, 1, 0]);
   });
 
+  it('marks chapters read up to a number a tracker gave, without telling onRead', () => {
+    const told = vi.fn();
+    progress.onRead = told;
+    expect(progress.markReadUpTo(mangaId, 2)).toBe(3);
+    expect([ids['1'], ids['2a'], ids['2b'], ids['3']].map((id) => row(id!).read)).toEqual([1, 1, 1, 0]);
+    expect(told).not.toHaveBeenCalled();
+    // Again: nothing new. Lower: nothing is un-read.
+    expect(progress.markReadUpTo(mangaId, 2)).toBe(0);
+    expect(progress.markReadUpTo(mangaId, 1)).toBe(0);
+    expect(progress.highestRead(mangaId)).toBe(2);
+  });
+
+  it('counts the oldest chapters when none has a number', () => {
+    const plain = new MangaRepository(connection.db, new DbChanges(() => undefined)).ensure('demo/en', {
+      url: '/plain',
+      title: 'Plain',
+    });
+    const added = chapters.sync(plain, [ch('p3', undefined), ch('p2', undefined), ch('p1', undefined)]).added;
+    expect(progress.markReadUpTo(plain, 2)).toBe(2);
+    expect(added.map((id) => row(id).read)).toEqual([0, 1, 1]);
+    // The tracker counts what is read, so two read already means two more only when it says four.
+    expect(progress.markReadUpTo(plain, 2)).toBe(0);
+    expect(progress.markReadUpTo(plain, 3)).toBe(1);
+  });
+
   it('picks the chapter to continue', () => {
     expect(reading.continueTarget(mangaId)).toEqual({ chapterId: ids['1'], kind: 'start' });
     reading.saveProgress({ chapterId: ids['1']!, page: 3, pageEnd: 3, total: 10, offset: null });

@@ -89,6 +89,8 @@ export interface UpdateServiceDeps {
   onProgress: (progress: UpdateProgress) => void;
   /** The Updates page and its badge changed. */
   changed: () => void;
+  /** A check of the library (or a category) ran to its end, not cancelled: trackers are compared next. */
+  finished?: () => void;
   log?: (message: string) => void;
   now?: () => number;
 }
@@ -154,7 +156,7 @@ export class UpdateService {
       return { started: false, reason: 'empty' };
     }
     this.controller = new AbortController();
-    this.running = this.run(targets, settings, trigger, this.controller.signal).finally(() => {
+    this.running = this.run(targets, settings, trigger, this.controller.signal, scope.kind !== 'manga').finally(() => {
       this.running = null;
       this.controller = null;
     });
@@ -204,6 +206,7 @@ export class UpdateService {
     settings: UpdateSettings,
     trigger: 'auto' | 'manual',
     signal: AbortSignal,
+    wide: boolean,
   ): Promise<void> {
     const current: string[] = [];
     const found = new Map<number, number[]>();
@@ -253,6 +256,7 @@ export class UpdateService {
     this.deps.store.set(RESULT_KEY, result);
     emit(false);
     this.deps.changed();
+    if (wide && !signal.aborted) this.deps.finished?.();
 
     if (settings.autoDownload) this.autoDownload(targets, found, settings);
     if (newChapters > 0 && settings.notify && (trigger === 'auto' || !this.deps.focused())) {

@@ -158,7 +158,7 @@ describe('UpdateService', () => {
   const enqueueAuto = vi.fn((_ids: number[]) => true);
   const notify = vi.fn();
 
-  function service() {
+  function service(finished?: () => void) {
     return new UpdateService({
       repo,
       settings: () => settings,
@@ -185,6 +185,7 @@ describe('UpdateService', () => {
       focused: () => focused,
       onProgress: (p) => progress.push(p),
       changed: () => undefined,
+      finished,
       now: () => now,
     });
   }
@@ -250,6 +251,27 @@ describe('UpdateService', () => {
     updates.check({ kind: 'manga', mangaIds: [done] });
     await updates.idle();
     expect(checked).toEqual([done]);
+  });
+
+  it('tells when a check of the library ran to its end, not for one manga or a cancelled check', async () => {
+    const id = libraryManga('A');
+    refresh = async () => ({ newChapterIds: [] });
+    const finished = vi.fn();
+    const updates = service(finished);
+    updates.check({ kind: 'manga', mangaIds: [id] });
+    await updates.idle();
+    expect(finished).not.toHaveBeenCalled();
+    updates.check({ kind: 'all' });
+    await updates.idle();
+    expect(finished).toHaveBeenCalledTimes(1);
+
+    refresh = (_id, signal) =>
+      new Promise((_resolve, reject) => signal.addEventListener('abort', () => reject(new AppError('cancelled', 'x'))));
+    updates.check({ kind: 'all' });
+    await new Promise((r) => setTimeout(r, 5));
+    updates.cancel();
+    await updates.idle();
+    expect(finished).toHaveBeenCalledTimes(1);
   });
 
   it('cancels: running manga stop, the rest never start', async () => {

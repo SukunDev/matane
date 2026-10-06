@@ -637,7 +637,7 @@ export type StatsOverview = z.infer<typeof statsOverviewSchema>;
 
 // ------------------------------------------------------------------ trackers (ADR 0035)
 
-export const TRACKER_SERVICES = ['anilist', 'mal'] as const;
+export const TRACKER_SERVICES = ['anilist', 'mal', 'kitsu', 'mangaupdates'] as const;
 export type TrackerService = (typeof TRACKER_SERVICES)[number];
 
 /** What every tracker's list status maps to. */
@@ -658,8 +658,10 @@ export const trackerInfoSchema = z.object({
   /** Updates waiting to be sent (offline, or the tracker said no). */
   queued: z.number(),
   lastError: z.string().nullable(),
-  /** The address to register as the redirect URL of the tracker's app (for whoever owns the client id). */
-  redirectUrl: z.string(),
+  /** How to log in: through the browser (OAuth), or with the tracker's own username and password. */
+  login: z.enum(['browser', 'password']),
+  /** The address to register as the redirect URL of the tracker's app (browser logins; for whoever owns the client id). */
+  redirectUrl: z.string().nullable(),
 });
 export type TrackerInfo = z.infer<typeof trackerInfoSchema>;
 
@@ -688,6 +690,8 @@ export const trackEntrySchema = z.object({
   finishedAt: z.number().nullable(),
   /** A change is waiting to be sent to the tracker. */
   pending: z.boolean(),
+  /** Chapters read on the tracker are marked read here too (ADR 0038). */
+  syncBack: z.boolean(),
 });
 export type TrackEntry = z.infer<typeof trackEntrySchema>;
 
@@ -697,5 +701,20 @@ export const trackPatchSchema = z.object({
   progress: z.number().int().min(0).max(100_000).nullable().optional(),
   startedAt: z.number().nullable().optional(),
   finishedAt: z.number().nullable().optional(),
+  /** Only kept here: follow the tracker's progress for this manga. */
+  syncBack: z.boolean().optional(),
 });
 export type TrackPatch = z.infer<typeof trackPatchSchema>;
+
+/** What a sync with the trackers did (ADR 0038). */
+export const syncResultSchema = z.object({
+  /** Linked manga compared with their entries. */
+  checked: z.number(),
+  /** Chapters marked read here because the tracker was ahead. */
+  readHere: z.number(),
+  /** Manga whose tracker entry was behind and got an update queued. */
+  pushed: z.number(),
+  /** Entries that could not be read (the tracker said no, or could not be reached). */
+  failed: z.number(),
+});
+export type SyncResult = z.infer<typeof syncResultSchema>;

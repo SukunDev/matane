@@ -1,5 +1,6 @@
 import {
   TRACKER_SERVICES,
+  type SyncResult,
   type TrackEntry,
   type TrackPatch,
   type TrackSearchResult,
@@ -8,6 +9,7 @@ import {
 } from '@manga-reader/shared';
 import { AppError } from '@manga-reader/shared/errors';
 import type { AccountRow, TrackRow, TrackersRepository } from '../db/repositories/trackers';
+import { reconcile } from './reconcile';
 import type { SecretBox } from './secret';
 import {
   type RemoteEntry,
@@ -24,6 +26,8 @@ export const retryDelay = (attempts: number) => Math.min(MINUTE * 2 ** Math.max(
 /** After a change, wait a moment so a burst (a chapter marked read a few times) goes out as one. */
 const KICK_MS = 1_500;
 const FLUSH_EVERY_MS = MINUTE;
+/** The first sync after the app opened. */
+const START_SYNC_MS = 20_000;
 /** A token that runs out within this is renewed before it is used. */
 const REFRESH_MARGIN_MS = MINUTE;
 
@@ -58,7 +62,13 @@ export interface TrackerManagerDeps {
   login: (service: TrackerService, signal: AbortSignal) => Promise<TrackerLogin>;
   manga: { get(id: number): { id: number } | undefined };
   /** Chapters read of a manga, as a tracker counts them (null: none read). */
-  progress: { highestRead(mangaId: number): number | null };
+  progress: {
+    highestRead(mangaId: number): number | null;
+    /** Marks chapters read up to what a tracker says, without telling the trackers (returns how many). */
+    markReadUpTo(mangaId: number, count: number): number;
+  };
+  /** Whether chapters read on this tracker may be marked read here (Settings → Tracking); on when absent. */
+  pullEnabled?: (service: TrackerService) => boolean;
   /** Reading while incognito is not reported to trackers. */
   incognito: () => boolean;
   isOnline: () => boolean;
@@ -76,6 +86,8 @@ export class TrackerManager {
   private readonly lastError = new Map<TrackerService, string>();
   private readonly refreshes = new Map<TrackerService, Promise<string>>();
   private flushing: Promise<void> | null = null;
+  private syncing: Promise<SyncResult> | null = null;
+  private startTimer: ReturnType<typeof setTimeout> | undefined;
   private kickTimer: ReturnType<typeof setTimeout> | undefined;
   private interval: ReturnType<typeof setInterval> | undefined;
 
@@ -106,9 +118,15 @@ export class TrackerManager {
         encrypted: account ? this.deps.secrets.isEncrypted(account.tokenEncrypted) : null,
         queued: this.deps.repo.queued(service),
         lastError: this.lastError.get(service) ?? null,
-        redirectUrl: this.deps.redirectUrl(service),
+        login: this.usesPassword(service) ? ('password' as const) : ('browser' as const),
+        redirectUrl: this.usesPassword(service) ? null : this.deps.redirectUrl(service),
       };
     });
+  }
+
+  /** Trackers without a browser login ask for a username and password. */
+  private usesPassword(service: TrackerService): boolean {
+    return this.deps.clients[service].loginWithPassword !== undefined;
   }
 
   private info(service: TrackerService): TrackerInfo {
@@ -116,6 +134,9 @@ export class TrackerManager {
   }
 
   async connect(service: TrackerService): Promise<TrackerInfo> {
+    if (this.usesPassword(service)) {
+      throw new AppError('tracker', `${this.deps.clients[service].name} logs in with a username and password`);
+    }
     if (!this.deps.configured(service)) {
       throw new AppError('tracker', `${this.deps.clients[service].name} has no app registration in this build`);
     }
@@ -128,6 +149,19 @@ export class TrackerManager {
     } finally {
       if (this.logins.get(service) === controller) this.logins.delete(service);
     }
+  }
+
+  /** Logs in with a username and password; only the login that comes back is kept, never the password. */
+  async connectWithPassword(service: TrackerService, username: string, password: string): Promise<TrackerInfo> {
+    const client = this.deps.clients[service];
+    if (!client.loginWithPassword) throw new AppError('tracker', `${client.name} logs in through the browser`);
+    let login: TrackerLogin;
+    try {
+      login = await client.loginWithPassword(username, password);
+    } catch (error) {
+      throw this.toAppError(service, error);
+    }
+    return this.saveLogin(service, login);
   }
 
   cancelConnect(service: TrackerService): void {
@@ -354,6 +388,8 @@ export class TrackerManager {
       (next as Record<string, unknown>)[key] = patch[key];
       (sent as Record<string, unknown>)[key] = patch[key];
     }
+    // Only kept here: whether the tracker's progress is followed for this manga.
+    if (patch.syncBack !== undefined) next.syncBack = patch.syncBack;
     // Finishing a manga dates it, unless the user chose a date.
     if (
       patch.status === 'completed' &&
@@ -368,7 +404,7 @@ export class TrackerManager {
       this.deps.repo.enqueue(mangaId, service, sent, this.now());
       this.kick();
     }
-    return toEntry(next, true);
+    return toEntry(next, this.deps.repo.pendingServices(mangaId).has(service));
   }
 
   // ------------------------------------------------------------ reading
@@ -395,12 +431,103 @@ export class TrackerManager {
     this.kick();
   }
 
+  // ------------------------------------------------------------ sync
+
+  /**
+   * Two-way sync (ADR 0038): sends what is queued, then compares each linked manga with its entry.
+   * Chapters read on the tracker are marked read here (unless that is off for the tracker or the
+   * manga) and a tracker that is behind gets an update; status, score and dates are taken over from
+   * the tracker. One sync at a time.
+   */
+  sync(scope: { service?: TrackerService; mangaId?: number } = {}): Promise<SyncResult> {
+    this.syncing ??= this.runSync(scope).finally(() => (this.syncing = null));
+    return this.syncing;
+  }
+
+  /** A sync nobody asked for: it fails silently (offline, a login that expired) and tries again at the next trigger. */
+  async syncQuietly(): Promise<void> {
+    try {
+      if (this.deps.isOnline()) await this.sync();
+    } catch (error) {
+      this.deps.log?.(`sync failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  private async runSync(scope: { service?: TrackerService; mangaId?: number }): Promise<SyncResult> {
+    if (!this.deps.isOnline()) throw new AppError('network', 'You are offline');
+    await this.flush();
+    const result: SyncResult = { checked: 0, readHere: 0, pushed: 0, failed: 0 };
+    const paused = new Set<string>();
+    for (const track of this.deps.repo.allTracks()) {
+      const service = track.service as TrackerService;
+      if (scope.service && scope.service !== service) continue;
+      if (scope.mangaId !== undefined && scope.mangaId !== track.mangaId) continue;
+      if (paused.has(service) || !this.deps.repo.account(service)) continue;
+      result.checked++;
+      try {
+        const remote = await this.authed(service, (token) =>
+          this.deps.clients[service].getEntry(token, track.remoteId),
+        );
+        if (!remote) continue;
+        this.syncOne(track, remote, result);
+      } catch (error) {
+        // The tracker is not answering (or refuses the login): the rest of its manga wait for next time.
+        paused.add(service);
+        result.failed++;
+        const message = error instanceof Error ? error.message : String(error);
+        this.lastError.set(service, message);
+        this.deps.log?.(`${service}: sync of manga ${track.mangaId} failed: ${message}`);
+      }
+    }
+    return result;
+  }
+
+  private syncOne(track: TrackRow, remote: RemoteEntry, result: SyncResult): void {
+    const service = track.service as TrackerService;
+    const current = this.deps.repo.track(track.mangaId, service) ?? track;
+    const plan = reconcile({
+      localRead: this.deps.progress.highestRead(track.mangaId) ?? 0,
+      track: current,
+      remote,
+      pending: this.deps.repo.pendingServices(track.mangaId).has(service),
+      now: this.now(),
+    });
+    const pull = current.syncBack && (this.deps.pullEnabled?.(service) ?? true);
+    if (plan.readUpTo !== null && pull) {
+      result.readHere += this.deps.progress.markReadUpTo(track.mangaId, plan.readUpTo);
+    }
+    // Chapters read here while incognito are not reported, so nothing is sent for them now either.
+    const push = plan.push !== null && !this.deps.incognito() ? plan.push : null;
+    if (push) {
+      this.deps.repo.enqueue(track.mangaId, service, push, this.now());
+      result.pushed++;
+    }
+    const adopt = { ...plan.adopt };
+    if (plan.push && !push) {
+      delete adopt.progress;
+      delete adopt.status;
+      delete adopt.startedAt;
+    }
+    if (Object.keys(adopt).length > 0 || remote.remoteTitle !== current.remoteTitle) {
+      this.deps.repo.saveTrack({
+        ...current,
+        ...adopt,
+        remoteTitle: remote.remoteTitle ?? current.remoteTitle,
+        remoteUrl: remote.remoteUrl ?? current.remoteUrl,
+      });
+    }
+    if (push) this.kick();
+  }
+
   // ------------------------------------------------------------ queue
 
   start(): void {
     this.interval ??= setInterval(() => void this.flush(), FLUSH_EVERY_MS);
     this.interval.unref?.();
     this.kick();
+    // A while after the app opens, compare with the trackers (what was read elsewhere meanwhile).
+    this.startTimer ??= setTimeout(() => void this.syncQuietly(), START_SYNC_MS);
+    this.startTimer.unref?.();
   }
 
   stop(): void {
@@ -408,6 +535,8 @@ export class TrackerManager {
     this.interval = undefined;
     clearTimeout(this.kickTimer);
     this.kickTimer = undefined;
+    clearTimeout(this.startTimer);
+    this.startTimer = undefined;
   }
 
   /** Sends what is waiting, soon (so a burst of changes goes out together). */
@@ -495,5 +624,6 @@ function toEntry(row: TrackRow, pending: boolean): TrackEntry {
     startedAt: row.startedAt,
     finishedAt: row.finishedAt,
     pending,
+    syncBack: row.syncBack,
   };
 }

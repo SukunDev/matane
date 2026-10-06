@@ -537,7 +537,7 @@ repo/
 - "Chapter dibaca" = chapter yang selesai di reader (ditandai dibaca **dan** punya sesi baca), jadi "tandai semua dibaca" tidak menggelembungkan angka.
 - Tidak menghitung data dari sesi incognito. Setting → Data bisa menghapus statistik (sesi baca) tanpa menyentuh progres dan history (ADR 0028).
 
-**Tracker** (AniList dan MyAnimeList dikerjakan 4 Okt 2026, ADR 0035 dan 0036; Kitsu, MangaUpdates dan sinkron dua arah menyusul)
+**Tracker** (AniList, MyAnimeList, Kitsu dan MangaUpdates dikerjakan 4–6 Okt 2026, ADR 0035–0038, termasuk sinkron dua arah)
 - Login OAuth lewat **browser sistem** → callback lewat **server loopback** `http://127.0.0.1:<port>/callback` selama login (bukan deep link `matane://`: registrasi protokol tidak andal di AppImage/portable). AniList memakai implicit grant (hanya Client ID, tanpa secret). Token disimpan dengan `safeStorage` (teks biasa bila tidak ada keyring, dan UI mengatakannya).
 - Satu manga bisa di-link ke satu entri per tracker. Pencarian entri otomatis memakai judul manga.
 - **Lokal → tracker**: saat chapter ditandai dibaca, progress di tracker diperbarui kalau nomornya lebih tinggi. Status, skor, dan tanggal mulai/selesai bisa diedit dari app.
@@ -1053,7 +1053,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
   - grafik statistik memakai komponen SVG sendiri, tanpa library grafik.
 
 **Setelah v1**
-- Tracker: ~~AniList~~ (selesai 4 Okt 2026, ADR 0035), ~~MyAnimeList~~ (selesai 4 Okt 2026, ADR 0036; menunggu Client ID), MangaUpdates, Kitsu (termasuk sinkronisasi dua arah).
+- ~~Tracker~~: AniList (ADR 0035), MyAnimeList (ADR 0036; menunggu Client ID), Kitsu, MangaUpdates (ADR 0037) dan sinkronisasi dua arah (ADR 0038) selesai.
 - ~~Import backup Mihon/Tachiyomi (`.tachibk`).~~ Selesai 4 Okt 2026 (ADR 0032).
 - ~~Source file lokal (CBZ/folder).~~ Selesai 4 Okt 2026 (ADR 0033).
 - ~~Template extension untuk CMS populer (Madara, MangaThemesia).~~ Selesai 4 Okt 2026 (ADR 0034).

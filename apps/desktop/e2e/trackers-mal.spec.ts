@@ -77,6 +77,8 @@ test('a manga is linked; the short-lived token is renewed on the way', async () 
   await page.getByText('Paged Hero').click();
   await expect(page.getByRole('heading', { name: 'Paged Hero' })).toBeVisible();
   mangaId = Number(/manga\/(\d+)/.exec(page.url())![1]);
+  // The chapters arrive from the source a moment after the page opens.
+  await expect(page.getByTestId('chapter-row')).toHaveCount(4);
   chapterIds = (await page.evaluate((id) => window.api.invoke('chapters.list', { mangaId: id }), mangaId))
     .sort((a, b) => (a.number ?? 0) - (b.number ?? 0))
     .map((c) => c.id);

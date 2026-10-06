@@ -506,7 +506,7 @@
       }
     },
     "tracking": {
-      "intro": "Perbarui daftar bacaanmu di tracker. Matane mengirim chapter yang kamu baca setelah manga ditautkan ke entrinya; tidak ada yang dikirim saat incognito.",
+      "intro": "Perbarui daftar bacaanmu di tracker. Matane mengirim chapter yang kamu baca setelah manga ditautkan ke entrinya, dan menandai chapter yang kamu baca di tracker sebagai terbaca di sini. Tidak ada yang dikirim saat incognito.",
       "connect": "Hubungkan",
       "disconnect": "Putuskan",
       "waiting": "Menunggu browser… (batal)",
@@ -522,7 +522,19 @@
       "tokenHint": "Kalau login di browser tidak kembali ke Matane, tempel access token yang kamu buat sendiri.",
       "tokenPlaceholder": "Access token",
       "tokenSave": "Hubungkan dengan token",
-      "redirectHint": "Redirect URL aplikasi: {{url}} (hanya perlu bagi yang mendaftarkan aplikasi)."
+      "redirectHint": "Redirect URL aplikasi: {{url}} (hanya perlu bagi yang mendaftarkan aplikasi).",
+      "username": {
+        "kitsu": "Email atau username",
+        "plain": "Username"
+      },
+      "password": "Kata sandi",
+      "logIn": "Masuk",
+      "passwordNote": "Kata sandimu hanya dikirim ke {{name}} dan tidak disimpan Matane: yang disimpan hanya login yang diberikan {{name}}.",
+      "pull": "Tandai terbaca di sini bila dibaca di {{name}}",
+      "pullHint": "Dicek saat library diperbarui, saat app dibuka, dan lewat “Sinkronkan sekarang”. Bisa juga dimatikan untuk satu manga.",
+      "syncNow": "Sinkronkan sekarang",
+      "syncing": "Menyinkronkan…",
+      "synced": "{{checked}} dicek: {{readHere}} ditandai terbaca di sini, {{pushed}} dikirim ke tracker, {{failed}} gagal."
     }
   },
   "common": {
@@ -1503,6 +1515,9 @@
       "on_hold": "Ditahan",
       "dropped": "Dihentikan",
       "planning": "Rencana baca"
-    }
+    },
+    "syncBack": "Tandai terbaca di sini bila dibaca di {{name}}",
+    "syncNow": "Sinkronkan sekarang",
+    "synced": "{{readHere}} ditandai terbaca di sini, {{pushed}} dikirim."
   }
 }

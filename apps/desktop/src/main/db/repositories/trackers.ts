@@ -60,6 +60,11 @@ export class TrackersRepository {
       .all();
   }
 
+  /** Every link, for a sync. */
+  allTracks(): TrackRow[] {
+    return this.db.select().from(mangaTracks).orderBy(mangaTracks.mangaId, mangaTracks.service).all();
+  }
+
   track(mangaId: number, service: string): TrackRow | undefined {
     return this.db
       .select()

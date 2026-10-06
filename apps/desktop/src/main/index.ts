@@ -42,6 +42,8 @@ import { createFetchBytes } from './network/fetch-bytes';
 import { sessionFetch } from './network/electron-fetch';
 import { TrackersRepository } from './db/repositories/trackers';
 import { createAniList } from './trackers/anilist';
+import { createKitsu } from './trackers/kitsu';
+import { createMangaUpdates } from './trackers/mangaupdates';
 import {
   ANILIST_LOOPBACK_PORT,
   MAL_LOOPBACK_PORT,
@@ -418,15 +420,26 @@ async function bootstrap(): Promise<void> {
     apiUrl: e2e ? process.env['MATANE_E2E_MAL_API'] : undefined,
     tokenUrl: e2e ? process.env['MATANE_E2E_MAL_TOKEN'] : undefined,
   });
+  const kitsu = createKitsu({
+    fetch: trackerFetch,
+    graphqlUrl: e2e ? process.env['MATANE_E2E_KITSU_API'] : undefined,
+    tokenUrl: e2e ? process.env['MATANE_E2E_KITSU_TOKEN'] : undefined,
+  });
+  const mangaUpdates = createMangaUpdates({
+    fetch: trackerFetch,
+    apiUrl: e2e ? process.env['MATANE_E2E_MU_API'] : undefined,
+  });
   const loginPort = (service: TrackerService) => {
     const own = service === 'mal' ? MAL_LOOPBACK_PORT : ANILIST_LOOPBACK_PORT;
     return e2e ? Number(process.env['MATANE_E2E_OAUTH_PORT'] ?? own) : own;
   };
   const trackers = new TrackerManager({
     repo: new TrackersRepository(connection.db, changes),
-    clients: { anilist, mal: myAnimeList },
+    clients: { anilist, mal: myAnimeList, kitsu, mangaupdates: mangaUpdates },
     secrets: new SecretBox(safeStorage),
-    configured: (service) => (service === 'mal' ? malClientId() : anilistClientId()) !== null,
+    // Kitsu and MangaUpdates log in with a password and need no registration of ours.
+    configured: (service) =>
+      service === 'mal' ? malClientId() !== null : service === 'anilist' ? anilistClientId() !== null : true,
     redirectUrl: (service) => loopbackRedirect(service === 'mal' ? MAL_LOOPBACK_PORT : ANILIST_LOOPBACK_PORT),
     login: (service, signal) => {
       const context = {
@@ -445,6 +458,7 @@ async function bootstrap(): Promise<void> {
     },
     manga: mangaRepo,
     progress: progressRepo,
+    pullEnabled: (service) => settings.getAppSettings().tracking.pull[service] !== false,
     incognito: () => settings.getAppSettings().incognito,
     isOnline: () => online.isOnline(),
     log: (message) => trackersLog.info(message),
@@ -546,6 +560,7 @@ async function bootstrap(): Promise<void> {
       refreshTray();
     },
     changed: () => changes.mark('updates'),
+    finished: () => void trackers.syncQuietly(),
     log: (message) => log.scope('updates').warn(message),
   });
   const sessions = new SessionRecorder(connection.db);
