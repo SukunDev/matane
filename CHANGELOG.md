@@ -2,6 +2,22 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
+## 1.0.0 — 2026-10-07
+
+The first stable release. It is the 1.0 release candidate with one change: new installs follow stable releases by default.
+
+### What is in 1.0
+
+- **Reading:** a reader for paged manga and webtoons with zoom, colour filters, remappable keys, auto-scroll and per-manga settings; your own CBZ files and folders as a source of their own.
+- **Library:** categories, unread counts, automatic update checks with notifications and downloads, history and statistics, a command palette, backup and restore (and import of Mihon backups).
+- **Sources:** nothing is built in. You add extension repositories you trust; extensions run in a sandbox and ask before reaching a website. Extension authors get an SDK and ready-made templates for Madara and MangaThemesia sites.
+- **Trackers:** AniList, MyAnimeList, Kitsu and MangaUpdates, with two-way sync (what you read elsewhere is marked read here, and the other way around).
+- **Yours:** four themes, English and Indonesian, optional proxy and DNS-over-HTTPS, no telemetry; Discord Rich Presence is off unless you turn it on.
+
+### Updates
+
+- New profiles follow the **stable** releases. A profile that chose **beta** (Settings → About → Updates) keeps receiving pre-releases.
+
 ## 1.0.0-rc.1 — 2026-10-07
 
 The release candidate for 1.0: on top of the 0.2 beta it adds reading from your own files, more trackers with two-way sync, and templates for extension authors. Please try it and tell us what breaks; 1.0.0 follows once nothing does.

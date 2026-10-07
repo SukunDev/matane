@@ -320,7 +320,7 @@
         "off": "Don't check"
       },
       "channel": "Channel",
-      "channelHint": "Beta gets pre-releases too. For now, every release is a beta.",
+      "channelHint": "Beta also gets the pre-releases (betas and release candidates) before they are final. Stable only gets finished releases.",
       "channels": {
         "stable": "Stable",
         "beta": "Beta"

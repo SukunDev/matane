@@ -1044,7 +1044,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Tema AMOLED, warna aksen, warna dari cover. Command palette, onboarding, What's new, Discord RPC, halaman statistik.
 - Backup/restore + auto-backup.
 - Setting jaringan: DoH, proxy, User-Agent.
-- Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0** (release candidate `1.0.0-rc.1` dan SDK `0.3.0` pada 7 Okt 2026; `1.0.0` menyusul).
+- Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0**: `1.0.0-rc.1` dan SDK `0.3.0` dan `1.0.0` dirilis 7 Okt 2026.
 - Keputusan rencana (1 Okt 2026):
   - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), (sejak 3 Okt 2026 tanpa repo resmi: pengguna menambah repo sendiri);
   - Discord RPC tetap masuk (default mati; tersembunyi sampai Client ID diisi);
@@ -1069,7 +1069,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 **Yang perlu diverifikasi saat implementasi**
 - [ ] Aturan & rate limit **Example Source API** terbaru (atribusi, laporan Example@Home).
 - [ ] Batas memori/CPU sandbox yang final (benchmark di Fase 1).
-- [ ] API tracker (terutama MangaUpdates dan Kitsu), saat masuk tahap setelah v1.
+- [ ] API tracker (terutama MangaUpdates dan Kitsu): dibuat dari sumber terbuka dan diuji dengan server palsu; belum dicoba dengan akun nyata.
 - [x] Persyaratan Flathub untuk app Electron (sandbox Flatpak, portal untuk folder download): manifest di `packaging/flatpak` memakai `org.electronjs.Electron2.BaseApp` + zypak, akses `~/Documents/Matane`, folder lain lewat portal file chooser. App id `dev.sukun.matane` harus diverifikasi lewat domain `sukun.dev` (alternatif `io.github.SukunDev.Matane`), dicek saat submit di 4f.
 - [x] Library Discord RPC (5c) dan grafik (5d: SVG sendiri) sudah dipilih.
 

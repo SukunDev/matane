@@ -320,7 +320,7 @@
         "off": "Jangan cek"
       },
       "channel": "Channel",
-      "channelHint": "Beta juga menerima pre-release. Untuk sekarang semua rilis adalah beta.",
+      "channelHint": "Beta juga menerima pre-release (beta dan release candidate) sebelum final. Stable hanya menerima rilis yang sudah final.",
       "channels": {
         "stable": "Stabil",
         "beta": "Beta"

@@ -26,7 +26,7 @@
 _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux** and is like [Mihon](https://mihon.app), but for your computer.
 
 > [!NOTE]
-> Matane **1.0 is in its release candidate** (1.0.0-rc.1, marked "Pre-release" on GitHub). It already does a lot, but expect a few rough edges. If something breaks, please [tell us](https://github.com/mataneorg/matane/issues/new/choose).
+> Matane is at **1.0**. If something breaks, please [tell us](https://github.com/mataneorg/matane/issues/new/choose).
 
 > [!IMPORTANT]
 > Matane does **not** host or distribute any content, and it comes with **no sources built in**. You choose where your manga comes from by adding an extension repository (a link from someone you trust). See [How do I get manga?](#how-do-i-get-manga)

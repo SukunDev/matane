@@ -384,8 +384,8 @@ export type NetworkSettings = z.infer<typeof networkSettingsSchema>;
 /** App updates (docs/BRAINSTORM.md §10): download by itself, only tell, or off; stable or beta releases. */
 export const updaterSettingsSchema = z.object({
   mode: z.enum(['auto', 'notify', 'off']).catch('auto'),
-  /** Beta = GitHub pre-releases too. Every release is a beta for now. */
-  channel: z.enum(['stable', 'beta']).catch('beta'),
+  /** Beta = GitHub pre-releases too. A profile follows the stable releases unless it chose beta. */
+  channel: z.enum(['stable', 'beta']).catch('stable'),
 });
 export type UpdaterSettings = z.infer<typeof updaterSettingsSchema>;
 
@@ -502,7 +502,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     discord: { enabled: false, hideTitle: false },
   },
   cacheSizeMb: 1024,
-  updater: { mode: 'auto', channel: 'beta' },
+  updater: { mode: 'auto', channel: 'stable' },
   browse: {
     showNsfw: false,
     languages: null,
