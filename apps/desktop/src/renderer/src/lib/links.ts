@@ -1,6 +1,6 @@
 // Where the project lives (Settings → About, the command palette, the first-run setup).
 export const LINKS = {
-  repository: 'https://github.com/SukunDev/matane',
-  issues: 'https://github.com/SukunDev/matane/issues/new/choose',
-  docs: 'https://sukundev.github.io/matane/',
+  repository: 'https://github.com/mataneorg/matane',
+  issues: 'https://github.com/mataneorg/matane/issues/new/choose',
+  docs: 'https://mataneorg.github.io/matane/',
 } as const;

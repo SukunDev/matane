@@ -4,7 +4,7 @@ Matane runs third-party extensions in a sandbox (QuickJS in a separate process, 
 
 ## Reporting
 
-Please **do not open a public issue**. Report privately through GitHub: **Security → Report a vulnerability** on [SukunDev/matane](https://github.com/SukunDev/matane/security/advisories/new). Include the version (Settings → About), your OS, and steps or an extension that shows the problem.
+Please **do not open a public issue**. Report privately through GitHub: **Security → Report a vulnerability** on [mataneorg/matane](https://github.com/mataneorg/matane/security/advisories/new). Include the version (Settings → About), your OS, and steps or an extension that shows the problem.
 
 You should get an answer within a week. Fixes ship in the next release; the advisory is published once users can update.
 

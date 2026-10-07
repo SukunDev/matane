@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Documentation
-    url: https://sukundev.github.io/matane/
+    url: https://mataneorg.github.io/matane/
     about: Installing, reading, downloads, extensions, network settings and the FAQ.
   - name: Security problem
-    url: https://github.com/SukunDev/matane/security/advisories/new
+    url: https://github.com/mataneorg/matane/security/advisories/new
     about: Please report vulnerabilities privately.

@@ -25,7 +25,7 @@ const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 async function tarball() {
   if (tarballPath) return readFile(tarballPath);
-  const url = `https://github.com/SukunDev/matane/releases/download/v${version}/Matane-${version}-linux-x64.tar.gz`;
+  const url = `https://github.com/mataneorg/matane/releases/download/v${version}/Matane-${version}-linux-x64.tar.gz`;
   const response = await fetch(url);
   if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
   return Buffer.from(await response.arrayBuffer());

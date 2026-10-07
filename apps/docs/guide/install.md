@@ -1,6 +1,6 @@
 # Install
 
-Download Matane from [GitHub Releases](https://github.com/SukunDev/matane/releases). Pre-releases (betas) are marked as such.
+Download Matane from [GitHub Releases](https://github.com/mataneorg/matane/releases). Pre-releases (betas) are marked as such.
 
 | System                        | File                                       | Updates                                |
 | ----------------------------- | ------------------------------------------ | -------------------------------------- |

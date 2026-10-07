@@ -19,7 +19,7 @@ const option = (name) => {
   return index >= 0 ? rest[index + 1] : null;
 };
 const date = option('--date') ?? new Date().toISOString().slice(0, 10);
-const url = `https://github.com/SukunDev/matane/releases/download/v${version}/Matane-${version}-linux-x64.tar.gz`;
+const url = `https://github.com/mataneorg/matane/releases/download/v${version}/Matane-${version}-linux-x64.tar.gz`;
 
 async function tarball() {
   const local = option('--tarball');
@@ -35,11 +35,14 @@ const iconSha256 = hash(await readFile(join(dir, '..', '..', 'apps', 'desktop', 
 
 const manifestPath = join(dir, 'dev.sukun.matane.yml');
 const manifest = (await readFile(manifestPath, 'utf8'))
-  .replace(/^(\s+url: )https:\/\/github\.com\/SukunDev\/matane\/releases\/.*$/m, `$1${url}`)
-  .replace(/^(\s+url: https:\/\/github\.com\/SukunDev\/matane\/releases\/.*\n\s+sha256: )[0-9a-f]{64}$/m, `$1${sha256}`)
+  .replace(/^(\s+url: )https:\/\/github\.com\/mataneorg\/matane\/releases\/.*$/m, `$1${url}`)
   .replace(
-    /^(\s+url: )https:\/\/raw\.githubusercontent\.com\/SukunDev\/matane\/v[^/]+\//m,
-    `$1https://raw.githubusercontent.com/SukunDev/matane/v${version}/`,
+    /^(\s+url: https:\/\/github\.com\/mataneorg\/matane\/releases\/.*\n\s+sha256: )[0-9a-f]{64}$/m,
+    `$1${sha256}`,
+  )
+  .replace(
+    /^(\s+url: )https:\/\/raw\.githubusercontent\.com\/mataneorg\/matane\/v[^/]+\//m,
+    `$1https://raw.githubusercontent.com/mataneorg/matane/v${version}/`,
   )
   .replace(/^(\s+url: https:\/\/raw\.githubusercontent\.com\/.*\n\s+sha256: )[0-9a-f]{64}$/m, `$1${iconSha256}`);
 await writeFile(manifestPath, manifest);

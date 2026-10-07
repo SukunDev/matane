@@ -11,13 +11,13 @@
   ],
   "license": "MIT",
   "author": "SukunDev",
-  "homepage": "https://sukundev.github.io/matane/extensions/templates",
+  "homepage": "https://mataneorg.github.io/matane/extensions/templates",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SukunDev/matane.git",
+    "url": "git+https://github.com/mataneorg/matane.git",
     "directory": "packages/extension-templates"
   },
-  "bugs": "https://github.com/SukunDev/matane/issues",
+  "bugs": "https://github.com/mataneorg/matane/issues",
   "type": "module",
   "exports": {
     ".": "./src/index.ts"

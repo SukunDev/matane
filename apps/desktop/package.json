@@ -6,10 +6,10 @@
   "private": true,
   "description": "Open-source desktop manga reader",
   "author": "SukunDev",
-  "homepage": "https://github.com/SukunDev/matane",
+  "homepage": "https://github.com/mataneorg/matane",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SukunDev/matane.git"
+    "url": "https://github.com/mataneorg/matane.git"
   },
   "license": "GPL-3.0-only",
   "main": "./out/main/index.js",

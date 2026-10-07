@@ -1,6 +1,6 @@
 # @matane/extension-sdk
 
-Types and helpers for writing extensions for [Matane](https://github.com/SukunDev/matane), the open-source desktop manga reader. Extensions are small TypeScript bundles that run in Matane's sandbox (QuickJS): no Node.js APIs, no file access, and all network access through the app (http and https only, with rate limits).
+Types and helpers for writing extensions for [Matane](https://github.com/mataneorg/matane), the open-source desktop manga reader. Extensions are small TypeScript bundles that run in Matane's sandbox (QuickJS): no Node.js APIs, no file access, and all network access through the app (http and https only, with rate limits).
 
 ```sh
 npx @matane/extension-cli create my-site --domain my-site.example
@@ -29,4 +29,4 @@ export default defineExtension({
 - For sites on the Madara or MangaThemesia themes, see [`@matane/extension-templates`](https://www.npmjs.com/package/@matane/extension-templates).
 - `@matane/extension-sdk/manifest` and `/repo`: the `manifest.json` and repository index schemas (tooling and the app).
 
-The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/). MIT.
+The full guide: [the extension guide](https://mataneorg.github.io/matane/extensions/). MIT.

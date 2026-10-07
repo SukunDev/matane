@@ -10,13 +10,13 @@
   ],
   "license": "MIT",
   "author": "SukunDev",
-  "homepage": "https://sukundev.github.io/matane/extensions/",
+  "homepage": "https://mataneorg.github.io/matane/extensions/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SukunDev/matane.git",
+    "url": "git+https://github.com/mataneorg/matane.git",
     "directory": "packages/extension-cli"
   },
-  "bugs": "https://github.com/SukunDev/matane/issues",
+  "bugs": "https://github.com/mataneorg/matane/issues",
   "type": "module",
   "bin": {
     "mr-ext": "bin/mr-ext.js"

@@ -24,7 +24,7 @@ pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm e2e
 
 ## Extensions
 
-This repository holds the app and the extension SDK, runtime and CLI only; it does not host extensions. To write one and publish it in a repository of your own, see the [extension guide](https://sukundev.github.io/matane/extensions/) (source in `apps/docs/extensions/`). The documentation site is `apps/docs` (VitePress: `pnpm --filter @manga-reader/docs dev`).
+This repository holds the app and the extension SDK, runtime and CLI only; it does not host extensions. To write one and publish it in a repository of your own, see the [extension guide](https://mataneorg.github.io/matane/extensions/) (source in `apps/docs/extensions/`). The documentation site is `apps/docs` (VitePress: `pnpm --filter @manga-reader/docs dev`).
 
 ## Releases
 

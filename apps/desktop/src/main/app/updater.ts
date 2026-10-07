@@ -1,8 +1,8 @@
 import { PACKAGE_MANAGED, type PackageKind, type UpdaterSettings, type UpdaterStatus } from '@manga-reader/shared';
 import { toAppErrorData } from '@manga-reader/shared/errors';
 
-export const RELEASES_URL = 'https://github.com/SukunDev/matane/releases';
-const RELEASES_API = 'https://api.github.com/repos/SukunDev/matane/releases?per_page=20';
+export const RELEASES_URL = 'https://github.com/mataneorg/matane/releases';
+const RELEASES_API = 'https://api.github.com/repos/mataneorg/matane/releases?per_page=20';
 /** First check shortly after start, then every 6 hours. */
 const FIRST_CHECK_MS = 30_000;
 const CHECK_EVERY_MS = 6 * 3_600_000;

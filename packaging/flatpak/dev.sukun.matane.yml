@@ -37,12 +37,12 @@ modules:
     sources:
       - type: archive
         only-arches: [x86_64]
-        url: https://github.com/SukunDev/matane/releases/download/v0.1.0-beta.1/Matane-0.1.0-beta.1-linux-x64.tar.gz
+        url: https://github.com/mataneorg/matane/releases/download/v0.1.0-beta.1/Matane-0.1.0-beta.1-linux-x64.tar.gz
         sha256: 0000000000000000000000000000000000000000000000000000000000000000
         dest: matane
       # The Flathub repository holds only this folder, so the icon comes from the tag.
       - type: file
-        url: https://raw.githubusercontent.com/SukunDev/matane/v0.1.0-beta.1/apps/desktop/resources/icon.png
+        url: https://raw.githubusercontent.com/mataneorg/matane/v0.1.0-beta.1/apps/desktop/resources/icon.png
         sha256: 0000000000000000000000000000000000000000000000000000000000000000
         dest-filename: icon.png
       - type: file

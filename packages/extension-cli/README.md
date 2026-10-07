@@ -1,6 +1,6 @@
 # @matane/extension-cli
 
-`mr-ext`: create, build, test and publish extensions for [Matane](https://github.com/SukunDev/matane).
+`mr-ext`: create, build, test and publish extensions for [Matane](https://github.com/mataneorg/matane).
 
 ```sh
 npx @matane/extension-cli create my-site --domain my-site.example --lang en
@@ -19,4 +19,4 @@ npx mr-ext test           # popular → details → chapters → pages → first
 | `repo build <ext…> -o <dir>` | Zips, hashes and indexes extensions into a repository folder and signs `index.json` (`--key` or `$MR_REPO_KEY`).                    |
 | `repo verify <dir\|url>`     | Checks a repository the way the app does.                                                                                           |
 
-For tests: `createFixtureHost` records HTTP responses once (`MR_RECORD=1`) and replays them offline. The full guide: [the extension guide](https://sukundev.github.io/matane/extensions/). MIT.
+For tests: `createFixtureHost` records HTTP responses once (`MR_RECORD=1`) and replays them offline. The full guide: [the extension guide](https://mataneorg.github.io/matane/extensions/). MIT.

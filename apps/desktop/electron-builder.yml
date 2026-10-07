@@ -69,7 +69,7 @@ mac:
   identity: null
 publish:
   provider: github
-  owner: SukunDev
+  owner: mataneorg
   repo: matane
   # The release workflow creates the release as a draft and publishes it once every OS uploaded.
   releaseType: draft

@@ -25,30 +25,30 @@
     </ul>
   </description>
   <launchable type="desktop-id">dev.sukun.matane.desktop</launchable>
-  <url type="homepage">https://sukundev.github.io/matane/</url>
-  <url type="bugtracker">https://github.com/SukunDev/matane/issues</url>
-  <url type="vcs-browser">https://github.com/SukunDev/matane</url>
-  <url type="help">https://sukundev.github.io/matane/guide/</url>
+  <url type="homepage">https://mataneorg.github.io/matane/</url>
+  <url type="bugtracker">https://github.com/mataneorg/matane/issues</url>
+  <url type="vcs-browser">https://github.com/mataneorg/matane</url>
+  <url type="help">https://mataneorg.github.io/matane/guide/</url>
   <screenshots>
     <screenshot type="default">
       <caption>The library</caption>
-      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/01-library.png</image>
+      <image>https://raw.githubusercontent.com/mataneorg/matane/main/docs/ui/screens/01-library.png</image>
     </screenshot>
     <screenshot>
       <caption>Manga details and chapters</caption>
-      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/02-detail.png</image>
+      <image>https://raw.githubusercontent.com/mataneorg/matane/main/docs/ui/screens/02-detail.png</image>
     </screenshot>
     <screenshot>
       <caption>Reading a webtoon</caption>
-      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/04-reader-webtoon.png</image>
+      <image>https://raw.githubusercontent.com/mataneorg/matane/main/docs/ui/screens/04-reader-webtoon.png</image>
     </screenshot>
     <screenshot>
       <caption>Browsing a source</caption>
-      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/05-browse.png</image>
+      <image>https://raw.githubusercontent.com/mataneorg/matane/main/docs/ui/screens/05-browse.png</image>
     </screenshot>
     <screenshot>
       <caption>Extensions</caption>
-      <image>https://raw.githubusercontent.com/SukunDev/matane/main/docs/ui/screens/09-extensions.png</image>
+      <image>https://raw.githubusercontent.com/mataneorg/matane/main/docs/ui/screens/09-extensions.png</image>
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1">

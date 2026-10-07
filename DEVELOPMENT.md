@@ -1,6 +1,6 @@
 # Developing Matane
 
-This page is for people who want to build Matane from source, fix something or add a feature. If you only want to read manga, the [README](README.md) and the [user guide](https://sukundev.github.io/matane/) are what you need.
+This page is for people who want to build Matane from source, fix something or add a feature. If you only want to read manga, the [README](README.md) and the [user guide](https://mataneorg.github.io/matane/) are what you need.
 
 Before opening a pull request, read [`CONTRIBUTING.md`](CONTRIBUTING.md) (rules and checks) and the [Code of Conduct](CODE_OF_CONDUCT.md). To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
 
@@ -27,7 +27,7 @@ Before opening a pull request, read [`CONTRIBUTING.md`](CONTRIBUTING.md) (rules 
 ## Getting started
 
 ```sh
-git clone https://github.com/SukunDev/matane.git
+git clone https://github.com/mataneorg/matane.git
 cd matane
 pnpm install      # also downloads Electron and rebuilds better-sqlite3 for it
 pnpm dev          # starts the app with hot reload
@@ -131,11 +131,11 @@ mr-ext repo build  # build and sign a repository
 mr-ext repo verify # check a repository
 ```
 
-The full walkthrough, with the API reference, is the [extension guide](https://sukundev.github.io/matane/extensions/) (source in `apps/docs/extensions/`).
+The full walkthrough, with the API reference, is the [extension guide](https://mataneorg.github.io/matane/extensions/) (source in `apps/docs/extensions/`).
 
 ## Documentation site
 
-`apps/docs` is a [VitePress](https://vitepress.dev) site with the user guide (`guide/`) and the extension guide (`extensions/`). It is published to <https://sukundev.github.io/matane/> by `.github/workflows/docs.yml` when something under `apps/docs/` changes on `main`.
+`apps/docs` is a [VitePress](https://vitepress.dev) site with the user guide (`guide/`) and the extension guide (`extensions/`). It is published to <https://mataneorg.github.io/matane/> by `.github/workflows/docs.yml` when something under `apps/docs/` changes on `main`.
 
 ```sh
 pnpm --filter @manga-reader/docs dev       # live preview

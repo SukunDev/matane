@@ -54,7 +54,7 @@ The second beta: sources now come from extension repositories you add, and most 
 - Settings → Advanced: log level, the log and crash report folders (crash reports never leave your computer) and "Copy debug info" for bug reports, without your home folder or tokens.
 - Settings → About: how Matane was installed, the open source licenses, and links to the documentation and issue tracker.
 - New downloads: Windows portable, deb, rpm and tar.gz. Builds that cannot update themselves tell you when a new version is out.
-- Documentation site: [sukundev.github.io/matane](https://sukundev.github.io/matane/).
+- Documentation site: [mataneorg.github.io/matane](https://mataneorg.github.io/matane/).
 
 ### Extensions
 
@@ -73,7 +73,7 @@ The second beta: sources now come from extension repositories you add, and most 
 - `mr-ext repo keygen | build | verify`: reproducible, signed repositories for static hosting (GitHub Pages).
 - `mr-ext test` runs `transformImage` on the first page and writes the restored page to `.mr-ext/`; it also accepts built bundles. `mr-ext create --layout standalone | catalog | workspace`.
 - The packages are now `@matane/extension-sdk`, `@matane/extension-runtime` and `@matane/extension-cli`, published on npm.
-- Guide for writing extensions and publishing a repository of your own: the [extension guide](https://sukundev.github.io/matane/extensions/).
+- Guide for writing extensions and publishing a repository of your own: the [extension guide](https://mataneorg.github.io/matane/extensions/).
 
 ### Fixes
 

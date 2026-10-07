@@ -1,6 +1,6 @@
 import { defineConfig } from 'vitepress';
 
-// Published to GitHub Pages at https://sukundev.github.io/matane/ (.github/workflows/docs.yml).
+// Published to GitHub Pages at https://mataneorg.github.io/matane/ (.github/workflows/docs.yml).
 export default defineConfig({
   title: 'Matane',
   description: 'Open-source desktop manga reader with a sandboxed extension system',
@@ -14,7 +14,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/', activeMatch: '/guide/' },
       { text: 'Extensions', link: '/extensions/', activeMatch: '/extensions/' },
-      { text: 'Download', link: 'https://github.com/SukunDev/matane/releases' },
+      { text: 'Download', link: 'https://github.com/mataneorg/matane/releases' },
     ],
     sidebar: {
       '/guide/': [
@@ -51,9 +51,9 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [{ icon: 'github', link: 'https://github.com/SukunDev/matane' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/mataneorg/matane' }],
     editLink: {
-      pattern: 'https://github.com/SukunDev/matane/edit/main/apps/docs/:path',
+      pattern: 'https://github.com/mataneorg/matane/edit/main/apps/docs/:path',
       text: 'Edit this page on GitHub',
     },
     search: { provider: 'local' },

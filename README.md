@@ -8,16 +8,16 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/SukunDev/matane/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/SukunDev/matane/total?style=for-the-badge&label=Downloads"></a>
-  <a href="https://github.com/SukunDev/matane/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/SukunDev/matane?style=for-the-badge"></a>
-  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/SukunDev/matane?style=for-the-badge"></a>
+  <a href="https://github.com/mataneorg/matane/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/mataneorg/matane/total?style=for-the-badge&label=Downloads"></a>
+  <a href="https://github.com/mataneorg/matane/stargazers"><img alt="Stars" src="https://img.shields.io/github/stars/mataneorg/matane?style=for-the-badge"></a>
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/github/license/mataneorg/matane?style=for-the-badge"></a>
   <a href="https://saweria.co/PakdeKun"><img alt="Support on Saweria" src="https://img.shields.io/badge/Support-Saweria-F7931E?style=for-the-badge"></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/SukunDev/matane/releases">Download</a> ·
-  <a href="https://sukundev.github.io/matane/">Documentation</a> ·
-  <a href="https://github.com/SukunDev/matane/issues/new/choose">Report a problem</a> ·
+  <a href="https://github.com/mataneorg/matane/releases">Download</a> ·
+  <a href="https://mataneorg.github.io/matane/">Documentation</a> ·
+  <a href="https://github.com/mataneorg/matane/issues/new/choose">Report a problem</a> ·
   <a href="#support-the-project">Support</a>
 </p>
 
@@ -26,7 +26,7 @@
 _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux** and is like [Mihon](https://mihon.app), but for your computer.
 
 > [!NOTE]
-> Matane is in **beta** (0.2). It already does a lot, but expect a few rough edges. If something breaks, please [tell us](https://github.com/SukunDev/matane/issues/new/choose).
+> Matane is in **beta** (0.2). It already does a lot, but expect a few rough edges. If something breaks, please [tell us](https://github.com/mataneorg/matane/issues/new/choose).
 
 > [!IMPORTANT]
 > Matane does **not** host or distribute any content, and it comes with **no sources built in**. You choose where your manga comes from by adding an extension repository (a link from someone you trust). See [How do I get manga?](#how-do-i-get-manga)
@@ -70,7 +70,7 @@ _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux*
 
 ## Download
 
-Get the latest version from **[GitHub Releases](https://github.com/SukunDev/matane/releases)**. Beta versions are marked "Pre-release".
+Get the latest version from **[GitHub Releases](https://github.com/mataneorg/matane/releases)**. Beta versions are marked "Pre-release".
 
 | Your system                   | Download                                          | Updates                      |
 | ----------------------------- | ------------------------------------------------- | ---------------------------- |
@@ -104,7 +104,7 @@ Matane gets its manga from **extensions**, small add-ons that each connect to on
 2. In Matane, open **Extensions** and add the repository.
 3. Install the sources you want, then browse and read.
 
-Extensions run in a sandbox and ask your permission before reaching a website. Repositories are signed, so Matane can tell if one was tampered with. The full walkthrough is in the [user guide](https://sukundev.github.io/matane/).
+Extensions run in a sandbox and ask your permission before reaching a website. Repositories are signed, so Matane can tell if one was tampered with. The full walkthrough is in the [user guide](https://mataneorg.github.io/matane/).
 
 ## Support the project
 
@@ -117,18 +117,18 @@ Matane is free and made in spare time. If it makes your reading nicer and you wo
 Other ways to help, all free:
 
 - Star the repository
-- [Report bugs](https://github.com/SukunDev/matane/issues/new/choose) or [suggest features](https://github.com/SukunDev/matane/issues/new/choose)
+- [Report bugs](https://github.com/mataneorg/matane/issues/new/choose) or [suggest features](https://github.com/mataneorg/matane/issues/new/choose)
 - Tell a friend who reads manga
 
 ## Help and documentation
 
-- **[User guide and FAQ](https://sukundev.github.io/matane/)**: installing, library, reader, downloads, backup, network settings
+- **[User guide and FAQ](https://mataneorg.github.io/matane/)**: installing, library, reader, downloads, backup, network settings
 - **[Changelog](CHANGELOG.md)**: what changed in each version
-- **[Report a problem](https://github.com/SukunDev/matane/issues/new/choose)**: in Settings → Advanced, "Copy debug info" gives you details to paste into the report (without your home folder or tokens)
+- **[Report a problem](https://github.com/mataneorg/matane/issues/new/choose)**: in Settings → Advanced, "Copy debug info" gives you details to paste into the report (without your home folder or tokens)
 
 ## For developers
 
-Want to build Matane from source, fix a bug or write an extension? Everything is in **[DEVELOPMENT.md](DEVELOPMENT.md)**: setup, commands, project layout, how the app works, testing and releases. Also see [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [extension guide](https://sukundev.github.io/matane/extensions/).
+Want to build Matane from source, fix a bug or write an extension? Everything is in **[DEVELOPMENT.md](DEVELOPMENT.md)**: setup, commands, project layout, how the app works, testing and releases. Also see [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [extension guide](https://mataneorg.github.io/matane/extensions/).
 
 ## License
 

@@ -31,11 +31,11 @@ See [Where your data is](./install#where-your-data-is). Uninstalling keeps your 
 
 1. **Settings → Advanced → Copy debug info.** It copies the versions, how Matane was installed, your extensions and the last 100 log lines, with your home folder, user name and URL tokens removed. Read it before you share it.
 2. Set **Log level** to **Debug**, reproduce the problem, and copy the debug info again for more detail.
-3. Open an issue at [github.com/SukunDev/matane/issues](https://github.com/SukunDev/matane/issues/new/choose) and paste it.
+3. Open an issue at [github.com/mataneorg/matane/issues](https://github.com/mataneorg/matane/issues/new/choose) and paste it.
 
 If Matane crashes, Settings → Advanced → **Crash reports** opens the folder with the crash dumps. They never leave your computer unless you attach them.
 
-Security problems: please report them privately, as described in [SECURITY.md](https://github.com/SukunDev/matane/blob/main/SECURITY.md).
+Security problems: please report them privately, as described in [SECURITY.md](https://github.com/mataneorg/matane/blob/main/SECURITY.md).
 
 ## Does Matane collect data?
 
