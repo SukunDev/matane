@@ -72,16 +72,6 @@ _Matane_ is Japanese for "see you later". It runs on **Windows, macOS and Linux*
 
 Get the latest version from **[GitHub Releases](https://github.com/mataneorg/matane/releases)**. Beta versions are marked "Pre-release".
 
-| Your system                   | Download                                          | Updates                      |
-| ----------------------------- | ------------------------------------------------- | ---------------------------- |
-| Windows 10/11                 | `Matane-<version>-win-x64.exe` (installer)        | installs them itself         |
-| Windows, no install           | `Matane-<version>-win-x64-portable.exe`           | tells you                    |
-| macOS (Apple silicon / Intel) | `Matane-<version>-mac-arm64.dmg` / `-mac-x64.dmg` | tells you, links the release |
-| Linux                         | `Matane-<version>-linux-x86_64.AppImage`          | installs them itself         |
-| Debian, Ubuntu                | `Matane-<version>-linux-amd64.deb`                | tells you                    |
-| Fedora, openSUSE              | `Matane-<version>-linux-x86_64.rpm`               | tells you                    |
-| Linux (any, by hand)          | `Matane-<version>-linux-x64.tar.gz`               | tells you                    |
-
 ### The first time you open it
 
 Matane is not code-signed yet, so your system will show a warning. This is expected:
