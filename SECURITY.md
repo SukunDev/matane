@@ -10,4 +10,4 @@ You should get an answer within a week. Fixes ship in the next release; the advi
 
 ## Supported versions
 
-Only the latest release (currently the 0.1 betas) gets security fixes.
+Only the latest release gets security fixes: the newest 1.x version (and, until 1.0.0 is out, the newest 1.0 release candidate).

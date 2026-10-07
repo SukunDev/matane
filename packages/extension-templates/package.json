@@ -1,6 +1,6 @@
 {
   "name": "@matane/extension-templates",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Ready-made sources for sites on popular CMS themes (Madara, MangaThemesia), for Matane extensions",
   "keywords": [
     "matane",

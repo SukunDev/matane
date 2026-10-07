@@ -1,6 +1,6 @@
 {
   "name": "@matane/extension-runtime",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The sandboxed QuickJS runtime that runs Matane extensions, shared by the app and mr-ext",
   "keywords": [
     "matane",

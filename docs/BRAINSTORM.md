@@ -1044,7 +1044,7 @@ Repo extension komunitas terpisah, memakai `extension-sdk` + `mr-ext`, dengan sm
 - Tema AMOLED, warna aksen, warna dari cover. Command palette, onboarding, What's new, Discord RPC, halaman statistik.
 - Backup/restore + auto-backup.
 - Setting jaringan: DoH, proxy, User-Agent.
-- Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0**.
+- Semua paket (portable, deb, rpm, AUR, Flatpak), dokumentasi lengkap, **nama final**, rilis **v1.0** (release candidate `1.0.0-rc.1` dan SDK `0.3.0` pada 7 Okt 2026; `1.0.0` menyusul).
 - Keputusan rencana (1 Okt 2026):
   - urutan: Milestone 5a–5f → Milestone 4f (repo resmi) → 5g (rilis v1.0), (sejak 3 Okt 2026 tanpa repo resmi: pengguna menambah repo sendiri);
   - Discord RPC tetap masuk (default mati; tersembunyi sampai Client ID diisi);

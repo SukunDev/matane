@@ -2,7 +2,9 @@
 
 All notable changes to Matane. Versions follow [semver](https://semver.org); betas are published as GitHub pre-releases.
 
-## 0.3.0-beta.1 — unreleased
+## 1.0.0-rc.1 — 2026-10-07
+
+The release candidate for 1.0: on top of the 0.2 beta it adds reading from your own files, more trackers with two-way sync, and templates for extension authors. Please try it and tell us what breaks; 1.0.0 follows once nothing does.
 
 ### Reading
 
@@ -18,6 +20,7 @@ All notable changes to Matane. Versions follow [semver](https://semver.org); bet
 ### Extensions
 
 - **Templates for Madara and MangaThemesia sites:** the new `@matane/extension-templates` package gives extension authors a ready-made source for each theme, and `mr-ext create <id> --template madara|mangathemesia` scaffolds an extension that is one line of configuration. Paths and CSS selectors can be adjusted, or a single method replaced. The templates follow each theme's default markup. See the extension guide.
+- **Extension SDK 0.3.0:** `@matane/extension-sdk`, `-runtime`, `-templates` and `-cli` are published together at 0.3.0, the first release of `@matane/extension-templates`. The extension API version is unchanged, so extensions built for 0.2 keep working.
 
 ## 0.2.0-beta.1 — 2026-10-04
 

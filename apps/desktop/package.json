@@ -2,7 +2,7 @@
   "name": "@manga-reader/desktop",
   "productName": "Matane",
   "desktopName": "matane.desktop",
-  "version": "0.2.0-beta.1",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Open-source desktop manga reader",
   "author": "SukunDev",

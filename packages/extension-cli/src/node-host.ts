@@ -2,7 +2,7 @@ import type { ExtensionManifest, HttpRequest, HttpResponse } from '@matane/exten
 import { type HostApi, type LogLevel, fromFetchResponse, toFetchParts } from '@matane/extension-runtime';
 
 export const CLI_NAME = 'mr-ext';
-export const CLI_VERSION = '0.2.0';
+export const CLI_VERSION = '0.3.0';
 const TIMEOUT_MS = 20_000;
 
 /** Spaces requests so no more than `requests` start within any `perMs` window. */
